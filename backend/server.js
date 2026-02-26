@@ -14,7 +14,7 @@ const pool = new Pool({
 });
 
 app.get("/", (req, res) => {
-  res.send("API funcionando 🚀");
+  res.send("API fun");
 });
 
 app.get("/usuarios", async (req, res) => {
@@ -26,4 +26,4 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Servidor corriendo en puerto 3000"));
+app.listen(3000, "0.0.0.0", () => console.log("Servidor corriendo en puerto 3000"));
