@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  backend:
+    image: node:20-alpine
+    container_name: chambee_backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && node server.js"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: chambee_dbs
+      DB_PORT: 5432
+
+  db:
+    image: postgres:16
+    container_name: chambee_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chambee_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
