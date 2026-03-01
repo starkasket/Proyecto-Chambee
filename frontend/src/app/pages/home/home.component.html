@@ -1,0 +1,207 @@
+<header class="navbar">
+  <div class="container nav-wrapper">
+
+    <div class="logo">
+      🐝 Chambee
+    </div>
+
+    <div class="search-container">
+      <input
+        type="text"
+        placeholder="Buscar, categoría, puesto, ciudad y más..."
+      />
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn login">Iniciar Sesión</button>
+      <button class="btn register">Registrarse</button>
+      <div class="menu">☰</div>
+    </div>
+
+  </div>
+</header>
+
+
+<div class="container main-layout">
+
+  <!-- IZQUIERDA -->
+  <div class="left">
+
+    <!-- CARD PRINCIPAL -->
+   <div class="carousel">
+
+  <div class="carousel-container">
+
+    <div
+      class="carousel-slide"
+      *ngFor="let slide of slides; let i=index"
+      [class.active]="i === currentSlide"
+    >
+
+      <div class="featured-card">
+
+        <div class="featured-left">
+
+          <h3>🐝 Chambee</h3>
+
+          <p>
+            Plataforma líder para encontrar empleo.
+          </p>
+
+        </div>
+
+
+        <div class="featured-right">
+
+          <h3>{{slide.title}}</h3>
+
+          <p><strong>Sueldo:</strong> {{slide.salary}}</p>
+
+          <p><strong>Modalidad:</strong> {{slide.mode}}</p>
+
+          <p><strong>Ubicación:</strong> {{slide.location}}</p>
+
+          <p>{{slide.description}}</p>
+
+          <button class="btn featured-btn">
+            Ver más
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- BOTONES -->
+
+  <button class="prev" (click)="prevSlide()">❮</button>
+
+  <button class="next" (click)="nextSlide()">❯</button>
+
+
+  <!-- DOTS -->
+
+  <div class="dots">
+
+    <span
+      *ngFor="let slide of slides; let i=index"
+      (click)="goToSlide(i)"
+      [class.active]="i === currentSlide"
+    ></span>
+
+  </div>
+
+</div>
+
+
+    <!-- GRID EMPLEOS -->
+    <div class="jobs-grid">
+
+      <div class="job-card">
+
+        <img src="https://picsum.photos/300/150">
+
+        <div class="job-content">
+
+          <h4>AT&T México</h4>
+
+          <p>Ejecutivo de Ventas</p>
+
+          <p class="salary">$13,000 MXN</p>
+
+          <div class="job-footer">
+
+            ⭐ 4.2
+
+            <span>9 postulados</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="job-card">
+
+        <img src="https://picsum.photos/301/150">
+
+        <div class="job-content">
+
+          <h4>Google</h4>
+
+          <p>Frontend Developer</p>
+
+          <p class="salary">$25,000 MXN</p>
+
+          <div class="job-footer">
+
+            ⭐ 4.8
+
+            <span>12 postulados</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="job-card">
+
+        <img src="https://picsum.photos/302/150">
+
+        <div class="job-content">
+
+          <h4>Amazon</h4>
+
+          <p>Backend Developer</p>
+
+          <p class="salary">$30,000 MXN</p>
+
+          <div class="job-footer">
+
+            ⭐ 4.7
+
+            <span>7 postulados</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- DERECHA -->
+  <div class="right">
+
+    <h3 class="services-title">
+      Servicios y más
+    </h3>
+
+    <div class="service-card">
+      🔧 Taller Mecánico El Rayo
+    </div>
+
+    <div class="service-card">
+      🧰 Servicio Técnico Pro
+    </div>
+
+    <div class="service-card">
+      💻 Reparación de Computadoras
+    </div>
+
+  </div>
+
+
+</div>
