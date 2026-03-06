@@ -1,25 +1,27 @@
-<header class="navbar">
-  <div class="container nav-wrapper">
-
-    <div class="logo">
-      🐝 Chambee
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+  
+  <div class="d-flex align-items-center gap-2">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="60">
     </div>
 
-    <div class="search-container">
-      <input
-        type="text"
-        placeholder="Buscar, categoría, puesto, ciudad y más..."
-      />
-    </div>
-
-    <div class="nav-buttons">
-      <button class="btn login">Iniciar Sesión</button>
-      <button class="btn register">Registrarse</button>
-      <div class="menu">☰</div>
-    </div>
-
+  <div class="search-container flex-grow-1 mx-4">
+    <input 
+      type="text" 
+      class="form-control" 
+      placeholder="Buscar, categoría, puesto, ciudad y más..." 
+    />
   </div>
-</header>
+
+  <div class="nav-buttons d-flex align-items-center gap-3">
+    <button class="btn login">Iniciar Sesión</button>
+    <button class="btn register" routerLink="/employer-register">
+      Registrarse
+    </button>
+    
+    <div class="menu fs-4" style="cursor: pointer;">☰</div>
+  </div>
+
+</nav>
 
 
 <div class="container main-layout">
