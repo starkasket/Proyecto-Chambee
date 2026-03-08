@@ -1,0 +1,115 @@
+/* NAVBAR */
+.navbar-chambee {
+  background-color: #FCCE34 !important; /* Amarillo Chambee */
+  width: 100% !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+}
+
+/* FONDO GENERAL */
+.page-bg {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/assets/FondoFormularios.png'); 
+  background-size: cover;
+  background-position: center;
+}
+
+/* DECORACIÓN DE LA CARD */
+.fondo-registro-card {
+  padding: 40px;
+  border-radius: 25px;
+  background-color: #F2E4D3; /* Color crema de fondo */
+}
+
+.registro-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 35px;
+  width: 100%;
+  max-width: 650px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* TABS (BOTONES SUPERIORES) */
+.tipo-tabs {
+  display: flex;
+  border: 2px solid #000000;
+  border-radius: 30px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.tab-postulante {
+  background: #000000 !important; 
+  color: #ffffff !important;
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+}
+
+.tab-empleador {
+ background: #ffffff !important;
+  color: #000000 !important;
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+}
+
+/* INPUTS PERSONALIZADOS */
+.form-control-custom {
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 10px 18px;
+  width: 100%;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.section-label, .dir-label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+/* BOTÓN CREAR CUENTA */
+.btn-crear {
+  background-color: #FCCE34 !important; /* Amarillo */
+  color: #000000 !important;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 60px;
+  font-weight: 700;
+  display: block;
+  margin: 30px auto 0;
+  cursor: pointer;
+}
+
+.btn-close-custom {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: white;
+  color: #888;
+}
+
+.input-with-icon { position: relative; }
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 35%;
+  color: #999;
+}
