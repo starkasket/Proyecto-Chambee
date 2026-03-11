@@ -14,7 +14,7 @@ const pool = new Pool({
 });
 
 app.get("/", (req, res) => {
-  res.send("API fun");
+  res.send("jagbsdhdhwhgsgndfgnfbgnherdbfg hdnfrstgja");
 });
 
 app.get("/usuarios", async (req, res) => {
