@@ -19,4 +19,9 @@ export class ApiService {
   registrarEmpleador(datos: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/empleadores/registro`, datos);
 }
+
+// postulante 
+registrarPostulante(datos: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/postulantes/registro`, datos);
+}
 }

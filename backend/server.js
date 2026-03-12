@@ -41,4 +41,27 @@ app.post("/empleadores/registro", async (req, res) => {
   }
 });
 
+// postulantes
+ app.post("/postulantes/registro", async (req, res) => {
+  const {
+    nombre, apellido_paterno, apellido_materno,
+    fecha_nacimiento, correo_electronico, sexo,
+    contrasena, rfc, curp, pais, estado,
+    ciudad, colonia, calle, codigo_postal
+  } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO postulantes 
+        (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_electronico, sexo, contrasena, rfc, curp, pais, estado, ciudad, colonia, calle, codigo_postal)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+       RETURNING id, nombre, correo_electronico`,
+      [nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_electronico, sexo, contrasena, rfc, curp, pais, estado, ciudad, colonia, calle, codigo_postal]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(3000, "0.0.0.0", () => console.log("Servidor corriendo en puerto 3000"));

@@ -32,7 +32,7 @@ export class EmployerRegisterComponent {
 
   registrar() {
     if (this.form.password !== this.form.password_verificar) {
-        console.log('Formulario:', this.form);  // ← agregar
+        console.log('Formulario:', this.form);  
       alert('Las contraseñas no coinciden');
       return;
     }
