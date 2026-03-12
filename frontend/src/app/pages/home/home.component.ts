@@ -9,7 +9,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
 
   currentSlide = 0;
 
@@ -38,34 +38,23 @@ export class HomeComponent {
   ];
 
   ngOnInit() {
-
     setInterval(() => {
-
       this.nextSlide();
-
     }, 4000);
-
   }
 
   nextSlide() {
-
     this.currentSlide =
       (this.currentSlide + 1) % this.slides.length;
-
   }
 
   prevSlide() {
-
     this.currentSlide =
       (this.currentSlide - 1 + this.slides.length)
       % this.slides.length;
-
   }
 
-  goToSlide(index:number) {
-
+  goToSlide(index: number) {
     this.currentSlide = index;
-
   }
-
 }

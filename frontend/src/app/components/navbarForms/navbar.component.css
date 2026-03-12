@@ -1,0 +1,9 @@
+.navbar-chambee {
+  background-color: #FCCE34 !important; /* Amarillo Chambee */
+  width: 100% !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+}
