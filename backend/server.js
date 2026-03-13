@@ -4,7 +4,8 @@ const { Pool } = require("pg");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+const cors = require("cors");
+app.use(cors({ origin: "http://localhost:4200" }));
 app.use(express.json());
 
 
@@ -18,15 +19,51 @@ const pool = new Pool({
 });
 
 app.get("/", (req, res) => {
-  res.send("jagbsdhdhwhgsgndfgnfbgnherdbfg hdnfrstgja");
+  res.send("servidor de chambee, funcionando correctamente y al 100%");
 });
 
-app.get("/usuarios", async (req, res) => {
+// Empleados BD
+app.post("/empleadores/registro", async (req, res) => {
+  const {
+    nombre_empresa, correo, password, telefono,
+    descripcion, rfc, pais, estado, ciudad,
+    colonia, calle, cp
+  } = req.body;
+
   try {
-    const result = await pool.query("SELECT NOW()");
-    res.json(result.rows);
+    const result = await pool.query(
+      `INSERT INTO empleadores 
+        (nombre_empresa, correo, password, telefono, descripcion, rfc, pais, estado, ciudad, colonia, calle, cp)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING id, nombre_empresa, correo`,
+      [nombre_empresa, correo, password, telefono, descripcion, rfc, pais, estado, ciudad, colonia, calle, cp]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    res.status(500).json(err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// postulantes
+ app.post("/postulantes/registro", async (req, res) => {
+  const {
+    nombre, apellido_paterno, apellido_materno,
+    fecha_nacimiento, correo_electronico, sexo,
+    contrasena, rfc, curp, pais, estado,
+    ciudad, colonia, calle, codigo_postal
+  } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO postulantes 
+        (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_electronico, sexo, contrasena, rfc, curp, pais, estado, ciudad, colonia, calle, codigo_postal)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+       RETURNING id, nombre, correo_electronico`,
+      [nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_electronico, sexo, contrasena, rfc, curp, pais, estado, ciudad, colonia, calle, codigo_postal]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

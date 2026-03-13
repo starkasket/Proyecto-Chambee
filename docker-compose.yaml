@@ -10,7 +10,7 @@ services:
       - /app/node_modules
     ports:
       - "4200:4200"
-    command: sh -c "npm install && npx ng serve --host 0.0.0.0"
+    command: sh -c "npm install && npx ng serve --host 0.0.0.0 --watch --poll 2000"
     depends_on:
       - backend
   backend:

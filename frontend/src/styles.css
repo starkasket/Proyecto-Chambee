@@ -1,8 +1,82 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  --bg-app: #f5f5f5;
+  --surface-primary: #ffffff;
+  --surface-secondary: #f3f4f6;
+  --text-primary: #111111;
+  --text-secondary: #5f6368;
+  --border-soft: rgba(17, 17, 17, 0.08);
+  --navbar-bg: #fcce34;
+  --accent-surface: #f4c430;
+  --accent-text: #111111;
+  --accent-muted: #9a7a00;
+  --input-bg: #ffffff;
+  --button-primary-bg: #111111;
+  --button-primary-text: #ffffff;
+  --theme-toggle-bg: rgba(255, 255, 255, 0.55);
+  --theme-toggle-border: rgba(17, 17, 17, 0.16);
+  --theme-toggle-knob: #ffffff;
+  --theme-toggle-icon: #111111;
+  --dot-idle: rgba(17, 17, 17, 0.25);
+  --dot-active: #111111;
+  --overlay-bg: rgba(17, 17, 17, 0.2);
+  --overlay-bg-strong: rgba(0, 0, 0, 0.32);
+  --bubble-bg: linear-gradient(135deg, #111111 0%, #2b2b2b 100%);
+  --footer-bg: #111111;
+  --footer-text: #ffffff;
+  --footer-muted: rgba(255, 255, 255, 0.72);
+  --footer-border: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 10px 24px rgba(17, 17, 17, 0.06);
+  --shadow-hover: 0 12px 28px rgba(17, 17, 17, 0.14);
+  --shadow-float: 0 24px 60px rgba(17, 17, 17, 0.18);
+}
+
+body.dark-theme {
+  color-scheme: dark;
+  --bg-app: #0f1115;
+  --surface-primary: #181c22;
+  --surface-secondary: #232933;
+  --text-primary: #f4f7fb;
+  --text-secondary: #b1bac7;
+  --border-soft: rgba(255, 255, 255, 0.1);
+  --navbar-bg: #fcce34;
+  --accent-surface: #f0c542;
+  --accent-text: #111111;
+  --accent-muted: #d4a400;
+  --input-bg: #10141a;
+  --button-primary-bg: #f0c542;
+  --button-primary-text: #111111;
+  --theme-toggle-bg: rgba(255, 255, 255, 0.08);
+  --theme-toggle-border: rgba(255, 255, 255, 0.14);
+  --theme-toggle-knob: #f0c542;
+  --theme-toggle-icon: #111111;
+  --dot-idle: rgba(255, 255, 255, 0.26);
+  --dot-active: #f0c542;
+  --overlay-bg: rgba(4, 6, 10, 0.58);
+  --overlay-bg-strong: rgba(4, 6, 10, 0.72);
+  --bubble-bg: linear-gradient(135deg, #f0c542 0%, #d29d11 100%);
+  --footer-bg: #090b0f;
+  --footer-text: #f4f7fb;
+  --footer-muted: rgba(244, 247, 251, 0.74);
+  --footer-border: rgba(255, 255, 255, 0.08);
+  --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.32);
+  --shadow-card: 0 12px 28px rgba(0, 0, 0, 0.22);
+  --shadow-hover: 0 16px 30px rgba(0, 0, 0, 0.28);
+  --shadow-float: 0 28px 70px rgba(0, 0, 0, 0.35);
+}
+
+html, body {
+  min-height: 100%;
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
   margin: 0;
-  background-color: #f5f5f5;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .container {

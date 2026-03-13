@@ -6,46 +6,63 @@
 
 <div class="page-bg">
   <div class="fondo-registro-card">
-    
     <div class="registro-card">
-            <button class="btn-close-custom" type="button"  routerLink="/">&#10005;</button>
-
+      <button class="btn-close-custom" type="button" routerLink="/">&#10005;</button>
 
       <div class="tipo-tabs">
-        <button class="tab-postulante" routerLink="/register"> Soy Postulante</button>
-        <button class="tab-empleador" >Soy Empleador</button>
+        <button class="tab-postulante" routerLink="/register">Soy Postulante</button>
+        <button class="tab-empleador">Soy Empleador</button>
       </div>
 
       <div class="row g-0">
+
+        <!-- Columna izquierda -->
         <div class="col-12 col-md-6 pe-md-3">
           <p class="section-label">Datos Relevantes</p>
-
-          <input type="text" class="form-control-custom" placeholder="Nombre de la Empresa"/>
-          <input type="email" class="form-control-custom" placeholder="Correo electrónico"/>
-
+          <input type="text" class="form-control-custom" placeholder="Nombre de la Empresa"
+            [(ngModel)]="form.nombre_empresa" name="nombre_empresa"/>
+          <input type="email" class="form-control-custom" placeholder="Correo electrónico"
+            [(ngModel)]="form.correo" name="correo"/>
           <div class="input-with-icon">
-            <input type="password" class="form-control-custom" placeholder="Contraseña"/>
+            <input type="password" class="form-control-custom" placeholder="Contraseña"
+              [(ngModel)]="form.password" name="password"/>
             <i class="bi bi-eye eye-icon"></i>
           </div>
-
           <div class="input-with-icon">
-            <input type="password" class="form-control-custom" placeholder="Verificar contraseña"/>
+            <input type="password" class="form-control-custom" placeholder="Verificar contraseña"
+              [(ngModel)]="form.password_verificar" name="password_verificar"/>
             <i class="bi bi-eye eye-icon"></i>
           </div>
+          <input type="tel" class="form-control-custom" placeholder="Teléfono"
+            [(ngModel)]="form.telefono" name="telefono"/>
+          <textarea class="form-control-custom" placeholder="Descripción de la empresa" rows="3"
+            [(ngModel)]="form.descripcion" name="descripcion"></textarea>
         </div>
 
+        <!-- Columna derecha -->
         <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
           <p class="section-label">Identificación</p>
-          <input type="text" class="form-control-custom" placeholder="RFC Moral"/>
-
+          <input type="text" class="form-control-custom" placeholder="RFC Moral"
+            [(ngModel)]="form.rfc" name="rfc"/>
           <p class="dir-label">Dirección Completa</p>
-          <input type="text" class="form-control-custom" placeholder="País"/>
-          <input type="text" class="form-control-custom" placeholder="Estado"/>
-          <input type="text" class="form-control-custom" placeholder="C. P"/>
+          <input type="text" class="form-control-custom" placeholder="País"
+            [(ngModel)]="form.pais" name="pais"/>
+          <input type="text" class="form-control-custom" placeholder="Estado"
+            [(ngModel)]="form.estado" name="estado"/>
+          <input type="text" class="form-control-custom" placeholder="Ciudad"
+            [(ngModel)]="form.ciudad" name="ciudad"/>
+          <input type="text" class="form-control-custom" placeholder="Colonia"
+            [(ngModel)]="form.colonia" name="colonia"/>
+          <input type="text" class="form-control-custom" placeholder="Calle"
+            [(ngModel)]="form.calle" name="calle"/>
+          <input type="text" class="form-control-custom" placeholder="C.P."
+            [(ngModel)]="form.cp" name="cp"/>
         </div>
-      </div>
 
-      <button class="btn-crear" type="button">Crear Cuenta</button>
-    </div>
-  </div>
-</div>
+      </div> 
+
+      <button class="btn-crear" type="button" (click)="registrar()">Crear Cuenta</button>
+
+    </div> 
+  </div> 
+</div> 

@@ -1,0 +1,10 @@
+.navbar-chambee {
+  background-color: var(--navbar-bg) !important;
+  width: 100% !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+  box-shadow: var(--shadow-soft);
+}
