@@ -16,7 +16,7 @@ const pool = new Pool({
 });
 
 app.get("/", (req, res) => {
-  res.send("jagbsdhdhwhgsgndfgnfbgnherdbfg hdnfrstgja");
+  res.send("servidor de chambee, funcionando correctamente y al 100%");
 });
 
 // Empleados BD
