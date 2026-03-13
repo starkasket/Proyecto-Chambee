@@ -1,0 +1,99 @@
+/* =========================================
+   1. ESTILOS GENERALES (Copiados de Registro)
+   ========================================= */
+
+/* NAVBAR */
+.navbar-chambee {
+  background-color: #FCCE34 !important; /* Amarillo Chambee */
+  width: 100% !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+}
+
+/* FONDO GENERAL */
+.page-bg {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/assets/FondoFormularios.png'); 
+  background-size: cover;
+  background-position: center;
+}
+
+/* DECORACIÓN DE LA CARD */
+.fondo-registro-card {
+  padding: 40px;
+  border-radius: 25px;
+  background-color: #F2E4D3; /* Color crema de fondo */
+}
+
+.registro-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 35px;
+  width: 100%;
+  max-width: 650px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* BOTÓN CERRAR */
+.btn-close-custom {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: white;
+  color: #888;
+  cursor: pointer;
+}
+
+/* BOTÓN PRINCIPAL (Hecho) */
+.btn-crear {
+  background-color: #FCCE34 !important; /* Amarillo Chambee */
+  color: #000000 !important;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 60px;
+  font-weight: 700;
+  display: block;
+  margin: 10px auto 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-crear:hover {
+  background-color: #e5b92d !important; /* Amarillo ligeramente más oscuro al pasar el mouse */
+}
+
+
+.custom-tag {
+  background-color: #f8f9fa;
+  border: 2px solid #dee2e6;
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Efecto al pasar el mouse por encima */
+.custom-tag:hover {
+  background-color: #e2e6ea;
+  border-color: #dae0e5;
+  transform: translateY(-2px); /* Pequeño salto visual */
+}
+
+/* Estilo cuando la etiqueta es clickeada (Adaptado a tu paleta Chambee) */
+.active-tag {
+  background-color: #000000 !important; /* Fondo Negro */
+  border-color: #000000 !important;
+  color: #FCCE34 !important; /* Letra Amarilla */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}

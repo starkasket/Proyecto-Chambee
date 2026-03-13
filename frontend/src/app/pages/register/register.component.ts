@@ -44,7 +44,8 @@ export class RegisterComponent {
     this.api.registrarPostulante(datos).subscribe({
       next: (res) => {
         alert(`Cuenta creada para ${res.nombre}`);
-        this.router.navigate(['/']);
+        
+        this.router.navigate(['/job-preferences']);
       },
       error: (err) => {
         console.error('Error:', err);

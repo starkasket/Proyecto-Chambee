@@ -32,7 +32,7 @@ export class EmployerRegisterComponent {
 
   registrar() {
     if (this.form.password !== this.form.password_verificar) {
-        console.log('Formulario:', this.form);  
+      console.log('Formulario:', this.form);  
       alert('Las contraseñas no coinciden');
       return;
     }
@@ -42,7 +42,10 @@ export class EmployerRegisterComponent {
     this.api.registrarEmpleador(datos).subscribe({
       next: (res) => {
         alert(`Cuenta creada para ${res.nombre_empresa}`);
-        this.router.navigate(['/']);
+        
+        // --- CAMBIO AQUÍ ---
+        // Ahora redirige a las etiquetas después de registrar la empresa
+        this.router.navigate(['/job-preferences']);
       },
       error: (err) => {
         console.error('Error:', err);
