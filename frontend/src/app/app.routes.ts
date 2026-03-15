@@ -5,7 +5,10 @@ import { RegisterComponent } from './pages/register/register.component';
 import { LoginComponent } from './pages/login/login.component'; 
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
+import { JobPreferencesComponent } from './pages/job-preferences/job-preferences.component';
 
+
+// 1. Importamos tu nuevo componente de etiquetas
 
 export const routes: Routes = [
   { 
@@ -24,10 +27,20 @@ export const routes: Routes = [
     path: 'register', 
     component: RegisterComponent 
   },
- { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
+  { 
+    path: 'forgot-password', 
+    component: ForgotPasswordComponent 
+  },
+  { 
+    path: 'reset-password', 
+    component: ResetPasswordComponent 
+  },
+  { 
+    path: 'job-preferences',
+    component: JobPreferencesComponent
+  },
   { 
     path: '**', 
     redirectTo: '' 
-  }
+  } 
 ];

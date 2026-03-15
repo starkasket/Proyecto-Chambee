@@ -4,10 +4,10 @@ const { Pool } = require("pg");
 require("dotenv").config();
 
 const app = express();
-const cors = require("cors");
+
+
 app.use(cors({ origin: "http://localhost:4200" }));
 app.use(express.json());
-
 
 
 const pool = new Pool({

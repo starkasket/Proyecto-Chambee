@@ -7,7 +7,7 @@
 
   <main class="login-container">
     <div class="login-card">
-      <button class="close-btn" routerLink="/">×</button>
+      <button class="close-btn" type="button" routerLink="/">×</button>
       
       <div class="logo-section">
         <img src="assets/Chambee_login.png" alt="Chambee" class="bee-img">
@@ -25,7 +25,7 @@
         <div class="options">
           <label class="remember-me">
             <input type="checkbox" formControlName="remember"> 
-            <span>Recordar Sesion</span>
+            <span>Recordar Sesión</span>
           </label>
         </div>
 
@@ -34,12 +34,12 @@
         </div>
 
         <div class="button-group">
-          <button type="submit" class="btn-login-main">Iniciar Sesion</button>
+          <button type="submit" class="btn-login-main">Iniciar Sesión</button>
           <button type="button" class="btn-register-main" routerLink="/register">Registrar</button>
         </div>
       </form>
     </div>
 
-    <button class="admin-btn">Administrador</button>
+    <button class="admin-btn" type="button" routerLink="/admin">Administrador</button>
   </main>
 </div>

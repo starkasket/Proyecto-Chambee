@@ -1,6 +1,6 @@
-/* ESTRUCTURA BASE */
+/* --- ESTRUCTURA BASE --- */
 .login-page {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -8,12 +8,13 @@
 
 /* NAVBAR AMARILLA */
 .top-nav {
-  background-color: #FCCE34; /* El amarillo Chambee */
+  background-color: #FCCE34;
   height: 70px;
   display: flex;
   align-items: center;
   padding: 0 30px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 10;
 }
 
 .nav-logo {
@@ -21,35 +22,39 @@
   width: auto;
 }
 
-/* CONTENEDOR CENTRAL (Aquí es donde centramos la tarjeta) */
+/* CONTENEDOR CENTRAL */
 .login-container {
   flex: 1;
   display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center;     /* Centra verticalmente */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background-image: url('/assets/FondoFormularios.png');
   background-size: cover;
   background-position: center;
+  background-attachment: fixed;
   position: relative;
+  padding: 40px 20px;
 }
 
-/* LA TARJETA BEIGE */
+/* LA TARJETA BEIGE RESPONSIVA */
 .login-card {
   background-color: #F2E4D3;
   padding: 40px;
   border-radius: 30px;
-  width: 380px;
+  width: 90%;          /* Flexible en móvil */
+  max-width: 380px;    /* Límite en PC */
   text-align: center;
   box-shadow: 0 15px 35px rgba(0,0,0,0.15);
   position: relative;
 }
 
 .bee-img {
-  width: 220px; 
+  width: 100%;
+  max-width: 220px;
   height: auto;
-  margin-bottom: 25px; /* Un poco más de espacio abajo para que no se pegue */
+  margin-bottom: 25px;
 }
-
 
 /* INPUTS ESTILO FIGMA */
 .input-group input {
@@ -58,9 +63,10 @@
   margin: 10px 0;
   border: none;
   border-radius: 12px;
-  background-color: #dcdcdc; /* Gris de los inputs */
+  background-color: #dcdcdc;
   text-align: center;
   outline: none;
+  font-size: 16px; /* Evita zoom automático en iPhone */
 }
 
 .options {
@@ -91,13 +97,19 @@
 }
 
 .btn-login-main, .btn-register-main {
-  padding: 10px 25px;
+  flex: 1;
+  padding: 12px 15px;
   border-radius: 20px;
   border: none;
   font-weight: bold;
   cursor: pointer;
   background-color: white;
+  transition: transform 0.2s;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-login-main:active, .btn-register-main:active {
+  transform: scale(0.95);
 }
 
 /* BOTONES EXTRAS */
@@ -108,9 +120,13 @@
   background: white;
   border: 1px solid #ddd;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
 }
 
 .admin-btn {
@@ -118,8 +134,42 @@
   bottom: 20px;
   right: 20px;
   background-color: #eee4da;
-  border: none;
+  border: 1px solid transparent;
   padding: 10px 20px;
   border-radius: 15px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.admin-btn:hover {
+  background-color: #1a1a1a;
+  color: #00ff00; /* Toque hacker */
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+}
+
+/* --- MEDIA QUERIES PARA MÓVIL --- */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 20px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-btn {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    margin-top: 30px;
+    width: 200px;
+  }
+  
+  .top-nav {
+    justify-content: center;
+    padding: 0;
+  }
 }
