@@ -16,18 +16,18 @@ export class EmployerRegisterComponent {
 
   form = {
     nombre_empresa: '',
-    correo: '',
-    password: '',
-    password_verificar: '',
-    telefono: '',
-    descripcion: '',
-    rfc: '',
+    correo_electronico: '',
+    contrasena: '',
+    contrasena_verificar: '',
     pais: 'México',
     estado: '',
     ciudad: '',
     colonia: '',
     calle: '',
-    cp: ''
+    codigo_postal: '',
+    telefono: '',
+    rfc: '',
+    descripcion: ''
   };
 
   colonias: string[] = [];
@@ -37,7 +37,7 @@ export class EmployerRegisterComponent {
 
   // --- BUSCAR CÓDIGO POSTAL ---
   buscarCP() {
-    const cp = this.form.cp.trim();
+    const cp = this.form.codigo_postal.trim();
     if (cp.length !== 5) return;
 
     this.buscandoCP = true;
@@ -65,12 +65,12 @@ export class EmployerRegisterComponent {
   }
 
   registrar() {
-    if (this.form.password !== this.form.password_verificar) {
+    if (this.form.contrasena !== this.form.contrasena_verificar) {
       alert('Las contraseñas no coinciden');
       return;
     }
 
-    const { password_verificar, ...datos } = this.form;
+    const { contrasena_verificar, ...datos } = this.form;
 
     // Validar campos obligatorios
     const camposVacios = Object.values(datos).some(valor => !valor || valor.toString().trim() === '');

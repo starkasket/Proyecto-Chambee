@@ -11,16 +11,16 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  getUsuarios(): Observable<any[]> {
+ /*getUsuarios(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/usuarios`);
-  }
+  }*/
 
-  //EMpleador
+  //Empleador
   registrarEmpleador(datos: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/empleadores/registro`, datos);
 }
 
-// postulante 
+  //Postulante 
 registrarPostulante(datos: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/postulantes/registro`, datos);
 }
