@@ -1,6 +1,3 @@
-/* =========================================
-   1. ESTILOS GENERALES (Copiados de Registro)
-   ========================================= */
 
 /* NAVBAR */
 .navbar-chambee {
@@ -74,7 +71,7 @@
   background-color: #e5b92d !important; /* Amarillo ligeramente más oscuro al pasar el mouse */
 }
 
-
+/* ETIQUETAS NORMALES */
 .custom-tag {
   background-color: #f8f9fa;
   border: 2px solid #dee2e6;
@@ -83,17 +80,32 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* Efecto al pasar el mouse por encima */
 .custom-tag:hover {
   background-color: #e2e6ea;
   border-color: #dae0e5;
   transform: translateY(-2px); /* Pequeño salto visual */
 }
 
-/* Estilo cuando la etiqueta es clickeada (Adaptado a tu paleta Chambee) */
+/* ETIQUETAS ACTIVAS */
 .active-tag {
   background-color: #000000 !important; /* Fondo Negro */
   border-color: #000000 !important;
   color: #FCCE34 !important; /* Letra Amarilla */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================================
+   2. ANIMACIÓN DEL SÍMBOLO "+" a "x"
+   ========================================= */
+
+.simbolo-amarillo {
+  color: #FCCE34 !important; /* Siempre amarillo */
+  display: inline-block; /* Requerido para que funcione el transform */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Animación suave */
+  line-height: 1; /* Centra el símbolo verticalmente con el texto */
+}
+
+/* Al seleccionar, rotamos el + 45 grados para que parezca una X */
+.active-tag .simbolo-amarillo {
+  transform: rotate(45deg); 
 }

@@ -28,8 +28,11 @@
             [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento"/>
           <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
             [(ngModel)]="form.correo_electronico" name="correo_electronico"/>
-          <input type="text" class="form-control-custom" placeholder="Sexo"
-            [(ngModel)]="form.sexo" name="sexo"/>
+         <select class="form-control-custom" [(ngModel)]="form.sexo" name="sexo">
+        <option value="" disabled selected>Sexo</option>
+        <option value="Masculino">Masculino</option>
+         <option value="Femenino">Femenino</option>
+            </select>
           <div class="input-with-icon">
             <input type="password" class="form-control-custom" placeholder="Contraseña"
               [(ngModel)]="form.contrasena" name="contrasena"/>
@@ -49,19 +52,23 @@
           <input type="text" class="form-control-custom" placeholder="CURP"
             [(ngModel)]="form.curp" name="curp"/>
           <p class="dir-label">Dirección Completa</p>
-          <input type="text" class="form-control-custom" placeholder="País"
-            [(ngModel)]="form.pais" name="pais"/>
-          <input type="text" class="form-control-custom" placeholder="Estado"
-            [(ngModel)]="form.estado" name="estado"/>
-          <input type="text" class="form-control-custom" placeholder="Ciudad"
-            [(ngModel)]="form.ciudad" name="ciudad"/>
-          <input type="text" class="form-control-custom" placeholder="Colonia"
-            [(ngModel)]="form.colonia" name="colonia"/>
-          <input type="text" class="form-control-custom" placeholder="Calle"
-            [(ngModel)]="form.calle" name="calle"/>
-          <input type="text" class="form-control-custom" placeholder="C.P."
-            [(ngModel)]="form.codigo_postal" name="codigo_postal"/>
-        </div>
+         <input type="text" class="form-control-custom" placeholder="C.P."
+     [(ngModel)]="form.codigo_postal" name="codigo_postal"
+       (blur)="buscarCP()"/>
+
+      <input type="text" class="form-control-custom" placeholder="Estado"
+   [(ngModel)]="form.estado" name="estado" readonly/>
+
+    <input type="text" class="form-control-custom" placeholder="Ciudad"
+  [(ngModel)]="form.ciudad" name="ciudad" readonly/>
+
+<select class="form-control-custom" [(ngModel)]="form.colonia" name="colonia">
+  <option value="" disabled selected>Colonia</option>
+  <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+</select>
+
+<input type="text" class="form-control-custom" placeholder="Calle"
+  [(ngModel)]="form.calle" name="calle"/>
       </div>
 
       <button class="btn-crear" type="button" (click)="registrar()">Crear Cuenta</button>

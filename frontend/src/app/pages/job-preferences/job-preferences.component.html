@@ -16,10 +16,11 @@
       <div class="d-flex flex-wrap justify-content-center gap-3 mb-5 mt-4">
         <button 
           *ngFor="let tag of tags" 
-          class="btn rounded-pill px-4 py-2 custom-tag"
+          class="btn rounded-pill px-4 py-2 custom-tag d-flex align-items-center gap-2"
           [class.active-tag]="selectedTags.includes(tag)"
           (click)="toggleTag(tag)">
-          {{ tag }}
+          <span>{{ tag }}</span>
+          <span class="simbolo-amarillo fw-bold fs-5">+</span>
         </button>
       </div>
 
