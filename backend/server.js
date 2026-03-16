@@ -108,6 +108,8 @@ app.post("/login", async (req, res) => {
     console.error("Error en el servidor:", err.message);
     res.status(500).json({ error: "No se pudo conectar con la base de datos" });
   }
+
+  
 });
 
 app.listen(3000, "0.0.0.0", () => console.log("Servidor corriendo en puerto 3000"));

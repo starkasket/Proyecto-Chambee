@@ -24,4 +24,8 @@ export class ApiService {
 registrarPostulante(datos: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/postulantes/registro`, datos);
 }
+// Buscar por codigo postal
+  getSepomex(): Observable<any[]> {
+    return this.http.get<any[]>('assets/sepomex_gto.json');
+  }
 }

@@ -20,21 +20,21 @@
         <div class="col-12 col-md-6 pe-md-3">
           <p class="section-label">Datos Relevantes</p>
           <input type="text" class="form-control-custom" placeholder="Nombre de la Empresa"
-            [(ngModel)]="form.nombre_empresa" name="nombre_empresa"/>
-          <input type="email" class="form-control-custom" placeholder="Correo electrónico"
-            [(ngModel)]="form.correo" name="correo"/>
+            [(ngModel)]="form.nombre_empresa" name="nombre_empresa" />
+          <input type="email" class="form-control-custom" placeholder="Correo electrónico" [(ngModel)]="form.correo"
+            name="correo" />
           <div class="input-with-icon">
-            <input type="password" class="form-control-custom" placeholder="Contraseña"
-              [(ngModel)]="form.password" name="password"/>
+            <input type="password" class="form-control-custom" placeholder="Contraseña" [(ngModel)]="form.password"
+              name="password" />
             <i class="bi bi-eye eye-icon"></i>
           </div>
           <div class="input-with-icon">
             <input type="password" class="form-control-custom" placeholder="Verificar contraseña"
-              [(ngModel)]="form.password_verificar" name="password_verificar"/>
+              [(ngModel)]="form.password_verificar" name="password_verificar" />
             <i class="bi bi-eye eye-icon"></i>
           </div>
-          <input type="tel" class="form-control-custom" placeholder="Teléfono"
-            [(ngModel)]="form.telefono" name="telefono"/>
+          <input type="tel" class="form-control-custom" placeholder="Teléfono" [(ngModel)]="form.telefono"
+            name="telefono" />
           <textarea class="form-control-custom" placeholder="Descripción de la empresa" rows="3"
             [(ngModel)]="form.descripcion" name="descripcion"></textarea>
         </div>
@@ -42,27 +42,29 @@
         <!-- Columna derecha -->
         <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
           <p class="section-label">Identificación</p>
-          <input type="text" class="form-control-custom" placeholder="RFC Moral"
-            [(ngModel)]="form.rfc" name="rfc"/>
+          <input type="text" class="form-control-custom" placeholder="RFC Moral" [(ngModel)]="form.rfc" name="rfc" />
           <p class="dir-label">Dirección Completa</p>
-          <input type="text" class="form-control-custom" placeholder="País"
-            [(ngModel)]="form.pais" name="pais"/>
-          <input type="text" class="form-control-custom" placeholder="Estado"
-            [(ngModel)]="form.estado" name="estado"/>
-          <input type="text" class="form-control-custom" placeholder="Ciudad"
-            [(ngModel)]="form.ciudad" name="ciudad"/>
-          <input type="text" class="form-control-custom" placeholder="Colonia"
-            [(ngModel)]="form.colonia" name="colonia"/>
-          <input type="text" class="form-control-custom" placeholder="Calle"
-            [(ngModel)]="form.calle" name="calle"/>
-          <input type="text" class="form-control-custom" placeholder="C.P."
-            [(ngModel)]="form.cp" name="cp"/>
+          <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.cp" name="cp"
+            (blur)="buscarCP()" maxlength="5" />
+
+          <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado" name="estado"
+            readonly />
+
+          <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad" name="ciudad"
+            readonly />
+
+          <select class="form-control-custom" [(ngModel)]="form.colonia" name="colonia">
+            <option value="" disabled selected>{{ buscandoCP ? 'Buscando...' : 'Colonia' }}</option>
+            <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+          </select>
+
+          <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" name="calle" />
         </div>
 
-      </div> 
+      </div>
 
       <button class="btn-crear" type="button" (click)="registrar()">Crear Cuenta</button>
 
-    </div> 
-  </div> 
-</div> 
+    </div>
+  </div>
+</div>
