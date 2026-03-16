@@ -1,14 +1,12 @@
 const express = require("express");
 const cors = require("cors"); 
 const { Pool } = require("pg");
-require("dotenv").config();
+require("dotenv").config({ path: '../.env' });
 
 const app = express();
 
-
 app.use(cors({ origin: "http://localhost:4200" }));
 app.use(express.json());
-
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -22,7 +20,7 @@ app.get("/", (req, res) => {
   res.send("servidor de chambee, funcionando correctamente y al 100%");
 });
 
-// Empleados BD
+// --- REGISTRO DE EMPLEADORES ---
 app.post("/empleadores/registro", async (req, res) => {
   const {
     nombre_empresa, correo, password, telefono,
@@ -44,8 +42,8 @@ app.post("/empleadores/registro", async (req, res) => {
   }
 });
 
-// postulantes
- app.post("/postulantes/registro", async (req, res) => {
+// --- REGISTRO DE POSTULANTES ---
+app.post("/postulantes/registro", async (req, res) => {
   const {
     nombre, apellido_paterno, apellido_materno,
     fecha_nacimiento, correo_electronico, sexo,
@@ -67,20 +65,48 @@ app.post("/empleadores/registro", async (req, res) => {
   }
 });
 
-
+// --- LOGIN REAL (CONECTADO A LA DB) ---
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   console.log("Intento de login con:", email);
 
   try {
+    // 1. Buscamos primero en postulantes 
+    const postulante = await pool.query(
+      "SELECT id, nombre, correo_electronico FROM postulantes WHERE correo_electronico = $1 AND contrasena = $2",
+      [email, password]
+    );
 
-    if (email === "test@chambee.com" && password === "123456") {
-      res.json({ message: "¡Login exitoso!", token: "un-token-falso-para-probar" });
-    } else {
-      res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+    if (postulante.rows.length > 0) {
+      console.log("¡Login exitoso para Postulante:", postulante.rows[0].nombre);
+      return res.json({ 
+        message: "¡Login exitoso!", 
+        user: postulante.rows[0],
+        tipo: 'postulante'
+      });
     }
+
+    // 2. Si no es postulante, buscamos en empleadores
+    const empleador = await pool.query(
+      "SELECT id, nombre_empresa, correo FROM empleadores WHERE correo = $1 AND password = $2",
+      [email, password]
+    );
+
+    if (empleador.rows.length > 0) {
+      console.log("¡Login exitoso para Empleador:", empleador.rows[0].nombre_empresa);
+      return res.json({ 
+        message: "¡Login exitoso!", 
+        user: empleador.rows[0],
+        tipo: 'empleador'
+      });
+    }
+
+    // 3. Si no está en ninguno
+    res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+
   } catch (err) {
-    res.status(500).json(err.message);
+    console.error("Error en el servidor:", err.message);
+    res.status(500).json({ error: "No se pudo conectar con la base de datos" });
   }
 });
 
