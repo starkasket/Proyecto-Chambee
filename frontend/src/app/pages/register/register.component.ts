@@ -34,12 +34,23 @@ export class RegisterComponent {
   constructor(private api: ApiService, private router: Router) {}
 
   registrar() {
+
+
+
+
     if (this.form.contrasena !== this.form.contrasena_verificar) {
       alert('Las contraseñas no coinciden');
       return;
     }
 
     const { contrasena_verificar, ...datos } = this.form;
+    
+      // Validar campos obligatorios
+  const camposVacios = Object.values(datos).some(valor => !valor || valor.toString().trim() === '');
+  if (camposVacios) {
+    alert('Todos los campos son obligatorios');
+    return;
+  }
 
     this.api.registrarPostulante(datos).subscribe({
       next: (res) => {

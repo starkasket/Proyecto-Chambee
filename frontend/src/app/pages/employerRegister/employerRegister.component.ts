@@ -39,6 +39,13 @@ export class EmployerRegisterComponent {
 
     const { password_verificar, ...datos } = this.form;
 
+      // Validar campos obligatorios
+  const camposVacios = Object.values(datos).some(valor => !valor || valor.toString().trim() === '');
+  if (camposVacios) {
+    alert('Todos los campos son obligatorios');
+    return;
+  }
+
     this.api.registrarEmpleador(datos).subscribe({
       next: (res) => {
         alert(`Cuenta creada para ${res.nombre_empresa}`);

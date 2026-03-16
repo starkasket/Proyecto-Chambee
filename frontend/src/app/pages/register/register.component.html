@@ -28,8 +28,11 @@
             [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento"/>
           <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
             [(ngModel)]="form.correo_electronico" name="correo_electronico"/>
-          <input type="text" class="form-control-custom" placeholder="Sexo"
-            [(ngModel)]="form.sexo" name="sexo"/>
+         <select class="form-control-custom" [(ngModel)]="form.sexo" name="sexo">
+        <option value="" disabled selected>Sexo</option>
+        <option value="Masculino">Masculino</option>
+         <option value="Femenino">Femenino</option>
+            </select>
           <div class="input-with-icon">
             <input type="password" class="form-control-custom" placeholder="Contraseña"
               [(ngModel)]="form.contrasena" name="contrasena"/>
