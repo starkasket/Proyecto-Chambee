@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors"); 
 const { Pool } = require("pg");
 require("dotenv").config();
 
@@ -6,6 +7,8 @@ const app = express();
 const cors = require("cors");
 app.use(cors({ origin: "http://localhost:4200" }));
 app.use(express.json());
+
+
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -61,6 +64,23 @@ app.post("/empleadores/registro", async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  console.log("Intento de login con:", email);
+
+  try {
+
+    if (email === "test@chambee.com" && password === "123456") {
+      res.json({ message: "¡Login exitoso!", token: "un-token-falso-para-probar" });
+    } else {
+      res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+    }
+  } catch (err) {
+    res.status(500).json(err.message);
   }
 });
 
