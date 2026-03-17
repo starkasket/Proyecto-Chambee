@@ -76,7 +76,7 @@ export class RegisterComponent implements OnInit {
 
     this.api.registrarPostulante(datos).subscribe({
       next: (res) => {
-        alert(`Cuenta creada para ${res.nombre}`);
+        alert(`Cuenta creada para ${res.nombre_postulante}`);
         
         // --- CAMBIO AQUÍ ---
         // Ahora redirige a las preferencias de trabajo en lugar del inicio

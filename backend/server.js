@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors"); 
 const { Pool } = require("pg");
+const bcrypt = require("bcrypt");
+// const jwt = require("jsonwebtoken")
 require("dotenv").config({ path: '../.env' });
 
 const app = express();
@@ -21,9 +23,8 @@ app.get("/", (req, res) => {
   res.send("servidor de chambee, funcionando correctamente y al 100%");
 });
 
-/* AGREGAR BCRYPT*/
-// Encryption for passwords
-const bcrypt = require("bcrypt");
+
+
 
 // --- REGISTRO DE POSTULANTES ---
 app.post("/postulantes/registro", async (req, res) => {
@@ -97,45 +98,80 @@ app.post("/empleadores/registro", async (req, res) => {
 });
 
 
-// LOGIN VERIFICATION const match = await bcrypt.compare(passwordIngresada, passwordDB);
+// LOGIN VERIFICATION 
 // --- LOGIN REAL (CONECTADO A LA DB) ---
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  console.log("Intento de login con:", email);
+  const { correo_electronico, contrasena } = req.body;
+  console.log("Intento de inicio de sesión con:", correo_electronico);
 
   try {
-    // 1. Buscamos primero en postulantes 
-    const postulante = await pool.query(
-      "SELECT id, nombre, correo_electronico FROM postulantes WHERE correo_electronico = $1 AND contrasena = $2",
-      [email, password]
-    );
+    let usuario = null;
 
-    if (postulante.rows.length > 0) {
-      console.log("¡Login exitoso para Postulante:", postulante.rows[0].nombre);
-      return res.json({ 
-        message: "¡Login exitoso!", 
-        user: postulante.rows[0],
-        tipo: 'postulante'
-      });
+    const postulanteQuery = 
+    `SELECT 
+    id_postulante AS id, correo_electronico AS correo, contrasena, 'postulante' AS rol 
+    FROM postulante 
+    WHERE correo_electronico = $1`
+
+    const postulanteResult = await pool.query(postulanteQuery, [correo_electronico])
+
+    if (postulanteResult.rows.length > 0) {
+      usuario = postulanteResult.rows[0];
     }
 
-    // 2. Si no es postulante, buscamos en empleadores
-    const empleador = await pool.query(
-      "SELECT id, nombre_empresa, correo FROM empleadores WHERE correo = $1 AND password = $2",
-      [email, password]
-    );
+    if (!usuario) {
+      const empleadorQuery = 
+      `SELECT 
+      id_empleador AS id, correo_electronico AS correo, contrasena, 'empleador' AS rol
+      FROM empleador
+      WHERE correo_electronico = $1`;
 
-    if (empleador.rows.length > 0) {
-      console.log("¡Login exitoso para Empleador:", empleador.rows[0].nombre_empresa);
-      return res.json({ 
-        message: "¡Login exitoso!", 
-        user: empleador.rows[0],
-        tipo: 'empleador'
-      });
+      const empleadorResult = await pool.query(empleadorQuery, [correo_electronico]);
+
+      if (empleadorResult.rows.length > 0) {
+        usuario = empleadorResult.rows[0];
+      }
     }
 
-    // 3. Si no está en ninguno
-    res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+    
+    if (!usuario) {
+      const adminQuery = `
+      SELECT 
+      id_administrador AS id, correo_electronico AS correo, contrasena, 'administrador' AS rol
+      FROM administrador
+      WHERE correo_electronico = $1 `;
+
+      const adminResult = await pool.query(adminQuery, [correo_electronico]);
+
+      if (adminResult.rows.length > 0) {
+        usuario = adminResult.rows[0]
+      }
+    }
+
+    if (!usuario) {
+      return res.status(401).json({ error: "Usuario no encontrado"});
+    }
+
+    const validPassword = await bcrypt.compare(contrasena, usuario.contrasena);
+    
+    if (!validPassword) {
+      return res.status(401).json({ error: "Contraseña incorrecta"})
+    }
+
+    /*const token = jwt.sign({
+      id: usuario.id,
+      rol: usuario.rol,
+      correo: usuario.correo
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h"}
+  );*/
+
+  const { contrasena: _, ...usuarioSinContrasena } = usuario
+  res.json({
+    message: "Inicio de sesión exitoso",
+    user: usuarioSinContrasena
+  });
 
   } catch (err) {
     console.error("Error en el servidor:", err.message);

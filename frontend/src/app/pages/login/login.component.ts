@@ -21,9 +21,9 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       // Validación de email estándar
-      email: ['', [Validators.required, Validators.email]],
+      correo_electronico: ['', [Validators.required, Validators.email]],
       // caracteres de contraseña
-      password: ['', [Validators.required, Validators.minLength(3)]], 
+      contrasena: ['', [Validators.required, Validators.minLength(3)]], 
       remember: [false]
     });
   }
