@@ -14,22 +14,23 @@ import { ApiService } from '../../services/api.service';
 export class RegisterComponent implements OnInit {
 
   form = {
-    nombre: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    fecha_nacimiento: '',
+    nombre_postulante: '',
+    apellido_paterno_postulante: '',
+    apellido_materno_postulante: '',
     correo_electronico: '',
-    sexo: '',
     contrasena: '',
     contrasena_verificar: '',
-    rfc: '',
-    curp: '',
+    fecha_nacimiento: '',
+    sexo: '',
     pais: 'México',
     estado: '',
     ciudad: '',
     colonia: '',
     calle: '',
-    codigo_postal: ''
+    codigo_postal: '',
+    telefono: '',
+    rfc: '',
+    curp: ''
   };
 
   sepomex: any[] = [];

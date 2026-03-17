@@ -16,55 +16,88 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+// Revistar estado del backend (funcionando o no)
 app.get("/", (req, res) => {
   res.send("servidor de chambee, funcionando correctamente y al 100%");
 });
 
-// --- REGISTRO DE EMPLEADORES ---
-app.post("/empleadores/registro", async (req, res) => {
-  const {
-    nombre_empresa, correo, password, telefono,
-    descripcion, rfc, pais, estado, ciudad,
-    colonia, calle, cp
-  } = req.body;
-
-  try {
-    const result = await pool.query(
-      `INSERT INTO empleadores 
-        (nombre_empresa, correo, password, telefono, descripcion, rfc, pais, estado, ciudad, colonia, calle, cp)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-       RETURNING id, nombre_empresa, correo`,
-      [nombre_empresa, correo, password, telefono, descripcion, rfc, pais, estado, ciudad, colonia, calle, cp]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+/* AGREGAR BCRYPT*/
+// Encryption for passwords
+const bcrypt = require("bcrypt");
 
 // --- REGISTRO DE POSTULANTES ---
 app.post("/postulantes/registro", async (req, res) => {
   const {
-    nombre, apellido_paterno, apellido_materno,
-    fecha_nacimiento, correo_electronico, sexo,
-    contrasena, rfc, curp, pais, estado,
-    ciudad, colonia, calle, codigo_postal
+   nombre_postulante, apellido_paterno_postulante,
+   apellido_materno_postulante, correo_electronico, contrasena, 
+   fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle, 
+   codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc 
   } = req.body;
 
   try {
-    const result = await pool.query(
-      `INSERT INTO postulantes 
-        (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_electronico, sexo, contrasena, rfc, curp, pais, estado, ciudad, colonia, calle, codigo_postal)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
-       RETURNING id, nombre, correo_electronico`,
-      [nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo_electronico, sexo, contrasena, rfc, curp, pais, estado, ciudad, colonia, calle, codigo_postal]
-    );
+    // Hashing password 
+   const hashedPassword = await bcrypt.hash(contrasena, 10);
+    const query = `INSERT INTO postulante (
+        nombre_postulante, apellido_paterno_postulante, 
+        apellido_materno_postulante, correo_electronico, contrasena, 
+        fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle, 
+        codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
+        )
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+       RETURNING *`;
+    
+       const values = [
+        nombre_postulante, apellido_paterno_postulante, 
+        apellido_materno_postulante, correo_electronico, hashedPassword, 
+        fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle, 
+        codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
+      ]; 
+      
+      const result = await pool.query(query, values);
+      // No regresa contraseña al frontend
+      // const { contrasena, ...user } = result.rows[0];
+    res.status(201).json(result.rows[0]);
+    console.log("Postulante creado correctamente!!!!!!");
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// --- REGISTRO DE EMPLEADORES ---
+app.post("/empleadores/registro", async (req, res) => {
+  const {
+    nombre_empresa, correo_electronico, contrasena, pais,
+    estado, ciudad, colonia, calle, codigo_postal, telefono, 
+    rfc, descripcion
+  } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    const query = `INSERT INTO empleador (
+      nombre_empresa, correo_electronico, contrasena, pais,
+      estado, ciudad, colonia, calle, codigo_postal, telefono, 
+      rfc, descripcion
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      RETURNING *`;
+
+    const values = [
+      nombre_empresa, correo_electronico, hashedPassword, pais,
+      estado, ciudad, colonia, calle, codigo_postal, telefono, 
+      rfc, descripcion
+    ];
+
+    const result = await pool.query(query, values);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+
+// LOGIN VERIFICATION const match = await bcrypt.compare(passwordIngresada, passwordDB);
 // --- LOGIN REAL (CONECTADO A LA DB) ---
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
