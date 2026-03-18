@@ -4,6 +4,38 @@
   </div>
 </nav>
 
+<!-- MODAL DE ÉXITO -->
+<div id="modalSaludo" class="modal" tabindex="-1"
+> <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaEmpresarial.png" alt="saludo" height="200" class="mb-3"/>
+        <h4 class="text-success fw-bold">¡Empresa registrada!</h4>
+        <p class="mb-0">{{ modalMensajeExito }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ERROR -->
+<div id="modalAlerta" class="modal" tabindex="-1"
+> <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="page-bg">
   <div class="fondo-registro-card">
     <div class="registro-card">
@@ -20,21 +52,21 @@
         <div class="col-12 col-md-6 pe-md-3">
           <p class="section-label">Datos Relevantes</p>
           <input type="text" class="form-control-custom" placeholder="Nombre de la Empresa"
-            [(ngModel)]="form.nombre_empresa" name="nombre_empresa" />
-          <input type="email" class="form-control-custom" placeholder="Correo electrónico" [(ngModel)]="form.correo_electronico"
-            name="correo" />
+            [(ngModel)]="form.nombre_empresa" name="nombre_empresa"/>
+          <input type="email" class="form-control-custom" placeholder="Correo electrónico"
+            [(ngModel)]="form.correo_electronico" name="correo"/>
           <div class="input-with-icon">
-            <input type="password" class="form-control-custom" placeholder="Contraseña" [(ngModel)]="form.contrasena"
-              name="password" />
+            <input type="password" class="form-control-custom" placeholder="Contraseña"
+              [(ngModel)]="form.contrasena" name="password"/>
             <i class="bi bi-eye eye-icon"></i>
           </div>
           <div class="input-with-icon">
             <input type="password" class="form-control-custom" placeholder="Verificar contraseña"
-              [(ngModel)]="form.contrasena_verificar" name="password_verificar" />
+              [(ngModel)]="form.contrasena_verificar" name="password_verificar"/>
             <i class="bi bi-eye eye-icon"></i>
           </div>
-          <input type="tel" class="form-control-custom" placeholder="Teléfono" [(ngModel)]="form.telefono"
-            name="telefono" />
+          <input type="tel" class="form-control-custom" placeholder="Teléfono"
+            [(ngModel)]="form.telefono" name="telefono"/>
           <textarea class="form-control-custom" placeholder="Descripción de la empresa" rows="3"
             [(ngModel)]="form.descripcion" name="descripcion"></textarea>
         </div>
@@ -42,23 +74,22 @@
         <!-- Columna derecha -->
         <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
           <p class="section-label">Identificación</p>
-          <input type="text" class="form-control-custom" placeholder="RFC Moral" [(ngModel)]="form.rfc" name="rfc" />
+          <input type="text" class="form-control-custom" placeholder="RFC Moral"
+            [(ngModel)]="form.rfc" name="rfc"/>
           <p class="dir-label">Dirección Completa</p>
-          <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal" name="cp"
-            (blur)="buscarCP()" maxlength="5" />
-
-          <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado" name="estado"
-            readonly />
-
-          <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad" name="ciudad"
-            readonly />
-
+          <input type="text" class="form-control-custom" placeholder="C.P."
+            [(ngModel)]="form.codigo_postal" name="cp"
+            (blur)="buscarCP()" maxlength="5"/>
+          <input type="text" class="form-control-custom" placeholder="Estado"
+            [(ngModel)]="form.estado" name="estado" readonly/>
+          <input type="text" class="form-control-custom" placeholder="Ciudad"
+            [(ngModel)]="form.ciudad" name="ciudad" readonly/>
           <select class="form-control-custom" [(ngModel)]="form.colonia" name="colonia">
             <option value="" disabled selected>{{ buscandoCP ? 'Buscando...' : 'Colonia' }}</option>
             <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
           </select>
-
-          <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" name="calle" />
+          <input type="text" class="form-control-custom" placeholder="Calle"
+            [(ngModel)]="form.calle" name="calle"/>
         </div>
 
       </div>

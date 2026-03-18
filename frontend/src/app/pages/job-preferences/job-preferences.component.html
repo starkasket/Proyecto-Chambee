@@ -7,6 +7,22 @@
 <div class="page-bg">
   <div class="fondo-registro-card">
     <div class="registro-card" style="max-width: 600px; padding: 40px;">
+
+      <!-- MODAL DE ERROR -->
+<div id="modalAlerta" class="modal" tabindex="-1"
+>  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaMigajera.png" alt="alerta" height="200px" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
       
       <div class="text-center mb-4 mt-2">
         <h3 class="fw-bold" style="color: #2c3e50;">¿En qué áreas te gustaría trabajar?</h3>
