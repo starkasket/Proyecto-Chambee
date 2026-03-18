@@ -192,6 +192,122 @@
   </button>
 </section>
 
+<!-- SECCION DE SOPORTE CON FORMULARIO DE CONTACTO -->
+<section class="support-section">
+  <div class="container">
+    <div class="support-card">
+      <div class="support-card-header">
+        <p class="support-eyebrow">Soporte Chambee</p>
+        <h3>¿Necesitas ayuda?</h3>
+        <p>Cuéntanos qué ocurre y te contactaremos lo antes posible.</p>
+      </div>
+
+      <form class="support-form" (ngSubmit)="enviarSoporte(form.value)" #form="ngForm">
+        <div class="support-grid">
+          <label class="support-field">
+            <span>Nombre completo</span>
+            <input type="text" name="nombreCompleto" ngModel placeholder="Ingresa tu nombre" />
+          </label>
+
+          <label class="support-field">
+            <span>Empresa</span>
+            <input type="text" name="empresa" ngModel placeholder="Empresa o negocio" />
+          </label>
+
+          <label class="support-field">
+            <span>Telefono</span>
+            <input type="tel" name="telefono" ngModel placeholder="10 digitos" />
+          </label>
+
+          <label class="support-field">
+            <span>Correo electronico</span>
+            <input type="email" name="correo" ngModel placeholder="tu@email.com" />
+          </label>
+
+          <label class="support-field support-field-span-2">
+            <span>Asunto</span>
+            <select name="asunto" ngModel>
+              <option value="">Selecciona una opcion</option>
+              <option value="error-cuenta">Problema con mi cuenta</option>
+              <option value="publicacion">Problema con una publicacion</option>
+              <option value="pagos">Pagos o suscripciones</option>
+              <option value="otro">Otro</option>
+            </select>
+          </label>
+
+          <label class="support-field support-field-full">
+            <span>Detalles del problema</span>
+            <textarea
+              name="detalles"
+              ngModel
+              rows="5"
+              placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."></textarea>
+          </label>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="support-submit">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- SECCION FAQ (Preguntas Frecuentes) -->
+<section class="faq-section">
+  <div class="container">
+    <div class="faq-header">
+      <p class="faq-eyebrow">Ayuda Chambee</p>
+      <h3>Preguntas Frecuentes</h3>
+      <p>Resolvemos las dudas mas comunes de nuestros usuarios.</p>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item" (click)="toggleFaq(0)">
+        <div class="faq-question">
+          <h4>¿Cómo puedo postularme a un empleo?</h4>
+          <span>{{ faqOpen === 0 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 0" class="faq-answer">
+          Solo debes seleccionar el empleo que te interesa y hacer clic en "Postularme".
+        </p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(1)">
+        <div class="faq-question">
+          <h4>¿Necesito crear una cuenta?</h4>
+          <span>{{ faqOpen === 1 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 1" class="faq-answer">
+          Sí, necesitas registrarte para poder aplicar a empleos o publicar servicios.
+        </p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(2)">
+        <div class="faq-question">
+          <h4>¿Publicar un empleo tiene costo?</h4>
+          <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 2" class="faq-answer">
+          Depende del tipo de publicación. Ofrecemos opciones gratuitas y premium.
+        </p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(3)">
+        <div class="faq-question">
+          <h4>¿Cómo contacto soporte?</h4>
+          <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 3" class="faq-answer">
+          Puedes usar el formulario de soporte que se encuentra arriba en esta página.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- Footer general de la pagina. -->
 <footer class="home-footer">
   <div class="container footer-content">
@@ -200,7 +316,7 @@
       <img src="assets/LogoChambee.png" alt="Chambee" />
       <div>
         <h4>Chambee</h4>
-        <p>Plataforma lider para encontrar empleo y servicios en un solo lugar. Anshlo si ves esto eres gey</p>
+        <p>Plataforma lider para encontrar empleo y servicios en un solo lugar.</p>
       </div>
     </div>
 
