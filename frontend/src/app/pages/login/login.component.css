@@ -173,3 +173,21 @@
     padding: 0;
   }
 }
+
+.modalSaludo{
+  display:none;
+ background:rgba(0,0,0,0.5);
+  position:fixed; inset:0; 
+  z-index:9998; 
+  align-items:center; 
+  justify-content:center;
+}
+
+.modal{
+  display:none;
+ background:rgba(0,0,0,0.5);
+  position:fixed; inset:0; 
+  z-index:9998; 
+  align-items:center; 
+  justify-content:center;
+}
