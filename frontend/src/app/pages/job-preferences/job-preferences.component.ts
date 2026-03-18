@@ -34,7 +34,26 @@ export class JobPreferencesComponent {
   'Agricultura / Ganadería',
   'Servicios técnicos / Mantenimiento'
 ];
-  
+  modalMensaje = '';
+
+mostrarModal(mensaje: string) {
+  this.modalMensaje = mensaje;
+  const modal = document.getElementById('modalAlerta');
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+  }
+}
+
+cerrarModal() {
+  const modal = document.getElementById('modalAlerta');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
+}
+
+
   // Arreglo que guardará lo que el usuario seleccione
   selectedTags: string[] = [];
 
@@ -53,11 +72,15 @@ export class JobPreferencesComponent {
   }
 
   // Función para el botón final de guardar
-  saveAndContinue() {
-    if (this.selectedTags.length === 0) {
-      alert('Por favor selecciona al menos un área de interés para continuar.');
-      return;
-    }
+  
+saveAndContinue() {
+  if (this.selectedTags.length === 0) {
+    this.mostrarModal('¡Elige lo que te apasiona para encontrar tu Chamba ideal!');
+    return;
+  }
+  console.log('Etiquetas guardadas:', this.selectedTags);
+  this.router.navigate(['/']);
+
     
     console.log('Etiquetas guardadas:', this.selectedTags);
     // Redirigimos a la página de inicio

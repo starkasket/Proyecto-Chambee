@@ -33,7 +33,49 @@ export class EmployerRegisterComponent {
   colonias: string[] = [];
   buscandoCP = false;
 
+  // --- CONTROL DE MODALES ---
+  modalMensaje = '';
+  modalMensajeExito = '';
+
   constructor(private api: ApiService, private router: Router, private http: HttpClient) {}
+
+  // --- MODAL DE ERROR ---
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  // --- MODAL DE ÉXITO ---
+  mostrarModalExito(mensaje: string) {
+    this.modalMensajeExito = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+    // Redirige a las etiquetas después de registrar la empresa
+    this.router.navigate(['/job-preferences']);
+  }
 
   // --- BUSCAR CÓDIGO POSTAL ---
   buscarCP() {
@@ -50,7 +92,7 @@ export class EmployerRegisterComponent {
           this.form.colonia = '';
           this.colonias = resultados.map(r => r.colonia);
         } else {
-          alert('Código postal no encontrado');
+          this.mostrarModal('Código postal no encontrado');
           this.form.estado = '';
           this.form.ciudad = '';
           this.colonias = [];
@@ -58,7 +100,7 @@ export class EmployerRegisterComponent {
         this.buscandoCP = false;
       },
       error: () => {
-        alert('Error al cargar los códigos postales');
+        this.mostrarModal('Error al cargar los códigos postales');
         this.buscandoCP = false;
       }
     });
@@ -66,7 +108,7 @@ export class EmployerRegisterComponent {
 
   registrar() {
     if (this.form.contrasena !== this.form.contrasena_verificar) {
-      alert('Las contraseñas no coinciden');
+      this.mostrarModal('Las contraseñas no coinciden');
       return;
     }
 
@@ -75,21 +117,17 @@ export class EmployerRegisterComponent {
     // Validar campos obligatorios
     const camposVacios = Object.values(datos).some(valor => !valor || valor.toString().trim() === '');
     if (camposVacios) {
-      alert('Todos los campos son obligatorios');
+      this.mostrarModal('Todos los campos son obligatorios');
       return;
     }
 
     this.api.registrarEmpleador(datos).subscribe({
       next: (res) => {
-        alert(`Cuenta creada para ${res.nombre_empresa}`);
-
-        // --- CAMBIO AQUÍ ---
-        // Ahora redirige a las etiquetas después de registrar la empresa
-        this.router.navigate(['/job-preferences']);
+        this.mostrarModalExito(`¡Tu empresa ya forma parte de ChamBee!`);
       },
       error: (err) => {
         console.error('Error:', err);
-        alert('Error al crear la cuenta');
+        this.mostrarModal('Error al crear la cuenta. Intenta de nuevo.');
       }
     });
   }
