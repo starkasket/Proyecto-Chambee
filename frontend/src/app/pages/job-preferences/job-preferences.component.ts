@@ -70,16 +70,6 @@ export class JobPreferencesComponent {
   }
 
   // Función para el botón final de guardar
-<<<<<<< HEAD
-  saveAndContinue() {
-    if (this.selectedTags.length === 0) {
-      this.mostrarModal('¡Elige lo que te apasiona para encontrar tu Chamba ideal!');
-      return;
-    }
-    
-    console.log('Etiquetas guardadas:', this.selectedTags);
-    // Redirigimos a la página de inicio del usuario
-=======
   
 saveAndContinue() {
   if (this.selectedTags.length === 0) {
@@ -92,7 +82,6 @@ saveAndContinue() {
     
     console.log('Etiquetas guardadas:', this.selectedTags);
     // Redirigimos a la página de inicio
->>>>>>> 6a090f53f6e12c2acacc4fdc19137c2fdcf821c6
     this.router.navigate(['/home-user']);
   }
 
