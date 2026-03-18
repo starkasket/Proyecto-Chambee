@@ -9,6 +9,42 @@
   </div>
 
   <div class="nav-buttons d-flex align-items-center gap-3">
+    
+    <div class="notification-wrapper" style="position: relative;">
+      
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
+          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+        </svg>
+        <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+          <span class="visually-hidden">Nuevas alertas</span>
+        </span>
+      </div>
+
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); d-flex align-items-center justify-content-between;">
+          <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+        </div>
+
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications" style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}" onmouseover="this.style.backgroundColor='var(--hover-bg, rgba(0,0,0,0.05))'" onmouseout="this.style.backgroundColor=this.getAttribute('data-bg') || 'transparent'">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+          </div>
+
+          <div *ngIf="notifications.length === 0" style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+            No tienes notificaciones nuevas
+          </div>
+        </div>
+
+        <div style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas las notificaciones</a>
+        </div>
+      </div>
+      </div>
+
     <button
       class="theme-toggle"
       type="button"
@@ -27,7 +63,7 @@
       <a routerLink="/services" class="desktop-menu-link">Servicios</a>
       <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
       <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
-      </div>
+    </div>
   </div>
 
   <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
@@ -40,7 +76,7 @@
         <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
         <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
-        </nav>
+      </nav>
     </aside>
   </div>
 </nav>
@@ -177,7 +213,7 @@
       <a routerLink="/jobs">Trabajos</a>
       <a routerLink="/services">Servicios</a>
       <a routerLink="/contact">Contacto</a>
-      </nav>
+    </nav>
   </div>
 
   <div class="footer-bottom">

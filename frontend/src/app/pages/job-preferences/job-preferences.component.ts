@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-
 @Component({
   selector: 'app-job-preferences',
   standalone: true,
@@ -12,52 +11,51 @@ import { Router } from '@angular/router';
 })
 export class JobPreferencesComponent {
   tags: string[] = [
-  'Tecnología / TI',
-  'Administración / Oficina',
-  'Ventas',
-  'Atención al cliente',
-  'Marketing / Publicidad',
-  'Diseño',
-  'Educación / Docencia',
-  'Salud / Medicina',
-  'Ingeniería',
-  'Construcción / Obra',
-  'Manufactura / Producción',
-  'Logística / Transporte',
-  'Restaurantes / Gastronomía',
-  'Turismo / Hotelería',
-  'Servicios de limpieza',
-  'Seguridad / Vigilancia',
-  'Recursos Humanos',
-  'Finanzas / Contabilidad',
-  'Legal / Derecho',
-  'Agricultura / Ganadería',
-  'Servicios técnicos / Mantenimiento'
-];
+    'Tecnología / TI',
+    'Administración / Oficina',
+    'Ventas',
+    'Atención al cliente',
+    'Marketing / Publicidad',
+    'Diseño',
+    'Educación / Docencia',
+    'Salud / Medicina',
+    'Ingeniería',
+    'Construcción / Obra',
+    'Manufactura / Producción',
+    'Logística / Transporte',
+    'Restaurantes / Gastronomía',
+    'Turismo / Hotelería',
+    'Servicios de limpieza',
+    'Seguridad / Vigilancia',
+    'Recursos Humanos',
+    'Finanzas / Contabilidad',
+    'Legal / Derecho',
+    'Agricultura / Ganadería',
+    'Servicios técnicos / Mantenimiento'
+  ];
+  
   modalMensaje = '';
-
-mostrarModal(mensaje: string) {
-  this.modalMensaje = mensaje;
-  const modal = document.getElementById('modalAlerta');
-  if (modal) {
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-  }
-}
-
-cerrarModal() {
-  const modal = document.getElementById('modalAlerta');
-  if (modal) {
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-  }
-}
-
-
   // Arreglo que guardará lo que el usuario seleccione
   selectedTags: string[] = [];
 
   constructor(private router: Router) {}
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
 
   // Función que se ejecuta al hacer clic en una etiqueta
   toggleTag(tag: string) {
@@ -72,25 +70,21 @@ cerrarModal() {
   }
 
   // Función para el botón final de guardar
-  
-saveAndContinue() {
-  if (this.selectedTags.length === 0) {
-    this.mostrarModal('¡Elige lo que te apasiona para encontrar tu Chamba ideal!');
-    return;
-  }
-  console.log('Etiquetas guardadas:', this.selectedTags);
-  this.router.navigate(['/']);
-
+  saveAndContinue() {
+    if (this.selectedTags.length === 0) {
+      this.mostrarModal('¡Elige lo que te apasiona para encontrar tu Chamba ideal!');
+      return;
+    }
     
     console.log('Etiquetas guardadas:', this.selectedTags);
-    // Redirigimos a la página de inicio
-    this.router.navigate(['/home']);
+    // Redirigimos a la página de inicio del usuario
+    this.router.navigate(['/home-user']);
   }
 
   // Función para omitir este paso
   skipPreferences() {
     console.log('El usuario decidió omitir la selección de etiquetas.');
     // Lo mandamos directo al home sin guardar nada
-    this.router.navigate(['/home']);
+    this.router.navigate(['/home-user']);
   }
 }

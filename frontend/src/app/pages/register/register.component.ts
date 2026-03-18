@@ -119,7 +119,7 @@ export class RegisterComponent implements OnInit {
       next: (res) => {
         this.mostrarModalExito('¡Bienvenido a ChamBee!');
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error:', err);
         this.mostrarModal('Error al crear la cuenta. Intenta de nuevo.');
       }

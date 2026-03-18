@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-// Asegúrate de que la ruta a tu ThemeService sea la correcta según tus carpetas
 import { ThemeService } from '../../services/theme.service';
 
 // Interfaces para estructurar los datos
@@ -31,19 +30,31 @@ interface Service {
   img: string;
 }
 
+// NUEVA INTERFAZ PARA NOTIFICACIONES
+interface NotificationItem {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
 @Component({
   selector: 'app-home-user',
   standalone: true,
-  imports: [CommonModule, RouterModule], // Muy importante importar estos módulos
+  imports: [CommonModule, RouterModule], 
   templateUrl: './home-user.component.html',
   styleUrl: './home-user.component.css'
 })
 export class HomeUserComponent implements OnInit, OnDestroy {
-  // Aquí está el nombre del usuario para el mensaje de bienvenida
   userName: string = 'Usuario'; 
 
+  // VARIABLES PARA EL CONTROL DE LA INTERFAZ
   servicesOpen = false;
   menuOpen = false;
+  notificationsOpen = false; // Controla si el menú desplegable está abierto
+  hasUnreadNotifications = true; // Controla el puntito rojo
+
   currentSlide = 0;
   visibleCount = 8;
   maxVisible = 28;
@@ -51,12 +62,18 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
+  // NUEVOS DATOS DE NOTIFICACIONES SIMULADOS
+  notifications: NotificationItem[] = [
+    { id: 1, title: '¡Nueva postulación!', message: 'Tu perfil hace "match" con Google.', time: 'Hace 5 min', read: false },
+    { id: 2, title: 'Mensaje de RRHH', message: 'Lucky Ghost ha revisado tu CV.', time: 'Hace 2 horas', read: false },
+    { id: 3, title: 'Bienvenido a Chambee', message: 'Completa tu perfil para destacar más.', time: 'Hace 1 día', read: true }
+  ];
+
   constructor(
     private readonly router: Router,
     private readonly themeService: ThemeService
   ) {}
 
-  // Datos del carrusel destacado
   slides: Slide[] = [
     {
       company: 'Lucky Ghost',
@@ -141,6 +158,32 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }
   }
 
+  // --- LÓGICA DEL MENÚ DE NOTIFICACIONES ---
+  toggleNotifications(event?: Event) {
+    if (event) {
+      event.stopPropagation(); // Evita que se dispare el evento del documento
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    
+    // Si lo abrimos, quitamos el puntito rojo y marcamos todo como leído
+    if (this.notificationsOpen) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach(n => n.read = true);
+    }
+    
+    // Cerramos el menú hamburguesa si estaba abierto
+    this.menuOpen = false; 
+  }
+
+  // Esto cierra las notificaciones si das clic en cualquier otra parte de la pantalla
+  @HostListener('document:click', ['$event'])
+  onDocumentClick() {
+    if (this.notificationsOpen) {
+      this.notificationsOpen = false;
+    }
+  }
+  // ------------------------------------------
+
   get visibleServices(): Service[] {
     return this.servicesOpen ? this.services : this.services.slice(0, 4);
   }
@@ -151,6 +194,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
+    this.notificationsOpen = false; // Cierra notificaciones si abres el menú
   }
 
   toggleTheme() {
@@ -161,20 +205,16 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     return this.themeService.isDarkMode();
   }
 
-  // Como el usuario ya está logueado, podríamos mandarlo a ver los detalles en vez de al login
   openService(index: number) {
     console.log('Abriendo servicio:', index);
-    // this.router.navigate(['/service-details', index]); 
   }
 
   openJob() {
     console.log('Abriendo detalle de empleo');
-    // this.router.navigate(['/job-details']);
   }
 
   openFeaturedJob() {
     console.log('Abriendo empleo destacado');
-    // this.router.navigate(['/job-details']);
   }
 
   @HostListener('window:resize')
