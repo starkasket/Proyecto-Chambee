@@ -36,12 +36,53 @@ export class RegisterComponent implements OnInit {
   sepomex: any[] = [];
   colonias: string[] = [];
 
+  // --- CONTROL DE MODALES ---
+  modalMensaje = '';
+
   constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit() {
     this.api.getSepomex().subscribe(data => this.sepomex = data);
   }
 
+  // --- MODAL DE ERROR ---
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  // --- MODAL DE ÉXITO ---
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+    this.router.navigate(['/job-preferences']);
+  }
+
+  // --- BUSCAR CP ---
   buscarCP() {
     const cp = this.form.codigo_postal.trim();
     const resultados = this.sepomex.filter(r => r.cp === cp);
@@ -56,7 +97,7 @@ export class RegisterComponent implements OnInit {
       this.form.ciudad = '';
       this.form.colonia = '';
       this.colonias = [];
-      alert('Código postal no encontrado');
+      this.mostrarModal('Código postal no encontrado');
     }
   }
 
@@ -65,26 +106,22 @@ export class RegisterComponent implements OnInit {
 
     const camposVacios = Object.values(datos).some(v => !v || v.toString().trim() === '');
     if (camposVacios) {
-      alert('Todos los campos son obligatorios');
+      this.mostrarModal('Todos los campos son obligatorios');
       return;
     }
 
     if (this.form.contrasena !== this.form.contrasena_verificar) {
-      alert('Las contraseñas no coinciden');
+      this.mostrarModal('Las contraseñas no coinciden');
       return;
     }
 
     this.api.registrarPostulante(datos).subscribe({
       next: (res) => {
-        alert(`Cuenta creada para ${res.nombre_postulante}`);
-        
-        // --- CAMBIO AQUÍ ---
-        // Ahora redirige a las preferencias de trabajo en lugar del inicio
-        this.router.navigate(['/job-preferences']);
+        this.mostrarModalExito('¡Bienvenido a ChamBee!');
       },
       error: (err) => {
         console.error('Error:', err);
-        alert('Error al crear la cuenta');
+        this.mostrarModal('Error al crear la cuenta. Intenta de nuevo.');
       }
     });
   }
