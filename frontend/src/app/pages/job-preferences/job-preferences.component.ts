@@ -79,18 +79,18 @@ saveAndContinue() {
     return;
   }
   console.log('Etiquetas guardadas:', this.selectedTags);
-  this.router.navigate(['/']);
+  this.router.navigate(['/home-user']);
 
     
     console.log('Etiquetas guardadas:', this.selectedTags);
     // Redirigimos a la página de inicio
-    this.router.navigate(['/home']);
+    this.router.navigate(['/home-user']);
   }
 
   // Función para omitir este paso
   skipPreferences() {
     console.log('El usuario decidió omitir la selección de etiquetas.');
     // Lo mandamos directo al home sin guardar nada
-    this.router.navigate(['/home']);
+    this.router.navigate(['/home-user']);
   }
 }

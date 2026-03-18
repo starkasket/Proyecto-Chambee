@@ -40,7 +40,7 @@ interface Service {
 })
 export class HomeUserComponent implements OnInit, OnDestroy {
   // Aquí está el nombre del usuario para el mensaje de bienvenida
-  userName: string = 'Usuario'; 
+  nombre_postulante: string = 'Usuario'; 
 
   servicesOpen = false;
   menuOpen = false;

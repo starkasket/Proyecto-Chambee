@@ -38,6 +38,8 @@ export class LoginComponent {
     if (modal) {
       modal.classList.add('show');
       modal.style.display = 'flex';
+       
+
     }
   }
 
@@ -64,7 +66,7 @@ export class LoginComponent {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
-    this.router.navigate(['/']);
+    this.router.navigate(['/home-user']); 
   }
 
   onLogin() {

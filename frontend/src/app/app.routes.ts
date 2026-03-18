@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { JobPreferencesComponent } from './pages/job-preferences/job-preferences.component';
+import { HomeUserComponent } from './pages/home-user/home-user.component';
 
 export const routes: Routes = [
   { 
@@ -35,6 +36,10 @@ export const routes: Routes = [
   { 
     path: 'job-preferences',
     component: JobPreferencesComponent
+  },
+  {
+    path: 'home-user',
+    component: HomeUserComponent
   },
   { 
     path: '**', 
