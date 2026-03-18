@@ -47,7 +47,12 @@ interface NotificationItem {
   styleUrl: './home-user.component.css'
 })
 export class HomeUserComponent implements OnInit, OnDestroy {
+<<<<<<< HEAD
   userName: string = 'Usuario'; 
+=======
+  // Aquí está el nombre del usuario para el mensaje de bienvenida
+  nombre_postulante: string = 'Usuario'; 
+>>>>>>> 6a090f53f6e12c2acacc4fdc19137c2fdcf821c6
 
   // VARIABLES PARA EL CONTROL DE LA INTERFAZ
   servicesOpen = false;

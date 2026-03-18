@@ -5,6 +5,38 @@
     </div>
   </header>
 
+   <!-- MODAL DE ÉXITO -->
+<div id="modalSaludo" class="modal" tabindex="-1"
+>  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3"/>
+        <h4 class="text-success fw-bold">¡Inició sesión con éxito!</h4>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ERROR -->
+<div id="modalAlerta" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <main class="login-container">
     <div class="login-card">
       <button class="close-btn" type="button" routerLink="/">×</button>

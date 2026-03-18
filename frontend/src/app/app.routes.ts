@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { JobPreferencesComponent } from './pages/job-preferences/job-preferences.component';
+import { HomeUserComponent } from './pages/home-user/home-user.component';
 
 // 1. Agregamos el import de tu Home User (verifica que la ruta a la carpeta sea la correcta)
 import { HomeUserComponent } from './pages/home-user/home-user.component';
@@ -39,7 +40,10 @@ export const routes: Routes = [
     path: 'job-preferences',
     component: JobPreferencesComponent
   },
+<<<<<<< HEAD
  
+=======
+>>>>>>> 6a090f53f6e12c2acacc4fdc19137c2fdcf821c6
   {
     path: 'home-user',
     component: HomeUserComponent
