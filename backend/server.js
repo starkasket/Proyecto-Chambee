@@ -2,10 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
+const path = require("path");
 
 const nodemailer = require("nodemailer");
 
-require("dotenv").config();
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const app = express();
 
@@ -23,8 +24,8 @@ const pool = new Pool({
 
 /* ===== CONFIGURACIÓN DE CORREO ===== */
 
-// Correo que recibe los mensajes (TU correo)
-const correoDestino = process.env.EMAIL_USER;
+// Si EMAIL_TO no existe, usa EMAIL_USER como destino por compatibilidad.
+const correoDestino = process.env.EMAIL_TO || process.env.EMAIL_USER;
 const hasEmailConfig = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
 
 // Configuración de Nodemailer
@@ -53,7 +54,7 @@ if (!hasEmailConfig) {
 
 /* ===== ENDPOINT DE PRUEBA ===== */
 app.get("/", (req, res) => {
-  res.send("Servidor Chambee funcionando correctamente 🚀");
+  res.send("Servidor Chambee funcionando correctamente ");
 });
 
 /* ===== REGISTRO DE POSTULANTES ===== */
@@ -189,11 +190,15 @@ app.post("/login", async (req, res) => {
 
 /* ===== SOPORTE (ENVÍO DE CORREO) ===== */
 app.post("/api/support", async (req, res) => {
-  const { nombreCompleto, correo, telefono, asunto, detalles } = req.body;
+  const { nombreCompleto, empresa, correo, telefono, asunto, detalles } = req.body;
 
   try {
     if (!transporter || !correoDestino) {
       return res.status(500).json({ error: "Configuracion de correo no disponible" });
+    }
+
+    if (!nombreCompleto || !correo || !telefono || !asunto || !detalles) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
     await transporter.sendMail({
@@ -204,6 +209,7 @@ app.post("/api/support", async (req, res) => {
       html: `
         <h2>Nuevo reporte</h2>
         <p><b>Nombre:</b> ${nombreCompleto}</p>
+        <p><b>Empresa:</b> ${empresa || "No proporcionada"}</p>
         <p><b>Correo:</b> ${correo}</p>
         <p><b>Teléfono:</b> ${telefono}</p>
         <p><b>Asunto:</b> ${asunto}</p>

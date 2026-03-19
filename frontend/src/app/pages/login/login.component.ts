@@ -80,7 +80,7 @@ export class LoginComponent {
         },
         error: (err) => {
           console.error('Error en el login:', err);
-          this.mostrarModal('Híjole, algo falló. Revisa que el servidor esté prendido o tus datos sean correctos.');
+          this.mostrarModal('Híjole, algo falló. Revisa que tus datos sean correctos.');
         }
       });
 
