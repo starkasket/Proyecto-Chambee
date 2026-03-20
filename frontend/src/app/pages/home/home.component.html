@@ -202,11 +202,12 @@
         <p>Cuéntanos qué ocurre y te contactaremos lo antes posible.</p>
       </div>
 
-      <form class="support-form" (ngSubmit)="enviarSoporte(form.value)" #form="ngForm">
+      <form class="support-form" (ngSubmit)="enviarSoporte(form)" #form="ngForm">
         <div class="support-grid">
           <label class="support-field">
             <span>Nombre completo</span>
-            <input type="text" name="nombreCompleto" ngModel placeholder="Ingresa tu nombre" />
+            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel" placeholder="Ingresa tu nombre" required />
+            <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es obligatorio.</small>
           </label>
 
           <label class="support-field">
@@ -216,23 +217,26 @@
 
           <label class="support-field">
             <span>Telefono</span>
-            <input type="tel" name="telefono" ngModel placeholder="10 digitos" />
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 digitos" required />
+            <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es obligatorio.</small>
           </label>
 
           <label class="support-field">
             <span>Correo electronico</span>
-            <input type="email" name="correo" ngModel placeholder="tu@email.com" />
+            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required email />
+            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo valido.</small>
           </label>
 
           <label class="support-field support-field-span-2">
             <span>Asunto</span>
-            <select name="asunto" ngModel>
+            <select name="asunto" ngModel #asunto="ngModel" required>
               <option value="">Selecciona una opcion</option>
               <option value="error-cuenta">Problema con mi cuenta</option>
               <option value="publicacion">Problema con una publicacion</option>
               <option value="pagos">Pagos o suscripciones</option>
               <option value="otro">Otro</option>
             </select>
+            <small *ngIf="asunto.invalid && asunto.touched" class="support-error">Este campo es obligatorio.</small>
           </label>
 
           <label class="support-field support-field-full">
@@ -240,13 +244,16 @@
             <textarea
               name="detalles"
               ngModel
+              #detalles="ngModel"
               rows="5"
-              placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."></textarea>
+              placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."
+              required></textarea>
+            <small *ngIf="detalles.invalid && detalles.touched" class="support-error">Este campo es obligatorio.</small>
           </label>
         </div>
 
         <div class="support-actions">
-          <button type="submit" class="support-submit">Enviar</button>
+          <button type="submit" class="support-submit" [disabled]="form.invalid">Enviar</button>
         </div>
       </form>
     </div>

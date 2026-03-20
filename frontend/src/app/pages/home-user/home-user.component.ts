@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 
@@ -42,7 +44,7 @@ interface NotificationItem {
 @Component({
   selector: 'app-home-user',
   standalone: true,
-  imports: [CommonModule, RouterModule], 
+  imports: [CommonModule, RouterModule, FormsModule], 
   templateUrl: './home-user.component.html',
   styleUrl: './home-user.component.css'
 })
@@ -60,6 +62,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   visibleCount = 8;
   maxVisible = 28;
   isMobile = false;
+  faqOpen: number | null = null;
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
@@ -72,7 +75,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly router: Router,
-    private readonly themeService: ThemeService
+    private readonly themeService: ThemeService,
+    private readonly http: HttpClient
   ) {}
 
   slides: Slide[] = [
@@ -261,5 +265,32 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   goToSlide(index: number) {
     this.currentSlide = index;
+  }
+
+  toggleFaq(index: number) {
+    this.faqOpen = this.faqOpen === index ? null : index;
+  }
+
+  enviarSoporte(form: any) {
+    if (!form?.valid) {
+      form?.control?.markAllAsTouched();
+      return;
+    }
+
+    this.http.post('http://localhost:3000/api/support', form.value)
+      .subscribe({
+        next: () => {
+          alert('Mensaje enviado correctamente');
+          form.resetForm({
+            nombreCompleto: '',
+            empresa: '',
+            telefono: '',
+            correo: '',
+            asunto: '',
+            detalles: ''
+          });
+        },
+        error: () => alert('Error al enviar el mensaje')
+      });
   }
 }

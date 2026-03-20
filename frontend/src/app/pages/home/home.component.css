@@ -956,9 +956,20 @@ body {
   transition: 0.2s ease;
 }
 
+.support-error {
+  color: #d93025;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .support-submit:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
+}
+
+.support-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 @media (max-width: 768px) {
   .support-grid {

@@ -177,10 +177,25 @@ export class HomeComponent implements OnInit, OnDestroy {
   faqOpen: number | null = null;
   toggleFaq(i: number) { this.faqOpen = this.faqOpen === i ? null : i; }
 
-  enviarSoporte(formData: any) {
-    this.http.post('http://localhost:3000/api/support', formData)
+  enviarSoporte(form: any) {
+    if (!form?.valid) {
+      form?.control?.markAllAsTouched();
+      return;
+    }
+
+    this.http.post('http://localhost:3000/api/support', form.value)
       .subscribe({
-        next: () => alert("Mensaje enviado correctamente "),
+        next: () => {
+          alert("Mensaje enviado correctamente ");
+          form.resetForm({
+            nombreCompleto: '',
+            empresa: '',
+            telefono: '',
+            correo: '',
+            asunto: '',
+            detalles: ''
+          });
+        },
         error: () => alert("Error al enviar ")
       });
   }
