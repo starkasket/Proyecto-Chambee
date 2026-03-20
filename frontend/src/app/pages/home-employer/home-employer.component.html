@@ -1,0 +1,233 @@
+<p>home-employer works!</p>
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+  <div class="d-flex align-items-center gap-3">
+    <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48">
+    <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ nombre_empleador }}</span>
+  </div>
+
+  <div class="search-container flex-grow-1 mx-4">
+    <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
+  </div>
+
+  <div class="nav-buttons d-flex align-items-center gap-3">
+    
+    <div class="notification-wrapper" style="position: relative;">
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
+          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+        </svg>
+        <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;"></span>
+      </div>
+
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+        </div>
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications" style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+          </div>
+        </div>
+        <div style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas</a>
+        </div>
+      </div>
+    </div>
+
+    <button 
+      class="btn d-flex align-items-center gap-2" 
+      style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
+      routerLink="/perfil"
+      title="Ir a mi perfil">
+      <i class="bi bi-person-circle fs-5"></i>
+      <span class="d-none d-md-block">Mi Perfil</span>
+    </button>
+
+    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+      <span class="theme-toggle-track"><span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span></span>
+    </button>
+
+    <div class="menu fs-4" (click)="toggleMenu()" role="button">☰</div>
+
+    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+      <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis Vacantes</a>
+      <a routerLink="/buscar-talento" class="desktop-menu-link">Buscar Talento</a>
+      <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear Vacante</a>
+      <a routerLink="/facturacion" class="desktop-menu-link">Facturación</a>
+    </div>
+  </div>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+      <button class="mobile-close" (click)="toggleMenu()">✕</button>
+      <nav class="mobile-nav">
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Panel de Empresa</div>
+        <hr />
+        <a class="mobile-nav-link" routerLink="/mis-vacantes" (click)="toggleMenu()">Mis Vacantes</a>
+        <a class="mobile-nav-link" routerLink="/buscar-talento" (click)="toggleMenu()">Buscar Talento</a>
+        <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear Vacante</a>
+      </nav>
+    </aside>
+  </div>
+</nav>
+
+<div class="container main-layout">
+  <div class="left">
+    
+    <h2 class="mb-4" style="font-weight: 700; color: var(--text-color);">Postulaciones Recientes</h2>
+
+    <div class="carousel">
+      <div class="carousel-container">
+        <div class="carousel-slide" *ngFor="let slide of recentApplicants; let i = index" [class.active]="i === currentSlide">
+          <div class="featured-card featured-clickable" (click)="viewCV(slide)">
+            <div class="featured-upper">
+              <div class="featured-company">
+                <div class="featured-media">
+                  <img class="featured-image" [src]="slide.profilePic" [alt]="slide.name" style="border-radius: 50%; object-fit: cover;" />
+                </div>
+                <div class="featured-company-copy">
+                  <h3>{{ slide.name }}</h3>
+                  <p style="color: var(--primary-color); font-weight: 600;">Postuló para: {{ slide.appliedFor }}</p>
+                </div>
+              </div>
+
+              <div class="featured-job">
+                <h3>Resumen de Perfil</h3>
+                <p><strong>Especialidad:</strong> {{ slide.profession }}</p>
+                <p><strong>Experiencia:</strong> {{ slide.experience }}</p>
+                <p>{{ slide.description }}</p>
+              </div>
+            </div>
+
+            <div class="featured-content">
+              <div class="featured-meta">
+                <span class="featured-chip">Postulación Nueva</span>
+                <span class="featured-chip">{{ slide.timeAgo }}</span>
+              </div>
+              <button class="btn featured-btn" (click)="viewCV(slide); $event.stopPropagation()">Ver CV</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="prev" (click)="prevSlide()"></button>
+      <button class="next" (click)="nextSlide()"></button>
+      <div class="dots">
+        <span *ngFor="let slide of recentApplicants; let i = index" (click)="goToSlide(i)" [class.active]="i === currentSlide"></span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+      <h2 style="font-weight: 700; color: var(--text-color);">Todas las Postulaciones</h2>
+      <button class="btn register" routerLink="/buscar-talento">Buscar más talento</button>
+    </div>
+
+    <div class="jobs-grid" style="display: grid; gap: 1rem;">
+      <div class="applicant-card p-3" *ngFor="let applicant of allApplicants | slice:0:visibleCount" 
+           style="background-color: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-soft);">
+        <div class="d-flex align-items-center gap-3">
+          <img [src]="applicant.profilePic" [alt]="applicant.name" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+          
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h4 style="font-size: 1.1rem; margin-bottom: 2px; color: var(--text-color);">{{ applicant.name }}</h4>
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 5px;">Postuló a: <strong>{{ applicant.appliedFor }}</strong></p>
+              </div>
+              <small class="text-muted">{{ applicant.dateApplied }}</small>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-color); margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              {{ applicant.description }}
+            </p>
+          </div>
+        </div>
+        
+        <hr class="my-3" style="border-color: var(--border-soft);">
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
+            {{ applicant.skills }}
+          </div>
+          <a href="javascript:void(0)" class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; padding: 5px 15px; font-weight: 600;" (click)="viewCV(applicant)">Ver CV</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="jobs-more mt-4" *ngIf="visibleCount < maxVisible">
+      <button class="services-see-more" (click)="showMoreApplicants()" style="width: 100%; border-radius: 8px;">Cargar más postulaciones</button>
+    </div>
+  </div>
+
+  <aside class="right services-desktop">
+    <h3 class="services-title">Herramientas Premium</h3>
+
+    <div class="services-list services-list-desktop">
+      <div class="service-card" *ngFor="let tool of visibleTools; let idx = index" (click)="openTool(idx)">
+        <img [src]="tool.img" [alt]="tool.title" />
+        <div>
+          <h5 style="margin: 0; font-size: 1rem;">{{ tool.title }}</h5>
+          <p style="margin: 5px 0 0; font-size: 0.85rem; color: #666;">{{ tool.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="services-footer">
+      <button class="services-see-more" (click)="toggleTools()">
+        {{ toolsOpen ? 'Ver menos' : 'Ver todas' }}
+      </button>
+    </div>
+  </aside>
+</div>
+
+<div *ngIf="toolsOpen" class="services-overlay" (click)="toggleTools()"></div>
+
+<section class="services-floating services-mobile">
+  <div class="services-panel" *ngIf="toolsOpen" (click)="$event.stopPropagation()">
+    <div class="services-panel-header">
+      <div>
+        <p class="services-panel-eyebrow">Chambee Empresas</p>
+        <h3>Herramientas</h3>
+      </div>
+      <button class="services-close" (click)="toggleTools()">×</button>
+    </div>
+
+    <div class="services-list">
+      <div class="service-card" *ngFor="let tool of employerTools; let idx = index" (click)="openTool(idx)">
+        <img [src]="tool.img" [alt]="tool.title" />
+        <div>
+          <h5>{{ tool.title }}</h5>
+          <p>{{ tool.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="services-bubble" (click)="toggleTools()">
+    <span class="services-bubble-icon">⚙️</span>
+    <span class="services-bubble-text">Herramientas</span>
+  </button>
+</section>
+
+<footer class="home-footer">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <img src="assets/LogoChambee.png" alt="Chambee" />
+      <div>
+        <h4>Chambee Empresas</h4>
+        <p>Encuentra al talento ideal para tu negocio más rápido. Anshlo si ves esto eres gey</p>
+      </div>
+    </div>
+    <nav class="footer-links">
+      <a routerLink="/precios">Planes y Precios</a>
+      <a routerLink="/terminos">Términos de Servicio</a>
+      <a routerLink="/soporte">Soporte a Empresas</a>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <p>© 2026 Chambee. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>
