@@ -99,8 +99,8 @@
 
 .btn-close-custom {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 11px;
+  right: 8px;
   border: 1px solid var(--border-soft);
   border-radius: 50%;
   width: 30px;
@@ -109,12 +109,19 @@
   color: var(--text-secondary);
 }
 
+.btn-crear:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .input-with-icon { position: relative; }
 .eye-icon {
   position: absolute;
   right: 15px;
-  top: 35%;
+  top: 11px;
   color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .modal{ 
@@ -134,4 +141,11 @@ display:none;
   z-index:9998; 
   align-items:center; 
   justify-content:center;
+}
+
+.support-error {
+  margin-left: 10px;
+  color: #d93025;
+  font-size: 12px;
+  font-weight: 500;
 }

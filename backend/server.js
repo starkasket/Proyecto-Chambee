@@ -76,7 +76,7 @@ app.post("/postulantes/registro", async (req, res) => {
       codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
-    RETURNING *`;
+    RETURNING id_postulante, nombre_postulante, correo_electronico, estado_cuenta`;
 
     const values = [
       nombre_postulante, apellido_paterno_postulante,
@@ -113,7 +113,7 @@ app.post("/empleadores/registro", async (req, res) => {
       rfc, descripcion
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-    RETURNING *`;
+    RETURNING id_empleador, nombre_empresa, correo_electronico, estado`;
 
     const values = [
       nombre_empresa, correo_electronico, hashedPassword, pais,
@@ -136,9 +136,8 @@ app.post("/login", async (req, res) => {
 
   try {
     let usuario = null;
-
     const postulante = await pool.query(
-      `SELECT id_postulante AS id, correo_electronico AS correo, contrasena, 'postulante' AS rol
+      `SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, 'postulante' AS rol
        FROM postulante WHERE correo_electronico = $1`,
       [correo_electronico]
     );
@@ -147,7 +146,7 @@ app.post("/login", async (req, res) => {
 
     if (!usuario) {
       const empleador = await pool.query(
-        `SELECT id_empleador AS id, correo_electronico AS correo, contrasena, 'empleador' AS rol
+        `SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, 'empleador' AS rol
          FROM empleador WHERE correo_electronico = $1`,
         [correo_electronico]
       );
@@ -181,11 +180,12 @@ app.post("/login", async (req, res) => {
       message: "Inicio de sesión exitoso",
       user
     });
-
+   
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error en servidor" });
   }
+  
 });
 
 /* ===== SOPORTE (ENVÍO DE CORREO) ===== */

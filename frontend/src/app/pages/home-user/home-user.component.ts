@@ -49,9 +49,11 @@ interface NotificationItem {
   styleUrl: './home-user.component.css'
 })
 export class HomeUserComponent implements OnInit, OnDestroy {
+  
   // Aquí está el nombre del usuario para el mensaje de bienvenida
-  nombre_postulante: string = 'Usuario'; 
+  nombre_postulante = localStorage.getItem('usuario') || 'Usuario';
 
+  
   // VARIABLES PARA EL CONTROL DE LA INTERFAZ
   servicesOpen = false;
   menuOpen = false;
@@ -155,6 +157,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }, 9000);
     this.checkMobile();
     this.fillJobsToMax();
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.nombre_postulante = usuario.nombre || 'Usuario';
   }
 
   ngOnDestroy() {

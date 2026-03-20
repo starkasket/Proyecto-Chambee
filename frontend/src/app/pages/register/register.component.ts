@@ -32,7 +32,27 @@ export class RegisterComponent implements OnInit {
     rfc: '',
     curp: ''
   };
+  
+  esMayorDeEdad(fecha: string): boolean {
+    if (!fecha) return false;
 
+    const hoy = new Date();
+    const nacimiento = new Date(fecha);
+
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() -nacimiento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+
+    return edad >= 18;
+  }
+
+  mostrarPassword = false;
+  mostrarPassword2 = false;
+
+  hoy = new Date().toISOString().split('T')[0];
   sepomex: any[] = [];
   colonias: string[] = [];
 

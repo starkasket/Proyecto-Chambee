@@ -30,6 +30,8 @@ export class EmployerRegisterComponent {
     descripcion: ''
   };
 
+  mostrarPassword = false;
+  mostrarPassword2 = false;
   colonias: string[] = [];
   buscandoCP = false;
 
@@ -74,7 +76,7 @@ export class EmployerRegisterComponent {
       modal.style.display = 'none';
     }
     // Redirige a las etiquetas después de registrar la empresa
-    this.router.navigate(['/job-preferences']);
+    this.router.navigate(['/home-user']);
   }
 
   // --- BUSCAR CÓDIGO POSTAL ---

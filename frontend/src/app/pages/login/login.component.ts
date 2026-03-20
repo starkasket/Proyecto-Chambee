@@ -12,6 +12,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
+
 export class LoginComponent {
 
   loginForm: FormGroup;
@@ -31,6 +32,8 @@ export class LoginComponent {
     });
   }
 
+  
+  
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -75,8 +78,14 @@ export class LoginComponent {
 
       this.authService.login(this.loginForm.value).subscribe({
         next: (res) => {
+          const user = res.user;
+
+          localStorage.setItem('usuario', JSON.stringify({
+    nombre: user.nombre
+        }));
           console.log('Respuesta del servidor:', res);
           this.mostrarModalExito();
+           
         },
         error: (err) => {
           console.error('Error en el login:', err);
