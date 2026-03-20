@@ -56,6 +56,8 @@
       <a routerLink="/buscar-talento" class="desktop-menu-link">Buscar Talento</a>
       <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear Vacante</a>
       <a routerLink="/facturacion" class="desktop-menu-link">Facturación</a>
+      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
     </div>
   </div>
 
@@ -68,6 +70,8 @@
         <a class="mobile-nav-link" routerLink="/mis-vacantes" (click)="toggleMenu()">Mis Vacantes</a>
         <a class="mobile-nav-link" routerLink="/buscar-talento" (click)="toggleMenu()">Buscar Talento</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear Vacante</a>
+        <hr />
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
       </nav>
     </aside>
   </div>

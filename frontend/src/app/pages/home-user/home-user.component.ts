@@ -193,6 +193,21 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
   // ------------------------------------------
 
+  // --- LÓGICA DE CERRAR SESIÓN ---
+  logout() {
+    // Limpiamos los datos del usuario del localStorage
+    localStorage.removeItem('usuario');
+    // Si manejas un token JWT, también lo quitarías aquí, ej: localStorage.removeItem('token');
+    
+    // Cerramos los menús
+    this.menuOpen = false;
+    this.servicesOpen = false;
+    
+    // Redirigimos a la vista inicial/login
+    console.log('Cerrando sesión del usuario...');
+    this.router.navigate(['/']); 
+  }
+
   get visibleServices(): Service[] {
     return this.servicesOpen ? this.services : this.services.slice(0, 4);
   }

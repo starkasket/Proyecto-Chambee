@@ -205,6 +205,19 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     console.log('Abriendo CV de:', applicant.name);
   }
 
+  logout() {
+    // 1. Opcional: Aquí puedes limpiar el localStorage si guardas datos de sesión de tu backend en PostgreSQL
+    // localStorage.removeItem('token');
+    
+    // 2. Cerramos los menús 
+    this.menuOpen = false;
+    this.toolsOpen = false;
+    
+    // 3. Redirigimos a la página principal o de login
+    console.log('Cerrando sesión...');
+    this.router.navigate(['/']); // Cambia '/' por tu ruta de login si la tienes
+  }
+
   // --- RESPONSIVE Y UTILIDADES ---
   @HostListener('window:resize')
   onResize() {
