@@ -23,10 +23,12 @@ interface Applicant {
   dateApplied: string;
 }
 
-interface Tool {
-  title: string;
-  description: string;
-  img: string;
+interface Anuncio {
+  titulo: string;
+  ubicacion: string;
+  fechaPublicacion: string;
+  candidatos: number;
+  estado: string;
 }
 
 interface NotificationItem {
@@ -100,14 +102,29 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }
   ];
 
-  // Herramientas del panel lateral
-  employerTools: Tool[] = [
-    { title: 'Filtro IA', description: 'Encuentra al mejor candidato con IA.', img: 'https://picsum.photos/80/80?random=11' },
-    { title: 'Tests Técnicos', description: 'Envía pruebas automáticas.', img: 'https://picsum.photos/80/80?random=12' },
-    { title: 'Entrevistas Video', description: 'Agenda y graba entrevistas.', img: 'https://picsum.photos/80/80?random=13' },
-    { title: 'Base de CVs', description: 'Acceso a más de 10k perfiles.', img: 'https://picsum.photos/80/80?random=14' },
-    { title: 'Estadísticas', description: 'Analiza el rendimiento de tus vacantes.', img: 'https://picsum.photos/80/80?random=15' },
-    { title: 'Destacar Vacante', description: 'Aparece primero en las búsquedas.', img: 'https://picsum.photos/80/80?random=16' }
+  // --- NUEVA VARIABLE: Anuncios de la Empresa ---
+  misAnuncios: Anuncio[] = [
+    {
+      titulo: 'Desarrollador Frontend (Angular)',
+      ubicacion: 'San Miguel de Allende',
+      fechaPublicacion: 'Hace 2 días',
+      candidatos: 5,
+      estado: 'Activa'
+    },
+    {
+      titulo: 'Diseñador Gráfico Jr.',
+      ubicacion: 'Remoto',
+      fechaPublicacion: 'Hace 1 semana',
+      candidatos: 12,
+      estado: 'Cerrada'
+    },
+    {
+      titulo: 'Analista de Base de Datos (PostgreSQL)',
+      ubicacion: 'Híbrido',
+      fechaPublicacion: 'Hace 3 semanas',
+      candidatos: 8,
+      estado: 'Activa'
+    }
   ];
 
   // Todos los postulantes para el grid inferior
@@ -162,11 +179,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- HERRAMIENTAS Y MENÚS ---
-  get visibleTools(): Tool[] {
-    return this.toolsOpen ? this.employerTools : this.employerTools.slice(0, 4);
-  }
-
+  // --- CONTROL DE PANELES (Ahora para Mis Anuncios) ---
   toggleTools() {
     this.toolsOpen = !this.toolsOpen;
   }
@@ -187,14 +200,12 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }
   }
 
-  openTool(index: number) {
-    console.log('Abriendo herramienta:', index);
-  }
-
+  // --- ACCIONES ---
   viewCV(applicant: any) {
     console.log('Abriendo CV de:', applicant.name);
   }
 
+  // --- RESPONSIVE Y UTILIDADES ---
   @HostListener('window:resize')
   onResize() {
     this.checkMobile();

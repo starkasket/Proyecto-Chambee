@@ -161,21 +161,39 @@
   </div>
 
   <aside class="right services-desktop">
-    <h3 class="services-title">Herramientas Premium</h3>
+    <h3 class="services-title">Mis Anuncios Publicados</h3>
 
     <div class="services-list services-list-desktop">
-      <div class="service-card" *ngFor="let tool of visibleTools; let idx = index" (click)="openTool(idx)">
-        <img [src]="tool.img" [alt]="tool.title" />
-        <div>
-          <h5 style="margin: 0; font-size: 1rem;">{{ tool.title }}</h5>
-          <p style="margin: 5px 0 0; font-size: 0.85rem; color: #666;">{{ tool.description }}</p>
+      <div *ngIf="misAnuncios.length === 0" class="text-center p-3 text-muted" style="font-size: 0.9rem;">
+        Aún no has publicado ninguna vacante.
+      </div>
+
+      <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-soft); cursor: pointer; margin-bottom: 12px;">
+        <div class="d-flex justify-content-between w-100 align-items-center mb-1">
+          <h5 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color);">{{ anuncio.titulo }}</h5>
+          <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem;">
+            {{ anuncio.estado }}
+          </span>
+        </div>
+        
+        <p style="margin: 0 0 10px; font-size: 0.85rem; color: var(--text-muted, #666);">
+          {{ anuncio.ubicacion }} • {{ anuncio.fechaPublicacion }}
+        </p>
+        
+        <div class="d-flex justify-content-between w-100 align-items-center mt-auto pt-2" style="border-top: 1px solid var(--border-soft);">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-color);">
+            <i class="bi bi-people-fill me-1"></i> {{ anuncio.candidatos }} postulantes
+          </span>
+          <button class="btn btn-sm" style="background-color: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); border-radius: 20px; font-weight: 600; padding: 2px 10px;">
+            Ver Detalles
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="services-footer">
-      <button class="services-see-more" (click)="toggleTools()">
-        {{ toolsOpen ? 'Ver menos' : 'Ver todas' }}
+    <div class="services-footer mt-3">
+      <button class="services-see-more" routerLink="/mis-vacantes" style="width: 100%; border-radius: 8px;">
+        Administrar todas mis vacantes
       </button>
     </div>
   </aside>
@@ -187,26 +205,41 @@
   <div class="services-panel" *ngIf="toolsOpen" (click)="$event.stopPropagation()">
     <div class="services-panel-header">
       <div>
-        <p class="services-panel-eyebrow">Chambee Empresas</p>
-        <h3>Herramientas</h3>
+        <p class="services-panel-eyebrow">Gestión de Vacantes</p>
+        <h3>Mis Anuncios</h3>
       </div>
       <button class="services-close" (click)="toggleTools()">×</button>
     </div>
 
     <div class="services-list">
-      <div class="service-card" *ngFor="let tool of employerTools; let idx = index" (click)="openTool(idx)">
-        <img [src]="tool.img" [alt]="tool.title" />
-        <div>
-          <h5>{{ tool.title }}</h5>
-          <p>{{ tool.description }}</p>
+      <div *ngIf="misAnuncios.length === 0" class="text-center p-3 text-muted" style="font-size: 0.9rem;">
+        Aún no has publicado ninguna vacante.
+      </div>
+      <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); margin-bottom: 12px;">
+        <div class="d-flex justify-content-between w-100 align-items-center mb-1">
+          <h5 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-color);">{{ anuncio.titulo }}</h5>
+          <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem;">
+            {{ anuncio.estado }}
+          </span>
+        </div>
+        <p style="margin: 0 0 10px; font-size: 0.85rem; color: var(--text-muted, #666);">
+          {{ anuncio.ubicacion }} • {{ anuncio.fechaPublicacion }}
+        </p>
+        <div class="d-flex justify-content-between w-100 align-items-center mt-auto pt-2" style="border-top: 1px solid var(--border-soft);">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-color);">
+            <i class="bi bi-people-fill me-1"></i> {{ anuncio.candidatos }} postulantes
+          </span>
+          <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; font-size: 0.75rem; padding: 4px 10px;">
+            Administrar
+          </button>
         </div>
       </div>
     </div>
   </div>
 
   <button class="services-bubble" (click)="toggleTools()">
-    <span class="services-bubble-icon">⚙️</span>
-    <span class="services-bubble-text">Herramientas</span>
+    <span class="services-bubble-icon">💼</span>
+    <span class="services-bubble-text">Mis Anuncios</span>
   </button>
 </section>
 
