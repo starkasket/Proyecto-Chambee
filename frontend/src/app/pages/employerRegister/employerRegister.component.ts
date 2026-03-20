@@ -75,8 +75,8 @@ export class EmployerRegisterComponent {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
-    // Redirige a las etiquetas después de registrar la empresa
-    this.router.navigate(['/home-user']);
+    // Redirige a home-employer después de registrar la empresa
+    this.router.navigate(['/home-employer']);
   }
 
   // --- BUSCAR CÓDIGO POSTAL ---
