@@ -1,0 +1,154 @@
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+  <div class="d-flex align-items-center gap-3">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="48">
+    <span class="fs-5 fw-semibold d-none d-md-block" style="color: var(--text-primary);">Bienvenido, {{ nombre_postulante }}</span>
+  </div>
+
+  <div class="search-container flex-grow-1 mx-4">
+    <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
+  </div>
+
+  <div class="nav-buttons d-flex align-items-center gap-3">
+    <div class="notification-wrapper" style="position: relative;">
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-primary);">
+          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+        </svg>
+        <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
+      </div>
+    </div>
+
+    <button class="btn d-flex align-items-center gap-2" style="background-color: var(--surface-primary); color: var(--text-primary); border: 1px solid var(--border-soft); border-radius: 50px;" routerLink="/perfil" title="Ir a mi perfil">
+      <i class="bi bi-person-circle fs-5"></i>
+      <span class="d-none d-md-block">Mi Perfil</span>
+    </button>
+
+    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+      <span class="theme-toggle-track"><span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span></span>
+    </button>
+    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menu" role="button" style="color: var(--text-primary);">☰</div>
+  </div>
+</nav>
+
+<div class="perfil-wrapper-crema">
+  <div class="container perfil-content-container">
+
+    <div class="perfil-card-top-yellow shadow-card">
+      
+      <div class="sidebar-wrapper">
+        <div class="avatar-card-white shadow-soft">
+          <img src="assets/perfil-user.jpg" alt="Foto de perfil">
+        </div>
+        <div class="side-menu-card-white shadow-soft">
+          <a href="#" class="menu-item active">Inicio</a>
+          <a href="#" class="menu-item">Ofertas</a>
+          <a href="#" class="menu-item">Mis favoritos</a>
+        </div>
+      </div>
+
+      <div class="info-card-white shadow-soft">
+        
+        <div class="info-details">
+          <div class="header-info">
+            <h2>Juan Jose Gabriel Jimenez</h2>
+            <p class="location">San Miguel de Allende, Guanajuato</p>
+          </div>
+
+          <div class="cv-actions">
+            <button class="btn-outline">Subir C.V</button>
+            <div class="toggle-container">
+              <span>Mostrar C.V publico</span>
+              <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="preferences-section">
+            <h3>Preferencias</h3>
+            <div class="tags">
+              <span class="tag">#Mecanica</span>
+              <span class="tag">#Mecanica</span>
+              <span class="tag">#Mecanica</span>
+              <span class="tag">#Mecanica</span>
+            </div>
+          </div>
+
+          <div class="contact-section">
+            <h3>Datos de contacto</h3>
+            <p>Numero de telefono<br><strong>1234567890</strong></p>
+            <p>Correo electronico<br><strong>prueba&#64;gmail.com</strong></p>
+          </div>
+        </div>
+
+        <div class="rating-section-right">
+          <h3>Mi Calificacion</h3>
+          <div class="rating-list">
+            <div class="rating-row"><span class="stars">★★★★★</span> <span class="num">12</span></div>
+            <div class="rating-row"><span class="stars">★★★★<span class="empty">★</span></span> <span class="num">12</span></div>
+            <div class="rating-row"><span class="stars">★★★<span class="empty">★★</span></span> <span class="num">12</span></div>
+            <div class="rating-row"><span class="stars">★★<span class="empty">★★★</span></span> <span class="num">12</span></div>
+            <div class="rating-row"><span class="stars">★<span class="empty">★★★★</span></span> <span class="num">12</span></div>
+          </div>
+          <button class="btn-dark-edit">Editar</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="folder-tabs-wrapper">
+      <div class="tab" (click)="setActiveTab('inicio')" [class.active]="activeTab === 'inicio'">Inicio</div>
+      <div class="tab" (click)="setActiveTab('favoritos')" [class.active]="activeTab === 'favoritos'">Mis favoritos</div>
+      <div class="tab" (click)="setActiveTab('postulaciones')" [class.active]="activeTab === 'postulaciones'">Mis postulaciones</div>
+    </div>
+
+    <div class="perfil-card-bottom-yellow shadow-card">
+      
+      <div *ngIf="activeTab === 'favoritos'" class="tab-content">
+        <h3 class="section-title">Mis favoritos</h3>
+        <div class="jobs-horizontal-scroll">
+          
+          <div class="job-card-fav shadow-soft" *ngFor="let i of [1,2,3,4,5]">
+            <img src="https://picsum.photos/300/150" alt="Cover" class="job-img">
+            <div class="job-body">
+              <div class="job-header">
+                <h4>AT&T S.M.A</h4>
+                <i class="bi bi-bookmark bookmark-icon"></i>
+              </div>
+              <p class="job-role">Vacante: Ejecutivo(a) de Ventas</p>
+              <p class="job-desc">Buscamos una persona para atención a clientes y cierre de ventas. Sueldo base de $13,000 mensuales + comisiones.</p>
+              <div class="job-footer">
+                <div class="rating">
+                  <span class="score">Calificacion 4.2</span>
+                  <span class="stars-small">★★★★<span class="half">★</span></span>
+                </div>
+                <div class="applicants">
+                  <i class="bi bi-person"></i> 9 Postulados
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="see-more-btn">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Ver mas</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'postulaciones'" class="tab-content">
+        <h3 class="section-title">Mis postulaciones</h3>
+        <div class="alert alert-info" style="border-radius: 12px; background: #ffffff; color: #111; padding: 20px; font-weight: 500;">
+          Aún no tienes postulaciones realizadas. ¡Empieza a buscar empleo!
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'inicio'" class="tab-content">
+        <h3 class="section-title">Bienvenido a tu perfil</h3>
+        <p style="color: #111; font-weight: 500; margin-left: 10px;">Aquí puedes gestionar tus datos personales y ver tus calificaciones.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

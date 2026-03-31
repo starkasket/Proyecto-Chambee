@@ -10,6 +10,7 @@ import { JobPreferencesComponent } from './pages/job-preferences/job-preferences
 // 1. Agregamos el import de tu Home User (verifica que la ruta a la carpeta sea la correcta)
 import { HomeUserComponent } from './pages/home-user/home-user.component';
 import { HomeEmployerComponent } from './pages/home-employer/home-employer.component';
+import { PerfilPostulanteComponent } from './pages/perfil-postulante/perfil-postulante.component';
 
 export const routes: Routes = [
   { 
@@ -47,6 +48,10 @@ export const routes: Routes = [
   {
 path: 'home-employer',
 component: HomeEmployerComponent
+  },
+  {
+    path: 'perfil-postulante',
+    component: PerfilPostulanteComponent
   },
   { 
     path: '**', 
