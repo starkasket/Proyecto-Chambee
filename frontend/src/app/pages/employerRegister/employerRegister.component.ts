@@ -126,6 +126,8 @@ export class EmployerRegisterComponent {
     this.api.registrarEmpleador(datos).subscribe({
       next: (res) => {
         this.mostrarModalExito(`¡Tu empresa ya forma parte de ChamBee!`);
+        const user = res.user;
+        localStorage.setItem('usuario', JSON.stringify(user));
       },
       error: (err) => {
         console.error('Error:', err);

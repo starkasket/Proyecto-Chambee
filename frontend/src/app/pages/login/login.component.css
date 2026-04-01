@@ -191,3 +191,11 @@
   align-items:center; 
   justify-content:center;
 }
+
+.eye-icon {
+  position: absolute;
+  right: 18px;
+  top: 23px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}

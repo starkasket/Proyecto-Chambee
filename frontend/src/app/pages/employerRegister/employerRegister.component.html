@@ -71,7 +71,7 @@
             </div>
 
             <input type="tel" class="form-control-custom" placeholder="Teléfono"
-              [(ngModel)]="form.telefono" name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$"/>
+              [(ngModel)]="form.telefono" name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" maxlength="10"/>
             <div *ngIf="telefono.invalid && telefono.touched" class="support-error" style="margin-bottom: 8px;">Telefono inválido</div>
 
             <textarea class="form-control-custom" placeholder="Descripción de la empresa" rows="3"
@@ -82,7 +82,7 @@
           <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
             <p class="section-label">Identificación</p>
             <input type="text" class="form-control-custom" placeholder="RFC Moral"
-              [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{12}"/>
+              [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{12}" maxlength="12"/>
             <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>    
 
             <p class="dir-label">Dirección Completa</p>

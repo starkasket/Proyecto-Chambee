@@ -51,7 +51,8 @@
         </div>
 
         <div class="input-group">
-          <input type="password" formControlName="contrasena" placeholder="Contraseña">
+          <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="contrasena" placeholder="Contraseña">
+          <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword =!mostrarPassword"></i>
         </div>
 
         <div class="options">

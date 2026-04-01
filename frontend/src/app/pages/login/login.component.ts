@@ -32,7 +32,7 @@ export class LoginComponent {
     });
   }
 
-  
+  mostrarPassword = false;
   
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
@@ -69,7 +69,16 @@ export class LoginComponent {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
-    this.router.navigate(['/home-user']); 
+
+      const user = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+    const rutas: any = {
+      postulante: '/home-user',
+      empleador: '/home-employer'
+      // administrador: '/home-administrador'
+    };
+
+    this.router.navigate([rutas[user.rol] || '/']); 
   }
 
   onLogin() {
@@ -80,9 +89,8 @@ export class LoginComponent {
         next: (res) => {
           const user = res.user;
 
-          localStorage.setItem('usuario', JSON.stringify({
-    nombre: user.nombre
-        }));
+         localStorage.setItem('usuario', JSON.stringify(user));
+
           console.log('Respuesta del servidor:', res);
           this.mostrarModalExito();
            

@@ -76,7 +76,7 @@ app.post("/postulantes/registro", async (req, res) => {
       codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
-    RETURNING id_postulante, nombre_postulante, correo_electronico, estado_cuenta`;
+    RETURNING id_postulante AS id, nombre_postulante AS nombre, correo_electronico AS correo, estado_cuenta`;
 
     const values = [
       nombre_postulante, apellido_paterno_postulante,
@@ -87,8 +87,16 @@ app.post("/postulantes/registro", async (req, res) => {
 
     const result = await pool.query(query, values);
 
-    res.status(201).json(result.rows[0]);
-    console.log("Postulante creado correctamente");
+     const user = {
+      ...result.rows[0],
+      rol: "postulante"
+    };
+
+    res.status(201).json({
+      message: "Cuenta cread< correctamente",
+      user
+    });
+
 
   } catch (err) {
     console.log(err);
@@ -113,7 +121,7 @@ app.post("/empleadores/registro", async (req, res) => {
       rfc, descripcion
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-    RETURNING id_empleador, nombre_empresa, correo_electronico, estado`;
+    RETURNING id_empleador AS id, nombre_empresa AS nombre, correo_electronico AS correo, estado`;
 
     const values = [
       nombre_empresa, correo_electronico, hashedPassword, pais,
@@ -123,7 +131,15 @@ app.post("/empleadores/registro", async (req, res) => {
 
     const result = await pool.query(query, values);
 
-    res.status(201).json(result.rows[0]);
+     const user = {
+      ...result.rows[0],
+      rol: "empleador"
+    };
+
+    res.status(201).json({
+      message: "Cuenta creada correctamente",
+      user
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -150,6 +150,9 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }, 9000);
     this.checkMobile();
     this.fillApplicantsToMax();
+
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      this.nombre_empleador = usuario.nombre || 'Usuario';
   }
 
   ngOnDestroy() {

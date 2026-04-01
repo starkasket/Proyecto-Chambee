@@ -63,6 +63,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit() {
     this.api.getSepomex().subscribe(data => this.sepomex = data);
+    
   }
 
   // --- MODAL DE ERROR ---
@@ -138,6 +139,8 @@ export class RegisterComponent implements OnInit {
     this.api.registrarPostulante(datos).subscribe({
       next: (res) => {
         this.mostrarModalExito('¡Bienvenido a ChamBee!');
+        const user = res.user;
+        localStorage.setItem('usuario', JSON.stringify(user));
       },
       error: (err: any) => {
         console.error('Error:', err);

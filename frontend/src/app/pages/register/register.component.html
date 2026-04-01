@@ -77,7 +77,7 @@
               
 
           <input type="tel" class="form-control-custom" placeholder="Teléfono" [(ngModel)]="form.telefono"
-            name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" />
+            name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" maxlength="10"/>
              <div *ngIf="telefono.invalid && telefono.touched" class="support-error" style="margin-bottom: 8px;">Telefono inválido</div>
              
           <select class="form-control-custom" [(ngModel)]="form.sexo" name="sexo" required #sexo="ngModel"  >
@@ -109,14 +109,14 @@
        
         <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
           <p class="section-label">Identificación</p>
-          <input type="text" class="form-control-custom" placeholder="RFC" [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{13}"/>
+          <input type="text" class="form-control-custom" placeholder="RFC" [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{13}" maxlength="13"/>
           <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>     
        
-          <input type="text" class="form-control-custom" placeholder="CURP" [(ngModel)]="form.curp" name="curp" #curp="ngModel" required pattern=".{18}"/>
+          <input type="text" class="form-control-custom" placeholder="CURP" [(ngModel)]="form.curp" name="curp" #curp="ngModel" required pattern=".{18}" maxlength="18"/>
            <div *ngIf="curp.invalid && curp.dirty" class="support-error" style="margin-bottom: 8px;">CURP inválida</div>     
           <p class="dir-label">Dirección Completa</p>
           <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal"
-            name="codigo_postal" (blur)="buscarCP()" />
+            name="codigo_postal" (blur)="buscarCP()" maxlength="5"/>
           <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado" name="estado"
             readonly />
           <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad" name="ciudad"
