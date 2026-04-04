@@ -125,6 +125,30 @@ export class EmployerRegisterComponent {
 
     this.api.registrarEmpleador(datos).subscribe({
       next: (res) => {
+        // Sesión mínima para identificar al empleador recién registrado.
+        localStorage.setItem('usuario', JSON.stringify({
+          id: res.id_empleador,
+          nombre: res.nombre_empresa,
+          correo: res.correo_electronico,
+          rol: 'empleador'
+        }));
+
+        // Cache local del perfil para mostrarlo de inmediato en la vista /perfil.
+        localStorage.setItem('perfilEmpleador', JSON.stringify({
+          id_empleador: res.id_empleador,
+          nombre_empresa: this.form.nombre_empresa,
+          correo_electronico: this.form.correo_electronico,
+          pais: this.form.pais,
+          estado: this.form.estado,
+          ciudad: this.form.ciudad,
+          colonia: this.form.colonia,
+          calle: this.form.calle,
+          codigo_postal: this.form.codigo_postal,
+          telefono: this.form.telefono,
+          rfc: this.form.rfc,
+          descripcion: this.form.descripcion
+        }));
+
         this.mostrarModalExito(`¡Tu empresa ya forma parte de ChamBee!`);
         const user = res.user;
         localStorage.setItem('usuario', JSON.stringify(user));

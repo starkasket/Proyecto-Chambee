@@ -1,4 +1,3 @@
-
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -12,13 +11,14 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-
 export class LoginComponent {
-
   loginForm: FormGroup;
+  // Se actualiza segun rol para enviar al home correcto al cerrar modal.
+  private redirectAfterLogin = '/home-user';
 
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
+  mostrarPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -32,8 +32,6 @@ export class LoginComponent {
     });
   }
 
-  mostrarPassword = false;
-  
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -41,8 +39,6 @@ export class LoginComponent {
     if (modal) {
       modal.classList.add('show');
       modal.style.display = 'flex';
-       
-
     }
   }
 
@@ -54,7 +50,7 @@ export class LoginComponent {
     }
   }
 
-  // --- MODAL DE ÉXITO ---
+  // --- MODAL DE EXITO ---
   mostrarModalExito() {
     const modal = document.getElementById('modalSaludo');
     if (modal) {
@@ -70,15 +66,7 @@ export class LoginComponent {
       modal.style.display = 'none';
     }
 
-      const user = JSON.parse(localStorage.getItem('usuario') || '{}');
-
-    const rutas: any = {
-      postulante: '/home-user',
-      empleador: '/home-employer'
-      // administrador: '/home-administrador'
-    };
-
-    this.router.navigate([rutas[user.rol] || '/']); 
+    this.router.navigate([this.redirectAfterLogin]);
   }
 
   onLogin() {
@@ -89,20 +77,27 @@ export class LoginComponent {
         next: (res) => {
           const user = res.user;
 
-         localStorage.setItem('usuario', JSON.stringify(user));
+          localStorage.setItem('usuario', JSON.stringify({
+            id: user.id,
+            nombre: user.nombre,
+            correo: user.correo,
+            rol: user.rol
+          }));
+
+          this.redirectAfterLogin = user.rol === 'empleador'
+            ? '/home-employer'
+            : '/home-user';
 
           console.log('Respuesta del servidor:', res);
           this.mostrarModalExito();
-           
         },
         error: (err) => {
           console.error('Error en el login:', err);
-          this.mostrarModal('Híjole, algo falló. Revisa que tus datos sean correctos.');
+          this.mostrarModal('Hijole, algo fallo. Revisa que tus datos sean correctos.');
         }
       });
-
     } else {
-      this.mostrarModal('Formulario no válido. Checa el correo o la contraseña (mínimo 3 caracteres).');
+      this.mostrarModal('Formulario no valido. Checa el correo o la contrasena (minimo 3 caracteres).');
     }
   }
 }

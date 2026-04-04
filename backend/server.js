@@ -146,6 +146,41 @@ app.post("/empleadores/registro", async (req, res) => {
   }
 });
 
+/* ===== PERFIL DE EMPLEADOR ===== */
+app.get("/empleadores/:id/perfil", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Perfil completo del empleador para la vista "Mi Perfil" en frontend.
+    const query = `SELECT
+      id_empleador,
+      nombre_empresa,
+      correo_electronico,
+      pais,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      telefono,
+      rfc,
+      descripcion
+    FROM empleador
+    WHERE id_empleador = $1`;
+
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Empleador no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener perfil del empleador" });
+  }
+});
+
 /* ===== LOGIN ===== */
 app.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;

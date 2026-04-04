@@ -2,42 +2,41 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { EmployerRegisterComponent } from './pages/employerRegister/employerRegister.component';
 import { RegisterComponent } from './pages/register/register.component';
-import { LoginComponent } from './pages/login/login.component'; 
+import { LoginComponent } from './pages/login/login.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { JobPreferencesComponent } from './pages/job-preferences/job-preferences.component';
-
-// 1. Agregamos el import de tu Home User (verifica que la ruta a la carpeta sea la correcta)
 import { HomeUserComponent } from './pages/home-user/home-user.component';
 import { HomeEmployerComponent } from './pages/home-employer/home-employer.component';
 import { PerfilPostulanteComponent } from './pages/perfil-postulante/perfil-postulante.component';
+import { EmployerProfileComponent } from './pages/employer-profile/employer-profile.component';
 
 export const routes: Routes = [
-  { 
-    path: '', 
-    component: HomeComponent 
+  {
+    path: '',
+    component: HomeComponent
   },
-  { 
-    path: 'login', 
-    component: LoginComponent 
+  {
+    path: 'login',
+    component: LoginComponent
   },
-  { 
-    path: 'employer-register', 
-    component: EmployerRegisterComponent 
+  {
+    path: 'employer-register',
+    component: EmployerRegisterComponent
   },
-  { 
-    path: 'register', 
-    component: RegisterComponent 
+  {
+    path: 'register',
+    component: RegisterComponent
   },
-  { 
-    path: 'forgot-password', 
-    component: ForgotPasswordComponent 
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent
   },
-  { 
-    path: 'reset-password', 
-    component: ResetPasswordComponent 
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
   },
-  { 
+  {
     path: 'job-preferences',
     component: JobPreferencesComponent
   },
@@ -46,15 +45,20 @@ export const routes: Routes = [
     component: HomeUserComponent
   },
   {
-path: 'home-employer',
-component: HomeEmployerComponent
+    path: 'home-employer',
+    component: HomeEmployerComponent
   },
   {
     path: 'perfil-postulante',
     component: PerfilPostulanteComponent
   },
-  { 
-    path: '**', 
-    redirectTo: '' 
-  } 
+  {
+    path: 'perfil',
+    // Pantalla donde el empleador consulta su informacion registrada.
+    component: EmployerProfileComponent
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];

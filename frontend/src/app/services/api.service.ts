@@ -24,6 +24,11 @@ export class ApiService {
 registrarPostulante(datos: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/postulantes/registro`, datos);
 }
+
+  obtenerPerfilEmpleador(idEmpleador: number | string): Observable<any> {
+    // Endpoint usado por el componente de perfil de empleador.
+    return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`);
+  }
 // Buscar por codigo postal
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');

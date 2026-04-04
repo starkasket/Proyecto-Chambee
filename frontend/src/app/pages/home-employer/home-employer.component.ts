@@ -48,7 +48,7 @@ interface NotificationItem {
 })
 export class HomeEmployerComponent implements OnInit, OnDestroy {
   // Variables de la empresa
-  nombre_empleador: string = 'Tech Solutions'; 
+  nombre_empleador: string = 'Empresa';
 
   // Control de la interfaz
   toolsOpen = false;
@@ -145,6 +145,11 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    if (usuario?.nombre) {
+      this.nombre_empleador = usuario.nombre;
+    }
+
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
@@ -209,8 +214,8 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    // 1. Opcional: Aquí puedes limpiar el localStorage si guardas datos de sesión de tu backend en PostgreSQL
-    // localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('perfilEmpleador');
     
     // 2. Cerramos los menús 
     this.menuOpen = false;
