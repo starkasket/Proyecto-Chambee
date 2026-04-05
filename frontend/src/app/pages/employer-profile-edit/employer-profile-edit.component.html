@@ -1,0 +1,203 @@
+<div class="edit-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ empresaNombre }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+              <span class="notif-header">{{ notif.title }}</span>
+              <span class="notif-message">{{ notif.message }}</span>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
+        <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/post-job" class="desktop-menu-link">Crear oferta</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="edit-shell">
+    <header class="edit-header">
+      <div>
+        <p class="eyebrow">Perfil de empleador</p>
+        <h1>Editar perfil de empresa</h1>
+        <p class="intro">Actualiza la informacion de tu empresa para que tu perfil y tu panel se mantengan al dia.</p>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="ghost-btn" (click)="volverPerfil()">Volver al perfil</button>
+      </div>
+    </header>
+
+    <section class="status-card" *ngIf="cargando">
+      Cargando informacion del perfil...
+    </section>
+
+    <section class="status-card error" *ngIf="!cargando && error">
+      {{ error }}
+    </section>
+
+    <section class="status-card success" *ngIf="!cargando && exito">
+      {{ exito }}
+    </section>
+
+    <form class="edit-form" *ngIf="!cargando" [formGroup]="perfilForm" (ngSubmit)="guardarCambios()">
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Datos principales</p>
+            <h2>Identidad de la empresa</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Nombre de la empresa</span>
+            <input type="text" formControlName="nombre_empresa" placeholder="Ej. Chambee Mexico" />
+            <small *ngIf="campoInvalido('nombre_empresa')">Ingresa el nombre de la empresa.</small>
+          </label>
+
+          <label class="field">
+            <span>Correo electronico</span>
+            <input type="email" formControlName="correo_electronico" placeholder="empresa@correo.com" />
+            <small *ngIf="campoInvalido('correo_electronico')">Escribe un correo valido.</small>
+          </label>
+
+          <label class="field">
+            <span>Telefono</span>
+            <input type="text" formControlName="telefono" placeholder="4151234567" />
+            <small *ngIf="campoInvalido('telefono')">Ingresa un telefono de contacto.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>RFC</span>
+            <input
+              type="text"
+              formControlName="rfc"
+              placeholder="RFC de la empresa"
+              readonly
+              aria-readonly="true"
+            />
+            <small class="locked-help">El RFC no se puede modificar una vez registrado.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Ubicacion</p>
+            <h2>Domicilio registrado</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Pais</span>
+            <input type="text" formControlName="pais" placeholder="Mexico" />
+            <small *ngIf="campoInvalido('pais')">Ingresa el pais.</small>
+          </label>
+
+          <label class="field">
+            <span>Estado</span>
+            <input type="text" formControlName="estado" placeholder="Guanajuato" />
+            <small *ngIf="campoInvalido('estado')">Ingresa el estado.</small>
+          </label>
+
+          <label class="field">
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" placeholder="San Miguel de Allende" />
+            <small *ngIf="campoInvalido('ciudad')">Ingresa la ciudad.</small>
+          </label>
+
+          <label class="field">
+            <span>Colonia</span>
+            <input type="text" formControlName="colonia" placeholder="Nombre de la colonia" />
+            <small *ngIf="campoInvalido('colonia')">Ingresa la colonia.</small>
+          </label>
+
+          <label class="field field-wide">
+            <span>Calle</span>
+            <input type="text" formControlName="calle" placeholder="Calle y numero" />
+            <small *ngIf="campoInvalido('calle')">Ingresa la calle.</small>
+          </label>
+
+          <label class="field">
+            <span>Codigo postal</span>
+            <input type="text" formControlName="codigo_postal" placeholder="37755" />
+            <small *ngIf="campoInvalido('codigo_postal')">Ingresa el codigo postal.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Presentacion</p>
+            <h2>Descripcion de empresa</h2>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Descripcion</span>
+          <textarea rows="6" formControlName="descripcion" placeholder="Cuenta a los candidatos quien eres, que hace tu empresa y por que deberian postularse."></textarea>
+          <small *ngIf="campoInvalido('descripcion')">La descripcion es demasiado larga.</small>
+        </label>
+      </article>
+
+      <div class="form-actions">
+        <button type="button" class="ghost-btn" (click)="volverPerfil()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <button class="fab-create" type="button" (click)="crearOferta()" aria-label="Crear oferta laboral">
+    <span class="fab-plus">+</span>
+    <span class="fab-text">Crear oferta</span>
+  </button>
+</div>

@@ -181,6 +181,224 @@ app.get("/empleadores/:id/perfil", async (req, res) => {
   }
 });
 
+app.put("/empleadores/:id/perfil", async (req, res) => {
+  const { id } = req.params;
+  const {
+    nombre_empresa,
+    correo_electronico,
+    pais,
+    estado,
+    ciudad,
+    colonia,
+    calle,
+    codigo_postal,
+    telefono,
+    rfc,
+    descripcion,
+  } = req.body;
+
+  try {
+    // Se actualizan solo los campos editables visibles en la vista de perfil.
+    const query = `UPDATE empleador
+      SET nombre_empresa = $1,
+          correo_electronico = $2,
+          pais = $3,
+          estado = $4,
+          ciudad = $5,
+          colonia = $6,
+          calle = $7,
+          codigo_postal = $8,
+          telefono = $9,
+          rfc = $10,
+          descripcion = $11
+      WHERE id_empleador = $12
+      RETURNING
+        id_empleador,
+        nombre_empresa,
+        correo_electronico,
+        pais,
+        estado,
+        ciudad,
+        colonia,
+        calle,
+        codigo_postal,
+        telefono,
+        rfc,
+        descripcion`;
+
+    const values = [
+      nombre_empresa,
+      correo_electronico,
+      pais,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      telefono,
+      rfc,
+      descripcion,
+      id,
+    ];
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Empleador no encontrado" });
+    }
+
+    res.json({
+      message: "Perfil actualizado correctamente",
+      perfil: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al actualizar perfil del empleador" });
+  }
+});
+
+app.get("/empleadores/:id/anuncios", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // El home y el perfil del empleador reutilizan esta lista resumida.
+    const query = `SELECT
+      id_anuncio,
+      titulo,
+      descripcion,
+      tipo_anuncio,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      salario,
+      modalidad,
+      fecha_publicacion,
+      estado_anuncio,
+      vistas
+    FROM anuncios
+    WHERE id_empleador = $1
+    ORDER BY fecha_publicacion DESC NULLS LAST`;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener anuncios del empleador" });
+  }
+});
+
+app.post("/empleadores/:id/anuncios", async (req, res) => {
+  const { id } = req.params;
+  const {
+    titulo,
+    descripcion,
+    tipo_anuncio,
+    estado,
+    ciudad,
+    colonia,
+    calle,
+    codigo_postal,
+    salario,
+    modalidad,
+    estado_anuncio,
+  } = req.body;
+
+  try {
+    // Se crea una oferta laboral ligada al empleador autenticado.
+    const query = `INSERT INTO anuncios (
+      titulo,
+      descripcion,
+      tipo_anuncio,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      salario,
+      modalidad,
+      estado_anuncio,
+      id_empleador,
+      vistas
+    )
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,0)
+    RETURNING
+      id_anuncio,
+      titulo,
+      descripcion,
+      tipo_anuncio,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      salario,
+      modalidad,
+      fecha_publicacion,
+      estado_anuncio,
+      vistas`;
+
+    const values = [
+      titulo,
+      descripcion,
+      tipo_anuncio,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      salario,
+      modalidad,
+      estado_anuncio,
+      id,
+    ];
+
+    const result = await pool.query(query, values);
+
+    res.status(201).json({
+      message: "Oferta laboral creada correctamente",
+      anuncio: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al crear la oferta laboral" });
+  }
+});
+
+app.get("/anuncios", async (_req, res) => {
+  try {
+    // Vista publica para que los postulantes puedan ver ofertas activas.
+    const query = `SELECT
+      a.id_anuncio,
+      a.titulo,
+      a.descripcion,
+      a.tipo_anuncio,
+      a.estado,
+      a.ciudad,
+      a.colonia,
+      a.calle,
+      a.codigo_postal,
+      a.salario,
+      a.modalidad,
+      a.fecha_publicacion,
+      a.estado_anuncio,
+      a.vistas,
+      e.nombre_empresa,
+      e.descripcion AS descripcion_empresa
+    FROM anuncios a
+    INNER JOIN empleador e ON e.id_empleador = a.id_empleador
+    WHERE a.estado_anuncio = 'ACTIVO'
+    ORDER BY a.fecha_publicacion DESC NULLS LAST`;
+
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener anuncios publicos" });
+  }
+});
+
 /* ===== LOGIN ===== */
 app.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;

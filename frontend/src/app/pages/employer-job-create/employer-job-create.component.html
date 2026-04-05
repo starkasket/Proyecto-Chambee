@@ -1,0 +1,192 @@
+<div class="offer-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ empresaNombre }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+              <span class="notif-header">{{ notif.title }}</span>
+              <span class="notif-message">{{ notif.message }}</span>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
+        <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/post-job" class="desktop-menu-link">Crear oferta</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="offer-shell">
+    <header class="offer-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Panel de empleador</p>
+        <h1>Crear oferta laboral</h1>
+        <p>Publica una vacante nueva para <strong>{{ empresaNombre }}</strong> usando los campos reales de la tabla <strong>anuncios</strong>.</p>
+      </div>
+
+      <div class="hero-actions">
+        <button type="button" class="ghost-btn" (click)="volverPanel()">Volver al panel</button>
+      </div>
+    </header>
+
+    <section class="status-card" *ngIf="cargandoPerfil">
+      Cargando datos base del empleador...
+    </section>
+
+    <section class="status-card error" *ngIf="error">
+      {{ error }}
+    </section>
+
+    <section class="status-card success" *ngIf="exito">
+      {{ exito }}
+    </section>
+
+    <form class="offer-layout" [formGroup]="ofertaForm" (ngSubmit)="publicarOferta()">
+      <article class="offer-card offer-main">
+        <div class="card-head">
+          <p class="eyebrow">Vacante</p>
+          <h2>Informacion principal</h2>
+        </div>
+
+        <label class="field">
+          <span>Titulo del anuncio</span>
+          <input type="text" formControlName="titulo" placeholder="Ej. Ejecutivo(a) de ventas" />
+          <small *ngIf="campoInvalido('titulo')">Escribe un titulo para la vacante.</small>
+        </label>
+
+        <label class="field">
+          <span>Descripcion del anuncio</span>
+          <textarea rows="8" formControlName="descripcion" placeholder="Explica responsabilidades, beneficios y perfil buscado."></textarea>
+          <small *ngIf="campoInvalido('descripcion')">Describe la oferta laboral.</small>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Tipo de anuncio</span>
+            <select formControlName="tipo_anuncio">
+              <option value="Empleo">Empleo</option>
+              <option value="Servicio">Servicio</option>
+              <option value="Proyecto">Proyecto</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Modalidad</span>
+            <select formControlName="modalidad">
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Hibrido">Hibrido</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Salario</span>
+            <input type="number" formControlName="salario" placeholder="12000" />
+            <small *ngIf="campoInvalido('salario')">Ingresa un salario mayor a 0.</small>
+          </label>
+
+          <label class="field">
+            <span>Estado del anuncio</span>
+            <select formControlName="estado_anuncio">
+              <option value="ACTIVO">ACTIVO</option>
+              <option value="PAUSADO">PAUSADO</option>
+              <option value="CERRADO">CERRADO</option>
+            </select>
+          </label>
+        </div>
+      </article>
+
+      <article class="offer-card offer-side">
+        <div class="card-head">
+          <p class="eyebrow">Ubicacion</p>
+          <h2>Direccion de la oferta</h2>
+        </div>
+
+        <div class="form-grid single-col">
+          <label class="field">
+            <span>Estado</span>
+            <input type="text" formControlName="estado" placeholder="Guanajuato" />
+            <small *ngIf="campoInvalido('estado')">Ingresa el estado.</small>
+          </label>
+
+          <label class="field">
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" placeholder="San Miguel de Allende" />
+            <small *ngIf="campoInvalido('ciudad')">Ingresa la ciudad.</small>
+          </label>
+
+          <label class="field">
+            <span>Colonia</span>
+            <input type="text" formControlName="colonia" placeholder="Colonia o zona" />
+            <small *ngIf="campoInvalido('colonia')">Ingresa la colonia.</small>
+          </label>
+
+          <label class="field">
+            <span>Calle</span>
+            <input type="text" formControlName="calle" placeholder="Calle y numero" />
+            <small *ngIf="campoInvalido('calle')">Ingresa la calle.</small>
+          </label>
+
+          <label class="field">
+            <span>Codigo postal</span>
+            <input type="text" formControlName="codigo_postal" placeholder="37755" />
+            <small *ngIf="campoInvalido('codigo_postal')">Ingresa el codigo postal.</small>
+          </label>
+        </div>
+
+        <div class="preview-box">
+          <p class="preview-label">Resumen rapido</p>
+          <strong>{{ ofertaForm.value.titulo || 'Tu nueva vacante' }}</strong>
+          <p>{{ ofertaForm.value.modalidad || 'Modalidad' }} • {{ ofertaForm.value.estado || 'Estado' }}</p>
+          <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}</p>
+        </div>
+
+        <button type="submit" class="primary-btn" [disabled]="guardando">
+          {{ guardando ? 'Publicando...' : 'Publicar oferta' }}
+        </button>
+      </article>
+    </form>
+  </div>
+</div>

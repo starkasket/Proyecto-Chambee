@@ -1,6 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { ApiService } from '../../services/api.service';
 // Importa tu servicio de tema si lo tienes en esta ruta, si no, ajusta el path:
 // import { ThemeService } from '../../services/theme.service'; 
 
@@ -24,11 +25,14 @@ interface Applicant {
 }
 
 interface Anuncio {
+  id?: string;
   titulo: string;
   ubicacion: string;
   fechaPublicacion: string;
   candidatos: number;
   estado: string;
+  descripcion?: string;
+  modalidad?: string;
 }
 
 interface NotificationItem {
@@ -140,15 +144,14 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly api: ApiService
     // private readonly themeService: ThemeService // Descomenta si usas el servicio
   ) {}
 
   ngOnInit() {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    if (usuario?.nombre) {
-      this.nombre_empleador = usuario.nombre;
-    }
+    this.nombre_empleador = usuario?.nombre || 'Usuario';
 
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
@@ -156,8 +159,9 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     this.checkMobile();
     this.fillApplicantsToMax();
 
-        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-      this.nombre_empleador = usuario.nombre || 'Usuario';
+    if (usuario?.id) {
+      this.cargarAnuncios(usuario.id);
+    }
   }
 
   ngOnDestroy() {
@@ -226,6 +230,10 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']); // Cambia '/' por tu ruta de login si la tienes
   }
 
+  crearOferta() {
+    this.router.navigate(['/post-job']);
+  }
+
   // --- RESPONSIVE Y UTILIDADES ---
   @HostListener('window:resize')
   onResize() {
@@ -259,6 +267,50 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
   showMoreApplicants() {
     this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible);
+  }
+
+  private cargarAnuncios(idEmpleador: string) {
+    // Cuando hay anuncios reales en BD, reemplazamos el contenido demo del panel.
+    this.api.obtenerAnunciosEmpleador(idEmpleador).subscribe({
+      next: (anunciosDb) => {
+        if (!anunciosDb.length) {
+          return;
+        }
+
+        this.misAnuncios = anunciosDb.map((anuncio) => ({
+          id: anuncio.id_anuncio,
+          titulo: anuncio.titulo,
+          ubicacion: `${anuncio.ciudad}, ${anuncio.estado}`,
+          fechaPublicacion: this.formatearFecha(anuncio.fecha_publicacion),
+          candidatos: anuncio.vistas || 0,
+          estado: this.mapAnnouncementState(anuncio.estado_anuncio),
+          descripcion: anuncio.descripcion,
+          modalidad: anuncio.modalidad
+        }));
+      },
+      error: () => {
+        // Si falla el backend, se mantiene la experiencia con los datos simulados.
+      }
+    });
+  }
+
+  private mapAnnouncementState(estado: string): string {
+    if (estado === 'ACTIVO') return 'Activa';
+    if (estado === 'PAUSADO') return 'Pausada';
+    return 'Cerrada';
+  }
+
+  private formatearFecha(fecha: string | null): string {
+    if (!fecha) {
+      return 'Recien publicada';
+    }
+
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
   }
 
   // --- CARRUSEL ---

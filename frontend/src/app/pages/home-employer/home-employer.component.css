@@ -498,6 +498,37 @@ body {
   margin-top: 12px;
 }
 
+.section-head-row {
+  gap: 16px;
+}
+
+.employer-top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.desktop-announcements-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mini-create-btn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
 .services-desktop {
   display: block;
 }
@@ -601,6 +632,39 @@ body {
 .services-bubble-text {
   font-weight: 700;
   letter-spacing: 0.01em;
+}
+
+.offer-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1450;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 18px 14px 14px;
+  background: linear-gradient(135deg, #111111, #f4bf00);
+  color: #ffffff;
+  box-shadow: 0 18px 38px rgba(17, 17, 17, 0.28);
+  cursor: pointer;
+}
+
+.offer-fab-plus {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.offer-fab-text {
+  font-weight: 700;
 }
 
 /* ===== Menu lateral movil ===== */
@@ -751,6 +815,11 @@ body {
   .footer-links {
     justify-content: flex-start;
   }
+
+  .section-head-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
 }
 
 /* ===== Movil ===== */
@@ -838,6 +907,34 @@ body {
 
   .services-bubble-text {
     font-size: 14px;
+  }
+
+  .employer-top-actions {
+    width: 100%;
+  }
+
+  .employer-top-actions .register {
+    flex: 1 1 0;
+  }
+
+  .offer-fab {
+    right: 14px;
+    bottom: 14px;
+    padding: 0;
+    width: 60px;
+    height: 60px;
+    justify-content: center;
+  }
+
+  .offer-fab-plus {
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    font-size: 2rem;
+  }
+
+  .offer-fab-text {
+    display: none;
   }
 
   .home-footer {

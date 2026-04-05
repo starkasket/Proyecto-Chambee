@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
+import { ApiService } from '../../services/api.service';
 
 // Interfaces para estructurar los datos
 interface Slide {
@@ -18,6 +19,7 @@ interface Slide {
 }
 
 interface Job {
+  id?: string;
   company: string;
   title: string;
   salary: string;
@@ -78,7 +80,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly themeService: ThemeService,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly api: ApiService
   ) {}
 
   slides: Slide[] = [
@@ -157,6 +160,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }, 9000);
     this.checkMobile();
     this.fillJobsToMax();
+    this.cargarOfertasPublicas();
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       this.nombre_postulante = usuario.nombre || 'Usuario';
   }
@@ -258,6 +262,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     const baseJobs = [...this.jobs];
     let index = 0;
 
+    if (!baseJobs.length) {
+      return;
+    }
+
     while (this.jobs.length < this.maxVisible) {
       const baseJob = baseJobs[index % baseJobs.length];
       const imageSeed = this.jobs.length + 1;
@@ -272,6 +280,60 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   showMoreJobs() {
     this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible);
+  }
+
+  private cargarOfertasPublicas() {
+    this.api.obtenerAnunciosPublicos().subscribe({
+      next: (anuncios) => {
+        if (!anuncios.length) {
+          return;
+        }
+
+        const ofertas = anuncios.map((anuncio) => ({
+          id: anuncio.id_anuncio,
+          company: anuncio.nombre_empresa,
+          companyDescription: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
+          title: anuncio.titulo,
+          salary: this.formatearSalario(anuncio.salario),
+          location: `${anuncio.ciudad}, ${anuncio.estado}`,
+          mode: anuncio.modalidad,
+          description: anuncio.descripcion,
+          img: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=60'
+        }));
+
+        this.slides = ofertas.slice(0, Math.min(5, ofertas.length));
+
+        this.jobs = anuncios.map((anuncio) => ({
+          id: anuncio.id_anuncio,
+          company: anuncio.nombre_empresa,
+          title: anuncio.titulo,
+          salary: this.formatearSalario(anuncio.salario),
+          img: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
+          rating: anuncio.modalidad || 'Empleo',
+          applicants: anuncio.vistas || 0
+        }));
+
+        this.visibleCount = 8;
+        this.maxVisible = Math.max(28, this.jobs.length);
+        this.fillJobsToMax();
+      },
+      error: () => {
+        // Si falla el backend se conservan los datos demo para no romper la vista.
+      }
+    });
+  }
+
+  private formatearSalario(salario: string | number): string {
+    const numero = Number(salario);
+    if (Number.isNaN(numero)) {
+      return '$0 MXN';
+    }
+
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      maximumFractionDigits: 0
+    }).format(numero);
   }
 
   nextSlide() {

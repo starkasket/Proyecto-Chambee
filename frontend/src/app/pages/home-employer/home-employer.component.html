@@ -9,7 +9,6 @@
   </div>
 
   <div class="nav-buttons d-flex align-items-center gap-3">
-    
     <div class="notification-wrapper" style="position: relative;">
       <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
@@ -35,8 +34,8 @@
       </div>
     </div>
 
-    <button 
-      class="btn d-flex align-items-center gap-2" 
+    <button
+      class="btn d-flex align-items-center gap-2"
       style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
       routerLink="/perfil"
       title="Ir a mi perfil">
@@ -54,9 +53,9 @@
       <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis Vacantes</a>
       <a routerLink="/buscar-talento" class="desktop-menu-link">Buscar Talento</a>
       <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear Vacante</a>
-      <a routerLink="/facturacion" class="desktop-menu-link">Facturación</a>
+      <a routerLink="/facturacion" class="desktop-menu-link">Facturacion</a>
       <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
-      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
     </div>
   </div>
 
@@ -70,7 +69,7 @@
         <a class="mobile-nav-link" routerLink="/buscar-talento" (click)="toggleMenu()">Buscar Talento</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear Vacante</a>
         <hr />
-        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
       </nav>
     </aside>
   </div>
@@ -78,7 +77,6 @@
 
 <div class="container main-layout">
   <div class="left">
-    
     <h2 class="mb-4" style="font-weight: 700; color: var(--text-color);">Postulaciones Recientes</h2>
 
     <div class="carousel">
@@ -92,7 +90,7 @@
                 </div>
                 <div class="featured-company-copy">
                   <h3>{{ slide.name }}</h3>
-                  <p style="color: var(--primary-color); font-weight: 600;">Postuló para: {{ slide.appliedFor }}</p>
+                  <p style="color: var(--primary-color); font-weight: 600;">Postulo para: {{ slide.appliedFor }}</p>
                 </div>
               </div>
 
@@ -106,7 +104,7 @@
 
             <div class="featured-content">
               <div class="featured-meta">
-                <span class="featured-chip">Postulación Nueva</span>
+                <span class="featured-chip">Postulacion Nueva</span>
                 <span class="featured-chip">{{ slide.timeAgo }}</span>
               </div>
               <button class="btn featured-btn" (click)="viewCV(slide); $event.stopPropagation()">Ver CV</button>
@@ -122,22 +120,25 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-3 section-head-row">
       <h2 style="font-weight: 700; color: var(--text-color);">Todas las Postulaciones</h2>
-      <button class="btn register" routerLink="/buscar-talento">Buscar más talento</button>
+      <div class="employer-top-actions">
+        <button class="btn register" type="button" (click)="crearOferta()">+ Nueva oferta</button>
+        <button class="btn register" routerLink="/buscar-talento">Buscar mas talento</button>
+      </div>
     </div>
 
     <div class="jobs-grid" style="display: grid; gap: 1rem;">
-      <div class="applicant-card p-3" *ngFor="let applicant of allApplicants | slice:0:visibleCount" 
+      <div class="applicant-card p-3" *ngFor="let applicant of allApplicants | slice:0:visibleCount"
            style="background-color: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-soft);">
         <div class="d-flex align-items-center gap-3">
           <img [src]="applicant.profilePic" [alt]="applicant.name" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
-          
+
           <div class="flex-grow-1">
             <div class="d-flex justify-content-between align-items-start">
               <div>
                 <h4 style="font-size: 1.1rem; margin-bottom: 2px; color: var(--text-color);">{{ applicant.name }}</h4>
-                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 5px;">Postuló a: <strong>{{ applicant.appliedFor }}</strong></p>
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 5px;">Postulo a: <strong>{{ applicant.appliedFor }}</strong></p>
               </div>
               <small class="text-muted">{{ applicant.dateApplied }}</small>
             </div>
@@ -146,9 +147,9 @@
             </p>
           </div>
         </div>
-        
+
         <hr class="my-3" style="border-color: var(--border-soft);">
-        
+
         <div class="d-flex justify-content-between align-items-center">
           <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
             {{ applicant.skills }}
@@ -159,16 +160,19 @@
     </div>
 
     <div class="jobs-more mt-4" *ngIf="visibleCount < maxVisible">
-      <button class="services-see-more" (click)="showMoreApplicants()" style="width: 100%; border-radius: 8px;">Cargar más postulaciones</button>
+      <button class="services-see-more" (click)="showMoreApplicants()" style="width: 100%; border-radius: 8px;">Cargar mas postulaciones</button>
     </div>
   </div>
 
   <aside class="right services-desktop">
-    <h3 class="services-title">Mis Anuncios Publicados</h3>
+    <div class="desktop-announcements-head">
+      <h3 class="services-title">Mis Anuncios Publicados</h3>
+      <button class="mini-create-btn" type="button" (click)="crearOferta()">+</button>
+    </div>
 
     <div class="services-list services-list-desktop">
       <div *ngIf="misAnuncios.length === 0" class="text-center p-3 text-muted" style="font-size: 0.9rem;">
-        Aún no has publicado ninguna vacante.
+        Aun no has publicado ninguna vacante.
       </div>
 
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-soft); cursor: pointer; margin-bottom: 12px;">
@@ -178,11 +182,11 @@
             {{ anuncio.estado }}
           </span>
         </div>
-        
+
         <p style="margin: 0 0 10px; font-size: 0.85rem; color: var(--text-muted, #666);">
           {{ anuncio.ubicacion }} • {{ anuncio.fechaPublicacion }}
         </p>
-        
+
         <div class="d-flex justify-content-between w-100 align-items-center mt-auto pt-2" style="border-top: 1px solid var(--border-soft);">
           <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-color);">
             <i class="bi bi-people-fill me-1"></i> {{ anuncio.candidatos }} postulantes
@@ -208,7 +212,7 @@
   <div class="services-panel" *ngIf="toolsOpen" (click)="$event.stopPropagation()">
     <div class="services-panel-header">
       <div>
-        <p class="services-panel-eyebrow">Gestión de Vacantes</p>
+        <p class="services-panel-eyebrow">Gestion de Vacantes</p>
         <h3>Mis Anuncios</h3>
       </div>
       <button class="services-close" (click)="toggleTools()">×</button>
@@ -216,7 +220,7 @@
 
     <div class="services-list">
       <div *ngIf="misAnuncios.length === 0" class="text-center p-3 text-muted" style="font-size: 0.9rem;">
-        Aún no has publicado ninguna vacante.
+        Aun no has publicado ninguna vacante.
       </div>
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); margin-bottom: 12px;">
         <div class="d-flex justify-content-between w-100 align-items-center mb-1">
@@ -252,12 +256,12 @@
       <img src="assets/LogoChambee.png" alt="Chambee" />
       <div>
         <h4>Chambee Empresas</h4>
-        <p>Encuentra al talento ideal para tu negocio más rápido.</p>
+        <p>Encuentra al talento ideal para tu negocio mas rapido.</p>
       </div>
     </div>
     <nav class="footer-links">
       <a routerLink="/precios">Planes y Precios</a>
-      <a routerLink="/terminos">Términos de Servicio</a>
+      <a routerLink="/terminos">Terminos de Servicio</a>
       <a routerLink="/soporte">Soporte a Empresas</a>
     </nav>
   </div>
@@ -267,3 +271,9 @@
     </div>
   </div>
 </footer>
+
+<!-- Acceso flotante reutilizable para publicar nuevas vacantes. -->
+<button class="offer-fab" type="button" (click)="crearOferta()" aria-label="Crear oferta laboral">
+  <span class="offer-fab-plus">+</span>
+  <span class="offer-fab-text">Crear oferta</span>
+</button>
