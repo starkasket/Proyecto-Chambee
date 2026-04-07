@@ -212,6 +212,11 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']); 
   }
 
+  // --- LÓGICA PARA CREAR NUEVO SERVICIO ---
+  irACrearServicio() {
+    this.router.navigate(['/crear-servicio']);
+  }
+
   get visibleServices(): Service[] {
     return this.servicesOpen ? this.services : this.services.slice(0, 4);
   }

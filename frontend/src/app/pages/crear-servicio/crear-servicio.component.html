@@ -1,0 +1,115 @@
+<nav class="navbar-chambee bg-warning position-relative">
+  
+  <div class="d-flex align-items-center gap-3">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="42" class="logo">
+    <span class="fs-5 fw-bold d-none d-md-block text-dark" style="letter-spacing: -0.5px;">Chambee</span>
+  </div>
+
+  <div class="search-container d-none d-md-block position-absolute start-50 translate-middle-x" style="width: 100%; max-width: 420px;">
+    <input type="text" placeholder="Buscar, categoría, puesto, ciudad y más...">
+  </div>
+
+  <div class="nav-buttons d-flex align-items-center gap-3 ms-auto">
+    <div class="notification-bell text-dark fs-5" role="button">
+      <i class="bi bi-bell-fill"></i>
+    </div>
+    
+    <button class="btn d-flex align-items-center gap-2 bg-white text-dark shadow-sm" style="border-radius: 50px; padding: 6px 16px; font-weight: 600;">
+      <i class="bi bi-person-circle fs-5 text-muted"></i>
+      <span class="d-none d-md-block">Mi Perfil</span>
+    </button>
+
+    <button class="theme-toggle" type="button">
+      <span class="theme-toggle-track">
+        <span class="theme-toggle-icon">☀</span>
+      </span>
+    </button>
+
+    <div class="menu text-dark d-md-none" role="button">☰</div>
+  </div>
+</nav>
+
+<div class="container-fluid pb-5" style="background-color: #f8f1e9; min-height: 100vh; padding-top: 84px;">
+  
+  <div class="container mt-3">
+    <button class="btn mb-4 fs-4 text-muted p-0 d-flex align-items-center gap-2" routerLink="/home-user" title="Volver al panel" style="border: none; background: transparent; font-weight: 600;">
+      <i class="bi bi-arrow-left-circle-fill fs-2"></i> 
+      <span>Volver</span>
+    </button>
+
+    <div class="row g-4">
+      <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-4 p-md-5 rounded-4">
+          <div class="d-flex align-items-center gap-3 mb-4">
+              <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;">
+                <i class="bi bi-tools fs-5"></i>
+              </div>
+              <h4 class="fw-bold m-0 text-dark">Información del servicio</h4>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col-md-6 mb-4">
+              <label class="form-label text-muted fw-bold">Nombre del servicio que necesitas</label>
+              <input type="text" class="form-control border-0 bg-light p-3 rounded-3" placeholder="Ej. Reparación de fuga de agua">
+            </div>
+            <div class="col-md-6 mb-4">
+              <label class="form-label text-muted fw-bold">Categoría de oficio</label>
+              <select class="form-select border-0 bg-light p-3 rounded-3 text-muted">
+                <option>Plomería</option>
+                <option>Electricidad</option>
+                <option>Carpintería</option>
+                <option>Limpieza</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <label class="form-label text-muted fw-bold">Presupuesto estimado (MXN)</label>
+              <input type="number" class="form-control border-0 bg-light p-3 rounded-3" placeholder="$ 500">
+            </div>
+            <div class="col-md-6 mb-4">
+               <label class="form-label text-muted fw-bold">Ubicación del trabajo</label>
+               <div class="input-group bg-light rounded-3 overflow-hidden p-1">
+                  <input type="text" class="form-control border-0 bg-transparent py-2" placeholder="San Miguel de Allende, Gto">
+                  <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-geo-alt-fill"></i></span>
+               </div>
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <label class="form-label text-muted fw-bold">Descripción detallada de lo que solicitas</label>
+            <textarea class="form-control border-0 bg-light rounded-4 p-3" rows="8" placeholder="Describe el problema, qué necesitas que hagan y cualquier detalle importante..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 rounded-4 mb-4" style="border-left: 6px solid #ffc107 !important;">
+          <h5 class="fw-bold m-0 text-dark">Estado de la Solicitud</h5>
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+            <span class="fw-semibold text-muted">Visible para Oficios</span>
+            <div class="form-check form-switch fs-4 m-0">
+              <input class="form-check-input" type="checkbox" checked>
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm p-4 rounded-4" style="border-left: 6px solid #ffc107 !important;">
+          <h5 class="fw-bold mb-3 text-dark">Etiquetas de búsqueda</h5>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge bg-white text-warning border border-warning p-2 px-3 rounded-pill fw-bold">#Hogar</span>
+            <span class="badge bg-white text-warning border border-warning p-2 px-3 rounded-pill fw-bold">#Urgente</span>
+            <span class="badge bg-white text-warning border border-warning p-2 px-3 rounded-pill fw-bold">#Reparación</span>
+          </div>
+          <input type="text" class="form-control border-0 bg-light p-2 rounded-3" placeholder="Añadir etiqueta...">
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3 mt-5">
+      <button class="btn btn-secondary rounded-pill px-5 py-3 fw-bold border-0 shadow-sm" style="background-color: #e2dcd2; color: #555;">Cancelar</button>
+      <button class="btn btn-warning rounded-pill px-5 py-3 fw-bold shadow-sm text-dark">Publicar Solicitud</button>
+    </div>
+  </div>
+</div>

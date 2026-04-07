@@ -1,0 +1,130 @@
+/* ===== Base general de la pagina ===== */
+body {
+  font-family: 'DM Sans', sans-serif;
+  margin: 0;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+.container {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* ===== Navbar fija superior ===== */
+.navbar-chambee {
+  background-color: var(--navbar-bg, #ffc107); /* Mantiene el amarillo */
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-soft);
+  padding: 0 20px;
+  gap: 12px;
+}
+
+/* Contenedor del buscador principal del header. */
+.search-container {
+  flex: 1 1 420px;
+  max-width: 420px;
+  min-width: 180px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  background: var(--input-bg);
+  color: #111111;
+  font-size: 14px;
+}
+
+.search-container input::placeholder {
+  color: rgba(17, 17, 17, 0.58);
+}
+
+:host-context(body.dark-theme) .search-container input {
+  color: #ffffff;
+}
+
+:host-context(body.dark-theme) .search-container input::placeholder {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* Grupo de acciones de navbar: login, registro y hamburguesa. */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.btn {
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.theme-toggle {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.theme-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--theme-toggle-bg, #fff);
+  border: 1px solid var(--theme-toggle-border, #ccc);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob, #f1f1f1);
+  color: var(--theme-toggle-icon, #333);
+  transform: translateX(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-size: 12px;
+}
+
+:host-context(body.dark-theme) .theme-toggle-icon {
+  transform: translateX(18px);
+}
+
+.menu {
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 2300;
+  position: relative;
+}
+
+/* ===== Layout principal desktop ===== */
+.main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
+  gap: 20px;
+  margin-top: 84px; /* Ajuste para que la navbar fija no tape el contenido */
+}

@@ -162,8 +162,17 @@
     </div>
   </div>
 
-  <aside class="right services-desktop">
-    <h3 class="services-title">Servicios y más</h3>
+<aside class="right services-desktop">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+      <h3 class="services-title" style="margin: 0;">Servicios y más</h3>
+      
+      <button (click)="irACrearServicio()" 
+              title="Crear un nuevo servicio"
+              style="width: 45px; height: 45px; border-radius: 12px; border: none; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">
+        <span style="font-size: 32px; font-weight: 400; color: #333; line-height: 1; margin-top: -2px;">+</span>
+      </button>
+    </div>
 
     <div class="services-list services-list-desktop">
       <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
@@ -180,6 +189,7 @@
         {{ servicesOpen ? 'Ver menos' : 'Ver más' }}
       </button>
     </div>
+    
   </aside>
 </div>
 

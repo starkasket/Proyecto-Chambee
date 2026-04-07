@@ -12,6 +12,7 @@ import { PerfilPostulanteComponent } from './pages/perfil-postulante/perfil-post
 import { EmployerProfileComponent } from './pages/employer-profile/employer-profile.component';
 import { EmployerProfileEditComponent } from './pages/employer-profile-edit/employer-profile-edit.component';
 import { EmployerJobCreateComponent } from './pages/employer-job-create/employer-job-create.component';
+import { CrearServicioComponent } from './pages/crear-servicio/crear-servicio.component'; // <-- Nueva importación
 
 export const routes: Routes = [
   {
@@ -66,6 +67,10 @@ export const routes: Routes = [
   {
     path: 'post-job',
     component: EmployerJobCreateComponent
+  },
+  {
+    path: 'crear-servicio', // <-- Nueva ruta para el botón +
+    component: CrearServicioComponent
   },
   {
     path: '**',
