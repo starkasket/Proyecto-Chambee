@@ -4,6 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
+
 
 // Estructura de cada tarjeta del carrusel principal.
 interface Slide {
@@ -46,7 +48,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly themeService: ThemeService,
-    private http: HttpClient
+    private http: HttpClient,
+    private api: ApiService
   ) {}
 
   servicesOpen = false;
@@ -125,6 +128,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
     this.checkMobile();
     this.fillJobsToMax();
+
+    const token = this.api.getToken();
+
+    if (token) {
+      const usuario = this.api.getUsuario();
+
+      if (usuario.rol === "empleador") {
+        this.router.navigate(['/home-employer'])
+      }
+    }
   }
 
   ngOnDestroy() {

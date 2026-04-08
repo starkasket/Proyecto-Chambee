@@ -30,6 +30,23 @@ registrarPostulante(datos: any): Observable<any> {
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`);
   }
 
+  getToken(): string | null {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+  }
+
+  getUsuario(): any {
+  const user = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+  return user ? JSON.parse(user) : null;
+  }
+  getMiPerfil() {
+
+  return this.http.get('http://localhost:3000/mi-perfil', {
+    headers: {
+      Authorization: 'Bearer ' + this.getToken()
+    }
+  });
+  }
+
   actualizarPerfilEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
     // Guarda los cambios del formulario de edicion del empleador.
     return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos);

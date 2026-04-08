@@ -151,16 +151,15 @@ export class EmployerProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const usuarioRaw = localStorage.getItem('usuario');
-    const perfilLocalRaw = localStorage.getItem('perfilEmpleador');
+    const usuario = this.api.getUsuario();
+    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');;
 
-    if (!usuarioRaw) {
+    if (!usuario) {
       this.error = 'No hay sesion activa. Inicia sesion para ver tu perfil.';
       this.cargando = false;
       return;
     }
 
-    const usuario = JSON.parse(usuarioRaw);
     if (usuario.rol !== 'empleador') {
       this.error = 'Esta seccion es solo para empleadores.';
       this.cargando = false;
@@ -172,34 +171,30 @@ export class EmployerProfileComponent implements OnInit {
       this.perfil = JSON.parse(perfilLocalRaw);
     }
 
-    if (!usuario.id) {
-      this.cargando = false;
-      if (!this.perfil) {
-        this.error = 'No se encontro el identificador del empleador.';
-      }
-      return;
-    }
-
-    this.employerId = usuario.id;
-
-    this.api.obtenerPerfilEmpleador(usuario.id).subscribe({
-      next: (perfil) => {
+    this.api.getMiPerfil().subscribe({
+      next: (perfil: any) => {
         this.perfil = perfil;
-        // Mantiene sincronizado el cache local con la fuente de verdad.
-        localStorage.setItem('perfilEmpleador', JSON.stringify(perfil));
+
+        if (localStorage.getItem('token')) {
+          localStorage.setItem("perfilEmpleador", JSON.stringify(perfil));
+        } else {
+          sessionStorage.setItem("perfilEmpleador", JSON.stringify(perfil));
+        }
+
+        this.cargarAnuncios(perfil.id_empleador);
+
         this.cargando = false;
       },
       error: () => {
         this.cargando = false;
         if (!this.perfil) {
-          this.error = 'No fue posible cargar tu perfil en este momento.';
+          this.error = "No fue posible cargar tu perfil en este momento."
         }
       }
     });
 
-    this.cargarAnuncios(usuario.id);
     this.checkMobile();
-  }
+  };
 
   cargarAnuncios(idEmpleador: string) {
     this.api.obtenerAnunciosEmpleador(idEmpleador).subscribe({
@@ -304,9 +299,14 @@ export class EmployerProfileComponent implements OnInit {
     this.notificationsOpen = false;
   }
 
+  clearSession(){
+    localStorage.clear();
+    sessionStorage.clear();
+  }
+
   logout() {
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('perfilEmpleador');
+    this.clearSession();
+
     this.router.navigate(['/']);
   }
 

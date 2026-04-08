@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const path = require("path");
 
 const nodemailer = require("nodemailer");
@@ -51,6 +52,35 @@ if (!hasEmailConfig) {
     }
   });
 }
+
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "Token requerido"})
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; 
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Token inválido"})
+  }
+  
+}
+
+const authorizeRoles = (...rolesPermitidos) => {
+  return (req, res, next) => {
+    if (!rolesPermitidos.includes(req.user.rol)) {
+      return res.status(403).json({ error: "No tienes permiso"})
+    }
+    next();
+  }
+}
+
 
 /* ===== ENDPOINT DE PRUEBA ===== */
 app.get("/", (req, res) => {
@@ -147,10 +177,16 @@ app.post("/empleadores/registro", async (req, res) => {
 });
 
 /* ===== PERFIL DE EMPLEADOR ===== */
-app.get("/empleadores/:id/perfil", async (req, res) => {
+/*
+app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
+    
+    if (req.user.rol !== "empleador" || req.user.id != id) {
+      return res.status(403).json({ error: "No autorizado" })
+    }
+
     // Perfil completo del empleador para la vista "Mi Perfil" en frontend.
     const query = `SELECT
       id_empleador,
@@ -175,10 +211,45 @@ app.get("/empleadores/:id/perfil", async (req, res) => {
     }
 
     res.json(result.rows[0]);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener perfil del empleador" });
   }
+}); */
+
+app.get("/mi-perfil", verifyToken, async (req, res) => {
+  const id = req.user.id;
+  const rol = req.user.rol;
+
+  let query = "";
+  let field = "";
+
+  if (rol === "empleador") {
+     query = `SELECT
+      id_empleador,
+      nombre_empresa,
+      correo_electronico,
+      pais,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      telefono,
+      rfc,
+      descripcion
+    FROM empleador
+    WHERE id_empleador = $1`;
+  } else if (rol === "postulante") {
+    query = "SELECT * FROM postulante WHERE id_postulante = $1";
+  } else if (rol === "administrador") {
+    query = "SELECT * FROM administrador WHERE id_administrador = $1";
+  }
+
+  const result = await pool.query(query, [id]);
+
+  res.json(result.rows[0]);
 });
 
 app.put("/empleadores/:id/perfil", async (req, res) => {
@@ -445,8 +516,19 @@ app.post("/login", async (req, res) => {
 
     const { contrasena: _, ...user } = usuario;
 
+    const token = jwt.sign(
+      {
+        id: user.id,
+        correo: user.correo,
+        rol: user.rol
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m"}
+    );
+
     res.json({
       message: "Inicio de sesión exitoso",
+      token,
       user
     });
    
@@ -456,6 +538,8 @@ app.post("/login", async (req, res) => {
   }
   
 });
+
+
 
 /* ===== SOPORTE (ENVÍO DE CORREO) ===== */
 app.post("/api/support", async (req, res) => {

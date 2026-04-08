@@ -150,7 +150,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const usuario = this.api.getUsuario();
     this.nombre_empleador = usuario?.nombre || 'Usuario';
 
     this.slideIntervalId = setInterval(() => {
@@ -217,9 +217,13 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     console.log('Abriendo CV de:', applicant.name);
   }
 
+  clearSession(){
+    localStorage.clear();
+    sessionStorage.clear();
+  }
+
   logout() {
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('perfilEmpleador');
+    this.clearSession();
     
     // 2. Cerramos los menús 
     this.menuOpen = false;

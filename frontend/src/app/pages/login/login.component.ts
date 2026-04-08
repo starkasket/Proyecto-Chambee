@@ -32,6 +32,8 @@ export class LoginComponent {
     });
   }
 
+  
+
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -77,12 +79,28 @@ export class LoginComponent {
         next: (res) => {
           const user = res.user;
 
-          localStorage.setItem('usuario', JSON.stringify({
+          const remember = this.loginForm.value.remember;
+
+          if (remember) {
+            localStorage.setItem("token", res.token);
+            localStorage.setItem('usuario', JSON.stringify({
             id: user.id,
             nombre: user.nombre,
             correo: user.correo,
             rol: user.rol
           }));
+          } else{
+            sessionStorage.setItem("token", res.token)
+            sessionStorage.setItem('usuario', JSON.stringify({
+            id: user.id,
+            nombre: user.nombre,
+            correo: user.correo,
+            rol: user.rol
+          }));
+          }
+
+
+         
 
           this.redirectAfterLogin = user.rol === 'empleador'
             ? '/home-employer'
@@ -97,7 +115,7 @@ export class LoginComponent {
         }
       });
     } else {
-      this.mostrarModal('Formulario no valido. Checa el correo o la contrasena (minimo 3 caracteres).');
+      this.mostrarModal('Formulario no valido. Checa el correo o la contraseña (minimo 3 caracteres).');
     }
   }
 }
