@@ -1,12 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-crear-servicio',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, RouterModule],
   templateUrl: './crear-servicio.component.html',
   styleUrl: './crear-servicio.component.css'
 })
-export class CrearServicioComponent {
+export class CrearServicioComponent implements OnInit {
+  
+  
 
+  ngOnInit(): void {
+   
+  }
 }
