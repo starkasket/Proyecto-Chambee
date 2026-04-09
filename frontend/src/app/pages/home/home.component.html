@@ -217,7 +217,7 @@
 
           <label class="support-field">
             <span>Telefono</span>
-            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 digitos" required />
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 digitos" required pattern="^[0-9]{10}$" maxlength="10"/>
             <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es obligatorio.</small>
           </label>
 
