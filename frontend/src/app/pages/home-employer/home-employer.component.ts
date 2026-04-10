@@ -150,18 +150,42 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    // 1. Obtener datos del usuario guardados en localStorage/sessionStorage
     const usuario = this.api.getUsuario();
-    this.nombre_empleador = usuario?.nombre || 'Usuario';
+    
+    // 2. Cargar nombre de empresa ACTUALIZADO desde la BASE DE DATOS (no del localStorage)
+    // Esto asegura que si el nombre se cambió en el perfil, aparezca actualizado en la navbar
+    if (usuario?.id) {
+      // Hacer petición HTTP a la API para obtener perfil fresco de la BD
+      this.api.obtenerPerfilEmpleador(usuario.id).subscribe({
+        // Si la petición es exitosa
+        next: (perfil) => {
+          // Asignar nombre de empresa desde la respuesta de la API (siempre actualizado)
+          this.nombre_empleador = perfil?.nombre_empresa || 'Usuario';
+        },
+        // Si la petición falla (error de conexión, timeout, etc)
+        error: () => {
+          // Usar el nombre guardado en localStorage como fallback
+          this.nombre_empleador = usuario?.nombre || 'Usuario';
+        }
+      });
+      // Cargar anuncios publicados por esta empresa
+      this.cargarAnuncios(usuario.id);
+    } else {
+      // Si no tiene ID de usuario, usar fallback
+      this.nombre_empleador = usuario?.nombre || 'Usuario';
+    }
 
+    // 3. Inicializar carrusel de postulantes (cambia cada 9 segundos)
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
+    
+    // 4. Detectar si es mobile para responsive design
     this.checkMobile();
+    
+    // 5. Llenar lista de postulantes hasta 28 elementos
     this.fillApplicantsToMax();
-
-    if (usuario?.id) {
-      this.cargarAnuncios(usuario.id);
-    }
   }
 
   ngOnDestroy() {

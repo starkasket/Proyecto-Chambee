@@ -16,7 +16,6 @@ interface EmployerJobFormValue {
   codigo_postal: string;
   salario: number;
   modalidad: string;
-  estado_anuncio: string;
 }
 
 interface NotificationItem {
@@ -62,8 +61,7 @@ export class EmployerJobCreateComponent implements OnInit {
     calle: ['', [Validators.required, Validators.maxLength(150)]],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
     salario: [null as number | null, [Validators.required, Validators.min(1)]],
-    modalidad: ['Presencial', [Validators.required]],
-    estado_anuncio: ['ACTIVO', [Validators.required]]
+    modalidad: ['Presencial', [Validators.required]]
   });
 
   constructor(
@@ -74,8 +72,8 @@ export class EmployerJobCreateComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const usuarioRaw = localStorage.getItem('usuario');
-    const perfilLocalRaw = localStorage.getItem('perfilEmpleador');
+    const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
 
     if (!usuarioRaw) {
       this.error = 'No hay sesion activa para crear una oferta laboral.';
@@ -155,8 +153,7 @@ export class EmployerJobCreateComponent implements OnInit {
           calle: payload.calle,
           codigo_postal: payload.codigo_postal,
           salario: null,
-          modalidad: 'Presencial',
-          estado_anuncio: 'ACTIVO'
+          modalidad: 'Presencial'
         });
       },
       error: () => {

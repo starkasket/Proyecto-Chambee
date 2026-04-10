@@ -107,8 +107,8 @@
             <span>Tipo de anuncio</span>
             <select formControlName="tipo_anuncio">
               <option value="Empleo">Empleo</option>
-              <option value="Servicio">Servicio</option>
-              <option value="Proyecto">Proyecto</option>
+              <option value="Práctica">Práctica</option>
+              <option value="Estadía">Estadía</option>
             </select>
           </label>
 
@@ -125,15 +125,6 @@
             <span>Salario</span>
             <input type="number" formControlName="salario" placeholder="12000" />
             <small *ngIf="campoInvalido('salario')">Ingresa un salario mayor a 0.</small>
-          </label>
-
-          <label class="field">
-            <span>Estado del anuncio</span>
-            <select formControlName="estado_anuncio">
-              <option value="ACTIVO">ACTIVO</option>
-              <option value="PAUSADO">PAUSADO</option>
-              <option value="CERRADO">CERRADO</option>
-            </select>
           </label>
         </div>
       </article>

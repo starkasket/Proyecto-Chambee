@@ -112,22 +112,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     { title: 'Servicio 6', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?6' }
   ];
 
-  // Datos de ejemplo para los empleos mostrados en el grid. En un futuro, estos datos deberían ser obtenidos desde el backend.
+  // Datos de ejemplo para los empleos mostrados en el grid. Estos serán reemplazados por datos de la API.
   jobs: Job[] = [
     { company: 'AT&T Mexico', title: 'Ejecutivo de Ventas', salary: '$13,000 MXN', img: 'https://picsum.photos/300/150', rating: '4.2', applicants: 9 },
-    { company: 'Google', title: 'Frontend Developer', salary: '$25,000 MXN', img: 'https://picsum.photos/301/150', rating: '4.8', applicants: 12 },
-    { company: 'Amazon', title: 'Backend Developer', salary: '$30,000 MXN', img: 'https://picsum.photos/302/150', rating: '4.7', applicants: 7 },
-    { company: 'Spotify', title: 'Mobile Engineer', salary: '$28,000 MXN', img: 'https://picsum.photos/303/150', rating: '4.6', applicants: 5 },
-    { company: 'Microsoft', title: 'Cloud Engineer', salary: '$32,000 MXN', img: 'https://picsum.photos/304/150', rating: '4.9', applicants: 10 },
-    { company: 'IBM', title: 'Data Scientist', salary: '$26,000 MXN', img: 'https://picsum.photos/305/150', rating: '4.5', applicants: 6 },
-    { company: 'Oracle', title: 'DevOps Engineer', salary: '$29,500 MXN', img: 'https://picsum.photos/306/150', rating: '4.4', applicants: 8 },
-    { company: 'Apple', title: 'iOS Developer', salary: '$34,000 MXN', img: 'https://picsum.photos/307/150', rating: '4.9', applicants: 11 }
+    { company: 'Google', title: 'Frontend Developer', salary: '$25,000 MXN', img: 'https://picsum.photos/301/150', rating: '4.8', applicants: 12 }
   ];
 
   ngOnInit() {
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
     this.checkMobile();
-    this.fillJobsToMax();
 
     const token = this.api.getToken();
 
@@ -138,6 +131,28 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.router.navigate(['/home-employer'])
       }
     }
+
+    // Cargar ofertas públicas en lugar de datos hardcodeados
+    this.api.obtenerAnunciosPublicos().subscribe({
+      next: (anuncios: any[]) => {
+        if (anuncios && anuncios.length > 0) {
+          this.jobs = anuncios.map((anuncio, index) => ({
+            company: anuncio.nombre_empresa || 'Empresa',
+            title: anuncio.titulo || 'Posición disponible',
+            salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
+            img: `https://picsum.photos/300/150?random=${index + 100}`,
+            rating: '4.5',
+            applicants: Math.floor(Math.random() * 15)
+          }));
+        }
+
+        this.fillJobsToMax();
+      },
+      error: (err) => {
+        console.error('Error al cargar anuncios públicos:', err);
+        this.fillJobsToMax();
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -154,8 +169,22 @@ export class HomeComponent implements OnInit, OnDestroy {
   get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
 
   openService(i: number) { void i; this.router.navigate(['/login']); }
-  openJob() { this.router.navigate(['/login']); }
-  openFeaturedJob() { this.router.navigate(['/login']); }
+  openJob() { 
+    const token = this.api.getToken();
+    if (token) {
+      this.router.navigate(['/jobs']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+  openFeaturedJob() { 
+    const token = this.api.getToken();
+    if (token) {
+      this.router.navigate(['/jobs']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
 
   @HostListener('window:resize')
   onResize() { this.checkMobile(); }

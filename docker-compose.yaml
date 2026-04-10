@@ -30,6 +30,7 @@ services:
       DB_PASSWORD: postgres
       DB_NAME: chambee_db
       DB_PORT: 5432
+      JWT_SECRET: chambee_super_secret_key_2026
 
   db:
     image: postgres:16

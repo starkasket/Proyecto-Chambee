@@ -27,7 +27,11 @@ registrarPostulante(datos: any): Observable<any> {
 
   obtenerPerfilEmpleador(idEmpleador: number | string): Observable<any> {
     // Endpoint usado por el componente de perfil de empleador.
-    return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`);
+    return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, {
+      headers: {
+        Authorization: 'Bearer ' + this.getToken()
+      }
+    });
   }
 
   getToken(): string | null {
@@ -49,17 +53,29 @@ registrarPostulante(datos: any): Observable<any> {
 
   actualizarPerfilEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
     // Guarda los cambios del formulario de edicion del empleador.
-    return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos);
+    return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos, {
+      headers: {
+        Authorization: 'Bearer ' + this.getToken()
+      }
+    });
   }
 
   obtenerAnunciosEmpleador(idEmpleador: number | string): Observable<any[]> {
     // Lista resumida de ofertas para home-employer y perfil de empresa.
-    return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`);
+    return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, {
+      headers: {
+        Authorization: 'Bearer ' + this.getToken()
+      }
+    });
   }
 
   crearAnuncioEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
     // Crea una nueva oferta laboral asociada al empleador autenticado.
-    return this.http.post(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, datos);
+    return this.http.post(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, datos, {
+      headers: {
+        Authorization: 'Bearer ' + this.getToken()
+      }
+    });
   }
 
   obtenerAnunciosPublicos(): Observable<any[]> {

@@ -645,9 +645,9 @@ body {
   border: none;
   border-radius: 999px;
   padding: 14px 18px 14px 14px;
-  background: linear-gradient(135deg, #111111, #f4bf00);
+  background: linear-gradient(135deg, #0056cc, #0099ff);
   color: #ffffff;
-  box-shadow: 0 18px 38px rgba(17, 17, 17, 0.28);
+  box-shadow: 0 18px 38px rgba(0, 86, 204, 0.28);
   cursor: pointer;
 }
 

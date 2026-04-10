@@ -53,7 +53,7 @@ interface NotificationItem {
 export class HomeUserComponent implements OnInit, OnDestroy {
   
   // Aquí está el nombre del usuario para el mensaje de bienvenida
-  nombre_postulante = localStorage.getItem('usuario') || 'Usuario';
+  nombre_postulante = 'Usuario';
 
   
   // VARIABLES PARA EL CONTROL DE LA INTERFAZ
@@ -161,7 +161,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.checkMobile();
     this.fillJobsToMax();
     this.cargarOfertasPublicas();
-    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+    const usuario = JSON.parse(localStorage.getItem('usuario') || sessionStorage.getItem('usuario') || '{}');
       this.nombre_postulante = usuario.nombre || 'Usuario';
   }
 

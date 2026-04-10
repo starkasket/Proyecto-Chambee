@@ -74,7 +74,7 @@ export class EmployerProfileEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const usuarioRaw = localStorage.getItem('usuario');
+    const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
 
     if (!usuarioRaw) {
       this.error = 'No hay sesion activa para editar el perfil.';

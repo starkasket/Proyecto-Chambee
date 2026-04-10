@@ -51,7 +51,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   ngOnInit() {
     // Al iniciar, buscamos el nombre del usuario guardado (si existe)
-    const usuarioGuardado = localStorage.getItem('usuario');
+    const usuarioGuardado = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
     if (usuarioGuardado) {
       try {
         const usuarioObj = JSON.parse(usuarioGuardado);

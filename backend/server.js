@@ -177,7 +177,7 @@ app.post("/empleadores/registro", async (req, res) => {
 });
 
 /* ===== PERFIL DE EMPLEADOR ===== */
-/*
+
 app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
   const { id } = req.params;
 
@@ -216,40 +216,48 @@ app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Error al obtener perfil del empleador" });
   }
-}); */
+});
 
 app.get("/mi-perfil", verifyToken, async (req, res) => {
-  const id = req.user.id;
-  const rol = req.user.rol;
+  try {
+    const id = req.user.id;
+    const rol = req.user.rol;
 
-  let query = "";
-  let field = "";
+    let query = "";
 
-  if (rol === "empleador") {
-     query = `SELECT
-      id_empleador,
-      nombre_empresa,
-      correo_electronico,
-      pais,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      telefono,
-      rfc,
-      descripcion
-    FROM empleador
-    WHERE id_empleador = $1`;
-  } else if (rol === "postulante") {
-    query = "SELECT * FROM postulante WHERE id_postulante = $1";
-  } else if (rol === "administrador") {
-    query = "SELECT * FROM administrador WHERE id_administrador = $1";
+    if (rol === "empleador") {
+       query = `SELECT
+        id_empleador,
+        nombre_empresa,
+        correo_electronico,
+        pais,
+        estado,
+        ciudad,
+        colonia,
+        calle,
+        codigo_postal,
+        telefono,
+        rfc,
+        descripcion
+      FROM empleador
+      WHERE id_empleador = $1`;
+    } else if (rol === "postulante") {
+      query = "SELECT * FROM postulante WHERE id_postulante = $1";
+    } else if (rol === "administrador") {
+      query = "SELECT * FROM administrador WHERE id_administrador = $1";
+    }
+
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error en /mi-perfil:", err);
+    res.status(500).json({ error: "Error al obtener perfil" });
   }
-
-  const result = await pool.query(query, [id]);
-
-  res.json(result.rows[0]);
 });
 
 app.put("/empleadores/:id/perfil", async (req, res) => {
@@ -523,7 +531,7 @@ app.post("/login", async (req, res) => {
         rol: user.rol
       },
       process.env.JWT_SECRET,
-      { expiresIn: "5m"}
+      { expiresIn: "7d"}
     );
 
     res.json({
