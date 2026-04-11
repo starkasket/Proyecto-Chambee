@@ -29,12 +29,12 @@ const hasEmailConfig = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS)
 
 const transporter = hasEmailConfig
   ? nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  })
   : null;
 
 if (!hasEmailConfig) {
@@ -469,7 +469,10 @@ app.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user.id, correo: user.correo, rol: user.rol },
       process.env.JWT_SECRET,
+
       { expiresIn: "7d" }
+
+
     );
 
     res.json({ message: "Inicio de sesión exitoso", token, user });

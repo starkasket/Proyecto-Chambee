@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 // Interfaces para estructurar los datos
 interface Slide {
@@ -81,7 +82,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly http: HttpClient,
-    private readonly api: ApiService
+    private readonly api: ApiService,
+    private readonly authApi: AuthService
   ) {}
 
   slides: Slide[] = [
@@ -199,17 +201,13 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   // --- LÓGICA DE CERRAR SESIÓN ---
   logout() {
-    // Limpiamos los datos del usuario del localStorage
-    localStorage.removeItem('usuario');
-    // Si manejas un token JWT, también lo quitarías aquí, ej: localStorage.removeItem('token');
-    
+    this.authApi.logout();    
     // Cerramos los menús
     this.menuOpen = false;
     this.servicesOpen = false;
     
-    // Redirigimos a la vista inicial/login
     console.log('Cerrando sesión del usuario...');
-    this.router.navigate(['/']); 
+   
   }
 
   // --- LÓGICA PARA CREAR NUEVO SERVICIO ---

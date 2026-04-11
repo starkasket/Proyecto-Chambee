@@ -5,6 +5,7 @@ import { ThemeService } from '../../services/theme.service';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 
 // Estructura de cada tarjeta del carrusel principal.
@@ -49,7 +50,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private http: HttpClient,
-    private api: ApiService
+    private api: ApiService,
+    private readonly authApi: AuthService
   ) {}
 
   servicesOpen = false;
@@ -122,13 +124,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
     this.checkMobile();
 
-    const token = this.api.getToken();
+    const token = this.authApi.getToken();
 
     if (token) {
       const usuario = this.api.getUsuario();
 
       if (usuario.rol === "empleador") {
         this.router.navigate(['/home-employer'])
+      } else if (usuario.rol === "postulante"){
+        this.router.navigate(['/home-user'])
       }
     }
 
@@ -170,7 +174,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   openService(i: number) { void i; this.router.navigate(['/login']); }
   openJob() { 
-    const token = this.api.getToken();
+    const token = this.authApi.getToken();
     if (token) {
       this.router.navigate(['/jobs']);
     } else {
@@ -178,7 +182,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
   openFeaturedJob() { 
-    const token = this.api.getToken();
+    const token = this.authApi.getToken();
     if (token) {
       this.router.navigate(['/jobs']);
     } else {
