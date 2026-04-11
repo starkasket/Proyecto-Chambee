@@ -1,7 +1,7 @@
 <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
   <div class="d-flex align-items-center gap-3">
     <img src="assets/LogoChambee.png" alt="Chambee" height="48">
-    <span class="fs-5 fw-semibold d-none d-md-block" style="color: var(--text-primary);">Bienvenido, {{ nombre_postulante }}</span>
+    <span class="fs-5 fw-semibold d-none d-md-block" style="color: var(--text-primary);">Bienvenido, {{ perfil?.nombre_postulante || 'Usuario' }}</span>
   </div>
 
   <div class="search-container flex-grow-1 mx-4">
@@ -18,10 +18,14 @@
       </div>
     </div>
 
-    <button class="btn d-flex align-items-center gap-2" style="background-color: var(--surface-primary); color: var(--text-primary); border: 1px solid var(--border-soft); border-radius: 50px;" routerLink="/perfil-postulante" title="Ir a mi perfil">
+  <button
+      class="btn d-flex align-items-center gap-2"
+      style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
+      routerLink="/perfil-postulante"
+      title="Ir a mi perfil">
       <i class="bi bi-person-circle fs-5"></i>
-      <span class="d-none d-md-block">Mi Perfil</span>
-    </button>
+      <span class="d-none d-md-block" >Mi Perfil</span>
+  </button>
 
     <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
       <span class="theme-toggle-track"><span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span></span>
@@ -46,12 +50,12 @@
         </div>
       </div>
 
-      <div class="info-card-white shadow-soft">
+      <div *ngIf="!cargando && perfil"  class="info-card-white shadow-soft">
         
         <div class="info-details">
           <div class="header-info">
-            <h2>Juan Jose Gabriel Jimenez</h2>
-            <p class="location">San Miguel de Allende, Guanajuato</p>
+            <h2>{{ perfil.nombre_postulante }}</h2>
+            <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
           </div>
 
           <div class="cv-actions">
@@ -77,8 +81,8 @@
 
           <div class="contact-section">
             <h3>Datos de contacto</h3>
-            <p>Numero de telefono<br><strong>1234567890</strong></p>
-            <p>Correo electronico<br><strong>prueba&#64;gmail.com</strong></p>
+            <p>Numero de telefono<br><strong>{{ perfil.telefono}}</strong></p>
+            <p>Correo electronico<br><strong>{{ perfil.correo_electronico }}</strong></p>
           </div>
         </div>
 

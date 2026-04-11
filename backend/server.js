@@ -51,7 +51,7 @@ if (!hasEmailConfig) {
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  if (!authHeader) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Token requerido" });
   }
   const token = authHeader.split(" ")[1];
@@ -218,7 +218,25 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       FROM empleador
       WHERE id_empleador = $1`;
     } else if (rol === "postulante") {
-      query = "SELECT * FROM postulante WHERE id_postulante = $1";
+      query = `SELECT 
+      id_postulante, 
+      nombre_postulante, 
+      apellido_paterno_postulante
+      apellido_materno_postulante, 
+      correo_electronico, 
+      fecha_nacimiento, 
+      sexo, 
+      pais,
+      estado, 
+      ciudad, 
+      colonia, 
+      calle, 
+      codigo_postal,
+      telefono, 
+      foto_perfil,  
+      curp, 
+      rfc
+      FROM postulante WHERE id_postulante = $1`;
     } else if (rol === "administrador") {
       query = "SELECT * FROM administrador WHERE id_administrador = $1";
     }
@@ -234,6 +252,79 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
   } catch (err) {
     console.error("Error en /mi-perfil:", err);
     res.status(500).json({ error: "Error al obtener perfil" });
+  }
+});
+
+app.put("/mi-perfil", verifyToken, async (req, res) => {
+  try{
+    const id = req.user.id;
+    const rol = req.user.rol;
+
+     const {
+      nombre_empresa,
+      correo_electronico,
+      pais,
+      estado,
+      ciudad,
+      colonia,
+      calle,
+      codigo_postal,
+      telefono,
+      rfc,
+      descripcion,
+      foto_perfil,
+    } = req.body;
+
+     let query = "";
+    let values = [];
+
+     if (rol === "empleador") {
+      query = `UPDATE empleador
+        SET nombre_empresa     = $1,
+            correo_electronico = $2,
+            pais               = $3,
+            estado             = $4,
+            ciudad             = $5,
+            colonia            = $6,
+            calle              = $7,
+            codigo_postal      = $8,
+            telefono           = $9,
+            rfc                = $10,
+            descripcion        = $11,
+            foto_perfil        = $12
+        WHERE id_empleador = $13
+        RETURNING *`;
+
+      values = [
+        nombre_empresa,
+        correo_electronico,
+        pais,
+        estado,
+        ciudad,
+        colonia,
+        calle,
+        codigo_postal,
+        telefono,
+        rfc,
+        descripcion,
+        foto_perfil,
+        id,
+      ];
+    }
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json({
+      message: "Perfil actualizado correctamente",
+      perfil: result.rows[0],
+    });
+
+  } catch (err) {
+    console.error("Error en PUT /mi-perfil:", err);
+    res.status(500).json({ error: "Error al actualizar perfil" });
   }
 });
 
@@ -520,6 +611,50 @@ app.post("/api/support", async (req, res) => {
     console.error("Error enviando correo:", error);
     res.status(500).json({ error: "Error enviando correo" });
   }
+});
+
+app.post("/auth/forgot-password", async (req, res) => {
+  const { correo_electronico } = req.body;
+
+  const postulante = await pool.query("SELECT * FROM postulante WHERE correo_electronico = $1", [correo_electronico]);
+  const empleador = await pool.query("SELECT * FROM empleador WHERE correo_electronico = $1", [correo_electronico]);
+  const admin = await pool.query("SELECT * FROM administrador WHERE correo_electronico = $1", [correo_electronico]);
+
+  const user = postulante.rows[0] || empleador.rows[0] || admin.rows[0];
+
+  let userType = null;
+
+  if (postulante.rows.length) userType = "postulante";
+  if (empleador.rows.length) userType = "empleador";
+  if (admin.rows.length) userType = "admin";
+
+  if (!user.rows.length) {
+    return res.json({ message: "Si el correo existe, recibirás instrucciones" })
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = Date.now() + 1000 * 60 * 15;
+
+  await db.query(
+    "UPDATE postulante SET reset_token = $1, reset_token_expires = $2 WHERE correo_electronico = $3",
+    [token, expires, correo_electronico]
+  )
+
+  const resetLink = `http:localhost:4200/reset-password/${token}`
+
+  await transporter.sendMail({
+    to: correo_electronico,
+    subject: "Restablecimiento de contraseña - Chambee",
+    html: `
+      <h3>Recuperación de contraseña</h3>
+      <p>Haz clic en el siguiente enlace:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>Este enlace expira en 15 minutos</p>
+    `
+  });
+
+  res.json({ message: "Si el correo existe, recibirás instrucciones"})
+
 });
 
 /* ===== INICIAR SERVIDOR ===== */

@@ -18,6 +18,50 @@
   padding: 45px 20px 60px; /* 45px arriba para separar del navbar */
 }
 
+.navbar-chambee {
+  background-color: var(--navbar-bg);
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-soft);
+  padding: 0 20px;
+  gap: 12px;
+}
+
+.desktop-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-float);
+  padding: 8px 6px;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.desktop-menu-link {
+  display: block;
+  padding: 8px 10px;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.desktop-menu-link:hover {
+  background: var(--surface-secondary);
+}
+
+
 /* Sombras suaves de Chambee */
 .shadow-soft {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);

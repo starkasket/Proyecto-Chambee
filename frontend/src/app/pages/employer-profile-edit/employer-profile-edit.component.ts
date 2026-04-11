@@ -105,8 +105,8 @@ export class EmployerProfileEditComponent implements OnInit {
 
   cargarPerfil() {
     this.cargando = true;
-    this.api.obtenerPerfilEmpleador(this.employerId).subscribe({
-      next: (perfil) => {
+    this.api.getMiPerfil().subscribe({
+      next: (perfil: any) => {
         this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
         this.perfilForm.patchValue({
           nombre_empresa: perfil.nombre_empresa || '',
@@ -227,7 +227,7 @@ onArchivoSeleccionado(event: Event): void {
       foto_perfil: this.urlImagenSubida || null
     };
 
-    this.api.actualizarPerfilEmpleador(this.employerId, payload).subscribe({
+    this.api.actualizarMiPerfil(payload).subscribe({
       next: (response) => {
         const perfilActualizado = response.perfil;
         localStorage.setItem('perfilEmpleador', JSON.stringify(perfilActualizado));

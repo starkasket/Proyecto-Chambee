@@ -48,6 +48,14 @@ registrarPostulante(datos: any): Observable<any> {
     }
   });
   }
+  
+  actualizarMiPerfil(datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/mi-perfil`, datos, {
+      headers: {
+        Authorization: 'Bearer ' + this.authService.getToken()
+      }
+    });
+  }
 
   actualizarPerfilEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
     // Guarda los cambios del formulario de edicion del empleador.
