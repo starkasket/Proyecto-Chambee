@@ -17,6 +17,7 @@ interface EmployerProfile {
   telefono: string;
   rfc: string;
   descripcion: string;
+  foto_perfil?: string; 
 }
 
 interface EmployerAnnouncement {

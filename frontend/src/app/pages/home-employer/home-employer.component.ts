@@ -53,6 +53,7 @@ interface NotificationItem {
 export class HomeEmployerComponent implements OnInit, OnDestroy {
   // Variables de la empresa
   nombre_empleador: string = 'Empresa';
+  foto_perfil: string = '';
 
   // Control de la interfaz
   toolsOpen = false;
@@ -162,6 +163,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
         next: (perfil) => {
           // Asignar nombre de empresa desde la respuesta de la API (siempre actualizado)
           this.nombre_empleador = perfil?.nombre_empresa || 'Usuario';
+          this.foto_perfil = perfil?.foto_perfil || '';
         },
         // Si la petición falla (error de conexión, timeout, etc)
         error: () => {

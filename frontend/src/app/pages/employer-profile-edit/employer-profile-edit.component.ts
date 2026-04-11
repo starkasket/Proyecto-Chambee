@@ -46,12 +46,18 @@ export class EmployerProfileEditComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
 
+  previewUrl: string | null = null;        
+  archivoSeleccionado: File | null = null; 
+  fileName = 'Ningún archivo seleccionado';
+  subiendoImagen = false;                  
+  urlImagenSubida = '';           
+  mostrarEliminar = false;                 
+
   notifications: NotificationItem[] = [
     { id: 1, title: 'Perfil de empresa', message: 'Recuerda guardar tus cambios antes de salir.', time: 'Ahora', read: false },
     { id: 2, title: 'Consejo', message: 'Mantener tu informacion actualizada mejora la confianza de los candidatos.', time: 'Hace 20 min', read: true }
   ];
 
-  // Este formulario refleja los campos reales de la tabla `empleador`.
   readonly perfilForm = this.fb.group({
     nombre_empresa: ['', [Validators.required, Validators.maxLength(150)]],
     correo_electronico: ['', [Validators.required, Validators.email, Validators.maxLength(150)]],
@@ -113,6 +119,14 @@ export class EmployerProfileEditComponent implements OnInit {
           rfc: perfil.rfc || '',
           descripcion: perfil.descripcion || ''
         });
+
+        if (perfil.foto_perfil) {
+          this.previewUrl = perfil.foto_perfil;
+          this.urlImagenSubida = perfil.foto_perfil;
+          this.mostrarEliminar = true;
+        }
+        
+
         this.cargando = false;
       },
       error: () => {
@@ -122,7 +136,68 @@ export class EmployerProfileEditComponent implements OnInit {
     });
   }
 
-  guardarCambios() {
+onArchivoSeleccionado(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (!input.files?.length) return;
+
+  const archivo = input.files[0];
+
+  if (archivo.size > 2 * 1024 * 1024) {
+    this.error = 'La imagen no puede superar los 2 MB.';
+    return;
+  }
+
+  this.archivoSeleccionado = archivo;
+  this.urlImagenSubida = '';           
+  this.fileName = archivo.name.length > 30
+    ? archivo.name.substring(0, 27) + '...'
+    : archivo.name;
+  this.error = '';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    this.previewUrl = e.target?.result as string;
+  };
+  reader.readAsDataURL(archivo);
+}
+  async subirImagen(): Promise<void> {
+    if (!this.archivoSeleccionado) return;
+
+    this.subiendoImagen = true;
+    this.urlImagenSubida = '';
+    this.error = '';
+
+    const formData = new FormData();
+    formData.append('file', this.archivoSeleccionado);
+    formData.append('upload_preset', 'chambee_upload'); 
+
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      this.urlImagenSubida = data.secure_url;
+      this.mostrarEliminar = true;
+      this.exito = 'Logo subido correctamente.';
+    } catch {
+      this.error = 'Error al subir la imagen. Intenta de nuevo.';
+    } finally {
+      this.subiendoImagen = false;
+    }
+  }
+  
+
+  eliminarImagen(): void {
+    this.previewUrl = null;
+    this.archivoSeleccionado = null;
+    this.fileName = 'Ningún archivo seleccionado';
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
+    this.exito = '';
+  }
+
+  async guardarCambios() {
     this.error = '';
     this.exito = '';
 
@@ -133,13 +208,26 @@ export class EmployerProfileEditComponent implements OnInit {
     }
 
     this.guardando = true;
-    const payload = this.perfilForm.getRawValue() as EmployerProfileFormValue;
+
+    // Si hay una imagen seleccionada pero no se ha subido, subirla automáticamente
+    if (this.archivoSeleccionado && !this.urlImagenSubida) {
+      try {
+        await this.subirImagen();
+      } catch {
+        this.guardando = false;
+        this.error = 'Error al subir la imagen. Intenta de nuevo.';
+        return;
+      }
+    }
+
+    const payload = {
+      ...this.perfilForm.getRawValue() as EmployerProfileFormValue,
+      foto_perfil: this.urlImagenSubida || null
+    };
 
     this.api.actualizarPerfilEmpleador(this.employerId, payload).subscribe({
       next: (response) => {
         const perfilActualizado = response.perfil;
-
-        // Se actualiza el cache local para que home y perfil reflejen los cambios al instante.
         localStorage.setItem('perfilEmpleador', JSON.stringify(perfilActualizado));
 
         const usuarioRaw = localStorage.getItem('usuario');
@@ -153,51 +241,41 @@ export class EmployerProfileEditComponent implements OnInit {
         }
 
         this.guardando = false;
-        this.exito = 'Perfil actualizado correctamente.';
+        this.exito = 'Perfil actualizado correctamente. Redirigiendo...';
+
+        // Navegar al perfil después de un breve momento
+        setTimeout(() => {
+          this.router.navigate(['/perfil']);
+        }, 1200);
       },
-      error: () => {
+      error: (err) => {
         this.guardando = false;
+        console.error('Error al guardar perfil:', err);
         this.error = 'No se pudieron guardar los cambios del perfil.';
       }
     });
   }
 
-  volverPerfil() {
-    this.router.navigate(['/perfil']);
-  }
-
-  crearOferta() {
-    this.router.navigate(['/post-job']);
-  }
-
-  toggleTheme() {
-    this.themeService.toggleTheme();
-  }
+  volverPerfil() { this.router.navigate(['/perfil']); }
+  crearOferta() { this.router.navigate(['/post-job']); }
+  toggleTheme() { this.themeService.toggleTheme(); }
 
   get isDarkMode(): boolean {
     return this.themeService.isDarkMode();
   }
 
   toggleNotifications(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-
+    if (event) event.stopPropagation();
     this.notificationsOpen = !this.notificationsOpen;
     if (this.notificationsOpen) {
       this.hasUnreadNotifications = false;
-      this.notifications.forEach((notification) => {
-        notification.read = true;
-      });
+      this.notifications.forEach(n => n.read = true);
     }
     this.menuOpen = false;
   }
 
   toggleMenu(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-
+    if (event) event.stopPropagation();
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
@@ -215,24 +293,15 @@ export class EmployerProfileEditComponent implements OnInit {
 
   @HostListener('document:click')
   onDocumentClick() {
-    if (this.notificationsOpen) {
-      this.notificationsOpen = false;
-    }
-    if (this.menuOpen) {
-      this.menuOpen = false;
-    }
+    if (this.notificationsOpen) this.notificationsOpen = false;
+    if (this.menuOpen) this.menuOpen = false;
   }
 
   @HostListener('window:resize')
-  onResize() {
-    this.checkMobile();
-  }
+  onResize() { this.checkMobile(); }
 
   private checkMobile() {
-    try {
-      this.isMobile = window.innerWidth <= 768;
-    } catch {
-      this.isMobile = false;
-    }
+    try { this.isMobile = window.innerWidth <= 768; }
+    catch { this.isMobile = false; }
   }
 }

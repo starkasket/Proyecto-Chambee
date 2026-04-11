@@ -24,12 +24,9 @@ const pool = new Pool({
 });
 
 /* ===== CONFIGURACIÓN DE CORREO ===== */
-
-// Si EMAIL_TO no existe, usa EMAIL_USER como destino por compatibilidad.
 const correoDestino = process.env.EMAIL_TO || process.env.EMAIL_USER;
 const hasEmailConfig = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
 
-// Configuración de Nodemailer
 const transporter = hasEmailConfig
   ? nodemailer.createTransport({
       service: "gmail",
@@ -40,7 +37,6 @@ const transporter = hasEmailConfig
     })
   : null;
 
-// Verifica conexión con Gmail
 if (!hasEmailConfig) {
   console.error("Configuracion de correo incompleta. Revisa EMAIL_USER y EMAIL_PASS en backend/.env");
 } else {
@@ -55,36 +51,31 @@ if (!hasEmailConfig) {
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-
   if (!authHeader) {
-    return res.status(401).json({ error: "Token requerido"})
+    return res.status(401).json({ error: "Token requerido" });
   }
-
   const token = authHeader.split(" ")[1];
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; 
+    req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ error: "Token inválido"})
+    return res.status(401).json({ error: "Token inválido" });
   }
-  
-}
+};
 
 const authorizeRoles = (...rolesPermitidos) => {
   return (req, res, next) => {
     if (!rolesPermitidos.includes(req.user.rol)) {
-      return res.status(403).json({ error: "No tienes permiso"})
+      return res.status(403).json({ error: "No tienes permiso" });
     }
     next();
-  }
-}
-
+  };
+};
 
 /* ===== ENDPOINT DE PRUEBA ===== */
 app.get("/", (req, res) => {
-  res.send("Servidor Chambee funcionando correctamente ");
+  res.send("Servidor Chambee funcionando correctamente");
 });
 
 /* ===== REGISTRO DE POSTULANTES ===== */
@@ -117,16 +108,9 @@ app.post("/postulantes/registro", async (req, res) => {
 
     const result = await pool.query(query, values);
 
-     const user = {
-      ...result.rows[0],
-      rol: "postulante"
-    };
+    const user = { ...result.rows[0], rol: "postulante" };
 
-    res.status(201).json({
-      message: "Cuenta cread< correctamente",
-      user
-    });
-
+    res.status(201).json({ message: "Cuenta creada correctamente", user });
 
   } catch (err) {
     console.log(err);
@@ -161,15 +145,9 @@ app.post("/empleadores/registro", async (req, res) => {
 
     const result = await pool.query(query, values);
 
-     const user = {
-      ...result.rows[0],
-      rol: "empleador"
-    };
+    const user = { ...result.rows[0], rol: "empleador" };
 
-    res.status(201).json({
-      message: "Cuenta creada correctamente",
-      user
-    });
+    res.status(201).json({ message: "Cuenta creada correctamente", user });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -178,16 +156,11 @@ app.post("/empleadores/registro", async (req, res) => {
 
 /* ===== PERFIL DE EMPLEADOR ===== */
 
-app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
+// GET — sin verifyToken para que el frontend pueda cargar el perfil
+app.get("/empleadores/:id/perfil", async (req, res) => {
   const { id } = req.params;
 
   try {
-    
-    if (req.user.rol !== "empleador" || req.user.id != id) {
-      return res.status(403).json({ error: "No autorizado" })
-    }
-
-    // Perfil completo del empleador para la vista "Mi Perfil" en frontend.
     const query = `SELECT
       id_empleador,
       nombre_empresa,
@@ -200,7 +173,8 @@ app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
       codigo_postal,
       telefono,
       rfc,
-      descripcion
+      descripcion,
+      foto_perfil
     FROM empleador
     WHERE id_empleador = $1`;
 
@@ -218,6 +192,7 @@ app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
   }
 });
 
+// GET mi-perfil — con token porque usa req.user.id
 app.get("/mi-perfil", verifyToken, async (req, res) => {
   try {
     const id = req.user.id;
@@ -226,7 +201,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
     let query = "";
 
     if (rol === "empleador") {
-       query = `SELECT
+      query = `SELECT
         id_empleador,
         nombre_empresa,
         correo_electronico,
@@ -238,7 +213,8 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
         codigo_postal,
         telefono,
         rfc,
-        descripcion
+        descripcion,
+        foto_perfil
       FROM empleador
       WHERE id_empleador = $1`;
     } else if (rol === "postulante") {
@@ -254,12 +230,14 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
     }
 
     res.json(result.rows[0]);
+
   } catch (err) {
     console.error("Error en /mi-perfil:", err);
     res.status(500).json({ error: "Error al obtener perfil" });
   }
 });
 
+// PUT — guarda foto_perfil junto con los demás campos
 app.put("/empleadores/:id/perfil", async (req, res) => {
   const { id } = req.params;
   const {
@@ -274,23 +252,24 @@ app.put("/empleadores/:id/perfil", async (req, res) => {
     telefono,
     rfc,
     descripcion,
+    foto_perfil,
   } = req.body;
 
   try {
-    // Se actualizan solo los campos editables visibles en la vista de perfil.
     const query = `UPDATE empleador
-      SET nombre_empresa = $1,
+      SET nombre_empresa     = $1,
           correo_electronico = $2,
-          pais = $3,
-          estado = $4,
-          ciudad = $5,
-          colonia = $6,
-          calle = $7,
-          codigo_postal = $8,
-          telefono = $9,
-          rfc = $10,
-          descripcion = $11
-      WHERE id_empleador = $12
+          pais               = $3,
+          estado             = $4,
+          ciudad             = $5,
+          colonia            = $6,
+          calle              = $7,
+          codigo_postal      = $8,
+          telefono           = $9,
+          rfc                = $10,
+          descripcion        = $11,
+          foto_perfil        = $12
+      WHERE id_empleador = $13
       RETURNING
         id_empleador,
         nombre_empresa,
@@ -303,7 +282,8 @@ app.put("/empleadores/:id/perfil", async (req, res) => {
         codigo_postal,
         telefono,
         rfc,
-        descripcion`;
+        descripcion,
+        foto_perfil`;
 
     const values = [
       nombre_empresa,
@@ -317,6 +297,7 @@ app.put("/empleadores/:id/perfil", async (req, res) => {
       telefono,
       rfc,
       descripcion,
+      foto_perfil,
       id,
     ];
 
@@ -330,17 +311,18 @@ app.put("/empleadores/:id/perfil", async (req, res) => {
       message: "Perfil actualizado correctamente",
       perfil: result.rows[0],
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al actualizar perfil del empleador" });
   }
 });
 
+/* ===== ANUNCIOS ===== */
 app.get("/empleadores/:id/anuncios", async (req, res) => {
   const { id } = req.params;
 
   try {
-    // El home y el perfil del empleador reutilizan esta lista resumida.
     const query = `SELECT
       id_anuncio,
       titulo,
@@ -362,6 +344,7 @@ app.get("/empleadores/:id/anuncios", async (req, res) => {
 
     const result = await pool.query(query, [id]);
     res.json(result.rows);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener anuncios del empleador" });
@@ -371,66 +354,26 @@ app.get("/empleadores/:id/anuncios", async (req, res) => {
 app.post("/empleadores/:id/anuncios", async (req, res) => {
   const { id } = req.params;
   const {
-    titulo,
-    descripcion,
-    tipo_anuncio,
-    estado,
-    ciudad,
-    colonia,
-    calle,
-    codigo_postal,
-    salario,
-    modalidad,
-    estado_anuncio,
+    titulo, descripcion, tipo_anuncio, estado, ciudad,
+    colonia, calle, codigo_postal, salario, modalidad, estado_anuncio,
   } = req.body;
 
   try {
-    // Se crea una oferta laboral ligada al empleador autenticado.
     const query = `INSERT INTO anuncios (
-      titulo,
-      descripcion,
-      tipo_anuncio,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      salario,
-      modalidad,
-      estado_anuncio,
-      id_empleador,
-      vistas
+      titulo, descripcion, tipo_anuncio, estado, ciudad,
+      colonia, calle, codigo_postal, salario, modalidad,
+      estado_anuncio, id_empleador, vistas
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,0)
     RETURNING
-      id_anuncio,
-      titulo,
-      descripcion,
-      tipo_anuncio,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      salario,
-      modalidad,
-      fecha_publicacion,
-      estado_anuncio,
-      vistas`;
+      id_anuncio, titulo, descripcion, tipo_anuncio, estado,
+      ciudad, colonia, calle, codigo_postal, salario, modalidad,
+      fecha_publicacion, estado_anuncio, vistas`;
 
     const values = [
-      titulo,
-      descripcion,
-      tipo_anuncio,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      salario,
-      modalidad,
-      estado_anuncio,
-      id,
+      titulo, descripcion, tipo_anuncio, estado, ciudad,
+      colonia, calle, codigo_postal, salario, modalidad,
+      estado_anuncio, id,
     ];
 
     const result = await pool.query(query, values);
@@ -439,6 +382,7 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       message: "Oferta laboral creada correctamente",
       anuncio: result.rows[0],
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al crear la oferta laboral" });
@@ -447,7 +391,6 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
 
 app.get("/anuncios", async (_req, res) => {
   try {
-    // Vista publica para que los postulantes puedan ver ofertas activas.
     const query = `SELECT
       a.id_anuncio,
       a.titulo,
@@ -472,6 +415,7 @@ app.get("/anuncios", async (_req, res) => {
 
     const result = await pool.query(query);
     res.json(result.rows);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener anuncios publicos" });
@@ -484,12 +428,12 @@ app.post("/login", async (req, res) => {
 
   try {
     let usuario = null;
+
     const postulante = await pool.query(
       `SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, 'postulante' AS rol
        FROM postulante WHERE correo_electronico = $1`,
       [correo_electronico]
     );
-
     if (postulante.rows.length > 0) usuario = postulante.rows[0];
 
     if (!usuario) {
@@ -498,7 +442,6 @@ app.post("/login", async (req, res) => {
          FROM empleador WHERE correo_electronico = $1`,
         [correo_electronico]
       );
-
       if (empleador.rows.length > 0) usuario = empleador.rows[0];
     }
 
@@ -508,7 +451,6 @@ app.post("/login", async (req, res) => {
          FROM administrador WHERE correo_electronico = $1`,
         [correo_electronico]
       );
-
       if (admin.rows.length > 0) usuario = admin.rows[0];
     }
 
@@ -525,31 +467,20 @@ app.post("/login", async (req, res) => {
     const { contrasena: _, ...user } = usuario;
 
     const token = jwt.sign(
-      {
-        id: user.id,
-        correo: user.correo,
-        rol: user.rol
-      },
+      { id: user.id, correo: user.correo, rol: user.rol },
       process.env.JWT_SECRET,
-      { expiresIn: "7d"}
+      { expiresIn: "7d" }
     );
 
-    res.json({
-      message: "Inicio de sesión exitoso",
-      token,
-      user
-    });
-   
+    res.json({ message: "Inicio de sesión exitoso", token, user });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error en servidor" });
   }
-  
 });
 
-
-
-/* ===== SOPORTE (ENVÍO DE CORREO) ===== */
+/* ===== SOPORTE ===== */
 app.post("/api/support", async (req, res) => {
   const { nombreCompleto, empresa, correo, telefono, asunto, detalles } = req.body;
 

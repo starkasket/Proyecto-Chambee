@@ -86,6 +86,57 @@
     <form class="edit-form" *ngIf="!cargando" [formGroup]="perfilForm" (ngSubmit)="guardarCambios()">
       <article class="form-card">
         <div class="card-head">
+          <div class="logo-row">
+
+            <div class="logo-preview-wrapper">
+              <div class="logo-preview">
+                <img *ngIf="previewUrl" [src]="previewUrl" alt="Logo de la empresa" />
+                <svg *ngIf="!previewUrl" width="32" height="32" fill="none" stroke="#b8960a" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+
+            </div>
+
+            <div class="upload-content">
+              <p class="eyebrow">Logo de la Empresa</p>
+              <h6 class="upload-hint">JPG, PNG o SVG · Máx. 2 MB · Recomendado 200×200 px</h6>
+
+              <input #imagenInput type="file" accept="image/*" style="display:none"
+                (change)="onArchivoSeleccionado($event)" />
+
+              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                {{ fileName }}
+              </span>
+              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                ✓ Logo guardado
+              </span>
+              <div class="btn-group">
+                <button type="button" class="btn-secondary" (click)="imagenInput.click()">
+                  Elegir archivo
+                </button>
+                <button type="button" class="btn-primary-img" (click)="subirImagen()"
+                  [disabled]="!archivoSeleccionado || subiendoImagen">
+                  <span class="loading" [class.visible]="subiendoImagen"></span>
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+                </button>
+                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                  Eliminar
+                </button>
+              </div>
+
+              <div class="result" *ngIf="urlImagenSubida">
+                ✓ Imagen subida correctamente
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
           <div>
             <p class="eyebrow">Datos principales</p>
             <h2>Identidad de la empresa</h2>
@@ -113,13 +164,7 @@
 
           <label class="field field-locked">
             <span>RFC</span>
-            <input
-              type="text"
-              formControlName="rfc"
-              placeholder="RFC de la empresa"
-              readonly
-              aria-readonly="true"
-            />
+            <input type="text" formControlName="rfc" placeholder="RFC de la empresa" readonly aria-readonly="true" />
             <small class="locked-help">El RFC no se puede modificar una vez registrado.</small>
           </label>
         </div>
@@ -182,7 +227,8 @@
 
         <label class="field">
           <span>Descripcion</span>
-          <textarea rows="6" formControlName="descripcion" placeholder="Cuenta a los candidatos quien eres, que hace tu empresa y por que deberian postularse."></textarea>
+          <textarea rows="6" formControlName="descripcion"
+            placeholder="Cuenta a los candidatos quien eres, que hace tu empresa y por que deberian postularse."></textarea>
           <small *ngIf="campoInvalido('descripcion')">La descripcion es demasiado larga.</small>
         </label>
       </article>

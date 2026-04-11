@@ -39,7 +39,9 @@
       style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
       routerLink="/perfil"
       title="Ir a mi perfil">
-      <i class="bi bi-person-circle fs-5"></i>
+      <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
       <span class="d-none d-md-block">Mi Perfil</span>
     </button>
 
