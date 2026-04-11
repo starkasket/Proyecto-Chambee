@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { environment } from '../../environments/environment';
 export class ApiService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
  /*getUsuarios(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/usuarios`);
@@ -29,14 +30,11 @@ registrarPostulante(datos: any): Observable<any> {
     // Endpoint usado por el componente de perfil de empleador.
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, {
       headers: {
-        Authorization: 'Bearer ' + this.getToken()
+        Authorization: 'Bearer ' + this.authService.getToken()
       }
     });
   }
 
-  getToken(): string | null {
-  return localStorage.getItem('token') || sessionStorage.getItem('token');
-  }
 
   getUsuario(): any {
   const user = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
@@ -46,7 +44,7 @@ registrarPostulante(datos: any): Observable<any> {
 
   return this.http.get('http://localhost:3000/mi-perfil', {
     headers: {
-      Authorization: 'Bearer ' + this.getToken()
+      Authorization: 'Bearer ' + this.authService.getToken()
     }
   });
   }
@@ -55,7 +53,7 @@ registrarPostulante(datos: any): Observable<any> {
     // Guarda los cambios del formulario de edicion del empleador.
     return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos, {
       headers: {
-        Authorization: 'Bearer ' + this.getToken()
+        Authorization: 'Bearer ' + this.authService.getToken()
       }
     });
   }
@@ -64,7 +62,7 @@ registrarPostulante(datos: any): Observable<any> {
     // Lista resumida de ofertas para home-employer y perfil de empresa.
     return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, {
       headers: {
-        Authorization: 'Bearer ' + this.getToken()
+        Authorization: 'Bearer ' + this.authService.getToken()
       }
     });
   }
@@ -73,7 +71,7 @@ registrarPostulante(datos: any): Observable<any> {
     // Crea una nueva oferta laboral asociada al empleador autenticado.
     return this.http.post(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, datos, {
       headers: {
-        Authorization: 'Bearer ' + this.getToken()
+        Authorization: 'Bearer ' + this.authService.getToken()
       }
     });
   }

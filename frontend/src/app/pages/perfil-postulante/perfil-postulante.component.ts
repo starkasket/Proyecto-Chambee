@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-
+import { AuthService } from '../../services/auth.service';
 // Interfaz para las notificaciones (opcional, pero buena práctica)
 interface NotificationItem {
   id: number;
@@ -47,7 +47,7 @@ export class PerfilPostulanteComponent implements OnInit {
   ];
 
   // Inyectamos el Router para poder hacer redirecciones (ej. al cerrar sesión)
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authApi: AuthService) {}
 
   ngOnInit() {
     // Al iniciar, buscamos el nombre del usuario guardado (si existe)
@@ -114,10 +114,9 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   logout() {
-    console.log('Cerrando sesión...');
-    localStorage.removeItem('usuario');
+   this.authApi.logout();
     this.menuOpen = false;
-    this.router.navigate(['/']); // Te regresa a la página de inicio o login
+   
   }
 
 }

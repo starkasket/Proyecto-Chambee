@@ -2,6 +2,7 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 // Importa tu servicio de tema si lo tienes en esta ruta, si no, ajusta el path:
 // import { ThemeService } from '../../services/theme.service'; 
 
@@ -145,7 +146,8 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly router: Router,
-    private readonly api: ApiService
+    private readonly api: ApiService,
+    private readonly authApi: AuthService
     // private readonly themeService: ThemeService // Descomenta si usas el servicio
   ) {}
 
@@ -241,21 +243,15 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     console.log('Abriendo CV de:', applicant.name);
   }
 
-  clearSession(){
-    localStorage.clear();
-    sessionStorage.clear();
-  }
-
   logout() {
-    this.clearSession();
+    this.authApi.logout();
     
     // 2. Cerramos los menús 
     this.menuOpen = false;
     this.toolsOpen = false;
     
-    // 3. Redirigimos a la página principal o de login
     console.log('Cerrando sesión...');
-    this.router.navigate(['/']); // Cambia '/' por tu ruta de login si la tienes
+   
   }
 
   crearOferta() {

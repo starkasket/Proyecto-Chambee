@@ -531,7 +531,7 @@ app.post("/login", async (req, res) => {
         rol: user.rol
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d"}
+      { expiresIn: "1m"}
     );
 
     res.json({

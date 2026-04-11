@@ -3,6 +3,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
+import { AuthService } from '../../services/auth.service';
 
 interface EmployerProfile {
   id_empleador?: string;
@@ -147,7 +148,8 @@ export class EmployerProfileComponent implements OnInit {
   constructor(
     private api: ApiService,
     private router: Router,
-    private readonly themeService: ThemeService
+    private readonly themeService: ThemeService,
+    private readonly authApi: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -299,15 +301,10 @@ export class EmployerProfileComponent implements OnInit {
     this.notificationsOpen = false;
   }
 
-  clearSession(){
-    localStorage.clear();
-    sessionStorage.clear();
-  }
+  
 
   logout() {
-    this.clearSession();
-
-    this.router.navigate(['/']);
+    this.authApi.logout();
   }
 
   @HostListener('document:click')

@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
+import { AuthService } from '../../services/auth.service';
 
 interface EmployerJobFormValue {
   titulo: string;
@@ -68,7 +69,8 @@ export class EmployerJobCreateComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly api: ApiService,
     private readonly router: Router,
-    private readonly themeService: ThemeService
+    private readonly themeService: ThemeService,
+    private readonly authApi: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -200,9 +202,7 @@ export class EmployerJobCreateComponent implements OnInit {
   }
 
   logout() {
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('perfilEmpleador');
-    this.router.navigate(['/']);
+    this.authApi.logout();
   }
 
   campoInvalido(nombre: keyof EmployerJobFormValue): boolean {
