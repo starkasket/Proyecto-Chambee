@@ -102,7 +102,7 @@
     <div class="carousel">
       <div class="carousel-container">
         <div class="carousel-slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
-          <div class="featured-card featured-clickable" (click)="openFeaturedJob()" role="button" tabindex="0">
+         <div class="featured-card featured-clickable" (click)="openFeaturedJob(slide.id)" role="button" tabindex="0">
             <div class="featured-upper">
               <div class="featured-company">
                 <div class="featured-media">
@@ -131,7 +131,7 @@
                 <span class="featured-chip">{{ slide.location }}</span>
               </div>
 
-              <button class="btn featured-btn" (click)="openFeaturedJob(); $event.stopPropagation()">Ver más</button>
+             <button class="btn featured-btn" (click)="openFeaturedJob(slide.id); $event.stopPropagation()">Ver más</button>
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@
     </div>
 
     <div class="jobs-grid mt-5">
-      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob()" role="button" tabindex="0">
+      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button" tabindex="0">
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
           <h4>{{ job.company }}</h4>

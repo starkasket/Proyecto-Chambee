@@ -7,8 +7,10 @@ import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
+
 // Interfaces para estructurar los datos
 interface Slide {
+  id?: string | number;
   company: string;
   companyDescription: string;
   title: string;
@@ -88,6 +90,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   slides: Slide[] = [
     {
+      id: '1001',
       company: 'Lucky Ghost',
       companyDescription: 'Tienda de ropa con identidad visual fuerte y enfoque en streetwear.',
       title: 'Asesor de Ventas',
@@ -98,6 +101,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       img: this.createLuckyGhostImage()
     },
     {
+      id: '1002',
       company: 'Chambee Tech',
       companyDescription: 'Área especializada en APIs, datos y plataformas escalables.',
       title: 'Backend Developer',
@@ -108,6 +112,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       img: 'https://picsum.photos/900/320?random=32'
     },
     {
+      id: '1003',
       company: 'Chambee Creative',
       companyDescription: 'Estudio interno para experiencias de producto y marca.',
       title: 'UI/UX Designer',
@@ -146,14 +151,14 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   ];
 
   jobs: Job[] = [
-    { company: 'AT&T Mexico', title: 'Ejecutivo de Ventas', salary: '$13,000 MXN', img: 'https://picsum.photos/300/150', rating: '4.2', applicants: 9 },
-    { company: 'Google', title: 'Frontend Developer', salary: '$25,000 MXN', img: 'https://picsum.photos/301/150', rating: '4.8', applicants: 12 },
-    { company: 'Amazon', title: 'Backend Developer', salary: '$30,000 MXN', img: 'https://picsum.photos/302/150', rating: '4.7', applicants: 7 },
-    { company: 'Spotify', title: 'Mobile Engineer', salary: '$28,000 MXN', img: 'https://picsum.photos/303/150', rating: '4.6', applicants: 5 },
-    { company: 'Microsoft', title: 'Cloud Engineer', salary: '$32,000 MXN', img: 'https://picsum.photos/304/150', rating: '4.9', applicants: 10 },
-    { company: 'IBM', title: 'Data Scientist', salary: '$26,000 MXN', img: 'https://picsum.photos/305/150', rating: '4.5', applicants: 6 },
-    { company: 'Oracle', title: 'DevOps Engineer', salary: '$29,500 MXN', img: 'https://picsum.photos/306/150', rating: '4.4', applicants: 8 },
-    { company: 'Apple', title: 'iOS Developer', salary: '$34,000 MXN', img: 'https://picsum.photos/307/150', rating: '4.9', applicants: 11 }
+    { id: '2001', company: 'AT&T Mexico', title: 'Ejecutivo de Ventas', salary: '$13,000 MXN', img: 'https://picsum.photos/300/150', rating: '4.2', applicants: 9 },
+    { id: '2002', company: 'Google', title: 'Frontend Developer', salary: '$25,000 MXN', img: 'https://picsum.photos/301/150', rating: '4.8', applicants: 12 },
+    { id: '2003', company: 'Amazon', title: 'Backend Developer', salary: '$30,000 MXN', img: 'https://picsum.photos/302/150', rating: '4.7', applicants: 7 },
+    { id: '2004', company: 'Spotify', title: 'Mobile Engineer', salary: '$28,000 MXN', img: 'https://picsum.photos/303/150', rating: '4.6', applicants: 5 },
+    { id: '2005', company: 'Microsoft', title: 'Cloud Engineer', salary: '$32,000 MXN', img: 'https://picsum.photos/304/150', rating: '4.9', applicants: 10 },
+    { id: '2006', company: 'IBM', title: 'Data Scientist', salary: '$26,000 MXN', img: 'https://picsum.photos/305/150', rating: '4.5', applicants: 6 },
+    { id: '2007', company: 'Oracle', title: 'DevOps Engineer', salary: '$29,500 MXN', img: 'https://picsum.photos/306/150', rating: '4.4', applicants: 8 },
+    { id: '2008', company: 'Apple', title: 'iOS Developer', salary: '$34,000 MXN', img: 'https://picsum.photos/307/150', rating: '4.9', applicants: 11 }
   ];
 
   ngOnInit() {
@@ -240,12 +245,22 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     console.log('Abriendo servicio:', index);
   }
 
-  openJob() {
-    console.log('Abriendo detalle de empleo');
+  openJob(id?: string | number) {
+    console.log('Abriendo detalle de empleo de la cuadrícula con ID:', id);
+    if (id) {
+      this.router.navigate(['/job', id]);
+    } else {
+      console.warn('Este empleo no tiene ID (quizás es de los datos de prueba)');
+    }
   }
 
-  openFeaturedJob() {
-    console.log('Abriendo empleo destacado');
+  openFeaturedJob(id?: string | number) {
+    console.log('Abriendo empleo del carrusel con ID:', id);
+    if (id) {
+      this.router.navigate(['/job', id]);
+    } else {
+      console.warn('Este empleo destacado no tiene ID (quizás es de los datos de prueba)');
+    }
   }
 
   @HostListener('window:resize')
