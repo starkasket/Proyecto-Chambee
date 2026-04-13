@@ -2,7 +2,7 @@ import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core'; // <-- A
 import { CommonModule, Location, isPlatformBrowser } from '@angular/common'; // <-- Agregamos isPlatformBrowser
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { JobCardComponent } from '../../components/job-card/job-card.component';
-//import * as L from 'leaflet';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-job-detail',
@@ -55,15 +55,15 @@ export class JobDetailComponent implements OnInit {
     const lat = 20.5888;
     const lon = -100.3899;
 
-    //this.map = L.map('map').setView([lat, lon], 13);
+    this.map = L.map('map').setView([lat, lon], 13);
 
-   /*  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
     L.marker([lat, lon]).addTo(this.map)
       .bindPopup('<b>Ubicación del Empleo</b>')
-      .openPopup(); */
+      .openPopup(); 
 
     // Esto corrige el bug donde el mapa sale gris o incompleto
     setTimeout(() => {

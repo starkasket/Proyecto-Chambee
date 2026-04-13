@@ -74,7 +74,7 @@
         <div class="company-main">
           <div class="company-brand">
             <div class="company-logo-box">
-              <img [src]="perfil?.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"/>
+              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"/>
             </div>
             <div class="company-info">
               <h2>{{ perfil.nombre_postulante }}</h2>
@@ -128,13 +128,13 @@
       <div class="tabs-ceja">
         <div class="tabs-bar">
           <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'" (click)="setActiveTab('postulaciones')">
-            Mis postulaciones <span class="tab-count">{{ postulaciones?.length || 0 }}</span>
+            Mis postulaciones <span class="tab-count">{{ postulaciones.length || 0 }}</span>
           </button>
           <button class="tab" type="button" [class.active]="activeTab === 'favoritos'" (click)="setActiveTab('favoritos')">
-            Mis favoritos <span class="tab-count">{{ favoritos?.length || 0 }}</span>
+            Mis favoritos <span class="tab-count">{{ favoritos.length || 0 }}</span>
           </button>
           <button class="tab" type="button" [class.active]="activeTab === 'recomendados'" (click)="setActiveTab('recomendados')">
-            Recomendados <span class="tab-count">{{ recomendados?.length || 0 }}</span>
+            Recomendados <span class="tab-count">{{ recomendados.length || 0 }}</span>
           </button>
         </div>
       </div>
