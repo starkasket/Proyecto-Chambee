@@ -1,113 +1,123 @@
 <nav class="navbar-chambee">
-  <div class="logo-wrapper" routerLink="/home-user" style="cursor: pointer; text-decoration: none;">
-    <img src="assets/LogoChambee.png" alt="Chambee" />
-    <span>Chambee</span>
-  </div>
-
-  <div class="search-container">
-    <input type="text" placeholder="Buscar, categoría, puesto, ciudad y más..." />
-  </div>
-
-  <div class="nav-buttons">
-    
-    <div style="position: relative; cursor: pointer; margin-right: 10px;">
-      <i class="bi bi-bell-fill fs-5" style="color: #333;"></i>
-      <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; margin-top: 5px;">
-        <span class="visually-hidden">Nuevas notificaciones</span>
-      </span>
+    <div class="logo-wrapper" routerLink="/home-user" style="cursor: pointer; text-decoration: none;">
+        <img src="assets/LogoChambee.png" alt="Chambee" />
+        <span>Chambee</span>
     </div>
 
-    <button class="btn-profile">
-      <i class="bi bi-person-circle fs-5"></i>
-      Mi Perfil
-    </button>
+    <div class="search-container">
+        <input type="text" placeholder="Buscar, categoría, puesto, ciudad y más..." />
+    </div>
 
-    <button class="theme-toggle" type="button" style="border: none; background: transparent; padding: 0;">
-      <span class="theme-toggle-track">
-        <span class="theme-toggle-icon">☀</span>
-      </span>
-    </button>
+    <div class="nav-buttons">
+        <div style="position: relative; cursor: pointer; margin-right: 10px;">
+            <i class="bi bi-bell-fill fs-5" style="color: #333;"></i>
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; margin-top: 5px;">
+                <span class="visually-hidden">Nuevas notificaciones</span>
+            </span>
+        </div>
 
-    <i class="bi bi-list fs-3" style="cursor: pointer; margin-left: 5px; color: #333;"></i>
-  </div>
+        <button class="btn-profile">
+            <i class="bi bi-person-circle fs-5"></i>
+            <span>Mi Perfil</span>
+        </button>
+
+        <button class="theme-toggle" type="button" style="border: none; background: transparent; padding: 0;">
+            <span class="theme-toggle-track">
+                <span class="theme-toggle-icon">☀</span>
+            </span>
+        </button>
+
+        <i class="bi bi-list fs-3 burger-menu" style="cursor: pointer; margin-left: 5px; color: #333;"></i>
+    </div>
 </nav>
 
-<div class="detail-page-wrapper" style="padding-top: 80px;">
-  
-  <div class="header-actions container">
-    <button class="btn-back" (click)="goBack()">
-      <i class="bi bi-arrow-left fs-2"></i> <span style="font-size: 2rem; font-weight: bold; margin-left: 10px;" *ngIf="!jobData">←</span>
-    </button>
-  </div>
-
-  <div class="container main-card-container" *ngIf="jobData">
-    <div class="chambee-card">
-      
-      <div class="company-col">
-        <img [src]="jobData.companyLogo" alt="Logo" class="company-logo">
-        <h3 class="company-name">{{ jobData.companyName }}</h3>
-        <p class="company-desc">{{ jobData.companyDesc }}</p>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="job-col">
-        <div class="job-header">
-          <h2>{{ jobData.title }}</h2>
-          <i class="bi bi-bookmark fs-3" style="cursor: pointer;"></i>
-        </div>
-
-        <div class="job-requirements">
-          <h4>Perfil Básico:</h4>
-          <ul>
-            <li><strong>Edad:</strong> {{ jobData.edad }}</li>
-            <li><strong>Escolaridad:</strong> {{ jobData.escolaridad }}</li>
-            <li><strong>Experiencia:</strong> {{ jobData.experiencia }}</li>
-          </ul>
-
-          <h4>Disponibilidad y Actitud:</h4>
-          <ul>
-            <li><strong>Disponibilidad de horario:</strong> {{ jobData.disponibilidad }}</li>
-            <li><strong>Higiene y Presentación:</strong> {{ jobData.higiene }}</li>
-          </ul>
-        </div>
-
-        <div class="job-footer">
-          <div class="stats">
-            <span class="stars text-warning fs-4">★★★★★</span>
-            <span class="views ms-3 fw-bold"><i class="bi bi-eye"></i> {{ jobData.vistas }}</span>
-          </div>
-          <div class="actions">
-            <button class="btn-ver-mas">Ver Más</button>
-            <button class="btn-postular">Postular</button>
-          </div>
-        </div>
-      </div>
-
+<div class="detail-page-wrapper">
+    <div class="header-actions container">
+        <button class="btn-back" (click)="goBack()">
+            <i class="bi bi-arrow-left fs-2"></i>
+            <span style="font-size: 2rem; font-weight: bold; margin-left: 10px;" *ngIf="!jobData">←</span>
+        </button>
     </div>
-  </div>
 
-  <div class="container mt-4">
-    <div class="ad-banner">
-      <h2>*Anuncio*</h2>
-      <button class="btn-close-ad">×</button>
-    </div>
-  </div>
+    <div class="container main-card-container" *ngIf="jobData">
+        <div class="chambee-card">
+            
+            <div class="company-col">
+                <div class="company-info-top">
+                    <img [src]="jobData.companyLogo" alt="Logo" class="company-logo">
+                    <h3 class="company-name">{{ jobData.companyName }}</h3>
+                    <p class="company-desc">{{ jobData.companyDesc }}</p>
+                </div>
 
-  <div class="container related-section mt-5">
-    <h3 class="mb-4 fw-bold">Empleos Similares</h3>
-    
-    <div class="jobs-grid">
-      <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)">
-        <img [src]="relJob.img" [alt]="relJob.company" />
-        <div class="job-content">
-          <h4>{{ relJob.company }}</h4>
-          <p>{{ relJob.title }}</p>
-          <p class="salary">{{ relJob.salary }}</p>
-          <div class="job-footer">★ {{ relJob.rating }} <span>{{ relJob.applicants }} postulados</span></div>
+                <div class="ubicacion-section" *ngIf="mostrarMapa">
+                    <h4 class="ubicacion-titulo">Ubicación</h4>
+                    <p class="ubicacion-direccion">
+                        AV. Reforma, 201, 208<br>
+                        CP: 6767<br>
+                        Colonia: los Marquez, Qro
+                    </p>
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="job-col">
+                <div class="job-header">
+                    <h2>{{ jobData.title }}</h2>
+                    <i class="bi bi-bookmark fs-3" style="cursor: pointer;"></i>
+                </div>
+
+                <div class="job-requirements">
+                    <h4>Perfil Básico:</h4>
+                    <ul>
+                        <li><strong>Edad:</strong> {{ jobData.edad }}</li>
+                        <li><strong>Escolaridad:</strong> {{ jobData.escolaridad }}</li>
+                        <li><strong>Experiencia:</strong> {{ jobData.experiencia }}</li>
+                    </ul>
+
+                    <h4>Disponibilidad y Actitud:</h4>
+                    <ul>
+                        <li><strong>Disponibilidad de horario:</strong> {{ jobData.disponibilidad }}</li>
+                        <li><strong>Higiene y Presentación:</strong> {{ jobData.higiene }}</li>
+                    </ul>
+                </div>
+
+                <div class="job-footer">
+                    <div class="stats">
+                        <span class="stars text-warning fs-4">★★★★★</span>
+                        <span class="views ms-3 fw-bold"><i class="bi bi-eye"></i> {{ jobData.vistas }}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-ver-mas" (click)="toggleVerMas()">
+                            {{ mostrarMapa ? 'Ver menos' : 'Ver Más' }}
+                        </button>
+                        <button class="btn-postular">Postular</button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-    
-  </div>
+
+    <div class="container mt-4">
+        <div class="ad-banner">
+            <h2>*Anuncio*</h2>
+            <button class="btn-close-ad">×</button>
+        </div>
+    </div>
+
+    <div class="container related-section mt-5">
+        <h3 class="mb-4 fw-bold">Empleos Similares</h3>
+        <div class="jobs-grid">
+            <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)">
+                <img [src]="relJob.img" [alt]="relJob.company" />
+                <div class="job-content">
+                    <h4>{{ relJob.company }}</h4>
+                    <p>{{ relJob.title }}</p>
+                    <p class="salary">{{ relJob.salary }}</p>
+                    <div class="job-footer-card">★ {{ relJob.rating }} <span>{{ relJob.applicants }} postulados</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

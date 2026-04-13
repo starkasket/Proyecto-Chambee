@@ -1,11 +1,11 @@
 /* ===== NAVBAR FIJA SUPERIOR ===== */
 .navbar-chambee {
-  background-color: #ffc107; /* Amarillo Chambee */
+  background-color: #ffc107;
   width: 100%;
   height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Separa los extremos */
+  justify-content: space-between;
   position: fixed;
   top: 0;
   left: 0;
@@ -16,35 +16,31 @@
   box-sizing: border-box;
 }
 
-/* Estilo para el Logo + Texto lateral */
 .logo-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
   min-width: 160px;
-  z-index: 1001; /* Asegura que el logo esté sobre el fondo */
+  z-index: 1001;
 }
 
 .logo-wrapper img {
   height: 40px;
   width: auto;
-  object-fit: contain;
 }
 
 .logo-wrapper span {
   font-size: 1.4rem;
   font-weight: 700;
   color: #111;
-  letter-spacing: -0.5px;
 }
 
-/* ===== Buscador Principal Centrado ===== */
 .search-container {
-  position: absolute; /* El truco para el centrado perfecto */
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 40%; /* Ancho proporcional */
+  width: 40%;
   max-width: 500px;
   min-width: 250px;
   display: flex;
@@ -54,16 +50,12 @@
 .search-container input {
   width: 100%;
   padding: 10px 20px;
-  border-radius: 25px; /* Más redondeado para el diseño */
+  border-radius: 25px;
   border: none;
   background: #ffffff;
-  color: #111111;
-  font-size: 14px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
   outline: none;
 }
 
-/* ===== Grupo de botones derecha ===== */
 .nav-buttons {
   display: flex;
   align-items: center;
@@ -81,61 +73,26 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   cursor: pointer;
-  font-size: 14px;
 }
 
-/* ===== Theme Toggle Optimizado ===== */
-.theme-toggle-track {
-  width: 48px;
-  height: 26px;
-  border-radius: 999px;
-  background: #f8e192;
-  border: 1px solid #e2cc7a;
-  display: flex;
-  align-items: center;
-  padding: 3px;
+/* Responsividad Navbar */
+@media (max-width: 992px) {
+  .search-container { display: none; }
+  .logo-wrapper span { display: none; }
 }
 
-.theme-toggle-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  color: #333;
-  font-size: 12px;
+@media (max-width: 576px) {
+  .btn-profile span { display: none; }
+  .btn-profile { border-radius: 50%; padding: 8px; }
 }
 
-/* ===== Layout de la Página de Detalles ===== */
+/* ===== DISEÑO DE PÁGINA ===== */
 .detail-page-wrapper {
   background-color: #f3ece4; 
   min-height: 100vh;
-  padding-top: 80px; /* Espacio para que el navbar fixed no tape el contenido */
+  padding-top: 80px; 
   padding-bottom: 50px;
-}
-
-.btn-back {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 20px 0;
-  display: flex;
-  align-items: center;
-  color: #000;
-  transition: transform 0.2s;
-}
-
-.btn-back:hover {
-  transform: translateX(-5px);
-}
-
-/* Tarjeta Principal */
-.main-card-container {
-  margin-top: 10px;
 }
 
 .chambee-card {
@@ -148,53 +105,52 @@
 }
 
 @media (min-width: 768px) {
-  .chambee-card {
-    flex-direction: row;
-  }
+  .chambee-card { flex-direction: row; }
 }
 
-/* Columna de Empresa */
 .company-col {
   flex: 1;
-  text-align: center;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 30px;
 }
 
-.company-logo {
-  max-width: 150px;
-  margin-bottom: 20px;
+.company-info-top {
+  text-align: center;
 }
 
-.company-name {
+.company-logo { max-width: 150px; margin-bottom: 20px; }
+
+/* SECCIÓN UBICACIÓN Y MAPA */
+.ubicacion-section {
+  text-align: left;
+  border-top: 2px solid #fca311;
+  padding-top: 20px;
+}
+
+.ubicacion-titulo {
   font-weight: bold;
-  color: #333;
+  margin-bottom: 10px;
 }
 
-.company-desc {
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: 10px;
+#map {
+  height: 200px;
+  width: 100%;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  z-index: 1;
 }
 
-/* Divisor Naranja Vertical/Horizontal */
+/* Divisor Naranja */
 .divider {
   width: 100%;
   height: 4px;
   background-color: #fca311; 
   margin: 20px 0;
-  border-radius: 2px;
 }
 
 @media (min-width: 768px) {
-  .divider {
-    width: 6px;
-    height: auto;
-    margin: 0 30px;
-  }
+  .divider { width: 6px; height: auto; margin: 0 30px; }
 }
 
 /* Columna de Detalles del Puesto */
@@ -362,4 +318,25 @@
   border-top: 1px solid #eee;
   padding-top: 10px;
   margin-top: 10px;
+}
+
+/* Estilos específicos para la sección desplegable */
+.ubicacion-section {
+  text-align: left;
+  border-top: 2px solid #fca311;
+  padding-top: 20px;
+  animation: slideDown 0.4s ease-out; /* Animación de entrada */
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#map {
+  height: 200px;
+  width: 100%;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  background-color: #f0f0f0; /* Fondo mientras carga */
 }
