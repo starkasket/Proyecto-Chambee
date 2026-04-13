@@ -48,7 +48,7 @@
     <button 
       class="btn d-flex align-items-center gap-2" 
       style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
-      routerLink="/perfil-postulante"
+      (click)="irAlPerfil()"
       title="Ir a mi perfil">
       <i class="bi bi-person-circle fs-5"></i>
       <span class="d-none d-md-block">Mi Perfil</span>
@@ -68,6 +68,7 @@
     <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menu" role="button">☰</div>
 
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
       <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
       <a routerLink="/services" class="desktop-menu-link">Servicios</a>
       <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
@@ -83,6 +84,7 @@
       <nav class="mobile-nav">
         <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}</div>
         <hr />
+        <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
         <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
         <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>

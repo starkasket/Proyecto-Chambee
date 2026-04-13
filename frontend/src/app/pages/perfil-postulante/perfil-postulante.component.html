@@ -1,158 +1,216 @@
-<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
-  <div class="d-flex align-items-center gap-3">
-    <img src="assets/LogoChambee.png" alt="Chambee" height="48">
-    <span class="fs-5 fw-semibold d-none d-md-block" style="color: var(--text-primary);">Bienvenido, {{ perfil?.nombre_postulante || 'Usuario' }}</span>
-  </div>
+<div class="profile-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" />
+      <span class="fs-5 fw-semibold d-none d-md-block" style="color: var(--text-primary);">
+        Bienvenido, {{ perfil?.nombre_postulante || 'Usuario' }}
+      </span>
+    </div>
 
-  <div class="search-container flex-grow-1 mx-4">
-    <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
-  </div>
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
+    </div>
 
-  <div class="nav-buttons d-flex align-items-center gap-3">
-    <div class="notification-wrapper" style="position: relative;">
-      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-primary);">
-          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
-        </svg>
-        <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper" style="position: relative;">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill" style="color: var(--text-primary);"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+              <span class="notif-header">{{ notif.title }}</span>
+              <span class="notif-message">{{ notif.message }}</span>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button" style="color: var(--text-primary);">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/inicio-postulante" class="desktop-menu-link">Inicio</a>
+        <a routerLink="/perfil-postulante" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/postulaciones" class="desktop-menu-link">Mis postulaciones</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
       </div>
     </div>
 
-  <button
-      class="btn d-flex align-items-center gap-2"
-      style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
-      routerLink="/perfil-postulante"
-      title="Ir a mi perfil">
-      <i class="bi bi-person-circle fs-5"></i>
-      <span class="d-none d-md-block" >Mi Perfil</span>
-  </button>
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/inicio-postulante" (click)="toggleMenu()">Inicio</a>
+          <a class="mobile-nav-link" routerLink="/perfil-postulante" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/postulaciones" (click)="toggleMenu()">Mis postulaciones</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
 
-    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
-      <span class="theme-toggle-track"><span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span></span>
-    </button>
-    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menu" role="button" style="color: var(--text-primary);">☰</div>
-  </div>
-</nav>
+  <main class="profile-main">
+    <button class="back-button" type="button" (click)="volverPanel()">←</button>
 
-<div class="perfil-wrapper-crema">
-  <div class="container perfil-content-container">
+    <div *ngIf="cargando" class="status">Cargando perfil...</div>
+    <div *ngIf="!cargando && error" class="status error">{{ error }}</div>
 
-    <div class="perfil-card-top-yellow shadow-card">
-      
-      <div class="sidebar-wrapper">
-        <div class="avatar-card-white shadow-soft">
-          <img src="assets/perfil-user.jpg" alt="Foto de perfil">
+    <section *ngIf="!cargando && perfil" class="company-shell">
+      <article class="company-card">
+        <div class="company-main">
+          <div class="company-brand">
+            <div class="company-logo-box">
+              <img [src]="perfil?.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"/>
+            </div>
+            <div class="company-info">
+              <h2>{{ perfil.nombre_postulante }}</h2>
+              <p class="subtitle">Candidato en Chambee</p>
+              <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
+            </div>
+          </div>
+          <button class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
         </div>
-        <div class="side-menu-card-white shadow-soft">
-          <a href="#" class="menu-item active">Inicio</a>
-          <a href="#" class="menu-item">Ofertas</a>
-          <a href="#" class="menu-item">Mis favoritos</a>
-        </div>
-      </div>
 
-      <div *ngIf="!cargando && perfil"  class="info-card-white shadow-soft">
-        
-        <div class="info-details">
-          <div class="header-info">
-            <h2>{{ perfil.nombre_postulante }}</h2>
-            <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
+        <div class="company-details-grid">
+          <div class="detail-col">
+            <h3>Datos de contacto</h3>
+            <p><strong>Número de teléfono:</strong><br />{{ perfil.telefono }}</p>
+            <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
           </div>
 
-          <div class="cv-actions">
-            <button class="btn-outline">Subir C.V</button>
-            <div class="toggle-container">
-              <span>Mostrar C.V publico</span>
-              <label class="switch">
+          <div class="detail-col">
+            <h3>Gestión de C.V</h3>
+            <button class="btn-outline mb-3" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-soft); background: transparent;">Subir C.V</button>
+            <div class="toggle-container d-flex align-items-center gap-2 mt-2">
+              <span>Mostrar C.V público</span>
+              <label class="switch mb-0">
                 <input type="checkbox" checked>
                 <span class="slider round"></span>
               </label>
             </div>
           </div>
 
-          <div class="preferences-section">
+          <div class="detail-col">
             <h3>Preferencias</h3>
-            <div class="tags">
-              <span class="tag">#Mecanica</span>
-              <span class="tag">#Mecanica</span>
-              <span class="tag">#Mecanica</span>
-              <span class="tag">#Mecanica</span>
+            <div class="tags" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+              <span class="tag" style="background: var(--surface-secondary); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">#Mecanica</span>
+              <span class="tag" style="background: var(--surface-secondary); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">#Mantenimiento</span>
+            </div>
+            
+            <h3>Mi Calificación</h3>
+            <div class="rating-row" style="font-size: 1.2rem; color: #f5b301;">
+              <span class="stars">★★★★<span class="empty" style="color: #ccc;">★</span></span> 
+              <span class="num" style="color: var(--text-color); font-size: 0.9rem; margin-left: 5px;">(12)</span>
             </div>
           </div>
-
-          <div class="contact-section">
-            <h3>Datos de contacto</h3>
-            <p>Numero de telefono<br><strong>{{ perfil.telefono}}</strong></p>
-            <p>Correo electronico<br><strong>{{ perfil.correo_electronico }}</strong></p>
-          </div>
         </div>
+      </article>
+    </section>
 
-        <div class="rating-section-right">
-          <h3>Mi Calificacion</h3>
-          <div class="rating-list">
-            <div class="rating-row"><span class="stars">★★★★★</span> <span class="num">12</span></div>
-            <div class="rating-row"><span class="stars">★★★★<span class="empty">★</span></span> <span class="num">12</span></div>
-            <div class="rating-row"><span class="stars">★★★<span class="empty">★★</span></span> <span class="num">12</span></div>
-            <div class="rating-row"><span class="stars">★★<span class="empty">★★★</span></span> <span class="num">12</span></div>
-            <div class="rating-row"><span class="stars">★<span class="empty">★★★★</span></span> <span class="num">12</span></div>
-          </div>
-          <button class="btn-dark-edit">Editar</button>
+    <section *ngIf="!cargando && perfil" class="announcements-shell">
+      <div class="tabs-ceja">
+        <div class="tabs-bar">
+          <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'" (click)="setActiveTab('postulaciones')">
+            Mis postulaciones <span class="tab-count">{{ postulaciones?.length || 0 }}</span>
+          </button>
+          <button class="tab" type="button" [class.active]="activeTab === 'favoritos'" (click)="setActiveTab('favoritos')">
+            Mis favoritos <span class="tab-count">{{ favoritos?.length || 0 }}</span>
+          </button>
+          <button class="tab" type="button" [class.active]="activeTab === 'recomendados'" (click)="setActiveTab('recomendados')">
+            Recomendados <span class="tab-count">{{ recomendados?.length || 0 }}</span>
+          </button>
         </div>
-
       </div>
-    </div>
 
-    <div class="folder-tabs-wrapper">
-      <div class="tab" (click)="setActiveTab('inicio')" [class.active]="activeTab === 'inicio'">Inicio</div>
-      <div class="tab" (click)="setActiveTab('favoritos')" [class.active]="activeTab === 'favoritos'">Mis favoritos</div>
-      <div class="tab" (click)="setActiveTab('postulaciones')" [class.active]="activeTab === 'postulaciones'">Mis postulaciones</div>
-    </div>
-
-    <div class="perfil-card-bottom-yellow shadow-card">
-      
-      <div *ngIf="activeTab === 'favoritos'" class="tab-content">
-        <h3 class="section-title">Mis favoritos</h3>
-        <div class="jobs-horizontal-scroll">
+      <div class="announcements-content">
+        <ng-container [ngSwitch]="activeTab">
           
-          <div class="job-card-fav shadow-soft" *ngFor="let i of [1,2,3,4,5]">
-            <img src="https://picsum.photos/300/150" alt="Cover" class="job-img">
-            <div class="job-body">
-              <div class="job-header">
-                <h4>AT&T S.M.A</h4>
-                <i class="bi bi-bookmark bookmark-icon"></i>
-              </div>
-              <p class="job-role">Vacante: Ejecutivo(a) de Ventas</p>
-              <p class="job-desc">Buscamos una persona para atención a clientes y cierre de ventas. Sueldo base de $13,000 mensuales + comisiones.</p>
-              <div class="job-footer">
-                <div class="rating">
-                  <span class="score">Calificacion 4.2</span>
-                  <span class="stars-small">★★★★<span class="half">★</span></span>
-                </div>
-                <div class="applicants">
-                  <i class="bi bi-person"></i> 9 Postulados
-                </div>
-              </div>
+          <ng-container *ngSwitchCase="'postulaciones'">
+            <div class="section-head">
+              <h3>Postulaciones activas</h3>
             </div>
-          </div>
+            
+            <div *ngIf="!postulaciones || postulaciones.length === 0" class="alert alert-info" style="border-radius: 12px; background: #ffffff; border: 1px solid var(--border-soft); color: var(--text-color); padding: 20px;">
+              Aún no tienes postulaciones realizadas. ¡Empieza a buscar empleo!
+            </div>
 
-          <div class="see-more-btn">
-            <i class="bi bi-plus-circle-fill"></i>
-            <span>Ver mas</span>
-          </div>
-        </div>
+            <div class="announcements-row" *ngIf="postulaciones && postulaciones.length > 0">
+              <article class="announcement-card" *ngFor="let post of postulaciones">
+                <img [src]="post.logoEmpresa" alt="Empresa" />
+                <div class="announcement-copy">
+                  <div class="card-top">
+                    <strong>{{ post.empresa }}</strong>
+                    <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span>
+                  </div>
+                  <p class="vacancy-title">{{ post.vacante }}</p>
+                  <p class="vacancy-meta">Postulado el: {{ post.fechaPostulacion }}</p>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'favoritos'">
+            <div class="section-head">
+              <h3>Vacantes guardadas</h3>
+            </div>
+
+            <div class="announcements-row">
+              <article class="announcement-card" *ngFor="let i of [1,2,3]">
+                <img src="https://picsum.photos/300/150" alt="Cover" style="height: 80px; object-fit: cover;"/>
+                <div class="announcement-copy">
+                  <div class="card-top">
+                    <strong>AT&T S.M.A</strong>
+                    <i class="bi bi-bookmark-fill" style="color: var(--primary-color);"></i>
+                  </div>
+                  <p class="vacancy-title">Ejecutivo(a) de Ventas</p>
+                  <p class="vacancy-meta">San Miguel de Allende • $13,000 / mes</p>
+                  <p style="font-size: 0.9rem; color: #666; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;">
+                    Buscamos una persona para atención a clientes y cierre de ventas. Sueldo base + comisiones.
+                  </p>
+                  <p class="meta mt-2"><i class="bi bi-person"></i> 9 Postulados</p>
+                </div>
+              </article>
+            </div>
+            <div class="section-footer">
+              <button class="see-more" type="button">Ver más favoritos</button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'recomendados'">
+            <div class="section-head">
+              <h3>Sugerencias para tu perfil</h3>
+            </div>
+
+            <div class="announcements-row">
+              <article class="announcement-card compact" *ngFor="let rec of recomendados">
+                <div class="announcement-copy">
+                  <div class="card-top">
+                    <strong>{{ rec.empresa }}</strong>
+                    <span class="stars" style="color: #28a745;">Coincidencia Alta</span>
+                  </div>
+                  <p class="vacancy-title">{{ rec.vacante }}</p>
+                  <p class="meta">{{ rec.ubicacion }}</p>
+                </div>
+              </article>
+            </div>
+            <div class="section-footer">
+              <button class="see-more" type="button">Explorar más ofertas</button>
+            </div>
+          </ng-container>
+
+        </ng-container>
       </div>
-
-      <div *ngIf="activeTab === 'postulaciones'" class="tab-content">
-        <h3 class="section-title">Mis postulaciones</h3>
-        <div class="alert alert-info" style="border-radius: 12px; background: #ffffff; color: #111; padding: 20px; font-weight: 500;">
-          Aún no tienes postulaciones realizadas. ¡Empieza a buscar empleo!
-        </div>
-      </div>
-
-      <div *ngIf="activeTab === 'inicio'" class="tab-content">
-        <h3 class="section-title">Bienvenido a tu perfil</h3>
-        <p style="color: #111; font-weight: 500; margin-left: 10px;">Aquí puedes gestionar tus datos personales y ver tus calificaciones.</p>
-      </div>
-    </div>
-
-  </div>
+    </section>
+  </main>
 </div>

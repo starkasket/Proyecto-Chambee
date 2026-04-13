@@ -7,7 +7,6 @@ import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
-
 // Interfaces para estructurar los datos
 interface Slide {
   id?: string | number;
@@ -58,7 +57,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   // Aquí está el nombre del usuario para el mensaje de bienvenida
   nombre_postulante = 'Usuario';
 
-  
   // VARIABLES PARA EL CONTROL DE LA INTERFAZ
   servicesOpen = false;
   menuOpen = false;
@@ -176,6 +174,12 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     if (this.slideIntervalId) {
       clearInterval(this.slideIntervalId);
     }
+  }
+
+  // --- LÓGICA PARA IR AL PERFIL ---
+  irAlPerfil() {
+    this.menuOpen = false; // Cerramos el menú por si está en mobile
+    this.router.navigate(['/perfil-postulante']);
   }
 
   // --- LÓGICA DEL MENÚ DE NOTIFICACIONES ---
