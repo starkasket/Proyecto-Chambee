@@ -61,6 +61,9 @@
   </nav>
 
   <main class="profile-main">
+
+
+    
     <button class="back-button" type="button" (click)="volverPanel()">←</button>
 
     <div *ngIf="cargando" class="status">Cargando perfil...</div>
@@ -118,6 +121,9 @@
       </article>
     </section>
 
+
+
+   
     <section *ngIf="!cargando && perfil" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
@@ -147,14 +153,14 @@
 
             <div class="announcements-row" *ngIf="postulaciones && postulaciones.length > 0">
               <article class="announcement-card" *ngFor="let post of postulaciones">
-                <img [src]="post.logoEmpresa" alt="Empresa" />
+                <img [src]="post.imagen" alt="Empresa" />
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ post.empresa }}</strong>
                     <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span>
                   </div>
                   <p class="vacancy-title">{{ post.vacante }}</p>
-                  <p class="vacancy-meta">Postulado el: {{ post.fechaPostulacion }}</p>
+                  <p class="vacancy-meta">Postulado el: {{ post.fecha }}</p>
                 </div>
               </article>
             </div>

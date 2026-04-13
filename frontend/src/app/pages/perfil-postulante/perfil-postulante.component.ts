@@ -29,7 +29,7 @@ interface PostulanteProfile {
 interface PostulanteApplication {
   id: string;
   empresa: string;
-  estado: 'Activa' | 'Pausada' | 'Cerrada';
+  estado: 'Nueva' | 'En revision' | 'Entrevista' | 'Descartada';
   ubicacion: string;
   fecha: string;
   candidatos: number;
@@ -58,8 +58,6 @@ interface PostulanteFavorites {
   imagen: string;
 }
 
-
-
 // Interfaz para las notificaciones (opcional, pero buena práctica)
 interface NotificationItem {
   id: number;
@@ -75,7 +73,7 @@ interface NotificationItem {
   // IMPORTANTE: Agregamos CommonModule y RouterModule aquí
   imports: [CommonModule, RouterModule], 
   templateUrl: './perfil-postulante.component.html',
-  styleUrl: './perfil-postulante.component.css'
+  styleUrls: ['./perfil-postulante.component.css']
 })
 export class PerfilPostulanteComponent implements OnInit {
   postulanteId = '';
@@ -83,6 +81,23 @@ export class PerfilPostulanteComponent implements OnInit {
   cargando = true;
   error = '';
 
+
+  // *****   CHANGE    *****
+recomendados: PostulanteFavorites[]= [];
+postulaciones: PostulanteApplication[] =[
+  {
+    id: "app-001",
+    empresa: "TechNova Solutions",
+    estado: "En revision",
+    ubicacion: "Remoto / Madrid",
+    fecha: "2026-03-15",
+    candidatos: 45,
+    vacante: "Senior Frontend Developer",
+    resumen: "Liderazgo de equipo técnico para la migración de microfrontends usando React y Next.js.",
+    imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
+  }
+];
+favoritos: PostulanteFavorites[] = [];
 
 
   // =========================================
@@ -115,6 +130,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   ngOnInit(): void {
    
+    this.cargando = false;
    const usuario = this.api.getUsuario();
    const perfilLocalRaw = localStorage.getItem('perfilPostulante') || sessionStorage.getItem('perfilPostulante');
 
@@ -206,10 +222,30 @@ export class PerfilPostulanteComponent implements OnInit {
     }
   }
 
-  toggleMenu() {
+  toggleMenu(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
+
+  volverPanel() {
+   // this.router.navigate(['/home-user']);
+  }
+
+  editarPerfil() {
+    //this.router.navigate(['/perfil/editar']);
+  }
+
+
+   getApplicationStateClass(estado: PostulanteApplication['estado']): string {
+    if (estado === 'Nueva') return 'app-new';
+    if (estado === 'En revision') return 'app-review';
+    if (estado === 'Entrevista') return 'app-interview';
+    return 'app-discarded';
+  }
+
 
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
