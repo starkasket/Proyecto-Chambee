@@ -3,7 +3,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { ThemeService } from '../../services/theme.service'; // Asegúrate de tener este servicio importado
+import { ThemeService } from '../../services/theme.service';
 
 interface PostulanteProfile {
   id_postulante?: string; 
@@ -80,70 +80,20 @@ export class PerfilPostulanteComponent implements OnInit {
   isMobile = false;
   activeTab: ProfileSectionTab = 'postulaciones';
 
-  // Datos de prueba para simular la vista
-  postulaciones: PostulanteApplication[] = [
-    {
-      id: "app-001",
-      empresa: "TechNova Solutions",
-      estado: "En revision",
-      ubicacion: "Remoto / Madrid",
-      fecha: "15 Mar 2026",
-      candidatos: 45,
-      vacante: "Senior Frontend Developer",
-      resumen: "Liderazgo de equipo técnico para la migración de microfrontends usando React y Next.js.",
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    },
-    {
-      id: "app-002",
-      empresa: "AT&T S.M.A",
-      estado: "Entrevista",
-      ubicacion: "San Miguel de Allende",
-      fecha: "10 Mar 2026",
-      candidatos: 12,
-      vacante: "Desarrollador Fullstack",
-      resumen: "Mantenimiento de bases de datos PostgreSQL y desarrollo de APIS en Node.js.",
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    }
-  ];
-
-  favoritos: PostulanteFavorites[] = [
-    {
-      id: 'fav-1',
-      empresa: 'Guanajuato Motors',
-      estado: 'Activa',
-      ubicacion: 'San Miguel de Allende',
-      fecha: 'Hace 2 días',
-      candidatos: 8,
-      vacante: 'Mecánico de Motocicletas',
-      resumen: 'Mantenimiento preventivo y correctivo. Experiencia deseable en Vento.',
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    }
-  ];
-
-  recomendados: PostulanteFavorites[] = [
-    {
-      id: 'rec-1',
-      empresa: 'WebCorp SMA',
-      estado: 'Activa',
-      ubicacion: 'Centro, San Miguel de Allende',
-      fecha: 'Hoy',
-      candidatos: 2,
-      vacante: 'Angular Jr. Developer',
-      resumen: 'Únete a nuestro equipo para desarrollar interfaces modernas.',
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    }
-  ];
+  // Datos de prueba para las pestañas de abajo (puedes conectarlos a tu BD después)
+  postulaciones: PostulanteApplication[] = [];
+  favoritos: PostulanteFavorites[] = [];
+  recomendados: PostulanteFavorites[] = [];
 
   notifications: NotificationItem[] = [
-    { id: 1, title: '¡Bienvenido!', message: 'Tu perfil ha sido creado con éxito.', time: 'Hace 1 min', read: false },
-    { id: 2, title: 'Sugerencia', message: 'Sube tu CV para tener más oportunidades.', time: 'Hace 5 min', read: false }
+    { id: 1, title: '¡Bienvenido!', message: 'Tu perfil está listo.', time: 'Hace 1 min', read: false }
   ];
 
   constructor(
     private router: Router, 
     private authApi: AuthService, 
     private readonly api: ApiService,
-    private readonly themeService: ThemeService // Integrado del diseño empresarial
+    private readonly themeService: ThemeService 
   ) {}
 
   ngOnInit(): void {
@@ -162,25 +112,39 @@ export class PerfilPostulanteComponent implements OnInit {
       return;
     }
     
+    // Si ya tenemos el perfil guardado, lo mostramos rápido mientras carga el nuevo de la BD
     if (perfilLocalRaw) {
       this.perfil = JSON.parse(perfilLocalRaw);
     }
 
+    // LLAMADA REAL A LA API
     this.api.getMiPerfil().subscribe({
-      next: (perfil: any) => {
-        this.perfil = perfil;
+      next: (perfilDb: any) => {
+        this.perfil = perfilDb;
+        this.error = '';
+        
+        // Actualizamos la caché local
         if (localStorage.getItem('token')) {
-          localStorage.setItem("perfilPostulante", JSON.stringify(perfil));
+          localStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
         } else {
-          sessionStorage.setItem("perfilPostulante", JSON.stringify(perfil));
+          sessionStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
         }
+        
         this.cargando = false;
       }, 
-      error: () => {
+      error: (err) => {
         this.cargando = false;
-        if (!this.perfil) {
-          this.error = "No fue posible cargar tu perfil en este momento";
+        
+        // Si el backend nos rechaza el token (401)
+        if (err.status === 401) {
+          this.error = "Tu sesión ha expirado o no tienes autorización. Por favor, vuelve a iniciar sesión.";
+        } else {
+          // Si no cargó el caché local previo, mostramos error
+          if (!this.perfil) {
+            this.error = "No fue posible cargar tu perfil en este momento. Revisa tu conexión al servidor.";
+          }
         }
+        console.error("Error al obtener perfil:", err);
       }
     });
 
@@ -189,14 +153,13 @@ export class PerfilPostulanteComponent implements OnInit {
 
   get direccionCompleta(): string {
     if (!this.perfil) return '';
-    return `${this.perfil.calle}, ${this.perfil.colonia}, ${this.perfil.ciudad}, ${this.perfil.estado}, ${this.perfil.pais}`;
+    return `${this.perfil.calle || ''}, ${this.perfil.colonia || ''}, ${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}, ${this.perfil.pais || ''}`.replace(/^, | ,|, $/g, '').trim();
   }
 
   setActiveTab(tabName: ProfileSectionTab) {
     this.activeTab = tabName;
   }
 
-  // --- LÓGICA DE ESTADOS Y BADGES CSS ---
   getApplicationStateClass(estado: PostulanteApplication['estado']): string {
     if (estado === 'Nueva') return 'app-new';
     if (estado === 'En revision') return 'app-review';
@@ -210,7 +173,6 @@ export class PerfilPostulanteComponent implements OnInit {
     return 'state-closed';
   }
 
-  // --- NAVEGACIÓN Y MENÚS ---
   toggleNotifications(event?: Event) {
     if (event) event.stopPropagation();
     this.notificationsOpen = !this.notificationsOpen;
@@ -247,7 +209,6 @@ export class PerfilPostulanteComponent implements OnInit {
     }
   }
 
-  // --- THEMING ---
   toggleTheme() {
     this.themeService.toggleTheme();
   }
@@ -256,7 +217,6 @@ export class PerfilPostulanteComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
-  // --- ACCIONES ---
   volverPanel() {
     this.router.navigate(['/inicio-postulante']);
   }
