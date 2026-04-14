@@ -27,31 +27,34 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    
-  const token =  localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token =  localStorage.getItem('token') || sessionStorage.getItem('token');
 
-  if (!token) return null;
+    if (!token) return null;
 
-  if (this.isTokenExpired(token)) {
-    this.logout();
-     return null;
-  }
+    if (this.isTokenExpired(token)) {
+      this.logout();
+      return null;
+    }
 
-  return token;
+    return token;
   }
 
   parseJwt(token: string): any {
     try {
       return JSON.parse(atob(token.split('.')[1]));
-  } catch (e) {
-     return null;
+    } catch (e) {
+      return null;
     }
   }
 
   isTokenExpired(token: string): boolean {
     const decoded = this.parseJwt(token);
 
-    if (!decoded || !decoded.exp) return true;
+    // Si de plano no se pudo decodificar, sí está mal
+    if (!decoded) return true; 
+    
+    // CORRECCIÓN: Si el token no trae fecha de expiración (exp), lo dejamos pasar por ahora
+    if (!decoded.exp) return false; 
 
     const now = Math.floor(Date.now() / 1000);
     return decoded.exp < now;

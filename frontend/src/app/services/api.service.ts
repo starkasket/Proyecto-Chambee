@@ -12,22 +12,17 @@ export class ApiService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
- /*getUsuarios(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/usuarios`);
-  }*/
-
   //Empleador
   registrarEmpleador(datos: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/empleadores/registro`, datos);
-}
+    return this.http.post(`${this.apiUrl}/empleadores/registro`, datos);
+  }
 
   //Postulante 
-registrarPostulante(datos: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/postulantes/registro`, datos);
-}
+  registrarPostulante(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/postulantes/registro`, datos);
+  }
 
   obtenerPerfilEmpleador(idEmpleador: number | string): Observable<any> {
-    // Endpoint usado por el componente de perfil de empleador.
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, {
       headers: {
         Authorization: 'Bearer ' + this.authService.getToken()
@@ -35,18 +30,18 @@ registrarPostulante(datos: any): Observable<any> {
     });
   }
 
-
   getUsuario(): any {
-  const user = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
-  return user ? JSON.parse(user) : null;
+    const user = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+    return user ? JSON.parse(user) : null;
   }
-  getMiPerfil() {
 
-  return this.http.get('http://localhost:3000/mi-perfil', {
-    headers: {
-      Authorization: 'Bearer ' + this.authService.getToken()
-    }
-  });
+  getMiPerfil() {
+    // CORRECCIÓN: Usar la variable de entorno this.apiUrl
+    return this.http.get(`${this.apiUrl}/mi-perfil`, {
+      headers: {
+        Authorization: 'Bearer ' + this.authService.getToken()
+      }
+    });
   }
   
   actualizarMiPerfil(datos: any): Observable<any> {
@@ -58,7 +53,6 @@ registrarPostulante(datos: any): Observable<any> {
   }
 
   actualizarPerfilEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
-    // Guarda los cambios del formulario de edicion del empleador.
     return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos, {
       headers: {
         Authorization: 'Bearer ' + this.authService.getToken()
@@ -67,7 +61,6 @@ registrarPostulante(datos: any): Observable<any> {
   }
 
   obtenerAnunciosEmpleador(idEmpleador: number | string): Observable<any[]> {
-    // Lista resumida de ofertas para home-employer y perfil de empresa.
     return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, {
       headers: {
         Authorization: 'Bearer ' + this.authService.getToken()
@@ -76,7 +69,6 @@ registrarPostulante(datos: any): Observable<any> {
   }
 
   crearAnuncioEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
-    // Crea una nueva oferta laboral asociada al empleador autenticado.
     return this.http.post(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, datos, {
       headers: {
         Authorization: 'Bearer ' + this.authService.getToken()
@@ -85,11 +77,10 @@ registrarPostulante(datos: any): Observable<any> {
   }
 
   obtenerAnunciosPublicos(): Observable<any[]> {
-    // Lista publica de ofertas activas para la vista del postulante.
     return this.http.get<any[]>(`${this.apiUrl}/anuncios`);
   }
 
-// Buscar por codigo postal
+  // Buscar por codigo postal
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');
   }

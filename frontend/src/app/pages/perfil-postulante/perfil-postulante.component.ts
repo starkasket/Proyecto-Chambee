@@ -80,7 +80,6 @@ export class PerfilPostulanteComponent implements OnInit {
   isMobile = false;
   activeTab: ProfileSectionTab = 'postulaciones';
 
-  // Datos de prueba para las pestañas de abajo (puedes conectarlos a tu BD después)
   postulaciones: PostulanteApplication[] = [];
   favoritos: PostulanteFavorites[] = [];
   recomendados: PostulanteFavorites[] = [];
@@ -112,18 +111,15 @@ export class PerfilPostulanteComponent implements OnInit {
       return;
     }
     
-    // Si ya tenemos el perfil guardado, lo mostramos rápido mientras carga el nuevo de la BD
     if (perfilLocalRaw) {
       this.perfil = JSON.parse(perfilLocalRaw);
     }
 
-    // LLAMADA REAL A LA API
     this.api.getMiPerfil().subscribe({
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
         this.error = '';
         
-        // Actualizamos la caché local
         if (localStorage.getItem('token')) {
           localStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
         } else {
@@ -135,11 +131,9 @@ export class PerfilPostulanteComponent implements OnInit {
       error: (err) => {
         this.cargando = false;
         
-        // Si el backend nos rechaza el token (401)
         if (err.status === 401) {
           this.error = "Tu sesión ha expirado o no tienes autorización. Por favor, vuelve a iniciar sesión.";
         } else {
-          // Si no cargó el caché local previo, mostramos error
           if (!this.perfil) {
             this.error = "No fue posible cargar tu perfil en este momento. Revisa tu conexión al servidor.";
           }
