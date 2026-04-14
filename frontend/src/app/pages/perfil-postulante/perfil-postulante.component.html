@@ -2,9 +2,7 @@
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" />
-      <span class="fs-5 fw-semibold d-none d-md-block" style="color: var(--text-primary);">
-        Bienvenido, {{ perfil?.nombre_postulante || 'Usuario' }}
-      </span>
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ perfil?.nombre_postulante || 'Usuario' }}</span>
     </div>
 
     <div class="search-container flex-grow-1 mx-4">
@@ -12,10 +10,10 @@
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-      <div class="notification-wrapper" style="position: relative;">
+      <div class="notification-wrapper">
         <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <i class="bi bi-bell-fill" style="color: var(--text-primary);"></i>
-          <span *ngIf="hasUnreadNotifications" class="notification-dot position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
         </div>
 
         <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
@@ -36,7 +34,7 @@
         </span>
       </button>
 
-      <div class="menu fs-4" (click)="toggleMenu($event)" role="button" style="color: var(--text-primary);">☰</div>
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
 
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
         <a routerLink="/inicio-postulante" class="desktop-menu-link">Inicio</a>
@@ -61,9 +59,6 @@
   </nav>
 
   <main class="profile-main">
-
-
-    
     <button class="back-button" type="button" (click)="volverPanel()">←</button>
 
     <div *ngIf="cargando" class="status">Cargando perfil...</div>
@@ -73,11 +68,11 @@
       <article class="company-card">
         <div class="company-main">
           <div class="company-brand">
-            <div class="company-logo-box">
-              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"/>
+            <div class="company-logo-box" style="border-radius: 50%; overflow: hidden; background: transparent;">
+              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"/>
             </div>
             <div class="company-info">
-              <h2>{{ perfil.nombre_postulante }}</h2>
+              <h2>{{ perfil.nombre_postulante }} {{ perfil.apellido_paterno_postulante }}</h2>
               <p class="subtitle">Candidato en Chambee</p>
               <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
             </div>
@@ -88,42 +83,29 @@
         <div class="company-details-grid">
           <div class="detail-col">
             <h3>Datos de contacto</h3>
-            <p><strong>Número de teléfono:</strong><br />{{ perfil.telefono }}</p>
+            <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
             <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
+            <p><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
           </div>
 
           <div class="detail-col">
             <h3>Gestión de C.V</h3>
-            <button class="btn-outline mb-3" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-soft); background: transparent;">Subir C.V</button>
-            <div class="toggle-container d-flex align-items-center gap-2 mt-2">
-              <span>Mostrar C.V público</span>
-              <label class="switch mb-0">
-                <input type="checkbox" checked>
-                <span class="slider round"></span>
-              </label>
+            <button class="inline-create-btn mb-3" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);">Subir / Actualizar C.V</button>
+            <div class="mt-2" style="display: flex; gap: 8px; align-items: center;">
+              <strong>C.V. Público:</strong> <span class="state-pill state-active">Activado</span>
             </div>
           </div>
 
           <div class="detail-col">
-            <h3>Preferencias</h3>
-            <div class="tags" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
-              <span class="tag" style="background: var(--surface-secondary); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">#Mecanica</span>
-              <span class="tag" style="background: var(--surface-secondary); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">#Mantenimiento</span>
-            </div>
-            
-            <h3>Mi Calificación</h3>
-            <div class="rating-row" style="font-size: 1.2rem; color: #f5b301;">
-              <span class="stars">★★★★<span class="empty" style="color: #ccc;">★</span></span> 
-              <span class="num" style="color: var(--text-color); font-size: 0.9rem; margin-left: 5px;">(12)</span>
-            </div>
+            <h3>Información general</h3>
+            <p><strong>País:</strong> {{ perfil.pais }}</p>
+            <p><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
+            <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate' }}</p>
           </div>
         </div>
       </article>
     </section>
 
-
-
-   
     <section *ngIf="!cargando && perfil" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
@@ -145,13 +127,14 @@
           <ng-container *ngSwitchCase="'postulaciones'">
             <div class="section-head">
               <h3>Postulaciones activas</h3>
+              <button class="inline-create-btn" type="button" (click)="buscarEmpleos()">Buscar más empleos</button>
             </div>
-            
-            <div *ngIf="!postulaciones || postulaciones.length === 0" class="alert alert-info" style="border-radius: 12px; background: #ffffff; border: 1px solid var(--border-soft); color: var(--text-color); padding: 20px;">
+
+            <div *ngIf="!postulaciones || postulaciones.length === 0" class="alert alert-info" style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
               Aún no tienes postulaciones realizadas. ¡Empieza a buscar empleo!
             </div>
 
-            <div class="announcements-row" *ngIf="postulaciones && postulaciones.length > 0">
+            <div class="announcements-row" *ngIf="postulaciones.length > 0">
               <article class="announcement-card" *ngFor="let post of postulaciones">
                 <img [src]="post.imagen" alt="Empresa" />
                 <div class="announcement-copy">
@@ -161,8 +144,13 @@
                   </div>
                   <p class="vacancy-title">{{ post.vacante }}</p>
                   <p class="vacancy-meta">Postulado el: {{ post.fecha }}</p>
+                  <p>{{ post.resumen }}</p>
+                  <p class="meta mt-2">{{ post.candidatos }} postulantes en total</p>
                 </div>
               </article>
+            </div>
+            <div class="section-footer" *ngIf="postulaciones.length > 0">
+              <button class="see-more" type="button">Ver todas mis postulaciones</button>
             </div>
           </ng-container>
 
@@ -171,24 +159,25 @@
               <h3>Vacantes guardadas</h3>
             </div>
 
-            <div class="announcements-row">
-              <article class="announcement-card" *ngFor="let i of [1,2,3]">
-                <img src="https://picsum.photos/300/150" alt="Cover" style="height: 80px; object-fit: cover;"/>
+            <div *ngIf="!favoritos || favoritos.length === 0" class="alert alert-info" style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+              No tienes vacantes guardadas en favoritos.
+            </div>
+
+            <div class="announcements-row" *ngIf="favoritos.length > 0">
+              <article class="announcement-card" *ngFor="let fav of favoritos">
+                <img [src]="fav.imagen" alt="Cover" />
                 <div class="announcement-copy">
                   <div class="card-top">
-                    <strong>AT&T S.M.A</strong>
-                    <i class="bi bi-bookmark-fill" style="color: var(--primary-color);"></i>
+                    <strong>{{ fav.empresa }}</strong>
+                    <span class="state-pill" [ngClass]="getJobStateClass(fav.estado)">{{ fav.estado }}</span>
                   </div>
-                  <p class="vacancy-title">Ejecutivo(a) de Ventas</p>
-                  <p class="vacancy-meta">San Miguel de Allende • $13,000 / mes</p>
-                  <p style="font-size: 0.9rem; color: #666; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;">
-                    Buscamos una persona para atención a clientes y cierre de ventas. Sueldo base + comisiones.
-                  </p>
-                  <p class="meta mt-2"><i class="bi bi-person"></i> 9 Postulados</p>
+                  <p class="vacancy-title">{{ fav.vacante }}</p>
+                  <p class="vacancy-meta">{{ fav.ubicacion }} • {{ fav.fecha }}</p>
+                  <p>{{ fav.resumen }}</p>
                 </div>
               </article>
             </div>
-            <div class="section-footer">
+            <div class="section-footer" *ngIf="favoritos.length > 0">
               <button class="see-more" type="button">Ver más favoritos</button>
             </div>
           </ng-container>
@@ -203,7 +192,7 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ rec.empresa }}</strong>
-                    <span class="stars" style="color: #28a745;">Coincidencia Alta</span>
+                    <span class="stars" style="color: #28a745; font-size: 0.8rem;">Coincidencia Alta</span>
                   </div>
                   <p class="vacancy-title">{{ rec.vacante }}</p>
                   <p class="meta">{{ rec.ubicacion }}</p>
@@ -219,4 +208,9 @@
       </div>
     </section>
   </main>
+
+  <button class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
+    <span class="fab-plus"><i class="bi bi-search"></i></span>
+    <span class="fab-text">Buscar Empleos</span>
+  </button>
 </div>
