@@ -160,9 +160,9 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     // Esto asegura que si el nombre se cambió en el perfil, aparezca actualizado en la navbar
     if (usuario?.id) {
       // Hacer petición HTTP a la API para obtener perfil fresco de la BD
-      this.api.obtenerPerfilEmpleador(usuario.id).subscribe({
+      this.api.getMiPerfil().subscribe({
         // Si la petición es exitosa
-        next: (perfil) => {
+        next: (perfil: any) => {
           // Asignar nombre de empresa desde la respuesta de la API (siempre actualizado)
           this.nombre_empleador = perfil?.nombre_empresa || 'Usuario';
           this.foto_perfil = perfil?.foto_perfil || '';
