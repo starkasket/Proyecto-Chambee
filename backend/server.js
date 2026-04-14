@@ -225,10 +225,8 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
     const id = req.user.id;
     const rol = req.user.rol;
 
-    //RoleGuard primitivo
-     if (req.user.rol !== "empleador" || req.user.id != id) {
-      return res.status(403).json({ error: "No autorizado" })
-    }
+   
+
 
     let query = "";
 
