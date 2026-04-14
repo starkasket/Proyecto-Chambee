@@ -10,27 +10,29 @@
 
     <div class="nav-buttons">
         <div style="position: relative; cursor: pointer; margin-right: 10px;">
-            <i class="bi bi-bell-fill fs-5" style="color: #333;"></i>
-            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; margin-top: 5px;">
+            <i class="bi bi-bell-fill fs-5"></i>
+            <span
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                style="width: 10px; height: 10px; margin-top: 5px;">
                 <span class="visually-hidden">Nuevas notificaciones</span>
             </span>
         </div>
 
-        <button class="btn-profile">
+        <button class="btn-profile" (click)="irAlPerfil()">
             <i class="bi bi-person-circle fs-5"></i>
             <span>Mi Perfil</span>
         </button>
 
-        <button class="theme-toggle" type="button" style="border: none; background: transparent; padding: 0;">
+        <button class="theme-toggle" type="button" (click)="toggleTheme()"
+            style="border: none; background: transparent; padding: 0;">
             <span class="theme-toggle-track">
-                <span class="theme-toggle-icon">☀</span>
+                <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
             </span>
         </button>
 
-        <i class="bi bi-list fs-3 burger-menu" style="cursor: pointer; margin-left: 5px; color: #333;"></i>
+        <i class="bi bi-list fs-3 burger-menu" style="cursor: pointer; margin-left: 5px;"></i>
     </div>
 </nav>
-
 <div class="detail-page-wrapper">
     <div class="header-actions container">
         <button class="btn-back" (click)="goBack()">
@@ -41,7 +43,7 @@
 
     <div class="container main-card-container" *ngIf="jobData">
         <div class="chambee-card">
-            
+
             <div class="company-col">
                 <div class="company-info-top">
                     <img [src]="jobData.companyLogo" alt="Logo" class="company-logo">
@@ -115,7 +117,8 @@
                     <h4>{{ relJob.company }}</h4>
                     <p>{{ relJob.title }}</p>
                     <p class="salary">{{ relJob.salary }}</p>
-                    <div class="job-footer-card">★ {{ relJob.rating }} <span>{{ relJob.applicants }} postulados</span></div>
+                    <div class="job-footer-card">★ {{ relJob.rating }} <span>{{ relJob.applicants }} postulados</span>
+                    </div>
                 </div>
             </div>
         </div>
