@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core'; // <-- Importa 'inject'
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service'; // <-- Importa el ThemeService
 
 @Component({
   selector: 'app-login',
@@ -13,12 +14,14 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  // Se actualiza segun rol para enviar al home correcto al cerrar modal.
   private redirectAfterLogin = '/home-user';
 
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
   mostrarPassword = false;
+
+  // Inyectamos el servicio del tema
+  private themeService = inject(ThemeService);
 
   constructor(
     private fb: FormBuilder,
@@ -32,7 +35,14 @@ export class LoginComponent {
     });
   }
 
-  
+  // --- LÓGICA DEL TEMA OSCURO ---
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
 
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
@@ -67,7 +77,6 @@ export class LoginComponent {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
-
     this.router.navigate([this.redirectAfterLogin]);
   }
 
@@ -78,29 +87,25 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe({
         next: (res) => {
           const user = res.user;
-
           const remember = this.loginForm.value.remember;
 
           if (remember) {
             localStorage.setItem("token", res.token);
             localStorage.setItem('usuario', JSON.stringify({
-            id: user.id,
-            nombre: user.nombre,
-            correo: user.correo,
-            rol: user.rol
-          }));
-          } else{
-            sessionStorage.setItem("token", res.token)
+              id: user.id,
+              nombre: user.nombre,
+              correo: user.correo,
+              rol: user.rol
+            }));
+          } else {
+            sessionStorage.setItem("token", res.token);
             sessionStorage.setItem('usuario', JSON.stringify({
-            id: user.id,
-            nombre: user.nombre,
-            correo: user.correo,
-            rol: user.rol
-          }));
+              id: user.id,
+              nombre: user.nombre,
+              correo: user.correo,
+              rol: user.rol
+            }));
           }
-
-
-         
 
           this.redirectAfterLogin = user.rol === 'empleador'
             ? '/home-employer'
@@ -115,7 +120,7 @@ export class LoginComponent {
         }
       });
     } else {
-      this.mostrarModal('Formulario no valido. Checa el correo o la contraseña (minimo 3 caracteres).');
+      this.mostrarModal('Formulario no valido. Checa el correo o la contraseña.');
     }
   }
 }

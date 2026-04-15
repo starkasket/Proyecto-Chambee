@@ -3,11 +3,17 @@
     <div class="logo-container">
       <img src="assets/LogoChambee.png" alt="Logo" class="nav-logo" routerLink="/" style="cursor: pointer;">
     </div>
+    <div class="theme-toggle-container" style="margin-left: auto;">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" style="border: none; background: transparent; padding: 0;">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
+        </span>
+      </button>
+    </div>
   </header>
 
-   <!-- MODAL DE ÉXITO -->
-<div id="modalSaludo" class="modal" tabindex="-1"
->  <div class="modal-dialog modal-dialog-centered">
+   <div id="modalSaludo" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
         <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3"/>
@@ -21,7 +27,6 @@
   </div>
 </div>
 
-<!-- MODAL DE ERROR -->
 <div id="modalAlerta" class="modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -50,9 +55,9 @@
           <input type="email" formControlName="correo_electronico" placeholder="Correo">
         </div>
 
-        <div class="input-group">
+        <div class="input-group" style="position: relative;">
           <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="contrasena" placeholder="Contraseña">
-          <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword =!mostrarPassword"></i>
+          <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword = !mostrarPassword"></i>
         </div>
 
         <div class="options">
