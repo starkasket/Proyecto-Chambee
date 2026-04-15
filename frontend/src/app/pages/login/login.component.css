@@ -8,12 +8,12 @@
 
 /* NAVBAR AMARILLA */
 .top-nav {
-  background-color: #FCCE34;
+  background-color: var(--navbar-bg); 
   height: 70px;
   display: flex;
   align-items: center;
   padding: 0 30px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-soft);
   z-index: 10;
 }
 
@@ -37,16 +37,23 @@
   padding: 40px 20px;
 }
 
-/* LA TARJETA BEIGE RESPONSIVA */
+/* LA TARJETA RESPONSIVA */
 .login-card {
-  background-color: #F2E4D3;
+  background-color: #F1E4D3; 
+  color: var(--text-primary); 
   padding: 40px;
   border-radius: 30px;
   width: 90%;          /* Flexible en móvil */
   max-width: 380px;    /* Límite en PC */
   text-align: center;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-soft); 
   position: relative;
+  transition: background-color 0.3s ease; 
+}
+
+:host-context(body.dark-theme) .login-card {
+  background-color: var(--surface-primary); 
 }
 
 .bee-img {
@@ -56,22 +63,37 @@
   margin-bottom: 25px;
 }
 
+/* CONTENEDOR DEL INPUT */
+.input-group {
+  position: relative;
+  width: 100%;
+  margin: 10px 0; 
+}
+
 /* INPUTS ESTILO FIGMA */
 .input-group input {
   width: 100%;
   padding: 12px;
-  margin: 10px 0;
-  border: none;
+  padding-right: 45px; 
+  margin: 0; 
+  border: 1px solid var(--border-soft); 
   border-radius: 12px;
-  background-color: #dcdcdc;
+  background-color: var(--input-bg); 
+  color: var(--text-primary); 
   text-align: center;
   outline: none;
-  font-size: 16px; /* Evita zoom automático en iPhone */
+  font-size: 16px; 
+  box-sizing: border-box; 
+}
+
+.input-group input::placeholder {
+  color: var(--text-secondary); 
 }
 
 .options {
   margin: 15px 0;
   font-size: 0.9rem;
+  color: var(--text-primary);
 }
 
 .remember-me {
@@ -83,7 +105,7 @@
 }
 
 .forgot-password a {
-  color: #0066cc;
+  color: var(--button-primary-bg); 
   text-decoration: underline;
   font-size: 0.85rem;
 }
@@ -100,16 +122,22 @@
   flex: 1;
   padding: 12px 15px;
   border-radius: 20px;
-  border: none;
+  border: 1px solid var(--border-soft);
   font-weight: bold;
   cursor: pointer;
-  background-color: white;
+  background-color: var(--surface-secondary); 
+  color: var(--text-primary); 
   transition: transform 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-soft);
 }
 
 .btn-login-main:active, .btn-register-main:active {
   transform: scale(0.95);
+}
+
+.btn-login-main:hover, .btn-register-main:hover {
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
 }
 
 /* BOTONES EXTRAS */
@@ -117,8 +145,9 @@
   position: absolute;
   top: 15px;
   right: 15px;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -133,8 +162,9 @@
   position: absolute;
   bottom: 20px;
   right: 20px;
-  background-color: #eee4da;
-  border: 1px solid transparent;
+  background-color: var(--surface-primary); 
+  color: var(--text-primary); 
+  border: 1px solid var(--border-soft); 
   padding: 10px 20px;
   border-radius: 15px;
   cursor: pointer;
@@ -144,9 +174,70 @@
 
 .admin-btn:hover {
   background-color: #1a1a1a;
-  color: #00ff00; /* Toque hacker */
+  color: #00ff00; 
   border-color: #00ff00;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+}
+
+/* --- MODALES --- */
+.modalSaludo, .modal {
+  display: none;
+  background: var(--overlay-bg-strong); 
+  position: fixed; 
+  inset: 0; 
+  z-index: 9998; 
+  align-items: center; 
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: var(--surface-primary) !important; 
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-soft);
+}
+
+/* EL OJITO PERFECTAMENTE CENTRADO */
+.eye-icon {
+  position: absolute;
+  right: 15px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.1rem; 
+  z-index: 2; 
+}
+
+/* --- ANIMACIÓN DEL THEME TOGGLE --- */
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob);
+  color: var(--theme-toggle-icon);
+  transform: translateX(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-size: 12px;
+}
+
+.theme-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--theme-toggle-bg);
+  border: 1px solid var(--theme-toggle-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+:host-context(body.dark-theme) .theme-toggle-icon {
+  transform: translateX(18px);
 }
 
 /* --- MEDIA QUERIES PARA MÓVIL --- */
@@ -169,33 +260,7 @@
   }
   
   .top-nav {
-    justify-content: center;
-    padding: 0;
+    justify-content: space-between;
+    padding: 0 15px;
   }
-}
-
-.modalSaludo{
-  display:none;
- background:rgba(0,0,0,0.5);
-  position:fixed; inset:0; 
-  z-index:9998; 
-  align-items:center; 
-  justify-content:center;
-}
-
-.modal{
-  display:none;
- background:rgba(0,0,0,0.5);
-  position:fixed; inset:0; 
-  z-index:9998; 
-  align-items:center; 
-  justify-content:center;
-}
-
-.eye-icon {
-  position: absolute;
-  right: 18px;
-  top: 23px;
-  color: var(--text-secondary);
-  cursor: pointer;
 }
