@@ -14,6 +14,8 @@ import { EmployerProfileEditComponent } from './pages/employer-profile-edit/empl
 import { EmployerJobCreateComponent } from './pages/employer-job-create/employer-job-create.component';
 import { CrearServicioComponent } from './pages/crear-servicio/crear-servicio.component'; 
 import { JobDetailComponent } from './pages/job-detail/job-detail.component';
+import { Path } from 'leaflet';
+import { PerfilPostulanteEditarComponent } from './pages/perfil-postulante-editar/perfil-postulante-editar.component';
 
 export const routes: Routes = [
   {
@@ -76,6 +78,10 @@ export const routes: Routes = [
   {
     path: 'job/:id', 
     component: JobDetailComponent
+  },
+  {
+    path: 'perfil-postulante/editar',
+    component: PerfilPostulanteEditarComponent
   },
   {
     path: '**',
