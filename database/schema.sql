@@ -241,3 +241,10 @@ CREATE TABLE resolucion_reporte (
     CONSTRAINT fk_resolucion_reporte FOREIGN KEY (id_reporte) REFERENCES Reporte(id_reporte)
 );
 
+CREATE TABLE password_resets (
+  id SERIAL PRIMARY KEY,
+  correo_electronico VARCHAR(100) NOT NULL,
+  token TEXT NOT NULL,
+  expires BIGINT NOT NULL,
+  user_type TEXT NOT NULL
+);

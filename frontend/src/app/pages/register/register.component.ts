@@ -140,6 +140,9 @@ export class RegisterComponent implements OnInit {
       next: (res) => {
         this.mostrarModalExito('¡Bienvenido a ChamBee!');
         const user = res.user;
+
+        localStorage.setItem("token", res.token);
+        
         localStorage.setItem('usuario', JSON.stringify(user));
       },
       error: (err: any) => {
@@ -147,5 +150,7 @@ export class RegisterComponent implements OnInit {
         this.mostrarModal('Error al crear la cuenta. Intenta de nuevo.');
       }
     });
+
+    
   }
 }

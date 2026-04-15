@@ -148,10 +148,14 @@ export class EmployerRegisterComponent {
           rfc: this.form.rfc,
           descripcion: this.form.descripcion
         }));
+        
 
         this.mostrarModalExito(`¡Tu empresa ya forma parte de ChamBee!`);
         const user = res.user;
         localStorage.setItem('usuario', JSON.stringify(user));
+        
+        localStorage.setItem("token", res.token);
+        
       },
       error: (err) => {
         console.error('Error:', err);

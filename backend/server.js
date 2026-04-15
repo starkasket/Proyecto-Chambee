@@ -82,6 +82,13 @@ const authorizeRoles = (...rolesPermitidos) => {
   }
 }
 
+const LIMITES_CAMBIO = {
+  nombre_postulante: 30,
+  apellido_paterno_postulante: 30,
+  apellido_materno_postulante: 30,
+  fecha_nacimiento: 90,
+  sexo: 30
+};
 
 /* ===== ENDPOINT DE PRUEBA ===== */
 app.get("/", (req, res) => {
@@ -123,8 +130,19 @@ app.post("/postulantes/registro", async (req, res) => {
       rol: "postulante"
     };
 
+    const token = jwt.sign(
+      {
+        id: user.id,
+        correo: user.correo,
+        rol: user.rol
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     res.status(201).json({
       message: "Cuenta creada correctamente",
+      token,
       user
     });
 
@@ -167,8 +185,19 @@ app.post("/empleadores/registro", async (req, res) => {
       rol: "empleador"
     };
 
+    const token = jwt.sign(
+      {
+        id: user.id,
+        correo: user.correo,
+        rol: user.rol
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     res.status(201).json({
       message: "Cuenta creada correctamente",
+      token,
       user
     });
 

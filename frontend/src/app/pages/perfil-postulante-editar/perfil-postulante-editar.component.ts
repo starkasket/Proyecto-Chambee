@@ -103,7 +103,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
       this.cargando = false;
       return;
     }
-
+ 
     this.postulanteId = usuario.id;
     this.postulanteNombre = usuario.nombre || this.postulanteNombre;
     this.checkMobile();
@@ -114,13 +114,20 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     this.cargando = true;
     this.api.getMiPerfil().subscribe({
       next: (perfil: any) => {
+
+        let fechaFormateada = '';
+
+        if (perfil.fecha_nacimiento) {
+          const fecha = new Date(perfil.fecha_nacimiento);
+          fechaFormateada = fecha.toISOString().split('T')[0]
+        }
         this.postulanteNombre = perfil.nombre_postulante || this.postulanteNombre;
         this.perfilForm.patchValue({
           nombre_postulante: perfil.nombre_postulante || '',
           apellido_paterno_postulante: perfil.apellido_paterno_postulante || '',
           apellido_materno_postulante: perfil.apellido_materno_postulante || '',
           correo_electronico: perfil.correo_electronico || '',
-          fecha_nacimiento: perfil.fecha_nacimiento || '',
+          fecha_nacimiento: fechaFormateada || '',
           sexo: perfil.sexo || '',
           pais: perfil.pais || '',
           estado: perfil.estado || '',
