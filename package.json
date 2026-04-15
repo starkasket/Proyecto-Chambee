@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "docker compose up --build",
+    "frontend": "npm start --prefix frontend",
+    "backend": "npm run dev --prefix backend",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,6 +19,7 @@
     "nodemailer": "^8.0.2"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.21"
+    "@types/leaflet": "^1.9.21",
+    "nodemon": "^3.1.14"
   }
 }
