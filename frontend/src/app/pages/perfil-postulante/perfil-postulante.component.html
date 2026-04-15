@@ -166,7 +166,7 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ post.empresa }}</strong>
-                    <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span>
+                    <!-- <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span> -->
                   </div>
                   <p class="vacancy-title">{{ post.vacante }}</p>
                   <p class="vacancy-meta">Postulado el: {{ post.fecha }}</p>
@@ -196,7 +196,7 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ fav.empresa }}</strong>
-                    <span class="state-pill" [ngClass]="getJobStateClass(fav.estado)">{{ fav.estado }}</span>
+       <!--              <span class="state-pill" [ngClass]="getJobStateClass(fav.estado)">{{ fav.estado }}</span> -->
                   </div>
                   <p class="vacancy-title">{{ fav.vacante }}</p>
                   <p class="vacancy-meta">{{ fav.ubicacion }} • {{ fav.fecha }}</p>

@@ -15,6 +15,8 @@ import * as L from 'leaflet';
 })
 export class JobDetailComponent implements OnInit {
   
+  foto_perfil: string = '';
+
   jobId: string | null = null;
   jobData: any = null; 
   relatedJobs: any[] = [];
@@ -36,6 +38,20 @@ export class JobDetailComponent implements OnInit {
       this.mostrarMapa = false;
     });
     this.cargarTrabajosRelacionados();
+
+    const usuario = this.api.getUsuario();
+
+    if (usuario?.id) {
+      this.api.getMiPerfil().subscribe({
+        next: (perfil: any) => {
+          this.foto_perfil = perfil?.foto_perfil || '';
+        },
+        error: (err) => {
+          console.log("No se pudo cargar la foto de perfil:",  err);
+          
+        }
+      })
+    }
   }
 
   // --- LÓGICA DE LA NAVBAR ---

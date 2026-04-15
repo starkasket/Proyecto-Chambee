@@ -57,7 +57,8 @@ interface NotificationItem {
 export class HomeUserComponent implements OnInit, OnDestroy {
   
   // Aquí está el nombre del usuario para el mensaje de bienvenida
-  nombre_postulante = 'Usuario';
+  nombre_postulante: string = 'Usuario';
+  foto_perfil: string = '';
 
   // VARIABLES PARA EL CONTROL DE LA INTERFAZ
   servicesOpen = false;
@@ -107,8 +108,19 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }, 9000);
     this.checkMobile();
     this.cargarOfertasPublicas();
-    const usuario = JSON.parse(localStorage.getItem('usuario') || sessionStorage.getItem('usuario') || '{}');
-      this.nombre_postulante = usuario.nombre || 'Usuario';
+    const usuario = this.api.getUsuario();
+
+    if (usuario?.id) {
+      this.api.getMiPerfil().subscribe({
+        next: (perfil: any) =>  {
+          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario'
+          this.foto_perfil = perfil?.foto_perfil || '';
+        },
+        error: () => {
+          this.nombre_postulante = usuario?.nombre || 'Usuario'
+        }
+      });
+    }
   }
 
   ngOnDestroy() {
