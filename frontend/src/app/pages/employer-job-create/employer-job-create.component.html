@@ -122,9 +122,30 @@
           </label>
 
           <label class="field">
+            <span>Estatus de urgencia</span>
+            <select formControlName="urgencia">
+              <option *ngFor="let opcion of opcionesUrgencia" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
+
+          <label class="field">
             <span>Salario</span>
             <input type="number" formControlName="salario" placeholder="12000" />
             <small *ngIf="campoInvalido('salario')">Ingresa un salario mayor a 0.</small>
+          </label>
+
+          <label class="field">
+            <span>Rango de edad</span>
+            <select formControlName="edad">
+              <option *ngFor="let opcion of opcionesEdad" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Educacion solicitada</span>
+            <select formControlName="educacion">
+              <option *ngFor="let opcion of opcionesEducacion" [value]="opcion">{{ opcion }}</option>
+            </select>
           </label>
         </div>
       </article>
@@ -171,6 +192,9 @@
           <p class="preview-label">Resumen rapido</p>
           <strong>{{ ofertaForm.value.titulo || 'Tu nueva vacante' }}</strong>
           <p>{{ ofertaForm.value.modalidad || 'Modalidad' }} • {{ ofertaForm.value.estado || 'Estado' }}</p>
+          <p>Urgencia: {{ ofertaForm.value.urgencia || 'Normal' }}</p>
+          <p>Edad: {{ ofertaForm.value.edad || 'Sin especificar' }}</p>
+          <p>Educacion: {{ ofertaForm.value.educacion || 'Sin especificar' }}</p>
           <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}</p>
         </div>
 

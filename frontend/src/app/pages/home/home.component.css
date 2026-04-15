@@ -298,6 +298,25 @@ body {
   font-weight: 600;
 }
 
+.urgency-chip {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(185, 28, 28, 0.18);
+}
+
+.job-urgency-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .featured-btn {
   background: var(--button-primary-bg);
   color: var(--button-primary-text);
@@ -434,6 +453,17 @@ body {
 .job-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-hover);
+}
+
+.empty-jobs-state {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--surface-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-card);
+  text-align: center;
 }
 
 /* Boton centrado para mostrar mas empleos. */

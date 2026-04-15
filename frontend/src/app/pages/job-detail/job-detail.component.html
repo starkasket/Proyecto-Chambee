@@ -66,7 +66,10 @@
 
             <div class="job-col">
                 <div class="job-header">
-                    <h2>{{ jobData.title }}</h2>
+                    <div class="job-title-block">
+                        <span class="job-urgency-badge" *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
+                        <h2>{{ jobData.title }}</h2>
+                    </div>
                     <i class="bi bi-bookmark fs-3" style="cursor: pointer;"></i>
                 </div>
 

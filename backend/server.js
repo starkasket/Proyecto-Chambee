@@ -451,6 +451,9 @@ app.get("/empleadores/:id/anuncios", async (req, res) => {
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -479,6 +482,9 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
     titulo,
     descripcion,
     tipo_anuncio,
+    urgencia = 'Normal',
+    edad = 'Sin especificar',
+    educacion = 'Sin especificar',
     estado,
     ciudad,
     colonia,
@@ -495,6 +501,9 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -506,12 +515,15 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       id_empleador,
       vistas
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,0)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,0)
     RETURNING
       id_anuncio,
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -527,6 +539,9 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -546,7 +561,10 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al crear la oferta laboral" });
+    res.status(500).json({
+      error: "Error al crear la oferta laboral",
+      detail: err.message,
+    });
   }
 });
 
@@ -558,6 +576,9 @@ app.get("/anuncios", async (_req, res) => {
       a.titulo,
       a.descripcion,
       a.tipo_anuncio,
+      a.urgencia,
+      a.edad,
+      a.educacion,
       a.estado,
       a.ciudad,
       a.colonia,
