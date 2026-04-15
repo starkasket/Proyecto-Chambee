@@ -70,12 +70,17 @@ type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'recomendados';
   styleUrls: ['./perfil-postulante.component.css']
 })
 export class PerfilPostulanteComponent implements OnInit {
+  postulanteId = '';
   perfil: PostulanteProfile | null = null;
   cargando = true;
   error = '';
   subiendoCv = false;
   cvMensaje = '';
   cvError = false;
+
+  private readonly CLOUDINARY_CLOUD_NAME = 'dqq9oeo4e';
+  private readonly CLOUDINARY_UPLOAD_PRESET = 'Chambee-cv';
+
 
   menuOpen = false;
   notificationsOpen = false;
@@ -102,8 +107,14 @@ export class PerfilPostulanteComponent implements OnInit {
     const usuario = this.api.getUsuario();
     const perfilLocalRaw = localStorage.getItem('perfilPostulante') || sessionStorage.getItem('perfilPostulante');
 
-    if (!usuario || usuario.rol !== 'postulante') {
-      this.error = 'No tienes permiso para estar aquí.';
+    if (!usuario) {
+      this.error = 'No hay sesión activa. Inicia sesión para ver tu perfil.';
+      this.cargando = false;
+      return;
+    }
+
+    if (usuario.rol !== 'postulante') {
+      this.error = 'Esta sección es solo para postulantes.';
       this.cargando = false;
       return;
     }
@@ -116,15 +127,24 @@ export class PerfilPostulanteComponent implements OnInit {
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
         this.error = '';
-        this.actualizarCache(perfilDb);
+
+        if (localStorage.getItem('token')) {
+          localStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
+        } else {
+          sessionStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
+        }
+
         this.cargando = false;
       },
       error: (err) => {
         this.cargando = false;
+
         if (err.status === 401) {
-          this.error = "Sesión expirada.";
-        } else if (!this.perfil) {
-          this.error = "Error al conectar con el servidor.";
+          this.error = "Tu sesión ha expirado o no tienes autorización. Por favor, vuelve a iniciar sesión.";
+        } else {
+          if (!this.perfil) {
+            this.error = "No fue posible cargar tu perfil en este momento. Revisa tu conexión al servidor.";
+          }
         }
         console.error("Error al obtener perfil:", err);
       }
@@ -133,17 +153,88 @@ export class PerfilPostulanteComponent implements OnInit {
     this.checkMobile();
   }
 
-  private actualizarCache(datos: any) {
-    const storage = localStorage.getItem('token') ? localStorage : sessionStorage;
-    storage.setItem("perfilPostulante", JSON.stringify(datos));
-  }
-
   get direccionCompleta(): string {
     if (!this.perfil) return '';
     return `${this.perfil.calle || ''}, ${this.perfil.colonia || ''}, ${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}, ${this.perfil.pais || ''}`.replace(/^, | ,|, $/g, '').trim();
   }
 
-  async onCvSelected(event: Event): Promise<void> {
+  setActiveTab(tabName: ProfileSectionTab) {
+    this.activeTab = tabName;
+  }
+
+  getApplicationStateClass(estado: PostulanteApplication['estado']): string {
+    if (estado === 'Nueva') return 'app-new';
+    if (estado === 'En revision') return 'app-review';
+    if (estado === 'Entrevista') return 'app-interview';
+    return 'app-discarded';
+  }
+
+  getJobStateClass(estado: PostulanteFavorites['estado']): string {
+    if (estado === 'Activa') return 'state-active';
+    if (estado === 'Pausada') return 'state-paused';
+    return 'state-closed';
+  }
+
+  toggleNotifications(event?: Event) {
+    if (event) event.stopPropagation();
+    this.notificationsOpen = !this.notificationsOpen;
+
+    if (this.notificationsOpen) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach(n => n.read = true);
+    }
+    this.menuOpen = false;
+  }
+
+  toggleMenu(event?: Event) {
+    if (event) event.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+    this.notificationsOpen = false;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.notificationsOpen) this.notificationsOpen = false;
+    if (this.menuOpen && !this.isMobile) this.menuOpen = false;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkMobile();
+  }
+
+  private checkMobile() {
+    try {
+      this.isMobile = window.innerWidth <= 768;
+    } catch {
+      this.isMobile = false;
+    }
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
+
+  volverPanel() {
+    this.router.navigate(['/inicio-postulante']);
+  }
+
+  editarPerfil() {
+    this.router.navigate(['/perfil-postulante/editar']);
+  }
+
+  buscarEmpleos() {
+    this.router.navigate(['/buscar-empleos']);
+  }
+
+  logout() {
+    this.authApi.logout();
+    this.menuOpen = false;
+  } async onCvSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -156,9 +247,10 @@ export class PerfilPostulanteComponent implements OnInit {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    const MAX_SIZE_MB = 5;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       this.cvError = true;
-      this.cvMensaje = 'El archivo supera los 5 MB.';
+      this.cvMensaje = `El archivo supera el límite de ${MAX_SIZE_MB} MB.`;
       return;
     }
 
@@ -167,70 +259,44 @@ export class PerfilPostulanteComponent implements OnInit {
     this.cvError = false;
 
     try {
-      const dataForCloudinary = new FormData();
-      dataForCloudinary.append('file', file);
-      dataForCloudinary.append('upload_preset', 'Chambee-cv');
+      // 1. Subir a Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'Chambee-cv');
 
-      // Usamos /raw/ para PDFs para evitar errores 401 de acceso
       const cloudUrl = `https://api.cloudinary.com/v1_1/dqq9oeo4e/raw/upload`;
-      const cloudRes = await fetch(cloudUrl, { method: 'POST', body: dataForCloudinary });
+      const cloudRes = await fetch(cloudUrl, { method: 'POST', body: formData });
 
-      if (!cloudRes.ok) throw new Error('Error al subir a la nube.');
+      if (!cloudRes.ok) {
+        const errorData = await cloudRes.json();
+        throw new Error(errorData.error?.message || 'Error al subir el archivo a Cloudinary.');
+      }
 
       const cloudData = await cloudRes.json();
-      const pdfUrl = cloudData.secure_url;
+      const pdfUrl: string = cloudData.secure_url;
 
+      // 2. Guardar la URL en la base de datos
+      // Usamos el servicio que ya tienes inyectado (asegúrate si es 'api' o 'apiService')
       this.api.actualizarMiPerfil({ archivo_cv: pdfUrl }).subscribe({
         next: () => {
-          if (this.perfil) {
-            this.perfil.archivo_cv = pdfUrl;
-            this.actualizarCache(this.perfil);
-          }
+          if (this.perfil) this.perfil.archivo_cv = pdfUrl;
           this.cvMensaje = 'C.V. actualizado correctamente.';
           this.cvError = false;
-          this.subiendoCv = false;
         },
-        error: (err) => {
-          console.error(err);
+        error: (err: any) => {
+          console.error('Error al guardar URL en BD:', err);
           this.cvError = true;
-          this.cvMensaje = 'Error al guardar en base de datos.';
-          this.subiendoCv = false;
+          this.cvMensaje = 'Error al vincular el CV con tu perfil.';
         }
       });
 
     } catch (err: any) {
+      console.error('Error en subida de CV:', err);
       this.cvError = true;
-      this.cvMensaje = err.message || 'Error en la subida.';
+      this.cvMensaje = err.message || 'Error al subir el CV.';
+    } finally {
       this.subiendoCv = false;
     }
   }
 
-  // --- Métodos de Interfaz ---
-  setActiveTab(tabName: ProfileSectionTab) { this.activeTab = tabName; }
-  toggleNotifications(event?: Event) {
-    if (event) event.stopPropagation();
-    this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-    }
-    this.menuOpen = false;
-  }
-  toggleMenu(event?: Event) {
-    if (event) event.stopPropagation();
-    this.menuOpen = !this.menuOpen;
-    this.notificationsOpen = false;
-  }
-  @HostListener('document:click') onDocumentClick() {
-    this.notificationsOpen = false;
-    if (!this.isMobile) this.menuOpen = false;
-  }
-  @HostListener('window:resize') onResize() { this.checkMobile(); }
-  private checkMobile() { this.isMobile = window.innerWidth <= 768; }
-  toggleTheme() { this.themeService.toggleTheme(); }
-  get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
-  volverPanel() { this.router.navigate(['/inicio-postulante']); }
-  editarPerfil() { this.router.navigate(['/perfil-postulante/editar']); }
-  buscarEmpleos() { this.router.navigate(['/buscar-empleos']); }
-  logout() { this.authApi.logout(); }
 }
