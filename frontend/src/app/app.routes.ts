@@ -12,7 +12,7 @@ import { PerfilPostulanteComponent } from './pages/perfil-postulante/perfil-post
 import { EmployerProfileComponent } from './pages/employer-profile/employer-profile.component';
 import { EmployerProfileEditComponent } from './pages/employer-profile-edit/employer-profile-edit.component';
 import { EmployerJobCreateComponent } from './pages/employer-job-create/employer-job-create.component';
-import { CrearServicioComponent } from './pages/crear-servicio/crear-servicio.component'; 
+import { CrearServicioComponent } from './pages/crear-servicio/crear-servicio.component';
 import { JobDetailComponent } from './pages/job-detail/job-detail.component';
 import { Path } from 'leaflet';
 import { PerfilPostulanteEditarComponent } from './pages/perfil-postulante-editar/perfil-postulante-editar.component';
@@ -80,15 +80,17 @@ export const routes: Routes = [
     component: CrearServicioComponent
   },
   {
-    path: 'job/:id', 
+    path: 'job/:id',
     component: JobDetailComponent
   },
   {
     path: 'perfil-postulante/editar',
     component: PerfilPostulanteEditarComponent
   },
+
   {
     path: '**',
     redirectTo: ''
   }
+
 ];

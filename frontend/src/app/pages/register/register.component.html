@@ -45,93 +45,116 @@
         <button class="tab-postulante">Soy Postulante</button>
         <button class="tab-empleador" routerLink="/employer-register">Soy Empleador</button>
       </div>
-<form #formRef="ngForm">
-      <div class="row g-0">
-         
-        <div class="col-12 col-md-6 pe-md-3">
+      <form #formRef="ngForm">
+        <div class="row g-0">
 
-          <p class="section-label">Datos Personales</p>
-         
+          <div class="col-12 col-md-6 pe-md-3">
+
+            <p class="section-label">Datos Personales</p>
+
             <input type="text" class="form-control-custom" placeholder="Nombre (s)" [(ngModel)]="form.nombre_postulante"
               name="nombre" required #nombre="ngModel" />
-            <div *ngIf="nombre.invalid && nombre.dirty" class="support-error" style="margin-bottom: 8px;">Nombre inválido</div>
+            <div *ngIf="nombre.invalid && nombre.dirty" class="support-error" style="margin-bottom: 8px;">Nombre
+              inválido</div>
 
             <input type="text" class="form-control-custom" placeholder="Apellido Paterno"
-              [(ngModel)]="form.apellido_paterno_postulante" name="apellido_paterno" required #apellidop="ngModel"/>
-            <div *ngIf="apellidop.invalid && apellidop.dirty" class="support-error" style="margin-bottom: 8px;">Apellido paterno inválido</div>
-          
-    
-          <input type="text" class="form-control-custom" placeholder="Apellido Materno"
-            [(ngModel)]="form.apellido_materno_postulante" name="apellido_materno" required  #apellidom="ngModel"/>
-              <div *ngIf="apellidom.invalid && apellidom.dirty" class="support-error" style="margin-bottom: 8px;">Apellido materno inválido</div>
-       
-          <p class="section-label">Fecha de nacimiento</p>
-          <input type="date" class="form-control-custom" [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento" required #fecha_n="ngModel" [max]="hoy"/>
-          <div *ngIf="fecha_n.invalid && fecha_n.touched" class="support-error">Fecha inválida</div>
-          <div *ngIf="fecha_n.touched && !esMayorDeEdad(form.fecha_nacimiento)" class="support-error" style="margin-bottom: 8px;">Debes ser mayor de 18 años para crear una cuenta</div>
+              [(ngModel)]="form.apellido_paterno_postulante" name="apellido_paterno" required #apellidop="ngModel" />
+            <div *ngIf="apellidop.invalid && apellidop.dirty" class="support-error" style="margin-bottom: 8px;">Apellido
+              paterno inválido</div>
 
-        
-          <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
-            [(ngModel)]="form.correo_electronico" name="correo_electronico" #correo="ngModel" required email />
-          <div *ngIf="correo.invalid && correo.touched" class="support-error" style="margin-bottom: 8px;">Correo inválido</div>
-              
 
-          <input type="tel" class="form-control-custom" placeholder="Teléfono" [(ngModel)]="form.telefono"
-            name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" maxlength="10"/>
-             <div *ngIf="telefono.invalid && telefono.touched" class="support-error" style="margin-bottom: 8px;">Telefono inválido</div>
-             
-          <select class="form-control-custom" [(ngModel)]="form.sexo" name="sexo" required #sexo="ngModel"  >
-            <option value="" disabled selected>Sexo</option>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
-            <option value="Otro">Otro</option>
-          </select>
-             <div *ngIf="sexo.invalid && sexo.touched" class="support-error" style="margin-bottom: 8px;">Selecciona una opción</div>
-           
-          <div class="input-with-icon">
-            <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control-custom" placeholder="Contraseña" [(ngModel)]="form.contrasena"
-              name="contrasena" #pass="ngModel" required pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$"/>
-              <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword =!mostrarPassword"></i>
-              
-              <div *ngIf="pass.errors?.['required'] && pass.dirty" class="support-error" style="margin-bottom: 8px; ">La contraseña es obligatoria</div>
-              <div *ngIf="pass.errors?.['pattern'] && pass.touched" class="support-error" style="margin-bottom: 8px; ">La contraseña debe tener al menos 6 caracteres: una minúscula, una mayúscula, un número y un símbolo </div>
+            <input type="text" class="form-control-custom" placeholder="Apellido Materno"
+              [(ngModel)]="form.apellido_materno_postulante" name="apellido_materno" required #apellidom="ngModel" />
+            <div *ngIf="apellidom.invalid && apellidom.dirty" class="support-error" style="margin-bottom: 8px;">Apellido
+              materno inválido</div>
+
+            <p class="section-label">Fecha de nacimiento</p>
+            <input type="date" class="form-control-custom" [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento"
+              required #fecha_n="ngModel" [max]="hoy" />
+            <div *ngIf="fecha_n.invalid && fecha_n.touched" class="support-error">Fecha inválida</div>
+            <div *ngIf="fecha_n.touched && !esMayorDeEdad(form.fecha_nacimiento)" class="support-error"
+              style="margin-bottom: 8px;">Debes ser mayor de 18 años para crear una cuenta</div>
+
+
+            <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
+              [(ngModel)]="form.correo_electronico" name="correo_electronico" #correo="ngModel" required email />
+            <div *ngIf="correo.invalid && correo.touched" class="support-error" style="margin-bottom: 8px;">Correo
+              inválido</div>
+
+
+            <input type="tel" class="form-control-custom" placeholder="Teléfono" [(ngModel)]="form.telefono"
+              name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" maxlength="10" />
+            <div *ngIf="telefono.invalid && telefono.touched" class="support-error" style="margin-bottom: 8px;">Telefono
+              inválido</div>
+
+            <select class="form-control-custom" [(ngModel)]="form.sexo" name="sexo" required #sexo="ngModel">
+              <option value="" disabled selected>Sexo</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <div *ngIf="sexo.invalid && sexo.touched" class="support-error" style="margin-bottom: 8px;">Selecciona una
+              opción</div>
+
+            <div class="input-with-icon">
+              <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control-custom" placeholder="Contraseña"
+                [(ngModel)]="form.contrasena" name="contrasena" #pass="ngModel" required
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$" />
+              <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'"
+                (click)="mostrarPassword =!mostrarPassword"></i>
+
+              <div *ngIf="pass.errors?.['required'] && pass.dirty" class="support-error" style="margin-bottom: 8px; ">La
+                contraseña es obligatoria</div>
+              <div *ngIf="pass.errors?.['pattern'] && pass.touched" class="support-error" style="margin-bottom: 8px; ">
+                La contraseña debe tener al menos 6 caracteres: una minúscula, una mayúscula, un número y un símbolo
+              </div>
             </div>
-           
-          <div class="input-with-icon">
-            <input [type]="mostrarPassword2 ? 'text' : 'password'" class="form-control-custom" placeholder="Verificar Contraseña"
-              [(ngModel)]="form.contrasena_verificar" name="contrasena_verificar" #pass2="ngModel" required/>
-            <i class="bi eye-icon" [ngClass]="mostrarPassword2 ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword2 = !mostrarPassword2" ></i>
-            <div *ngIf="pass2.dirty && form.contrasena !== form.contrasena_verificar" class="support-error" style="margin-bottom: 8px;"> Las contraseñas no coinciden</div>
+
+            <div class="input-with-icon">
+              <input [type]="mostrarPassword2 ? 'text' : 'password'" class="form-control-custom"
+                placeholder="Verificar Contraseña" [(ngModel)]="form.contrasena_verificar" name="contrasena_verificar"
+                #pass2="ngModel" required />
+              <i class="bi eye-icon" [ngClass]="mostrarPassword2 ? 'bi-eye-slash' : 'bi-eye'"
+                (click)="mostrarPassword2 = !mostrarPassword2"></i>
+              <div *ngIf="pass2.dirty && form.contrasena !== form.contrasena_verificar" class="support-error"
+                style="margin-bottom: 8px;"> Las contraseñas no coinciden</div>
+            </div>
+
+
           </div>
-           
-           
+
+          <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
+            <p class="section-label">Identificación</p>
+            <input type="text" class="form-control-custom" placeholder="RFC" [(ngModel)]="form.rfc" name="rfc"
+              #rfc="ngModel" required pattern=".{13}" maxlength="13" />
+            <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>
+
+            <input type="text" class="form-control-custom" placeholder="CURP" [(ngModel)]="form.curp" name="curp"
+              #curp="ngModel" required pattern=".{18}" maxlength="18" />
+            <div *ngIf="curp.invalid && curp.dirty" class="support-error" style="margin-bottom: 8px;">CURP inválida
+            </div>
+            <p class="dir-label">Dirección Completa</p>
+            <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal"
+              name="codigo_postal" (blur)="buscarCP()" maxlength="5" />
+            <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado" name="estado"
+              readonly />
+            <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad" name="ciudad"
+              readonly />
+            <select class="form-control-custom" [(ngModel)]="form.colonia" name="colonia">
+              <option value="" disabled selected>Colonia</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+            <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" required
+              name="calle" #calle="ngModel" />
+            <div *ngIf="calle.invalid && calle.dirty" class="support-error" style="margin-bottom: 8px;">Calle inválida
+            </div>
+          </div>
+
         </div>
-       
-        <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
-          <p class="section-label">Identificación</p>
-          <input type="text" class="form-control-custom" placeholder="RFC" [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{13}" maxlength="13"/>
-          <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>     
-       
-          <input type="text" class="form-control-custom" placeholder="CURP" [(ngModel)]="form.curp" name="curp" #curp="ngModel" required pattern=".{18}" maxlength="18"/>
-           <div *ngIf="curp.invalid && curp.dirty" class="support-error" style="margin-bottom: 8px;">CURP inválida</div>     
-          <p class="dir-label">Dirección Completa</p>
-          <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal"
-            name="codigo_postal" (blur)="buscarCP()" maxlength="5"/>
-          <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado" name="estado"
-            readonly />
-          <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad" name="ciudad"
-            readonly />
-          <select class="form-control-custom" [(ngModel)]="form.colonia" name="colonia">
-            <option value="" disabled selected>Colonia</option>
-            <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
-          </select>
-          <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" required name="calle" #calle="ngModel"/>
-          <div *ngIf="calle.invalid && calle.dirty" class="support-error" style="margin-bottom: 8px;">Calle inválida</div>     
-        </div>
-  
-      </div>
-      <button class="btn-crear" type="button" (click)="registrar()" [disabled]="formRef.invalid || form.contrasena !== form.contrasena_verificar || !esMayorDeEdad(form.fecha_nacimiento)">Crear Cuenta</button>
-  </form>
+        <button class="btn-crear" type="button" (click)="registrar()"
+          [disabled]="formRef.invalid || form.contrasena !== form.contrasena_verificar || !esMayorDeEdad(form.fecha_nacimiento)">Crear
+          Cuenta</button>
+      </form>
     </div>
   </div>
 </div>

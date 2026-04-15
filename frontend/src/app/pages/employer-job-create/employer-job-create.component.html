@@ -63,7 +63,9 @@
       <div class="hero-copy">
         <p class="eyebrow">Panel de empleador</p>
         <h1>Crear oferta laboral</h1>
-        <p>Publica una vacante nueva para <strong>{{ empresaNombre }}</strong> usando los campos reales de la tabla <strong>anuncios</strong>.</p>
+        <p>Publica una vacante nueva para <strong>{{ empresaNombre }}</strong> usando los campos reales de la tabla
+          <strong>anuncios</strong>.
+        </p>
       </div>
 
       <div class="hero-actions">
@@ -98,7 +100,8 @@
 
         <label class="field">
           <span>Descripcion del anuncio</span>
-          <textarea rows="8" formControlName="descripcion" placeholder="Explica responsabilidades, beneficios y perfil buscado."></textarea>
+          <textarea rows="8" formControlName="descripcion"
+            placeholder="Explica responsabilidades, beneficios y perfil buscado."></textarea>
           <small *ngIf="campoInvalido('descripcion')">Describe la oferta laboral.</small>
         </label>
 
@@ -153,41 +156,31 @@
       <article class="offer-card offer-side">
         <div class="card-head">
           <p class="eyebrow">Ubicacion</p>
+          <!---->
           <h2>Direccion de la oferta</h2>
         </div>
 
         <div class="form-grid single-col">
           <label class="field">
-            <span>Estado</span>
-            <input type="text" formControlName="estado" placeholder="Guanajuato" />
-            <small *ngIf="campoInvalido('estado')">Ingresa el estado.</small>
-          </label>
+            <p class="dir-label">Dirección Completa</p>
 
-          <label class="field">
-            <span>Ciudad</span>
-            <input type="text" formControlName="ciudad" placeholder="San Miguel de Allende" />
-            <small *ngIf="campoInvalido('ciudad')">Ingresa la ciudad.</small>
-          </label>
+            <input type="text" class="form-control-custom" placeholder="C.P." formControlName="codigo_postal"
+              (blur)="buscarCP()" maxlength="5" />
 
-          <label class="field">
-            <span>Colonia</span>
-            <input type="text" formControlName="colonia" placeholder="Colonia o zona" />
-            <small *ngIf="campoInvalido('colonia')">Ingresa la colonia.</small>
-          </label>
+            <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
 
-          <label class="field">
-            <span>Calle</span>
-            <input type="text" formControlName="calle" placeholder="Calle y numero" />
-            <small *ngIf="campoInvalido('calle')">Ingresa la calle.</small>
-          </label>
+            <input type="text" class="form-control-custom" placeholder="Ciudad" formControlName="ciudad" readonly />
 
-          <label class="field">
-            <span>Codigo postal</span>
-            <input type="text" formControlName="codigo_postal" placeholder="37755" />
-            <small *ngIf="campoInvalido('codigo_postal')">Ingresa el codigo postal.</small>
+            <select class="form-control-custom" formControlName="colonia">
+              <option value="" disabled selected>Colonia</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+
+            <input type="text" class="form-control-custom" placeholder="Calle" formControlName="calle" />
+
+            <div *ngIf="campoInvalido('calle')" class="support-error">Calle inválida</div>
           </label>
         </div>
-
         <div class="preview-box">
           <p class="preview-label">Resumen rapido</p>
           <strong>{{ ofertaForm.value.titulo || 'Tu nueva vacante' }}</strong>
@@ -195,7 +188,8 @@
           <p>Urgencia: {{ ofertaForm.value.urgencia || 'Normal' }}</p>
           <p>Edad: {{ ofertaForm.value.edad || 'Sin especificar' }}</p>
           <p>Educacion: {{ ofertaForm.value.educacion || 'Sin especificar' }}</p>
-          <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}</p>
+          <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}
+          </p>
         </div>
 
         <button type="submit" class="primary-btn" [disabled]="guardando">

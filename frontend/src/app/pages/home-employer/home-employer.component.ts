@@ -59,8 +59,8 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   // Control de la interfaz
   toolsOpen = false;
   menuOpen = false;
-  notificationsOpen = false; 
-  hasUnreadNotifications = true; 
+  notificationsOpen = false;
+  hasUnreadNotifications = true;
   isDarkMode = false; // Manejo local temporal si no inyectas el ThemeService
 
   currentSlide = 0;
@@ -150,12 +150,12 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     private readonly api: ApiService,
     private readonly authApi: AuthService
     // private readonly themeService: ThemeService // Descomenta si usas el servicio
-  ) {}
+  ) { }
 
   ngOnInit() {
     // 1. Obtener datos del usuario guardados en localStorage/sessionStorage
     const usuario = this.api.getUsuario();
-    
+
     // 2. Cargar nombre de empresa ACTUALIZADO desde la BASE DE DATOS (no del localStorage)
     // Esto asegura que si el nombre se cambió en el perfil, aparezca actualizado en la navbar
     if (usuario?.id) {
@@ -184,10 +184,10 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
-    
+
     // 4. Detectar si es mobile para responsive design
     this.checkMobile();
-    
+
     // 5. Llenar lista de postulantes hasta 28 elementos
     this.fillApplicantsToMax();
   }
@@ -204,12 +204,12 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
       event.stopPropagation();
     }
     this.notificationsOpen = !this.notificationsOpen;
-    
+
     if (this.notificationsOpen) {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
     }
-    this.menuOpen = false; 
+    this.menuOpen = false;
   }
 
   @HostListener('document:click', ['$event'])
@@ -247,17 +247,19 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
   logout() {
     this.authApi.logout();
-    
+
     // 2. Cerramos los menús 
     this.menuOpen = false;
     this.toolsOpen = false;
-    
+
     console.log('Cerrando sesión...');
-   
+
   }
 
   crearOferta() {
+    // this.router.navigate(['/post-job']);
     this.router.navigate(['/post-job']);
+
   }
 
   // --- RESPONSIVE Y UTILIDADES ---
@@ -281,7 +283,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
     while (this.allApplicants.length < this.maxVisible) {
       const baseApp = baseApplicants[index % baseApplicants.length];
-      const imageSeed = this.allApplicants.length + 30; 
+      const imageSeed = this.allApplicants.length + 30;
       this.allApplicants.push({
         ...baseApp,
         name: `${baseApp.name} (Copia)`,

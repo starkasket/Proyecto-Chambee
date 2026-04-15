@@ -38,6 +38,25 @@ interface NotificationItem {
   styleUrl: './employer-job-create.component.css'
 })
 export class EmployerJobCreateComponent implements OnInit {
+  form = {
+    nombre_postulante: '',
+    apellido_paterno_postulante: '',
+    apellido_materno_postulante: '',
+    correo_electronico: '',
+    contrasena: '',
+    contrasena_verificar: '',
+    fecha_nacimiento: '',
+    sexo: '',
+    pais: 'México',
+    estado: '',
+    ciudad: '',
+    colonia: '',
+    calle: '',
+    codigo_postal: '',
+    telefono: '',
+    rfc: '',
+    curp: ''
+  };
   employerId = '';
   empresaNombre = 'Empresa';
   guardando = false;
@@ -103,39 +122,53 @@ export class EmployerJobCreateComponent implements OnInit {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
-    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
+    // 1. Primero cargamos la base de datos de códigos postales
+    this.api.getSepomex().subscribe(data => {
+      this.sepomex = data;
 
-    if (!usuarioRaw) {
-      this.error = 'No hay sesion activa para crear una oferta laboral.';
-      return;
-    }
+      // 2. Una vez que tenemos los datos, cargamos la sesión y el perfil
+      const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+      const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
 
-    const usuario = JSON.parse(usuarioRaw);
-    if (usuario.rol !== 'empleador' || !usuario.id) {
-      this.error = 'Solo un empleador con sesion activa puede crear ofertas laborales.';
-      return;
-    }
+      if (!usuarioRaw) {
+        this.error = 'No hay sesion activa para crear una oferta laboral.';
+        return;
+      }
 
-    this.employerId = usuario.id;
-    this.empresaNombre = usuario.nombre || this.empresaNombre;
+      const usuario = JSON.parse(usuarioRaw);
+      if (usuario.rol !== 'empleador' || !usuario.id) {
+        this.error = 'Solo un empleador con sesion activa puede crear ofertas laborales.';
+        return;
+      }
 
-    if (perfilLocalRaw) {
-      const perfil = JSON.parse(perfilLocalRaw);
-      this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
-      this.ofertaForm.patchValue({
-        estado: perfil.estado || '',
-        ciudad: perfil.ciudad || '',
-        colonia: perfil.colonia || '',
-        calle: perfil.calle || '',
-        codigo_postal: perfil.codigo_postal || ''
-      });
-    } else {
-      this.cargarPerfilBase();
-    }
+      this.employerId = usuario.id;
+      this.empresaNombre = usuario.nombre || this.empresaNombre;
+
+      // 3. Cargamos los datos del empleador (del local o de la API)
+      if (perfilLocalRaw) {
+        const perfil = JSON.parse(perfilLocalRaw);
+        this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
+        this.ofertaForm.patchValue({
+          estado: perfil.estado || '',
+          ciudad: perfil.ciudad || '',
+          colonia: perfil.colonia || '',
+          calle: perfil.calle || '',
+          codigo_postal: perfil.codigo_postal || ''
+        });
+
+        // Si ya tiene CP, llenamos las colonias de inmediato
+        if (perfil.codigo_postal) {
+          this.buscarCP();
+          // Forzamos a que mantenga la colonia guardada
+          this.ofertaForm.patchValue({ colonia: perfil.colonia });
+        }
+      } else {
+        this.cargarPerfilBase();
+      }
+    });
 
     this.checkMobile();
   }
@@ -265,6 +298,50 @@ export class EmployerJobCreateComponent implements OnInit {
       this.isMobile = window.innerWidth <= 768;
     } catch {
       this.isMobile = false;
+    }
+  }
+  modalMensaje = '';
+  sepomex: any[] = [];
+  colonias: string[] = [];
+
+  // --- MODAL DE ERROR ---
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+
+    }
+  }
+  // --- BUSCAR CP ---
+
+  hoy = new Date().toISOString().split('T')[0];
+
+  buscarCP() {
+    // 1. Obtenemos el CP del formulario reactivo
+    const cp = this.ofertaForm.get('codigo_postal')?.value;
+
+    if (!cp) {
+      this.mostrarModal('Ingresa un código postal');
+      return;
+    }
+
+    // 2. Filtramos en la variable sepomex que ya cargamos en el ngOnInit
+    const resultados = this.sepomex.filter(r => String(r.cp) === String(cp).trim());
+
+    if (resultados.length > 0) {
+      // 3. Actualizamos los campos de estado y ciudad
+      this.ofertaForm.patchValue({
+        estado: resultados[0].estado,
+        ciudad: resultados[0].ciudad
+      });
+      // 4. Llenamos el array de colonias para el select
+      this.colonias = resultados.map(r => r.colonia);
+    } else {
+      this.mostrarModal('Código postal no encontrado');
+      this.colonias = [];
+      this.ofertaForm.patchValue({ estado: '', ciudad: '', colonia: '' });
     }
   }
 }
