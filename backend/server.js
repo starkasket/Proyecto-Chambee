@@ -32,12 +32,12 @@ const hasEmailConfig = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS)
 // Configuración de Nodemailer
 const transporter = hasEmailConfig
   ? nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  })
   : null;
 
 // Verifica conexión con Gmail
@@ -64,12 +64,12 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; 
+    req.user = decoded;
     next();
   } catch (err) {
     return res.status(401).json({ error: "Token inválido" })
   }
-  
+
 }
 
 const authorizeRoles = (...rolesPermitidos) => {
@@ -117,7 +117,7 @@ app.post("/postulantes/registro", async (req, res) => {
 
     const result = await pool.query(query, values);
 
-     const user = {
+    const user = {
       ...result.rows[0],
       rol: "postulante"
     };
@@ -161,7 +161,7 @@ app.post("/empleadores/registro", async (req, res) => {
 
     const result = await pool.query(query, values);
 
-     const user = {
+    const user = {
       ...result.rows[0],
       rol: "empleador"
     };
@@ -177,7 +177,7 @@ app.post("/empleadores/registro", async (req, res) => {
 });
 
 /* ===== PERFIL DE EMPLEADOR ===== */
-/* EN DESUSO; TBD*/ 
+/* EN DESUSO; TBD*/
 /*
 app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
   const { id } = req.params;
@@ -225,13 +225,13 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
     const id = req.user.id;
     const rol = req.user.rol;
 
-   
+
 
 
     let query = "";
 
     if (rol === "empleador") {
-       query = `SELECT
+      query = `SELECT
         id_empleador,
         nombre_empresa,
         correo_electronico,
@@ -249,24 +249,27 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       WHERE id_empleador = $1`;
     } else if (rol === "postulante") {
       query = `SELECT 
-        id_postulante, 
-        nombre_postulante, 
-        apellido_paterno_postulante
-        apellido_materno_postulante, 
-        correo_electronico, 
-        fecha_nacimiento, 
-        sexo, 
-        pais,
-        estado, 
-        ciudad, 
-        colonia, 
-        calle, 
-        codigo_postal,
-        telefono, 
-        foto_perfil,  
-        curp, 
-        rfc
-      FROM postulante WHERE id_postulante = $1`;
+        p.id_postulante, 
+  p.nombre_postulante, 
+  p.apellido_paterno_postulante,
+  p.apellido_materno_postulante, 
+  p.correo_electronico, 
+  p.fecha_nacimiento, 
+  p.sexo, 
+  p.pais,
+  p.estado, 
+  p.ciudad, 
+  p.colonia, 
+  p.calle, 
+  p.codigo_postal,
+  p.telefono, 
+  p.foto_perfil,
+  p.curp, 
+  p.rfc,
+  c.archivo_cv
+FROM postulante p
+LEFT JOIN cv c ON c.id_postulante = p.id_postulante
+WHERE p.id_postulante = $1`;
     } else if (rol === "administrador") {
       query = "SELECT * FROM administrador WHERE id_administrador = $1";
     }
@@ -285,74 +288,86 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
 });
 
 app.put("/mi-perfil", verifyToken, async (req, res) => {
-  try{
+  try {
     const id = req.user.id;
     const rol = req.user.rol;
+    const datos = req.body;
 
-     const {
-      nombre_empresa,
-      correo_electronico,
-      pais,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      telefono,
-      rfc,
-      descripcion,
-      foto_perfil,
-    } = req.body;
-
-     let query = "";
+    let query = "";
     let values = [];
 
-     if (rol === "empleador") {
+    if (rol === "empleador") {
       query = `UPDATE empleador
-        SET nombre_empresa     = $1,
-            correo_electronico = $2,
-            pais               = $3,
-            estado             = $4,
-            ciudad             = $5,
-            colonia            = $6,
-            calle              = $7,
-            codigo_postal      = $8,
-            telefono           = $9,
-            rfc                = $10,
-            descripcion        = $11,
-            foto_perfil        = $12
-        WHERE id_empleador = $13
+        SET nombre_empresa = $1, correo_electronico = $2, pais = $3, estado = $4,
+            ciudad = $5, colonia = $6, calle = $7, codigo_postal = $8,
+            telefono = $9, rfc = $10, descripcion = $11, foto_perfil = $12
+        WHERE id_empleador = $13 RETURNING *`;
+      values = [
+        datos.nombre_empresa, datos.correo_electronico, datos.pais, datos.estado,
+        datos.ciudad, datos.colonia, datos.calle, datos.codigo_postal,
+        datos.telefono, datos.rfc, datos.descripcion, datos.foto_perfil, id
+      ];
+    }
+    else if (rol === "postulante") {
+      // Usamos COALESCE para que si un dato no viene en el body, se quede el que ya estaba en la BD
+      query = `UPDATE postulante
+        SET nombre_postulante = COALESCE($1, nombre_postulante),
+            apellido_paterno_postulante = COALESCE($2, apellido_paterno_postulante),
+            apellido_materno_postulante = COALESCE($3, apellido_materno_postulante),
+            correo_electronico = COALESCE($4, correo_electronico),
+            fecha_nacimiento = COALESCE($5, fecha_nacimiento),
+            sexo = COALESCE($6, sexo),
+            pais = COALESCE($7, pais),
+            estado = COALESCE($8, estado),
+            ciudad = COALESCE($9, ciudad),
+            colonia = COALESCE($10, colonia),
+            calle = COALESCE($11, calle),
+            codigo_postal = COALESCE($12, codigo_postal),
+            telefono = COALESCE($13, telefono),
+            curp = COALESCE($14, curp),
+            rfc = COALESCE($15, rfc),
+            foto_perfil = COALESCE($16, foto_perfil)
+        WHERE id_postulante = $17
         RETURNING *`;
 
       values = [
-        nombre_empresa,
-        correo_electronico,
-        pais,
-        estado,
-        ciudad,
-        colonia,
-        calle,
-        codigo_postal,
-        telefono,
-        rfc,
-        descripcion,
-        foto_perfil,
-        id,
+        datos.nombre_postulante || null,          // $1
+        datos.apellido_paterno_postulante || null, // $2
+        datos.apellido_materno_postulante || null, // $3
+        datos.correo_electronico || null,          // $4
+        datos.fecha_nacimiento || null,            // $5
+        datos.sexo || null,                        // $6
+        datos.pais || null,                        // $7
+        datos.estado || null,                      // $8
+        datos.ciudad || null,                      // $9
+        datos.colonia || null,                     // $10
+        datos.calle || null,                       // $11
+        datos.codigo_postal || null,               // $12
+        datos.telefono || null,                    // $13
+        datos.curp || null,                        // $14
+        datos.rfc || null,                         // $15
+        datos.foto_perfil || null,                 // $16
+        id                                         // $17 (el WHERE)
       ];
+
+      // Si también envías el archivo_cv en esta misma petición, actualizamos la tabla cv
+      if (datos.archivo_cv) {
+        const checkCv = await pool.query("SELECT id_cv FROM cv WHERE id_postulante = $1", [id]);
+        if (checkCv.rows.length > 0) {
+          await pool.query("UPDATE cv SET archivo_cv = $1, ultima_actualizacion = NOW() WHERE id_postulante = $2", [datos.archivo_cv, id]);
+        } else {
+          await pool.query("INSERT INTO cv (id_postulante, archivo_cv, visible_empresas, fecha_subida, ultima_actualizacion) VALUES ($1, $2, true, NOW(), NOW())", [id, datos.archivo_cv]);
+        }
+      }
     }
+
+    if (!query) return res.status(400).json({ error: "Rol no identificado" });
+
     const result = await pool.query(query, values);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    res.json({
-      message: "Perfil actualizado correctamente",
-      perfil: result.rows[0],
-    });
+    res.json({ message: "Perfil actualizado correctamente", perfil: result.rows[0] });
 
   } catch (err) {
-    console.error("Error en PUT /mi-perfil:", err);
+    console.error("Error detallado en el servidor:", err.message);
     res.status(500).json({ error: "Error al actualizar perfil" });
   }
 });
@@ -665,12 +680,12 @@ app.post("/login", async (req, res) => {
       token,
       user
     });
-   
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error en servidor" });
   }
-  
+
 });
 
 
@@ -718,9 +733,9 @@ app.post("/auth/forgot-password", async (req, res) => {
   const { correo_electronico } = req.body;
 
   if (!transporter) {
-  console.log("Email no configurado");
-  return res.json({ message: "Modo desarrollo: email no enviado" });
-}
+    console.log("Email no configurado");
+    return res.json({ message: "Modo desarrollo: email no enviado" });
+  }
 
   const postulante = await pool.query("SELECT * FROM postulante WHERE correo_electronico = $1", [correo_electronico]);
   const empleador = await pool.query("SELECT * FROM empleador WHERE correo_electronico = $1", [correo_electronico]);
@@ -741,10 +756,10 @@ app.post("/auth/forgot-password", async (req, res) => {
   const token = "ahsah612612ahs6126ash"//crypto.randomBytes(32).toString("hex");
   const expires = Date.now() + 1000 * 60 * 15;
 
-/*  await pool.query(
-  "INSERT INTO password_resets (correo_electronico, token, expires, user_type) VALUES ($1, $2, $3, $4)",
-  [correo_electronico, token, expires, userType]
-); */
+  /*  await pool.query(
+    "INSERT INTO password_resets (correo_electronico, token, expires, user_type) VALUES ($1, $2, $3, $4)",
+    [correo_electronico, token, expires, userType]
+  ); */
 
   const resetLink = `http://localhost:4200/reset-password/${token}`
 
@@ -759,11 +774,49 @@ app.post("/auth/forgot-password", async (req, res) => {
     `
   });
 
-  res.json({ message: "Si el correo existe, recibirás instrucciones"})
+  res.json({ message: "Si el correo existe, recibirás instrucciones" })
 
 });
 
+/* ===== ACTUALIZAR CV DEL POSTULANTE  ===== */
+app.put("/mi-perfil/cv", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  try {
+    const { archivo_cv } = req.body;
+    const id = req.user.id;
+
+    if (!archivo_cv || typeof archivo_cv !== "string") {
+      return res.status(400).json({ error: "URL del CV no válida" });
+    }
+
+    const existing = await pool.query(
+      `SELECT id_cv FROM cv WHERE id_postulante = $1`, [id]
+    );
+
+    if (existing.rows.length > 0) {
+      await pool.query(
+        `UPDATE cv 
+         SET archivo_cv = $1, ultima_actualizacion = NOW() 
+         WHERE id_postulante = $2`,
+        [archivo_cv, id]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO cv (id_postulante, archivo_cv, visible_empresas, fecha_subida, ultima_actualizacion)
+         VALUES ($1, $2, true, NOW(), NOW())`,
+        [id, archivo_cv]
+      );
+    }
+
+    res.json({ message: "CV actualizado correctamente", archivo_cv });
+
+  } catch (err) {
+    console.error("Error en PUT /mi-perfil/cv:", err);
+    res.status(500).json({ error: "Error al actualizar CV" });
+  }
+});
 /* ===== INICIAR SERVIDOR ===== */
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor corriendo en http://localhost:3000");
 });
+
+

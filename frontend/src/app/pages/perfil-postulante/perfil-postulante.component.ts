@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 
 interface PostulanteProfile {
-  id_postulante?: string; 
+  id_postulante?: string;
   nombre_postulante: string;
   apellido_paterno_postulante: string;
   apellido_materno_postulante: string;
@@ -15,16 +15,17 @@ interface PostulanteProfile {
   sexo: string;
   pais: string;
   estado: string;
-  ciudad: string; 
-  colonia: string; 
+  ciudad: string;
+  colonia: string;
   calle: string;
-  codigo_postal: string; 
+  codigo_postal: string;
   telefono: string;
   fecha_registro: string;
   estado_cuenta: string;
   curp: string;
   rfc: string;
   foto_perfil?: string;
+  archivo_cv?: string;
 }
 
 interface PostulanteApplication {
@@ -64,16 +65,18 @@ type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'recomendados';
 @Component({
   selector: 'app-perfil-postulante',
   standalone: true,
-  imports: [CommonModule, RouterModule], 
+  imports: [CommonModule, RouterModule],
   templateUrl: './perfil-postulante.component.html',
   styleUrls: ['./perfil-postulante.component.css']
 })
 export class PerfilPostulanteComponent implements OnInit {
-  postulanteId = '';
   perfil: PostulanteProfile | null = null;
   cargando = true;
   error = '';
-  
+  subiendoCv = false;
+  cvMensaje = '';
+  cvError = false;
+
   menuOpen = false;
   notificationsOpen = false;
   hasUnreadNotifications = true;
@@ -89,28 +92,22 @@ export class PerfilPostulanteComponent implements OnInit {
   ];
 
   constructor(
-    private router: Router, 
-    private authApi: AuthService, 
+    private router: Router,
+    private authApi: AuthService,
     private readonly api: ApiService,
-    private readonly themeService: ThemeService 
-  ) {}
+    private readonly themeService: ThemeService
+  ) { }
 
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
     const perfilLocalRaw = localStorage.getItem('perfilPostulante') || sessionStorage.getItem('perfilPostulante');
 
-    if (!usuario) {
-      this.error = 'No hay sesión activa. Inicia sesión para ver tu perfil.';
+    if (!usuario || usuario.rol !== 'postulante') {
+      this.error = 'No tienes permiso para estar aquí.';
       this.cargando = false;
       return;
     }
 
-    if (usuario.rol !== 'postulante') {
-      this.error = 'Esta sección es solo para postulantes.';
-      this.cargando = false;
-      return;
-    }
-    
     if (perfilLocalRaw) {
       this.perfil = JSON.parse(perfilLocalRaw);
     }
@@ -119,24 +116,15 @@ export class PerfilPostulanteComponent implements OnInit {
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
         this.error = '';
-        
-        if (localStorage.getItem('token')) {
-          localStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
-        } else {
-          sessionStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
-        }
-        
+        this.actualizarCache(perfilDb);
         this.cargando = false;
-      }, 
+      },
       error: (err) => {
         this.cargando = false;
-        
         if (err.status === 401) {
-          this.error = "Tu sesión ha expirado o no tienes autorización. Por favor, vuelve a iniciar sesión.";
-        } else {
-          if (!this.perfil) {
-            this.error = "No fue posible cargar tu perfil en este momento. Revisa tu conexión al servidor.";
-          }
+          this.error = "Sesión expirada.";
+        } else if (!this.perfil) {
+          this.error = "Error al conectar con el servidor.";
         }
         console.error("Error al obtener perfil:", err);
       }
@@ -145,86 +133,104 @@ export class PerfilPostulanteComponent implements OnInit {
     this.checkMobile();
   }
 
+  private actualizarCache(datos: any) {
+    const storage = localStorage.getItem('token') ? localStorage : sessionStorage;
+    storage.setItem("perfilPostulante", JSON.stringify(datos));
+  }
+
   get direccionCompleta(): string {
     if (!this.perfil) return '';
     return `${this.perfil.calle || ''}, ${this.perfil.colonia || ''}, ${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}, ${this.perfil.pais || ''}`.replace(/^, | ,|, $/g, '').trim();
   }
 
-  setActiveTab(tabName: ProfileSectionTab) {
-    this.activeTab = tabName;
+  async onCvSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      this.cvError = true;
+      this.cvMensaje = 'Solo se permiten archivos PDF.';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.cvError = true;
+      this.cvMensaje = 'El archivo supera los 5 MB.';
+      return;
+    }
+
+    this.subiendoCv = true;
+    this.cvMensaje = '';
+    this.cvError = false;
+
+    try {
+      const dataForCloudinary = new FormData();
+      dataForCloudinary.append('file', file);
+      dataForCloudinary.append('upload_preset', 'Chambee-cv');
+
+      // Usamos /raw/ para PDFs para evitar errores 401 de acceso
+      const cloudUrl = `https://api.cloudinary.com/v1_1/dqq9oeo4e/raw/upload`;
+      const cloudRes = await fetch(cloudUrl, { method: 'POST', body: dataForCloudinary });
+
+      if (!cloudRes.ok) throw new Error('Error al subir a la nube.');
+
+      const cloudData = await cloudRes.json();
+      const pdfUrl = cloudData.secure_url;
+
+      this.api.actualizarMiPerfil({ archivo_cv: pdfUrl }).subscribe({
+        next: () => {
+          if (this.perfil) {
+            this.perfil.archivo_cv = pdfUrl;
+            this.actualizarCache(this.perfil);
+          }
+          this.cvMensaje = 'C.V. actualizado correctamente.';
+          this.cvError = false;
+          this.subiendoCv = false;
+        },
+        error: (err) => {
+          console.error(err);
+          this.cvError = true;
+          this.cvMensaje = 'Error al guardar en base de datos.';
+          this.subiendoCv = false;
+        }
+      });
+
+    } catch (err: any) {
+      this.cvError = true;
+      this.cvMensaje = err.message || 'Error en la subida.';
+      this.subiendoCv = false;
+    }
   }
 
-  getApplicationStateClass(estado: PostulanteApplication['estado']): string {
-    if (estado === 'Nueva') return 'app-new';
-    if (estado === 'En revision') return 'app-review';
-    if (estado === 'Entrevista') return 'app-interview';
-    return 'app-discarded';
-  }
-
-  getJobStateClass(estado: PostulanteFavorites['estado']): string {
-    if (estado === 'Activa') return 'state-active';
-    if (estado === 'Pausada') return 'state-paused';
-    return 'state-closed';
-  }
-
+  // --- Métodos de Interfaz ---
+  setActiveTab(tabName: ProfileSectionTab) { this.activeTab = tabName; }
   toggleNotifications(event?: Event) {
     if (event) event.stopPropagation();
     this.notificationsOpen = !this.notificationsOpen;
-    
     if (this.notificationsOpen) {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
     }
     this.menuOpen = false;
   }
-
   toggleMenu(event?: Event) {
     if (event) event.stopPropagation();
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
-
-  @HostListener('document:click')
-  onDocumentClick() {
-    if (this.notificationsOpen) this.notificationsOpen = false;
-    if (this.menuOpen && !this.isMobile) this.menuOpen = false;
+  @HostListener('document:click') onDocumentClick() {
+    this.notificationsOpen = false;
+    if (!this.isMobile) this.menuOpen = false;
   }
-
-  @HostListener('window:resize')
-  onResize() {
-    this.checkMobile();
-  }
-
-  private checkMobile() {
-    try {
-      this.isMobile = window.innerWidth <= 768;
-    } catch {
-      this.isMobile = false;
-    }
-  }
-
-  toggleTheme() {
-    this.themeService.toggleTheme();
-  }
-
-  get isDarkMode(): boolean {
-    return this.themeService.isDarkMode();
-  }
-
-  volverPanel() {
-    this.router.navigate(['/inicio-postulante']);
-  }
-
-  editarPerfil() {
-    this.router.navigate(['/perfil-postulante/editar']);
-  }
-
-  buscarEmpleos() {
-    this.router.navigate(['/buscar-empleos']);
-  }
-
-  logout() {
-    this.authApi.logout();
-    this.menuOpen = false;
-  }
+  @HostListener('window:resize') onResize() { this.checkMobile(); }
+  private checkMobile() { this.isMobile = window.innerWidth <= 768; }
+  toggleTheme() { this.themeService.toggleTheme(); }
+  get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
+  volverPanel() { this.router.navigate(['/inicio-postulante']); }
+  editarPerfil() { this.router.navigate(['/perfil-postulante/editar']); }
+  buscarEmpleos() { this.router.navigate(['/buscar-empleos']); }
+  logout() { this.authApi.logout(); }
 }
