@@ -1,5 +1,4 @@
 <nav class="navbar-chambee position-relative px-4">
-  
   <div class="d-flex align-items-center ms-2 logo-wrapper" routerLink="/" style="cursor: pointer;">
     <div class="d-flex align-items-center gap-2">
       <img src="assets/LogoChambee.png" alt="Chambee" height="40" style="object-fit: contain;">
@@ -37,7 +36,8 @@
 <div class="main-wrapper pb-5">
   <div class="container mt-4">
     
-    <div class="row g-4">
+    <form [formGroup]="servicioForm" (ngSubmit)="publicar()" class="row g-4 m-0">
+      
       <div class="col-md-8">
         <div class="card card-chambee p-4 p-md-5">
           <div class="d-flex align-items-center gap-3 mb-4 header-section-title">
@@ -50,15 +50,16 @@
           <div class="row">
             <div class="col-md-6 mb-4">
               <label class="form-label font-weight-bold">Nombre del servicio que necesitas</label>
-              <input type="text" class="form-control chambee-input" placeholder="Ej. Reparación de fuga de agua">
+              <input type="text" formControlName="title" class="form-control chambee-input" placeholder="Ej. Reparación de fuga de agua">
+              <small class="text-danger" *ngIf="servicioForm.get('title')?.invalid && servicioForm.get('title')?.touched">Requerido</small>
             </div>
             <div class="col-md-6 mb-4">
               <label class="form-label font-weight-bold">Categoría de oficio</label>
-              <select class="form-select chambee-input">
-                <option>Plomería</option>
-                <option>Electricidad</option>
-                <option>Carpintería</option>
-                <option>Limpieza</option>
+              <select formControlName="categoria" class="form-select chambee-input">
+                <option value="Plomería">Plomería</option>
+                <option value="Electricidad">Electricidad</option>
+                <option value="Carpintería">Carpintería</option>
+                <option value="Limpieza">Limpieza</option>
               </select>
             </div>
           </div>
@@ -66,12 +67,12 @@
           <div class="row">
             <div class="col-md-6 mb-4">
               <label class="form-label font-weight-bold">Presupuesto estimado (MXN)</label>
-              <input type="number" class="form-control chambee-input" placeholder="$ 500">
+              <input type="number" formControlName="presupuesto" class="form-control chambee-input" placeholder="$ 500">
             </div>
             <div class="col-md-6 mb-4">
                <label class="form-label font-weight-bold">Ubicación del trabajo</label>
                <div class="input-group overflow-hidden rounded-3 form-group-location">
-                  <input type="text" class="form-control border-0 bg-transparent py-3 text-input-location" placeholder="San Miguel de Allende, Gto">
+                  <input type="text" formControlName="ubicacion" class="form-control border-0 bg-transparent py-3 text-input-location" placeholder="San Miguel de Allende, Gto">
                   <span class="input-group-text border-0 bg-transparent icon-location"><i class="bi bi-geo-alt-fill"></i></span>
                </div>
             </div>
@@ -79,7 +80,8 @@
 
           <div class="mt-2">
             <label class="form-label font-weight-bold">Descripción detallada de lo que solicitas</label>
-            <textarea class="form-control chambee-input" rows="8" placeholder="Describe el problema, qué necesitas que hagan y cualquier detalle importante..."></textarea>
+            <textarea formControlName="description" class="form-control chambee-input" rows="8" placeholder="Describe el problema, qué necesitas que hagan y cualquier detalle importante..."></textarea>
+            <small class="text-danger" *ngIf="servicioForm.get('description')?.invalid && servicioForm.get('description')?.touched">Requerido</small>
           </div>
         </div>
       </div>
@@ -105,15 +107,17 @@
           <input type="text" class="form-control chambee-input p-2" placeholder="Añadir etiqueta...">
         </div>
       </div>
-    </div>
 
-    <div class="d-flex justify-content-center gap-3 mt-5">
-      <button class="btn btn-secondary rounded-pill px-5 py-3 fw-bold border-0 shadow-sm btn-cancel-custom" routerLink="/home-user">
-        Cancelar
-      </button>
-      <button class="btn btn-warning rounded-pill px-5 py-3 fw-bold shadow-sm text-dark btn-publish-custom">
-        Publicar Solicitud
-      </button>
-    </div>
+      <div class="col-12 d-flex justify-content-center gap-3 mt-5">
+        <button type="button" class="btn btn-secondary rounded-pill px-5 py-3 fw-bold border-0 shadow-sm btn-cancel-custom" routerLink="/home-user">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-warning rounded-pill px-5 py-3 fw-bold shadow-sm text-dark btn-publish-custom">
+          Publicar Servicio
+        </button>
+      </div>
+      
+    </form>
+    
   </div>
 </div>

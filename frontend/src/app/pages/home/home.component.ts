@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { ServiciosService, Service } from '../../services/servicios.service';
 
 
 // Estructura de cada tarjeta del carrusel principal.
@@ -33,11 +34,7 @@ interface Job {
 }
 
 // Estructura de cada servicio mostrado en desktop y en la burbuja movil.
-interface Service {
-  title: string;
-  description: string;
-  img: string;
-}
+
 
 @Component({
   selector: 'app-home',
@@ -53,7 +50,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly themeService: ThemeService,
     private http: HttpClient,
     private api: ApiService,
-    private readonly authApi: AuthService
+    private readonly authApi: AuthService,
+    private serviciosService: ServiciosService
   ) {}
 
   servicesOpen = false;
@@ -79,6 +77,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   jobs: Job[] = [];
 
   ngOnInit() {
+
+    this.serviciosService.servicios$.subscribe((servicios: Service[]) => {
+      this.services = servicios;
+    });
+    
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
     this.checkMobile();
 
@@ -93,6 +96,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.router.navigate(['/home-user'])
       }
     }
+    
 
     // Cargar ofertas públicas en lugar de datos hardcodeados
     this.api.obtenerAnunciosPublicos().subscribe({

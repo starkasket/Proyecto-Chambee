@@ -6,6 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { ServiciosService, Service } from '../../services/servicios.service';
 
 // Interfaces para estructurar los datos
 interface Slide {
@@ -32,11 +33,7 @@ interface Job {
   applicants: number;
 }
 
-interface Service {
-  title: string;
-  description: string;
-  img: string;
-}
+
 
 // NUEVA INTERFAZ PARA NOTIFICACIONES
 interface NotificationItem {
@@ -86,7 +83,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     private readonly themeService: ThemeService,
     private readonly http: HttpClient,
     private readonly api: ApiService,
-    private readonly authApi: AuthService
+    private readonly authApi: AuthService,
+    private serviciosService: ServiciosService
   ) {}
 
   slides: Slide[] = [];
@@ -103,6 +101,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   jobs: Job[] = [];
 
   ngOnInit() {
+    this.serviciosService.servicios$.subscribe((servicios: Service[]) => {
+      this.services = servicios;
+    });
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
