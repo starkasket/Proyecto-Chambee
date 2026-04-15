@@ -161,7 +161,7 @@
 
           <label class="field">
             <span>Fecha de nacimiento</span>
-            <input type="date" formControlName="fecha_nacimiento" />
+            <input readonly type="date" formControlName="fecha_nacimiento" />
             <small *ngIf="campoInvalido('fecha_nacimiento')">Selecciona tu fecha de nacimiento.</small>
           </label>
 
@@ -195,7 +195,7 @@
 
           <label class="field">
             <span>Teléfono</span>
-            <input type="text" formControlName="telefono" placeholder="Ej. 4151234567" />
+            <input type="text" formControlName="telefono" placeholder="Ej. 4151234567" pattern="^[0-9]{10}$" maxlength="10"/>
             <small *ngIf="campoInvalido('telefono')">Ingresa un teléfono de contacto.</small>
           </label>
         </div>
