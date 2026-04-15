@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { ApiService } from '../../services/api.service';
+import { RouterModule, Router } from '@angular/router';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-crear-servicio',
@@ -10,26 +10,23 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './crear-servicio.component.html',
   styleUrl: './crear-servicio.component.css'
 })
-export class CrearServicioComponent implements OnInit {
+export class CrearServicioComponent {
+  
+  // Inyección de dependencias para el router y el tema oscuro
+  private themeService = inject(ThemeService);
+  private router = inject(Router);
 
-  foto_perfil: string = '';
+  // --- LÓGICA DEL TEMA OSCURO ---
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
 
-  constructor(
-    private readonly api: ApiService
-  ) { }
-  ngOnInit(): void {
-    const usuario = this.api.getUsuario();
-    if (usuario?.id) {
-      this.api.getMiPerfil().subscribe({
-        next: (perfil: any) => {
-          this.foto_perfil = perfil?.foto_perfil || '';
-        },
-        error: () => {
-          console.log("Error al cargar la foto de perfil.");
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
 
-        }
-      })
-    }
-
+  // --- NAVEGACIÓN ---
+  irAlPerfil() {
+    this.router.navigate(['/perfil-postulante']);
   }
 }
