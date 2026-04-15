@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 export class ApiService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   //Empleador
   registrarEmpleador(datos: any): Observable<any> {
@@ -43,7 +43,7 @@ export class ApiService {
       }
     });
   }
-  
+
   actualizarMiPerfil(datos: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/mi-perfil`, datos, {
       headers: {
@@ -83,5 +83,13 @@ export class ApiService {
   // Buscar por codigo postal
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');
+  }
+  // actualizar cv
+  actualizarCv(archivoUrl: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/mi-perfil/cv`, { archivo_cv: archivoUrl }, {
+      headers: {
+        Authorization: 'Bearer ' + this.authService.getToken()
+      }
+    });
   }
 }
