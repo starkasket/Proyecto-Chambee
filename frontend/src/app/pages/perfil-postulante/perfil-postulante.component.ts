@@ -276,7 +276,6 @@ export class PerfilPostulanteComponent implements OnInit {
       const pdfUrl: string = cloudData.secure_url;
 
       // 2. Guardar la URL en la base de datos
-      // Usamos el servicio que ya tienes inyectado (asegúrate si es 'api' o 'apiService')
       this.api.actualizarMiPerfil({ archivo_cv: pdfUrl }).subscribe({
         next: () => {
           if (this.perfil) this.perfil.archivo_cv = pdfUrl;

@@ -20,7 +20,7 @@ services:
       - ./backend:/app
     ports:
       - "3000:3000"
-    command: sh -c "npm install && npx nodemon --legacy-watch server.js"
+    command: sh -c "npm install && node server.js"
     depends_on:
       db:
         condition: service_healthy
