@@ -3,6 +3,7 @@ import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'; // <-- Añadido RouterModule
 import { JobCardComponent } from '../../components/job-card/job-card.component';
 import { ThemeService } from '../../services/theme.service'; // <-- Añadido ThemeService
+import { ApiService } from '../../services/api.service';
 import * as L from 'leaflet';
 
 @Component({
@@ -14,6 +15,8 @@ import * as L from 'leaflet';
 })
 export class JobDetailComponent implements OnInit {
   
+  foto_perfil: string = '';
+
   jobId: string | null = null;
   jobData: any = null; 
   relatedJobs: any[] = [];
@@ -26,6 +29,7 @@ export class JobDetailComponent implements OnInit {
   private location = inject(Location); 
   private platformId = inject(PLATFORM_ID);
   private themeService = inject(ThemeService); // <-- Inyectamos el servicio
+  private api = inject(ApiService);
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -34,6 +38,20 @@ export class JobDetailComponent implements OnInit {
       this.mostrarMapa = false;
     });
     this.cargarTrabajosRelacionados();
+
+    const usuario = this.api.getUsuario();
+
+    if (usuario?.id) {
+      this.api.getMiPerfil().subscribe({
+        next: (perfil: any) => {
+          this.foto_perfil = perfil?.foto_perfil || '';
+        },
+        error: (err) => {
+          console.log("No se pudo cargar la foto de perfil:",  err);
+          
+        }
+      })
+    }
   }
 
   // --- LÓGICA DE LA NAVBAR ---
@@ -106,21 +124,65 @@ export class JobDetailComponent implements OnInit {
   } 
 
   cargarDetalles(id: string | null) {
-    console.log('Cargando datos reales para el ID:', id);
-    
-    this.jobData = {
-      id: id,
-      companyName: id === '1001' ? 'Lucky Ghost' : 'Chambee Tech', 
-      companyLogo: 'assets/LogoChambee.png', 
-      companyDesc: 'Somos una empresa líder enfocada en el crecimiento profesional y el desarrollo tecnológico.',
-      title: id === '1001' ? 'Asesor de Ventas' : 'Backend Developer',
-      edad: 'Mayor de 18 años.',
-      escolaridad: 'Secundaria terminada / Universidad trunca.',
-      experiencia: 'Mínimo 6 meses en puestos similares.',
-      disponibilidad: 'Flexibilidad para rotar turnos.',
-      higiene: 'Compromiso total con las normas de la empresa.',
-      vistas: Math.floor(Math.random() * 1000) 
-    };
+    if (!id) {
+      this.jobData = null;
+      return;
+    }
+
+    this.api.obtenerAnunciosPublicos().subscribe({
+      next: (anuncios) => {
+        const anuncio = anuncios.find((item) => String(item.id_anuncio) === String(id));
+
+        if (!anuncio) {
+          this.jobData = {
+            id,
+            companyName: 'Oferta no encontrada',
+            companyLogo: 'assets/LogoChambee.png',
+            companyDesc: 'La vacante que buscas ya no está disponible o fue removida.',
+            title: 'Vacante no disponible',
+            urgency: 'Normal',
+            edad: 'Sin especificar.',
+            escolaridad: 'Sin especificar.',
+            experiencia: 'Sin especificar.',
+            disponibilidad: 'Sujeta a la oferta publicada.',
+            higiene: 'Según lineamientos de la empresa.',
+            vistas: 0
+          };
+          return;
+        }
+
+        this.jobData = {
+          id: anuncio.id_anuncio,
+          companyName: anuncio.nombre_empresa || 'Empresa',
+          companyLogo: 'assets/LogoChambee.png',
+          companyDesc: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
+          title: anuncio.titulo,
+          urgency: anuncio.urgencia || 'Normal',
+          edad: anuncio.edad || 'Sin especificar.',
+          escolaridad: anuncio.educacion || 'Sin especificar.',
+          experiencia: 'Consulta la descripción del anuncio para conocer la experiencia requerida.',
+          disponibilidad: anuncio.modalidad || 'Según la vacante publicada.',
+          higiene: anuncio.descripcion || 'Consulta la publicación para conocer más detalles.',
+          vistas: anuncio.vistas || 0
+        };
+      },
+      error: () => {
+        this.jobData = {
+          id,
+          companyName: 'Empresa',
+          companyLogo: 'assets/LogoChambee.png',
+          companyDesc: 'No fue posible cargar los detalles de la vacante.',
+          title: 'Vacante',
+          urgency: 'Normal',
+          edad: 'Sin especificar.',
+          escolaridad: 'Sin especificar.',
+          experiencia: 'Sin especificar.',
+          disponibilidad: 'Sin especificar.',
+          higiene: 'Sin especificar.',
+          vistas: 0
+        };
+      }
+    });
   }
 
   cargarTrabajosRelacionados() {

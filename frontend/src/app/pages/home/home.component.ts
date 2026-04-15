@@ -16,6 +16,7 @@ interface Slide {
   salary: string;
   location: string;
   mode: string;
+  urgency?: string;
   description: string;
   img: string;
 }
@@ -26,6 +27,7 @@ interface Job {
   title: string;
   salary: string;
   img: string;
+  urgency?: string;
   rating: string;
   applicants: number;
 }
@@ -58,52 +60,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   menuOpen = false;
   currentSlide = 0;
   visibleCount = 8;
-  maxVisible = 52;
+  maxVisible = 8;
   isMobile = false;
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
-  slides: Slide[] = [
-    {
-      company: 'Lucky Ghost',
-      companyDescription: 'Tienda de ropa con identidad visual fuerte y enfoque en streetwear.',
-      title: 'Asesor de Ventas',
-      salary: '$12,500 MXN',
-      location: 'Ciudad de Mexico',
-      mode: 'Presencial',
-      description: 'Atencion a clientes, acomodo de prendas y apoyo general en tienda.',
-      img: this.createLuckyGhostImage()
-    },
-    {
-      company: 'Chambee Tech',
-      companyDescription: 'Area especializada en APIs, datos y plataformas escalables.',
-      title: 'Backend Developer',
-      salary: '$25,000 MXN',
-      location: 'Guadalajara',
-      mode: 'Hibrido',
-      description: 'Desarrollo con Node.js y PostgreSQL.',
-      img: 'https://picsum.photos/900/320?random=32'
-    },
-    {
-      company: 'Chambee Creative',
-      companyDescription: 'Estudio interno para experiencias de producto y marca.',
-      title: 'UI/UX Designer',
-      salary: '$18,000 MXN',
-      location: 'Monterrey',
-      mode: 'Presencial',
-      description: 'Disena experiencias modernas.',
-      img: 'https://picsum.photos/900/320?random=33'
-    }
-  ];
-
-  private createLuckyGhostImage(): string {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320">
-        <rect width="900" height="320" fill="#efe9dd"/>
-      </svg>
-    `;
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-  }
+  slides: Slide[] = [];
 
   services: Service[] = [
     { title: 'Servicio 1', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?1' },
@@ -114,11 +76,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     { title: 'Servicio 6', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?6' }
   ];
 
-  // Datos de ejemplo para los empleos mostrados en el grid. Estos serán reemplazados por datos de la API.
-  jobs: Job[] = [
-    { company: 'AT&T Mexico', title: 'Ejecutivo de Ventas', salary: '$13,000 MXN', img: 'https://picsum.photos/300/150', rating: '4.2', applicants: 9 },
-    { company: 'Google', title: 'Frontend Developer', salary: '$25,000 MXN', img: 'https://picsum.photos/301/150', rating: '4.8', applicants: 12 }
-  ];
+  jobs: Job[] = [];
 
   ngOnInit() {
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
@@ -140,21 +98,39 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.api.obtenerAnunciosPublicos().subscribe({
       next: (anuncios: any[]) => {
         if (anuncios && anuncios.length > 0) {
+          this.slides = anuncios.slice(0, Math.min(5, anuncios.length)).map((anuncio, index) => ({
+            company: anuncio.nombre_empresa || 'Empresa',
+            companyDescription: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
+            title: anuncio.titulo || 'Posición disponible',
+            salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
+            location: `${anuncio.ciudad || 'Ciudad'}, ${anuncio.estado || 'Estado'}`,
+            mode: anuncio.modalidad || 'Modalidad',
+            urgency: anuncio.urgencia || 'Normal',
+            description: anuncio.descripcion || 'Vacante publicada recientemente.',
+            img: `https://picsum.photos/900/320?random=${index + 200}`
+          }));
+
           this.jobs = anuncios.map((anuncio, index) => ({
             company: anuncio.nombre_empresa || 'Empresa',
             title: anuncio.titulo || 'Posición disponible',
             salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
             img: `https://picsum.photos/300/150?random=${index + 100}`,
+            urgency: anuncio.urgencia || 'Normal',
             rating: '4.5',
             applicants: Math.floor(Math.random() * 15)
           }));
         }
 
-        this.fillJobsToMax();
+        this.maxVisible = Math.max(8, this.jobs.length);
+        this.visibleCount = Math.min(8, this.maxVisible);
       },
       error: (err) => {
         console.error('Error al cargar anuncios públicos:', err);
-        this.fillJobsToMax();
+        this.slides = [];
+        this.jobs = [];
+        this.currentSlide = 0;
+        this.maxVisible = 8;
+        this.visibleCount = 8;
       }
     });
   }
@@ -195,30 +171,20 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   checkMobile() { this.isMobile = window.innerWidth <= 768; }
 
-  
-  fillJobsToMax() {
-    const baseJobs = [...this.jobs];
-    let index = 0;
+  showMoreJobs() { this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible); }
 
-    while (this.jobs.length < this.maxVisible) {
-      const baseJob = baseJobs[index % baseJobs.length];
-      const imageSeed = this.jobs.length + 1;
-
-      this.jobs.push({
-        ...baseJob,
-        company: `${baseJob.company} ${this.jobs.length + 1}`,
-        img: `https://picsum.photos/300/150?random=${imageSeed}`
-      });
-
-      index++;
-    }
+  nextSlide() {
+    if (!this.slides.length) return;
+    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
   }
-
-  showMoreJobs() { this.visibleCount += 8; }
-
-  nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.slides.length; }
-  prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length; }
-  goToSlide(i: number) { this.currentSlide = i; }
+  prevSlide() {
+    if (!this.slides.length) return;
+    this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+  }
+  goToSlide(i: number) {
+    if (!this.slides.length) return;
+    this.currentSlide = i;
+  }
 
   faqOpen: number | null = null;
   toggleFaq(i: number) { this.faqOpen = this.faqOpen === i ? null : i; }

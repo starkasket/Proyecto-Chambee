@@ -19,7 +19,9 @@
         </div>
 
         <button class="btn-profile" (click)="irAlPerfil()">
-            <i class="bi bi-person-circle fs-5"></i>
+            <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+                style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+            <i *ngIf="!foto_perfil"  class="bi bi-person-circle fs-5"></i>
             <span>Mi Perfil</span>
         </button>
 
@@ -66,7 +68,10 @@
 
             <div class="job-col">
                 <div class="job-header">
-                    <h2>{{ jobData.title }}</h2>
+                    <div class="job-title-block">
+                        <span class="job-urgency-badge" *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
+                        <h2>{{ jobData.title }}</h2>
+                    </div>
                     <i class="bi bi-bookmark fs-3" style="cursor: pointer;"></i>
                 </div>
 

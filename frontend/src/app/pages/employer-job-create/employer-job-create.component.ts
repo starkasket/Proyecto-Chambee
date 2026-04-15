@@ -10,6 +10,9 @@ interface EmployerJobFormValue {
   titulo: string;
   descripcion: string;
   tipo_anuncio: string;
+  urgencia: string;
+  edad: string;
+  educacion: string;
   estado: string;
   ciudad: string;
   colonia: string;
@@ -51,11 +54,40 @@ export class EmployerJobCreateComponent implements OnInit {
     { id: 2, title: 'Perfil actualizado', message: 'Tu empresa ya puede publicar nuevas ofertas.', time: 'Hace 1 hora', read: true }
   ];
 
+  readonly opcionesEdad = [
+    'Sin especificar',
+    '18+',
+    '18 a 25 años',
+    '26 a 35 años',
+    '36 a 45 años',
+    '46+'
+  ];
+
+  readonly opcionesEducacion = [
+    'Sin especificar',
+    'Secundaria',
+    'Preparatoria',
+    'Tecnico',
+    'Universidad trunca',
+    'Licenciatura',
+    'Ingenieria',
+    'Maestria'
+  ];
+
+  readonly opcionesUrgencia = [
+    'Normal',
+    'Urgente',
+    'Muy urgente'
+  ];
+
   // Los campos siguen la estructura real de la tabla `anuncios`.
   readonly ofertaForm = this.fb.group({
     titulo: ['', [Validators.required, Validators.maxLength(160)]],
-    descripcion: ['', [Validators.required, Validators.maxLength(600)]],
+    descripcion: ['', [Validators.required, Validators.maxLength(400)]],
     tipo_anuncio: ['Empleo', [Validators.required]],
+    urgencia: ['Normal', [Validators.required, Validators.maxLength(30)]],
+    edad: ['Sin especificar', [Validators.maxLength(60)]],
+    educacion: ['Sin especificar', [Validators.maxLength(80)]],
     estado: ['', [Validators.required, Validators.maxLength(100)]],
     ciudad: ['', [Validators.required, Validators.maxLength(100)]],
     colonia: ['', [Validators.required, Validators.maxLength(100)]],
@@ -149,6 +181,9 @@ export class EmployerJobCreateComponent implements OnInit {
           titulo: '',
           descripcion: '',
           tipo_anuncio: 'Empleo',
+          urgencia: 'Normal',
+          edad: 'Sin especificar',
+          educacion: 'Sin especificar',
           estado: payload.estado,
           ciudad: payload.ciudad,
           colonia: payload.colonia,
@@ -158,9 +193,9 @@ export class EmployerJobCreateComponent implements OnInit {
           modalidad: 'Presencial'
         });
       },
-      error: () => {
+      error: (err) => {
         this.guardando = false;
-        this.error = 'No fue posible crear la oferta laboral.';
+        this.error = err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.';
       }
     });
   }

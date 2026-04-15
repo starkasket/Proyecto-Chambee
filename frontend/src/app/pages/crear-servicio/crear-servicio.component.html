@@ -20,7 +20,9 @@
     
     <button class="btn d-flex align-items-center gap-2 bg-white text-dark shadow-sm border-0 mx-1" 
             style="border-radius: 25px; padding: 4px 15px; font-weight: 700; font-size: 14px;">
-      <i class="bi bi-person-circle fs-4"></i>
+     <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+            <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-4"></i>
       <span class="d-none d-xl-block">Mi Perfil</span>
     </button>
 

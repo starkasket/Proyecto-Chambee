@@ -43,6 +43,10 @@ export const routes: Routes = [
     component: ResetPasswordComponent
   },
   {
+    path: 'reset-password/:token',
+    component: ResetPasswordComponent
+  },
+  {
     path: 'job-preferences',
     component: JobPreferencesComponent
   },

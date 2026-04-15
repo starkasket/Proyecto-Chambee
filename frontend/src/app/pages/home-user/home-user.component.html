@@ -50,7 +50,9 @@
       style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
       (click)="irAlPerfil()"
       title="Ir a mi perfil">
-      <i class="bi bi-person-circle fs-5"></i>
+       <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
       <span class="d-none d-md-block">Mi Perfil</span>
     </button>
 
@@ -101,7 +103,7 @@
     
     <h2 class="mb-4" style="font-weight: 700; color: var(--text-color);">Recomendado para ti</h2>
 
-    <div class="carousel">
+    <div class="carousel" *ngIf="slides.length; else noFeaturedJobs">
       <div class="carousel-container">
         <div class="carousel-slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
          <div class="featured-card featured-clickable" (click)="openFeaturedJob(slide.id)" role="button" tabindex="0">
@@ -128,6 +130,7 @@
 
             <div class="featured-content">
               <div class="featured-meta">
+                <span class="featured-chip urgency-chip" *ngIf="slide.urgency">{{ slide.urgency }}</span>
                 <span class="featured-chip">{{ slide.company }}</span>
                 <span class="featured-chip">{{ slide.mode }}</span>
                 <span class="featured-chip">{{ slide.location }}</span>
@@ -147,10 +150,17 @@
       </div>
     </div>
 
-    <div class="jobs-grid mt-5">
+    <ng-template #noFeaturedJobs>
+      <div class="empty-jobs-state">
+        Aun no hay ofertas publicadas.
+      </div>
+    </ng-template>
+
+    <div class="jobs-grid mt-5" *ngIf="jobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button" tabindex="0">
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
+          <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4>{{ job.company }}</h4>
           <p>{{ job.title }}</p>
           <p class="salary">{{ job.salary }}</p>
@@ -158,6 +168,12 @@
         </div>
       </div>
     </div>
+
+    <ng-template #noJobsGrid>
+      <div class="empty-jobs-state">
+        Las nuevas vacantes apareceran aqui en cuanto se publiquen.
+      </div>
+    </ng-template>
 
     <div class="jobs-more" *ngIf="visibleCount < maxVisible">
       <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>

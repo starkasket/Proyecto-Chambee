@@ -4,6 +4,7 @@ const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
+const crypto = require("crypto");
 
 const nodemailer = require("nodemailer");
 
@@ -466,6 +467,9 @@ app.get("/empleadores/:id/anuncios", async (req, res) => {
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -494,6 +498,9 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
     titulo,
     descripcion,
     tipo_anuncio,
+    urgencia = 'Normal',
+    edad = 'Sin especificar',
+    educacion = 'Sin especificar',
     estado,
     ciudad,
     colonia,
@@ -510,6 +517,9 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -521,12 +531,15 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       id_empleador,
       vistas
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,0)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,0)
     RETURNING
       id_anuncio,
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -542,6 +555,9 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
       titulo,
       descripcion,
       tipo_anuncio,
+      urgencia,
+      edad,
+      educacion,
       estado,
       ciudad,
       colonia,
@@ -561,7 +577,10 @@ app.post("/empleadores/:id/anuncios", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al crear la oferta laboral" });
+    res.status(500).json({
+      error: "Error al crear la oferta laboral",
+      detail: err.message,
+    });
   }
 });
 
@@ -573,6 +592,9 @@ app.get("/anuncios", async (_req, res) => {
       a.titulo,
       a.descripcion,
       a.tipo_anuncio,
+      a.urgencia,
+      a.edad,
+      a.educacion,
       a.estado,
       a.ciudad,
       a.colonia,
@@ -732,13 +754,21 @@ app.post("/auth/forgot-password", async (req, res) => {
     return res.json({ message: "Si el correo existe, recibirás instrucciones" })
   }
 
-  const token = "ahsah612612ahs6126ash"//crypto.randomBytes(32).toString("hex");
+  const token = crypto.randomBytes(32).toString("hex");
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
   const expires = Date.now() + 1000 * 60 * 15;
 
-  /*  await pool.query(
+
+  await pool.query(
+    "DELETE FROM password_resets WHERE correo_electronico = $1",
+    [correo_electronico]
+  );
+
+  await pool.query(
     "INSERT INTO password_resets (correo_electronico, token, expires, user_type) VALUES ($1, $2, $3, $4)",
-    [correo_electronico, token, expires, userType]
-  ); */
+    [correo_electronico, hashedToken, expires, userType]
+  );
 
   const resetLink = `http://localhost:4200/reset-password/${token}`
 
@@ -756,6 +786,93 @@ app.post("/auth/forgot-password", async (req, res) => {
   res.json({ message: "Si el correo existe, recibirás instrucciones" })
 
 });
+
+
+app.post("/auth/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Datos incompletos" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const result = await pool.query(
+      "Select * from password_resets WHERE token = $1", [hashedToken]
+    );
+
+    if (!result.rows.length) {
+      return res.status(400).json({ error: "Token inválido" });
+    }
+
+    const resetData = result.rows[0];
+
+    if (Date.now() > resetData.expires) {
+      return res.status(400).json({ error: "Token expirado" });
+    }
+
+    const { correo_electronico, user_type } = resetData;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    let table = "";
+
+    if (user_type === "postulante") table = "postulante";
+    if (user_type === "empleador") table = "empleador";
+    if (user_type === "admin") table = "administrador";
+
+    if (!table) {
+      return res.status(400).json({ error: "Tipo de usuario inválido" });
+    }
+
+    await pool.query(
+      `UPDATE ${table} SET contrasena = $1 WHERE correo_electronico = $2`,
+      [hashedPassword, correo_electronico]
+    );
+
+
+    await pool.query(
+      "DELETE FROM password_resets WHERE token = $1",
+      [hashedToken]
+    );
+    res.json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("ERROR EN RESET PASSWORD:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+})
+
+
+app.get("/auth/validate-reset-token/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const result = await pool.query(
+      "SELECT * FROM password_resets WHERE token = $1",
+      [hashedToken]
+    );
+
+    if (!result.rows.length) {
+      return res.status(400).json({ valid: false });
+    }
+
+    const resetData = result.rows[0];
+
+    if (Date.now() > resetData.expires) {
+      return res.status(400).json({ valid: false });
+    }
+
+    res.json({ valid: true });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ valid: false });
+  }
+});
+
 
 /* ===== ACTUALIZAR CV DEL POSTULANTE  ===== */
 app.put("/mi-perfil/cv", verifyToken, authorizeRoles("postulante"), async (req, res) => {

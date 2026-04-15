@@ -66,7 +66,7 @@
 <div class="container main-layout">
   <div class="left">
     <!-- Carrusel principal de anuncios destacados. -->
-    <div class="carousel">
+    <div class="carousel" *ngIf="slides.length; else noFeaturedJobs">
       <div class="carousel-container">
         <div class="carousel-slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
           <!-- Tarjeta destacada clickeable. -->
@@ -95,6 +95,7 @@
             <!-- Parte inferior con la informacion del empleo destacado. -->
             <div class="featured-content">
               <div class="featured-meta">
+                <span class="featured-chip urgency-chip" *ngIf="slide.urgency">{{ slide.urgency }}</span>
                 <span class="featured-chip">{{ slide.company }}</span>
                 <span class="featured-chip">{{ slide.mode }}</span>
                 <span class="featured-chip">{{ slide.location }}</span>
@@ -116,11 +117,18 @@
       </div>
     </div>
 
+    <ng-template #noFeaturedJobs>
+      <div class="empty-jobs-state">
+        Aun no hay ofertas publicadas.
+      </div>
+    </ng-template>
+
     <!-- Grid principal de empleos. -->
-    <div class="jobs-grid">
+    <div class="jobs-grid" *ngIf="jobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob()" role="button" tabindex="0">
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
+          <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4>{{ job.company }}</h4>
           <p>{{ job.title }}</p>
           <p class="salary">{{ job.salary }}</p>
@@ -128,6 +136,12 @@
         </div>
       </div>
     </div>
+
+    <ng-template #noJobsGrid>
+      <div class="empty-jobs-state">
+        Las nuevas vacantes apareceran aqui en cuanto se publiquen.
+      </div>
+    </ng-template>
 
     <!-- Boton para cargar mas empleos. -->
     <div class="jobs-more" *ngIf="visibleCount < maxVisible">
