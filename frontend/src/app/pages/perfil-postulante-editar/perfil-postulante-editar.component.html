@@ -159,7 +159,7 @@
             <small *ngIf="campoInvalido('apellido_materno_postulante')">Ingresa tu apellido materno.</small>
           </label>
 
-          <label class="field">
+          <label class="field field-locked">
             <span>Fecha de nacimiento</span>
             <input readonly type="date" formControlName="fecha_nacimiento" />
             <small *ngIf="campoInvalido('fecha_nacimiento')">Selecciona tu fecha de nacimiento.</small>
@@ -210,39 +210,39 @@
         </div>
 
         <div class="form-grid">
-          <label class="field">
+          <label class="field field-locked">
             <span>País</span>
-            <input type="text" formControlName="pais" placeholder="Ej. México" />
+            <input type="text" formControlName="pais" placeholder="Ej. México" readonly />
             <small *ngIf="campoInvalido('pais')">Ingresa tu país.</small>
           </label>
 
-          <label class="field">
+          <label class="field field-locked">
             <span>Estado</span>
-            <input type="text" formControlName="estado" placeholder="Ej. Guanajuato" />
+            <input type="text" formControlName="estado" placeholder="Ej. Guanajuato" readonly />
             <small *ngIf="campoInvalido('estado')">Ingresa tu estado.</small>
           </label>
 
-          <label class="field">
+          <label class="field field-locked">
             <span>Ciudad</span>
-            <input type="text" formControlName="ciudad" placeholder="Ej. San Miguel de Allende" />
+            <input type="text" formControlName="ciudad" placeholder="Ej. San Miguel de Allende" readonly/>
             <small *ngIf="campoInvalido('ciudad')">Ingresa tu ciudad.</small>
           </label>
 
-          <label class="field">
+          <label class="field field-locked">
             <span>Colonia</span>
-            <input type="text" formControlName="colonia" placeholder="Nombre de la colonia" />
+            <input type="text" formControlName="colonia" placeholder="Nombre de la colonia" readonly />
             <small *ngIf="campoInvalido('colonia')">Ingresa tu colonia.</small>
           </label>
 
-          <label class="field field-wide">
+          <label class="field field-wide field-locked">
             <span>Calle y número</span>
-            <input type="text" formControlName="calle" placeholder="Avenida o calle principal" />
+            <input type="text" formControlName="calle" placeholder="Avenida o calle principal" readonly />
             <small *ngIf="campoInvalido('calle')">Ingresa tu calle.</small>
           </label>
 
-          <label class="field">
+          <label class="field field-locked">
             <span>Código postal</span>
-            <input type="text" formControlName="codigo_postal" placeholder="Ej. 37700" />
+            <input type="text" formControlName="codigo_postal" placeholder="Ej. 37700" readonly/>
             <small *ngIf="campoInvalido('codigo_postal')">Ingresa tu código postal.</small>
           </label>
         </div>

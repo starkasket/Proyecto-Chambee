@@ -83,11 +83,11 @@ const authorizeRoles = (...rolesPermitidos) => {
 }
 
 const LIMITES_CAMBIO = {
-  nombre_postulante: 30,
-  apellido_paterno_postulante: 30,
-  apellido_materno_postulante: 30,
-  fecha_nacimiento: 90,
-  sexo: 30
+  nombre_postulante: 1,
+  apellido_paterno_postulante: 1,
+  apellido_materno_postulante: 1,
+  fecha_nacimiento: 1,
+  sexo: 1
 };
 
 /* ===== ENDPOINT DE PRUEBA ===== */
@@ -317,6 +317,39 @@ WHERE p.id_postulante = $1`;
   }
 });
 
+async function puedeCambiarCampo(id, campo) {
+  const diasLimite = LIMITES_CAMBIO[campo];
+  if (!diasLimite) return true;
+
+  const result = await pool.query(`
+    SELECT fecha_cambio 
+    FROM historial_cambios
+    WHERE id_postulante = $1 AND campo = $2
+    ORDER BY fecha_cambio DESC
+    LIMIT 1
+  `, [id, campo]);
+
+  if (result.rows.length === 0) return true;
+
+  const lastDate = new Date(result.rows[0].fecha_cambio);
+  const ahora = new Date();
+
+  const diffMin = (ahora - lastDate) / (1000 * 60)
+
+  return diffMin >= diasLimite
+
+ /*  const diffDias = (ahora - lastDate) / (1000 * 60 * 60 * 24);
+
+  return diffDias >= diasLimite; */
+}
+
+async function guardarHistorial(id, campo, anterior, nuevo) {
+  await pool.query(`
+    INSERT INTO historial_cambios (id_postulante, campo, valor_anterior, valor_nuevo)
+    VALUES ($1, $2, $3, $4)
+  `, [id, campo, anterior, nuevo]);
+}
+
 app.put("/mi-perfil", verifyToken, async (req, res) => {
   try {
     const id = req.user.id;
@@ -339,6 +372,37 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
       ];
     }
     else if (rol === "postulante") {
+
+      const actual = await pool.query(
+        "SELECT * FROM postulante WHERE id_postulante = $1",
+        [id]
+      );
+
+      const perfilActual = actual.rows[0];
+
+      const camposSensibles = [
+        "nombre_postulante",
+        "apellido_paterno_postulante",
+        "apellido_materno_postulante",
+        "fecha_nacimiento",
+        "sexo"
+      ];
+
+      for (const campo of camposSensibles) {
+        if (
+          datos[campo] !== undefined &&
+          datos[campo] !== perfilActual[campo]
+        ) {
+          const permitido = await puedeCambiarCampo(id, campo);
+
+          if (!permitido) {
+            return res.status(400).json({
+              message: `No puedes cambiar ${campo} todavía. Intenta más tarde.`
+            });
+          }
+        }
+      }
+
       // Usamos COALESCE para que si un dato no viene en el body, se quede el que ya estaba en la BD
       query = `UPDATE postulante
         SET nombre_postulante = COALESCE($1, nombre_postulante),
@@ -389,11 +453,27 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
           await pool.query("INSERT INTO cv (id_postulante, archivo_cv, visible_empresas, fecha_subida, ultima_actualizacion) VALUES ($1, $2, true, NOW(), NOW())", [id, datos.archivo_cv]);
         }
       }
+
+      
+    for (const campo of camposSensibles) {
+      if (
+        datos[campo] !== undefined &&
+        datos[campo] !== perfilActual[campo]
+      ) {
+        await guardarHistorial(
+          id,
+          campo,
+          perfilActual[campo],
+          datos[campo]
+        );
+      }
+    }
     }
 
     if (!query) return res.status(400).json({ error: "Rol no identificado" });
 
     const result = await pool.query(query, values);
+
     res.json({ message: "Perfil actualizado correctamente", perfil: result.rows[0] });
 
   } catch (err) {

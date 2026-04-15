@@ -16,4 +16,18 @@ ALTER TABLE anuncios
 ALTER COLUMN descripcion TYPE VARCHAR(600);
 
 
+CREATE TABLE historial_cambios (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id_postulante UUID,
+  id_empleador UUID,
+  campo VARCHAR(50),
+  valor_anterior TEXT,
+  valor_nuevo TEXT,
+  fecha_cambio TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE historial_cambios
+ADD COLUMN IF NOT EXISTS id_empleador UUID
+
+
 
