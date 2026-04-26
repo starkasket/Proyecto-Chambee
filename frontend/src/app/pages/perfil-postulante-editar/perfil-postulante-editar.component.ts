@@ -340,7 +340,6 @@ export class PerfilPostulanteEditarComponent implements OnInit {
   @HostListener('window:resize')
   onResize() { this.checkMobile(); }
 
-  // Aquí está la función que faltaba
   private checkMobile() {
     try {
       this.isMobile = window.innerWidth <= 768;

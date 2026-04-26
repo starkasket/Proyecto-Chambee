@@ -1,4 +1,20 @@
 <div class="edit-page">
+
+  <!-- MODAL DE ERROR (Código postal no encontrado) -->
+  <div id="modalAlerta" class="modal" tabindex="-1" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaAlerta.png" alt="alerta" height="180" class="mb-3" />
+          <h5 class="text-danger fw-bold">¡Atención!</h5>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
       <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
@@ -158,7 +174,8 @@
 
           <label class="field">
             <span>Telefono</span>
-            <input type="text" formControlName="telefono" placeholder="4151234567"  pattern="^[0-9]{10}$" maxlength="10"/>
+            <input type="text" formControlName="telefono" placeholder="4151234567" pattern="^[0-9]{10}$"
+              maxlength="10" />
             <small *ngIf="campoInvalido('telefono')">Ingresa un telefono de contacto.</small>
           </label>
 
@@ -173,46 +190,50 @@
       <article class="form-card">
         <div class="card-head">
           <div>
-            <p class="eyebrow">Ubicacion</p>
-            <h2>Domicilio registrado</h2>
+            <p class="eyebrow">Ubicación</p>
+            <h2>Domicilio de residencia</h2>
           </div>
         </div>
 
         <div class="form-grid">
           <label class="field field-locked">
-            <span>Pais</span>
-            <input type="text" formControlName="pais" placeholder="Mexico" readonly/>
-            <small *ngIf="campoInvalido('pais')">Ingresa el pais.</small>
+            <span>País</span>
+            <input type="text" formControlName="pais" placeholder="Ej. México" readonly />
+            <small *ngIf="campoInvalido('pais')">Ingresa tu país.</small>
           </label>
 
           <label class="field field-locked">
             <span>Estado</span>
-            <input type="text" formControlName="estado" placeholder="Guanajuato" readonly />
-            <small *ngIf="campoInvalido('estado')">Ingresa el estado.</small>
+            <input type="text" formControlName="estado" placeholder="Estado" readonly />
+            <small *ngIf="campoInvalido('estado')">Ingresa tu estado.</small>
           </label>
 
           <label class="field field-locked">
             <span>Ciudad</span>
-            <input type="text" formControlName="ciudad" placeholder="San Miguel de Allende" readonly/>
-            <small *ngIf="campoInvalido('ciudad')">Ingresa la ciudad.</small>
+            <input type="text" formControlName="ciudad" placeholder="Ej. San Miguel de Allende" readonly />
+            <small *ngIf="campoInvalido('ciudad')">Ingresa tu ciudad.</small>
           </label>
 
-          <label class="field field-locked">
+          <label class="field">
             <span>Colonia</span>
-            <input type="text" formControlName="colonia" placeholder="Nombre de la colonia" readonly />
-            <small *ngIf="campoInvalido('colonia')">Ingresa la colonia.</small>
+            <select formControlName="colonia"
+              style="border-radius: 16px; border: 1px solid var(--border-soft); background: var(--input-bg); color: var(--text-primary); padding: 14px 16px; width: 100%;">
+              <option value="">Selecciona una colonia</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+            <small *ngIf="campoInvalido('colonia')">Selecciona tu colonia.</small>
           </label>
 
-          <label class="field field-wide field-locked">
-            <span>Calle</span>
-            <input type="text" formControlName="calle" placeholder="Calle y numero" readonly/>
-            <small *ngIf="campoInvalido('calle')">Ingresa la calle.</small>
+          <label class="field field-wide">
+            <span>Calle y número</span>
+            <input type="text" formControlName="calle" placeholder="Ej. Calle Hidalgo #123" />
+            <small *ngIf="campoInvalido('calle')">Ingresa tu calle.</small>
           </label>
 
-          <label class="field field-locked">
-            <span>Codigo postal</span>
-            <input type="text" formControlName="codigo_postal" placeholder="37755" readonly/>
-            <small *ngIf="campoInvalido('codigo_postal')">Ingresa el codigo postal.</small>
+          <label class="field">
+            <span>Código postal</span>
+            <input type="text" formControlName="codigo_postal" placeholder="C.P." (blur)="buscarCP()" maxlength="5" />
+            <small *ngIf="campoInvalido('codigo_postal')">Ingresa tu código postal.</small>
           </label>
         </div>
       </article>
