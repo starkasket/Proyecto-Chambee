@@ -209,7 +209,6 @@ export class EmployerJobCreateComponent implements OnInit {
     this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
       next: () => {
         this.guardando = false;
-        this.exito = 'Oferta laboral publicada correctamente.';
         this.ofertaForm.reset({
           titulo: '',
           descripcion: '',
@@ -225,10 +224,11 @@ export class EmployerJobCreateComponent implements OnInit {
           salario: null,
           modalidad: 'Presencial'
         });
+        this.mostrarModalExito('Tu oferta laboral fue publicada exitosamente.');
       },
       error: (err) => {
         this.guardando = false;
-        this.error = err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.';
+        this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.');
       }
     });
   }
@@ -304,17 +304,7 @@ export class EmployerJobCreateComponent implements OnInit {
   sepomex: any[] = [];
   colonias: string[] = [];
 
-  // --- MODAL DE ERROR ---
-  mostrarModal(mensaje: string) {
-    this.modalMensaje = mensaje;
-    const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
 
-    }
-  }
-  // --- BUSCAR CP ---
 
   hoy = new Date().toISOString().split('T')[0];
 
@@ -343,5 +333,43 @@ export class EmployerJobCreateComponent implements OnInit {
       this.colonias = [];
       this.ofertaForm.patchValue({ estado: '', ciudad: '', colonia: '' });
     }
+  }
+
+
+  // --- MODALES ---
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+    this.router.navigate(['/home-employer']);
   }
 }

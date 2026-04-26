@@ -68,6 +68,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   maxVisible = 8;
   isMobile = false;
   faqOpen: number | null = null;
+  modalMensaje = '';
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
@@ -332,7 +333,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.http.post('http://localhost:3000/api/support', form.value)
       .subscribe({
         next: () => {
-          alert('Mensaje enviado correctamente');
           form.resetForm({
             nombreCompleto: '',
             empresa: '',
@@ -341,8 +341,44 @@ export class HomeUserComponent implements OnInit, OnDestroy {
             asunto: '',
             detalles: ''
           });
+          this.mostrarModalExito('Tu mensaje fue recibido. Te contactaremos a la brevedad.');
         },
-        error: () => alert('Error al enviar el mensaje')
+        error: () => this.mostrarModal('Hubo un error al enviar tu mensaje. Inténtalo de nuevo.')
       });
+  }
+
+  // --- MODALES ---
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
 }
