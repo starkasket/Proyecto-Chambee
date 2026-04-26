@@ -133,6 +133,7 @@
               #curp="ngModel" required pattern=".{18}" maxlength="18" />
             <div *ngIf="curp.invalid && curp.dirty" class="support-error" style="margin-bottom: 8px;">CURP inválida
             </div>
+
             <p class="dir-label">Dirección Completa</p>
             <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal"
               name="codigo_postal" (blur)="buscarCP()" maxlength="5" />

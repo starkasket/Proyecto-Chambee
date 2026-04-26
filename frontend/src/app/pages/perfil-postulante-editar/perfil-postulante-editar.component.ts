@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
@@ -35,11 +35,32 @@ interface NotificationItem {
 @Component({
   selector: 'app-perfil-postulante-editar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule],
   templateUrl: './perfil-postulante-editar.component.html',
   styleUrls: ['./perfil-postulante-editar.component.css']
 })
 export class PerfilPostulanteEditarComponent implements OnInit {
+
+  form = {
+    nombre_postulante: '',
+    apellido_paterno_postulante: '',
+    apellido_materno_postulante: '',
+    correo_electronico: '',
+    contrasena: '',
+    contrasena_verificar: '',
+    fecha_nacimiento: '',
+    sexo: '',
+    pais: 'México',
+    estado: '',
+    ciudad: '',
+    colonia: '',
+    calle: '',
+    codigo_postal: '',
+    telefono: '',
+    rfc: '',
+    curp: ''
+  };
+
   cargando = true;
   guardando = false;
   error = '';
@@ -51,12 +72,12 @@ export class PerfilPostulanteEditarComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
 
-  previewUrl: string | null = null;        
-  archivoSeleccionado: File | null = null; 
+  previewUrl: string | null = null;
+  archivoSeleccionado: File | null = null;
   fileName = 'Ningún archivo seleccionado';
-  subiendoImagen = false;                  
-  urlImagenSubida = '';           
-  mostrarEliminar = false;                 
+  subiendoImagen = false;
+  urlImagenSubida = '';
+  mostrarEliminar = false;
 
   notifications: NotificationItem[] = [
     { id: 1, title: 'Perfil personal', message: 'Recuerda guardar tus cambios antes de salir.', time: 'Ahora', read: false }
@@ -76,7 +97,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     calle: ['', [Validators.required, Validators.maxLength(150)]],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
     telefono: ['', [Validators.required, Validators.maxLength(20)]],
-    curp: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(18)]], 
+    curp: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(18)]],
     rfc: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(13)]]
   });
 
@@ -86,7 +107,9 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService
-  ) {}
+
+
+  ) { }
 
   ngOnInit(): void {
     const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
@@ -103,11 +126,16 @@ export class PerfilPostulanteEditarComponent implements OnInit {
       this.cargando = false;
       return;
     }
- 
+
     this.postulanteId = usuario.id;
     this.postulanteNombre = usuario.nombre || this.postulanteNombre;
     this.checkMobile();
-    this.cargarPerfil();
+
+    // Cargar sepomex primero, luego el perfil para que las colonias se precarguen
+    this.api.getSepomex().subscribe(data => {
+      this.sepomex = data;
+      this.cargarPerfil();
+    });
   }
 
   cargarPerfil() {
@@ -140,6 +168,14 @@ export class PerfilPostulanteEditarComponent implements OnInit {
           rfc: perfil.rfc || ''
         });
 
+        // Precargar colonias si ya tiene CP registrado
+        if (perfil.codigo_postal) {
+          const resultados = this.sepomex.filter(r => r.cp === perfil.codigo_postal);
+          if (resultados.length > 0) {
+            this.colonias = resultados.map((r: any) => r.colonia);
+          }
+        }
+
         if (perfil.foto_perfil) {
           this.previewUrl = perfil.foto_perfil;
           this.urlImagenSubida = perfil.foto_perfil;
@@ -167,7 +203,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     }
 
     this.archivoSeleccionado = archivo;
-    this.urlImagenSubida = '';           
+    this.urlImagenSubida = '';
     this.fileName = archivo.name.length > 30
       ? archivo.name.substring(0, 27) + '...'
       : archivo.name;
@@ -189,7 +225,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
 
     const formData = new FormData();
     formData.append('file', this.archivoSeleccionado);
-    formData.append('upload_preset', 'chambee_upload'); 
+    formData.append('upload_preset', 'chambee_upload');
 
     try {
       const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
@@ -220,6 +256,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     this.error = '';
     this.exito = '';
 
+    // Validamos el formulario reactivo
     if (this.perfilForm.invalid) {
       this.perfilForm.markAllAsTouched();
       this.error = 'Completa correctamente los campos obligatorios.';
@@ -228,47 +265,35 @@ export class PerfilPostulanteEditarComponent implements OnInit {
 
     this.guardando = true;
 
+    // Manejo de imagen
     if (this.archivoSeleccionado && !this.urlImagenSubida) {
       try {
         await this.subirImagen();
       } catch {
         this.guardando = false;
-        this.error = 'Error al subir la imagen. Intenta de nuevo.';
+        this.error = 'Error al subir la imagen.';
         return;
       }
     }
 
+    // EL PAYLOAD: Aquí es donde se resuelve el error 500
+    // getRawValue() obtiene TODO (incluyendo los campos bloqueados como CURP/RFC)
     const payload = {
-      ...this.perfilForm.getRawValue() as PostulanteProfileFormValue,
+      ...this.perfilForm.getRawValue(),
       foto_perfil: this.urlImagenSubida || null
     };
 
     this.api.actualizarMiPerfil(payload).subscribe({
       next: (response) => {
-        const perfilActualizado = response.perfil;
-        localStorage.setItem('perfilPostulante', JSON.stringify(perfilActualizado));
-
-        const usuarioRaw = localStorage.getItem('usuario');
-        if (usuarioRaw) {
-          const usuario = JSON.parse(usuarioRaw);
-          localStorage.setItem('usuario', JSON.stringify({
-            ...usuario,
-            nombre: perfilActualizado.nombre_postulante,
-            correo: perfilActualizado.correo_electronico
-          }));
-        }
-
-        this.guardando = false;
         this.exito = 'Perfil actualizado correctamente. Redirigiendo...';
-
-        setTimeout(() => {
-          this.router.navigate(['/perfil-postulante']);
-        }, 1200);
+        this.guardando = false;
+        setTimeout(() => this.router.navigate(['/perfil-postulante']), 1200);
       },
       error: (err) => {
         this.guardando = false;
-        console.error('Error al guardar perfil:', err);
-        this.error = 'No se pudieron guardar los cambios del perfil.';
+        console.error('Error detallado del servidor:', err);
+        // Si el error persiste, el problema es que el backend espera un nombre de columna distinto
+        this.error = err.error?.message || 'Error interno del servidor al actualizar.';
       }
     });
   }
@@ -323,4 +348,80 @@ export class PerfilPostulanteEditarComponent implements OnInit {
       this.isMobile = false;
     }
   }
+
+  // --- ODIGO POSTALLLLL ---
+
+  hoy = new Date().toISOString().split('T')[0];
+  sepomex: any[] = [];
+  colonias: string[] = [];
+
+  // --- CONTROL DE MODALES ---
+  modalMensaje = '';
+
+
+
+
+  // --- MODAL DE ERROR ---
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  // --- MODAL DE ÉXITO ---
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+    this.router.navigate(['/job-preferences']);
+  }
+
+  // --- BUSCAR CP ---
+  buscarCP() {
+    const cp = this.perfilForm.get('codigo_postal')?.value?.trim();
+    if (!cp) return;
+
+    const resultados = this.sepomex.filter(r => r.cp === cp);
+
+    if (resultados.length > 0) {
+      this.perfilForm.patchValue({
+        estado: resultados[0].estado,
+        ciudad: resultados[0].ciudad,
+        colonia: resultados[0].colonia
+      });
+      this.colonias = resultados.map(r => r.colonia);
+    } else {
+      this.perfilForm.patchValue({
+        estado: '',
+        ciudad: '',
+        colonia: ''
+      });
+      this.colonias = [];
+      this.mostrarModal('Código postal no encontrado');
+    }
+  }
+
+
 }

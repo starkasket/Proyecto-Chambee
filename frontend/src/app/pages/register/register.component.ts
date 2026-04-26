@@ -32,7 +32,7 @@ export class RegisterComponent implements OnInit {
     rfc: '',
     curp: ''
   };
-  
+
   esMayorDeEdad(fecha: string): boolean {
     if (!fecha) return false;
 
@@ -40,7 +40,7 @@ export class RegisterComponent implements OnInit {
     const nacimiento = new Date(fecha);
 
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const mes = hoy.getMonth() -nacimiento.getMonth();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
 
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
       edad--;
@@ -59,11 +59,11 @@ export class RegisterComponent implements OnInit {
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) { }
 
   ngOnInit() {
     this.api.getSepomex().subscribe(data => this.sepomex = data);
-    
+
   }
 
   // --- MODAL DE ERROR ---
@@ -142,7 +142,7 @@ export class RegisterComponent implements OnInit {
         const user = res.user;
 
         localStorage.setItem("token", res.token);
-        
+
         localStorage.setItem('usuario', JSON.stringify(user));
       },
       error: (err: any) => {
@@ -151,6 +151,6 @@ export class RegisterComponent implements OnInit {
       }
     });
 
-    
+
   }
 }

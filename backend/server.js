@@ -389,9 +389,15 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
       ];
 
       for (const campo of camposSensibles) {
+        // Normalizar fecha_nacimiento: la BD devuelve un objeto Date, el frontend manda string ISO
+        let valorActualCmp = perfilActual[campo];
+        if (campo === "fecha_nacimiento" && valorActualCmp instanceof Date) {
+          valorActualCmp = valorActualCmp.toISOString().split("T")[0];
+        }
+
         if (
           datos[campo] !== undefined &&
-          datos[campo] !== perfilActual[campo]
+          String(datos[campo]) !== String(valorActualCmp ?? "")
         ) {
           const permitido = await puedeCambiarCampo(id, campo);
 
@@ -454,20 +460,20 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
         }
       }
 
-      
-    for (const campo of camposSensibles) {
-      if (
-        datos[campo] !== undefined &&
-        datos[campo] !== perfilActual[campo]
-      ) {
-        await guardarHistorial(
-          id,
-          campo,
-          perfilActual[campo],
-          datos[campo]
-        );
+
+      // Guardar historial de cambios en campos sensibles
+      for (const campo of camposSensibles) {
+        if (datos[campo] !== undefined) {
+          let valorActualHist = perfilActual[campo];
+          if (campo === "fecha_nacimiento" && valorActualHist instanceof Date) {
+            valorActualHist = valorActualHist.toISOString().split("T")[0];
+          }
+
+          if (String(datos[campo]) !== String(valorActualHist ?? "")) {
+            await guardarHistorial(id, campo, valorActualHist, datos[campo]);
+          }
+        }
       }
-    }
     }
 
     if (!query) return res.status(400).json({ error: "Rol no identificado" });
@@ -477,8 +483,8 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
     res.json({ message: "Perfil actualizado correctamente", perfil: result.rows[0] });
 
   } catch (err) {
-    console.error("Error detallado en el servidor:", err.message);
-    res.status(500).json({ error: "Error al actualizar perfil" });
+    console.error("Error detallado en PUT /mi-perfil:", err);
+    res.status(500).json({ error: "Error al actualizar perfil", detalle: err.message });
   }
 });
 
