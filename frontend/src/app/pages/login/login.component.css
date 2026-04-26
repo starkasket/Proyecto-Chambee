@@ -37,6 +37,10 @@
   padding: 40px 20px;
 }
 
+:host-context(body.dark-theme) .login-container {
+  background-image: url('/assets/login_fondo_Negro.png');
+}
+
 /* LA TARJETA RESPONSIVA */
 .login-card {
   background-color: #F1E4D3; 

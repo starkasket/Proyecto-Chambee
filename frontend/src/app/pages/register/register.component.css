@@ -150,3 +150,17 @@ display:none;
   font-weight: 500;
 }
 
+/* --- ADAPTACIONES PARA EL MODO OSCURO --- */
+
+
+:host-context(body.dark-theme) .page-bg {
+  background-image: url('/assets/login_fondo_Negro.png');
+}
+
+
+:host-context(body.dark-theme) .fondo-registro-card {
+ 
+  background-color: transparent;
+  padding: 0; 
+  
+}
