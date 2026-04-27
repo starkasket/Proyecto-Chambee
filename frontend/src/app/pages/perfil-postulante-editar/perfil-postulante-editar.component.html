@@ -278,6 +278,32 @@
         </div>
       </article>
 
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Presentación</p>
+            <h2>Sobre mí</h2>
+          </div>
+          <p class="intro" style="font-size: 0.9rem; margin-top: 4px;">
+            Escribe un breve resumen profesional. Piensa en esto como tu tarjeta de presentación.
+          </p>
+        </div>
+
+        <label class="field">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px;">
+            <span>Descripción profesional</span>
+            <span class="char-counter" [class.limit-reached]="(perfilForm.get('descripcion')?.value?.length || 0) >= 500">
+              {{ perfilForm.get('descripcion')?.value?.length || 0 }} / 500
+            </span>
+          </div>
+          
+          <textarea rows="6" 
+                    formControlName="descripcion"
+                    maxlength="500"
+                    placeholder="Cuéntale a los reclutadores sobre tu experiencia, habilidades principales y qué tipo de oportunidades buscas..."></textarea>
+          <small *ngIf="campoInvalido('descripcion')">La descripción no puede superar los 500 caracteres.</small>
+        </label>
+      </article>
       <div class="form-actions">
         <button type="button" class="ghost-btn" (click)="volverPerfil()">Cancelar</button>
         <button type="submit" class="primary-btn" [disabled]="guardando">

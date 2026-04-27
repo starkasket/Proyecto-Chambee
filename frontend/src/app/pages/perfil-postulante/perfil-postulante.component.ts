@@ -26,6 +26,7 @@ interface PostulanteProfile {
   rfc: string;
   foto_perfil?: string;
   archivo_cv?: string;
+  descripcion?: string; // ✨ AQUÍ AGREGAMOS LA DESCRIPCIÓN
 }
 
 interface PostulanteApplication {
@@ -80,7 +81,6 @@ export class PerfilPostulanteComponent implements OnInit {
 
   private readonly CLOUDINARY_CLOUD_NAME = 'dqq9oeo4e';
   private readonly CLOUDINARY_UPLOAD_PRESET = 'Chambee-cv';
-
 
   menuOpen = false;
   notificationsOpen = false;
@@ -234,7 +234,9 @@ export class PerfilPostulanteComponent implements OnInit {
   logout() {
     this.authApi.logout();
     this.menuOpen = false;
-  } async onCvSelected(event: Event): Promise<void> {
+  } 
+  
+  async onCvSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';

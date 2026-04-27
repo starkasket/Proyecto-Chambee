@@ -591,6 +591,21 @@
 }
 
 /* ==========================================================================
+   ESTILOS PARA CONTADOR DE CARACTERES
+   ========================================================================== */
+.char-counter {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.char-counter.limit-reached {
+  color: #b91c1c; 
+  font-weight: 700;
+}
+
+/* ==========================================================================
    RESPONSIVO
    ========================================================================== */
 @media (max-width: 768px) {

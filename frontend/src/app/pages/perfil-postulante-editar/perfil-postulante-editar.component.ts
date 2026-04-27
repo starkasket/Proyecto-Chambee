@@ -22,6 +22,7 @@ interface PostulanteProfileFormValue {
   telefono: string;
   curp: string;
   rfc: string;
+  descripcion: string;
 }
 
 interface NotificationItem {
@@ -58,7 +59,8 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     codigo_postal: '',
     telefono: '',
     rfc: '',
-    curp: ''
+    curp: '',
+    descripcion: ''
   };
 
   cargando = true;
@@ -98,7 +100,8 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
     telefono: ['', [Validators.required, Validators.maxLength(20)]],
     curp: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(18)]],
-    rfc: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(13)]]
+    rfc: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(13)]],
+    descripcion: ['', [Validators.maxLength(500)]]
   });
 
   constructor(
@@ -107,8 +110,6 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService
-
-
   ) { }
 
   ngOnInit(): void {
@@ -165,7 +166,8 @@ export class PerfilPostulanteEditarComponent implements OnInit {
           codigo_postal: perfil.codigo_postal || '',
           telefono: perfil.telefono || '',
           curp: perfil.curp || '',
-          rfc: perfil.rfc || ''
+          rfc: perfil.rfc || '',
+          descripcion: perfil.descripcion || ''
         });
 
         // Precargar colonias si ya tiene CP registrado
@@ -348,7 +350,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     }
   }
 
-  // --- ODIGO POSTALLLLL ---
+  // --- CODIGO POSTAL ---
 
   hoy = new Date().toISOString().split('T')[0];
   sepomex: any[] = [];
@@ -356,9 +358,6 @@ export class PerfilPostulanteEditarComponent implements OnInit {
 
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
-
-
-
 
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
@@ -421,6 +420,5 @@ export class PerfilPostulanteEditarComponent implements OnInit {
       this.mostrarModal('Código postal no encontrado');
     }
   }
-
 
 }
