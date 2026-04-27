@@ -58,7 +58,6 @@
     </div>
   </nav>
 
-  <!-- MODAL DE ÉXITO -->
   <div id="modalSaludo" class="modal" tabindex="-1"
     style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-dialog-centered">
@@ -75,7 +74,6 @@
     </div>
   </div>
 
-  <!-- MODAL DE ERROR -->
   <div id="modalAlerta" class="modal" tabindex="-1"
     style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-dialog-centered">
@@ -184,13 +182,19 @@
               <option *ngFor="let opcion of opcionesEducacion" [value]="opcion">{{ opcion }}</option>
             </select>
           </label>
+
+          <label class="field">
+            <span>Experiencia requerida</span>
+            <select formControlName="experiencia">
+              <option *ngFor="let opcion of opcionesExperiencia" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
         </div>
       </article>
 
       <article class="offer-card offer-side">
         <div class="card-head">
           <p class="eyebrow">Ubicacion</p>
-          <!---->
           <h2>Direccion de la oferta</h2>
         </div>
 
@@ -222,6 +226,7 @@
           <p>Urgencia: {{ ofertaForm.value.urgencia || 'Normal' }}</p>
           <p>Edad: {{ ofertaForm.value.edad || 'Sin especificar' }}</p>
           <p>Educacion: {{ ofertaForm.value.educacion || 'Sin especificar' }}</p>
+          <p>Experiencia: {{ ofertaForm.value.experiencia || 'Sin experiencia' }}</p>
           <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}
           </p>
         </div>

@@ -64,7 +64,6 @@ export const routes: Routes = [
   },
   {
     path: 'perfil',
-    // Pantalla donde el empleador consulta su informacion registrada.
     component: EmployerProfileComponent
   },
   {
@@ -76,7 +75,7 @@ export const routes: Routes = [
     component: EmployerJobCreateComponent
   },
   {
-    path: 'crear-servicio', // <-- Nueva ruta para el botón +
+    path: 'crear-servicio', 
     component: CrearServicioComponent
   },
   {

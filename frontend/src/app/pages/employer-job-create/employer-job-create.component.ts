@@ -13,6 +13,7 @@ interface EmployerJobFormValue {
   urgencia: string;
   edad: string;
   educacion: string;
+  experiencia: string;
   estado: string;
   ciudad: string;
   colonia: string;
@@ -93,6 +94,14 @@ export class EmployerJobCreateComponent implements OnInit {
     'Maestria'
   ];
 
+  readonly opcionesExperiencia = [
+    'Sin experiencia',
+    'Menos de 1 año',
+    '1 a 2 años',
+    '3 a 5 años',
+    'Más de 5 años'
+  ];
+
   readonly opcionesUrgencia = [
     'Normal',
     'Urgente',
@@ -107,6 +116,7 @@ export class EmployerJobCreateComponent implements OnInit {
     urgencia: ['Normal', [Validators.required, Validators.maxLength(30)]],
     edad: ['Sin especificar', [Validators.maxLength(60)]],
     educacion: ['Sin especificar', [Validators.maxLength(80)]],
+    experiencia: ['Sin experiencia', [Validators.required, Validators.maxLength(50)]],
     estado: ['', [Validators.required, Validators.maxLength(100)]],
     ciudad: ['', [Validators.required, Validators.maxLength(100)]],
     colonia: ['', [Validators.required, Validators.maxLength(100)]],
@@ -216,6 +226,7 @@ export class EmployerJobCreateComponent implements OnInit {
           urgencia: 'Normal',
           edad: 'Sin especificar',
           educacion: 'Sin especificar',
+          experiencia: 'Sin experiencia',
           estado: payload.estado,
           ciudad: payload.ciudad,
           colonia: payload.colonia,
@@ -300,11 +311,10 @@ export class EmployerJobCreateComponent implements OnInit {
       this.isMobile = false;
     }
   }
+  
   modalMensaje = '';
   sepomex: any[] = [];
   colonias: string[] = [];
-
-
 
   hoy = new Date().toISOString().split('T')[0];
 
@@ -334,7 +344,6 @@ export class EmployerJobCreateComponent implements OnInit {
       this.ofertaForm.patchValue({ estado: '', ciudad: '', colonia: '' });
     }
   }
-
 
   // --- MODALES ---
 
