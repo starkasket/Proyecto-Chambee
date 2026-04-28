@@ -610,118 +610,45 @@ app.get("/empleadores/:id/anuncios", async (req, res) => {
 app.post("/empleadores/:id/anuncios", async (req, res) => {
   const { id } = req.params;
   const {
-    titulo,
-    descripcion,
-    tipo_anuncio,
-    urgencia = 'Normal',
-    edad = 'Sin especificar',
-    educacion = 'Sin especificar',
-    estado,
-    ciudad,
-    colonia,
-    calle,
-    codigo_postal,
-    salario,
-    modalidad,
-    estado_anuncio = 'ACTIVO',
+    titulo, descripcion, tipo_anuncio, urgencia = 'Normal',
+    edad = 'Sin especificar', educacion = 'Sin especificar',
+    experiencia = 'Sin experiencia', // <-- Campo nuevo
+    estado, ciudad, colonia, calle, codigo_postal,
+    salario, modalidad, estado_anuncio = 'ACTIVO'
   } = req.body;
 
   try {
-    // Se crea una oferta laboral ligada al empleador autenticado.
     const query = `INSERT INTO anuncios (
-      titulo,
-      descripcion,
-      tipo_anuncio,
-      urgencia,
-      edad,
-      educacion,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      salario,
-      modalidad,
-      estado_anuncio,
-      id_empleador,
-      vistas
+      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, experiencia,
+      estado, ciudad, colonia, calle, codigo_postal, salario, modalidad,
+      estado_anuncio, id_empleador, vistas
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,0)
-    RETURNING
-      id_anuncio,
-      titulo,
-      descripcion,
-      tipo_anuncio,
-      urgencia,
-      edad,
-      educacion,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      salario,
-      modalidad,
-      fecha_publicacion,
-      estado_anuncio,
-      vistas`;
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,0)
+    RETURNING *`;
 
     const values = [
-      titulo,
-      descripcion,
-      tipo_anuncio,
-      urgencia,
-      edad,
-      educacion,
-      estado,
-      ciudad,
-      colonia,
-      calle,
-      codigo_postal,
-      salario,
-      modalidad,
-      estado_anuncio,
-      id,
+      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, experiencia,
+      estado, ciudad, colonia, calle, codigo_postal, salario, modalidad,
+      estado_anuncio, id
     ];
 
     const result = await pool.query(query, values);
-
-    res.status(201).json({
-      message: "Oferta laboral creada correctamente",
-      anuncio: result.rows[0],
-    });
+    res.status(201).json({ message: "Oferta creada", anuncio: result.rows[0] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      error: "Error al crear la oferta laboral",
-      detail: err.message,
-    });
+    res.status(500).json({ error: "Error al crear la oferta", detail: err.message });
   }
 });
 
+
+/* ===== LOGIN ===== */
 app.get("/anuncios", async (_req, res) => {
   try {
-    // Vista publica para que los postulantes puedan ver ofertas activas.
     const query = `SELECT
-      a.id_anuncio,
-      a.titulo,
-      a.descripcion,
-      a.tipo_anuncio,
-      a.urgencia,
-      a.edad,
-      a.educacion,
-      a.estado,
-      a.ciudad,
-      a.colonia,
-      a.calle,
-      a.codigo_postal,
-      a.salario,
-      a.modalidad,
-      a.fecha_publicacion,
-      a.estado_anuncio,
-      a.vistas,
+      a.*,
       e.nombre_empresa,
-      e.descripcion AS descripcion_empresa
+      e.descripcion AS descripcion_empresa,
+      e.foto_perfil AS foto_empresa 
     FROM anuncios a
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
     WHERE a.estado_anuncio = 'ACTIVO'
@@ -731,11 +658,10 @@ app.get("/anuncios", async (_req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al obtener anuncios publicos" });
+    res.status(500).json({ error: "Error al obtener anuncios" });
   }
 });
 
-/* ===== LOGIN ===== */
 app.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;
 

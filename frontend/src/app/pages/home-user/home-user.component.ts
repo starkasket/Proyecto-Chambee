@@ -23,7 +23,7 @@ interface Slide {
 }
 
 interface Job {
-  id?: string;
+  id?: string | number;
   company: string;
   title: string;
   salary: string;
@@ -33,9 +33,6 @@ interface Job {
   applicants: number;
 }
 
-
-
-// NUEVA INTERFAZ PARA NOTIFICACIONES
 interface NotificationItem {
   id: number;
   title: string;
@@ -53,15 +50,14 @@ interface NotificationItem {
 })
 export class HomeUserComponent implements OnInit, OnDestroy {
   
-  // Aquí está el nombre del usuario para el mensaje de bienvenida
   nombre_postulante: string = 'Usuario';
   foto_perfil: string = '';
 
   // VARIABLES PARA EL CONTROL DE LA INTERFAZ
   servicesOpen = false;
   menuOpen = false;
-  notificationsOpen = false; // Controla si el menú desplegable está abierto
-  hasUnreadNotifications = true; // Controla el puntito rojo
+  notificationsOpen = false; 
+  hasUnreadNotifications = true; 
 
   currentSlide = 0;
   visibleCount = 8;
@@ -72,12 +68,15 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
-  // NUEVOS DATOS DE NOTIFICACIONES SIMULADOS
   notifications: NotificationItem[] = [
     { id: 1, title: '¡Nueva postulación!', message: 'Tu perfil hace "match" con Google.', time: 'Hace 5 min', read: false },
     { id: 2, title: 'Mensaje de RRHH', message: 'Lucky Ghost ha revisado tu CV.', time: 'Hace 2 horas', read: false },
     { id: 3, title: 'Bienvenido a Chambee', message: 'Completa tu perfil para destacar más.', time: 'Hace 1 día', read: true }
   ];
+
+  slides: Slide[] = [];
+  jobs: Job[] = [];
+  services: Service[] = [];
 
   constructor(
     private readonly router: Router,
@@ -88,30 +87,21 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     private serviciosService: ServiciosService
   ) {}
 
-  slides: Slide[] = [];
-
-  services: Service[] = [
-    { title: 'Servicio 1', description: 'Descripción breve del servicio 1', img: 'https://picsum.photos/80/80?random=1' },
-    { title: 'Servicio 2', description: 'Descripción breve del servicio 2', img: 'https://picsum.photos/80/80?random=2' },
-    { title: 'Servicio 3', description: 'Descripción breve del servicio 3', img: 'https://picsum.photos/80/80?random=3' },
-    { title: 'Servicio 4', description: 'Descripción breve del servicio 4', img: 'https://picsum.photos/80/80?random=4' },
-    { title: 'Servicio 5', description: 'Descripción breve del servicio 5', img: 'https://picsum.photos/80/80?random=5' },
-    { title: 'Servicio 6', description: 'Descripción breve del servicio 6', img: 'https://picsum.photos/80/80?random=6' }
-  ];
-
-  jobs: Job[] = [];
-
   ngOnInit() {
     this.serviciosService.servicios$.subscribe((servicios: Service[]) => {
       this.services = servicios;
     });
+
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
+    
     this.checkMobile();
+    
+    // Llamada clave para cargar vacantes
     this.cargarOfertasPublicas();
+    
     const usuario = this.api.getUsuario();
-
     if (usuario?.id) {
       this.api.getMiPerfil().subscribe({
         next: (perfil: any) =>  {
@@ -131,124 +121,26 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- LÓGICA PARA IR AL PERFIL ---
-  irAlPerfil() {
-    this.menuOpen = false; // Cerramos el menú por si está en mobile
-    this.router.navigate(['/perfil-postulante']);
-  }
-
-  // --- LÓGICA DEL MENÚ DE NOTIFICACIONES ---
-  toggleNotifications(event?: Event) {
-    if (event) {
-      event.stopPropagation(); // Evita que se dispare el evento del documento
-    }
-    this.notificationsOpen = !this.notificationsOpen;
-    
-    // Si lo abrimos, quitamos el puntito rojo y marcamos todo como leído
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-    }
-    
-    // Cerramos el menú hamburguesa si estaba abierto
-    this.menuOpen = false; 
-  }
-
-  // Esto cierra las notificaciones si das clic en cualquier otra parte de la pantalla
-  @HostListener('document:click', ['$event'])
-  onDocumentClick() {
-    if (this.notificationsOpen) {
-      this.notificationsOpen = false;
-    }
-  }
-  // ------------------------------------------
-
-  // --- LÓGICA DE CERRAR SESIÓN ---
-  logout() {
-    this.authApi.logout();    
-    // Cerramos los menús
-    this.menuOpen = false;
-    this.servicesOpen = false;
-    
-    console.log('Cerrando sesión del usuario...');
-   
-  }
-
-  // --- LÓGICA PARA CREAR NUEVO SERVICIO ---
-  irACrearServicio() {
-    this.router.navigate(['/crear-servicio']);
-  }
-
-  get visibleServices(): Service[] {
-    return this.servicesOpen ? this.services : this.services.slice(0, 4);
-  }
-
-  toggleServices() {
-    this.servicesOpen = !this.servicesOpen;
-  }
-
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-    this.notificationsOpen = false; // Cierra notificaciones si abres el menú
-  }
-
-  toggleTheme() {
-    this.themeService.toggleTheme();
-  }
-
-  get isDarkMode(): boolean {
-    return this.themeService.isDarkMode();
-  }
-
-  openService(index: number) {
-    console.log('Abriendo servicio:', index);
-  }
-
-  openJob(id?: string | number) {
-    console.log('Abriendo detalle de empleo de la cuadrícula con ID:', id);
-    if (id) {
-      this.router.navigate(['/job', id]);
-    } else {
-      console.warn('Este empleo no tiene ID (quizás es de los datos de prueba)');
-    }
-  }
-
-  openFeaturedJob(id?: string | number) {
-    console.log('Abriendo empleo del carrusel con ID:', id);
-    if (id) {
-      this.router.navigate(['/job', id]);
-    } else {
-      console.warn('Este empleo destacado no tiene ID (quizás es de los datos de prueba)');
-    }
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    this.checkMobile();
-  }
-
-  checkMobile() {
-    try {
-      this.isMobile = window.innerWidth <= 768;
-    } catch {
-      this.isMobile = false;
-    }
-  }
-
-  showMoreJobs() {
-    this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible);
-  }
-
+  // --- LÓGICA DE CARGA DE DATOS (CON DEBUGGING) ---
   private cargarOfertasPublicas() {
+    console.log("Iniciando petición de vacantes al servidor...");
+
     this.api.obtenerAnunciosPublicos().subscribe({
       next: (anuncios) => {
-        if (!anuncios.length) {
+        console.log("Respuesta del servidor recibida:", anuncios);
+
+        // Validamos que sea un arreglo válido y tenga elementos
+        if (!anuncios || !Array.isArray(anuncios) || anuncios.length === 0) {
+          console.log("No hay vacantes activas en la base de datos.");
+          this.slides = [];
+          this.jobs = [];
           return;
         }
 
+        // Mapeo del Carrusel (Máximo 5)
         const ofertas = anuncios.map((anuncio) => ({
           id: anuncio.id_anuncio,
-          company: anuncio.nombre_empresa,
+          company: anuncio.nombre_empresa || 'Empresa Confidencial',
           companyDescription: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
           title: anuncio.titulo,
           salary: this.formatearSalario(anuncio.salario),
@@ -261,9 +153,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
         this.slides = ofertas.slice(0, Math.min(5, ofertas.length));
 
+        // Mapeo del Grid de Empleos
         this.jobs = anuncios.map((anuncio) => ({
           id: anuncio.id_anuncio,
-          company: anuncio.nombre_empresa,
+          company: anuncio.nombre_empresa || 'Empresa Confidencial',
           title: anuncio.titulo,
           salary: this.formatearSalario(anuncio.salario),
           img: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
@@ -273,23 +166,23 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         }));
 
         this.currentSlide = 0;
-        this.visibleCount = Math.min(8, Math.max(8, this.jobs.length));
         this.maxVisible = Math.max(8, this.jobs.length);
+        this.visibleCount = Math.min(8, this.maxVisible);
+        
+        console.log("Las vacantes se cargaron correctamente en la interfaz.");
       },
-      error: () => {
+      error: (err) => {
+        console.error("ERROR AL PEDIR VACANTES AL SERVIDOR:", err);
         this.slides = [];
         this.jobs = [];
-        this.currentSlide = 0;
-        this.visibleCount = 8;
-        this.maxVisible = 8;
       }
     });
   }
 
   private formatearSalario(salario: string | number): string {
     const numero = Number(salario);
-    if (Number.isNaN(numero)) {
-      return '$0 MXN';
+    if (Number.isNaN(numero) || numero === 0) {
+      return 'Salario a convenir';
     }
 
     return new Intl.NumberFormat('es-MX', {
@@ -299,24 +192,93 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }).format(numero);
   }
 
-  nextSlide() {
-    if (!this.slides.length) {
-      return;
+  // --- LÓGICA DE NAVEGACIÓN ---
+  irAlPerfil() {
+    this.menuOpen = false; 
+    this.router.navigate(['/perfil-postulante']);
+  }
+
+  openJob(id?: string | number) {
+    if (id) {
+      this.router.navigate(['/job', id]);
+    } else {
+      console.warn('Falta el ID de este empleo.');
     }
+  }
+
+  openFeaturedJob(id?: string | number) {
+    if (id) {
+      this.router.navigate(['/job', id]);
+    } else {
+      console.warn('Falta el ID de este empleo destacado.');
+    }
+  }
+
+  // --- LÓGICA DE INTERFAZ Y MODALES ---
+  toggleNotifications(event?: Event) {
+    if (event) event.stopPropagation(); 
+    this.notificationsOpen = !this.notificationsOpen;
+    
+    if (this.notificationsOpen) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach(n => n.read = true);
+    }
+    this.menuOpen = false; 
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick() {
+    if (this.notificationsOpen) this.notificationsOpen = false;
+  }
+
+  logout() {
+    this.authApi.logout();    
+    this.menuOpen = false;
+    this.servicesOpen = false;
+  }
+
+  irACrearServicio() {
+    this.router.navigate(['/crear-servicio']);
+  }
+
+  get visibleServices(): Service[] {
+    return this.servicesOpen ? this.services : this.services.slice(0, 4);
+  }
+
+  toggleServices() { this.servicesOpen = !this.servicesOpen; }
+  toggleMenu() { 
+    this.menuOpen = !this.menuOpen; 
+    this.notificationsOpen = false; 
+  }
+  toggleTheme() { this.themeService.toggleTheme(); }
+  get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
+
+  openService(index: number) { console.log('Abriendo servicio:', index); }
+
+  @HostListener('window:resize')
+  onResize() { this.checkMobile(); }
+
+  checkMobile() {
+    try { this.isMobile = window.innerWidth <= 768; } 
+    catch { this.isMobile = false; }
+  }
+
+  showMoreJobs() {
+    this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible);
+  }
+
+  nextSlide() {
+    if (!this.slides.length) return;
     this.currentSlide = (this.currentSlide + 1) % this.slides.length;
   }
 
   prevSlide() {
-    if (!this.slides.length) {
-      return;
-    }
+    if (!this.slides.length) return;
     this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
   }
 
   goToSlide(index: number) {
-    if (!this.slides.length) {
-      return;
-    }
+    if (!this.slides.length) return;
     this.currentSlide = index;
   }
 
@@ -334,12 +296,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           form.resetForm({
-            nombreCompleto: '',
-            empresa: '',
-            telefono: '',
-            correo: '',
-            asunto: '',
-            detalles: ''
+            nombreCompleto: '', empresa: '', telefono: '', correo: '', asunto: '', detalles: ''
           });
           this.mostrarModalExito('Tu mensaje fue recibido. Te contactaremos a la brevedad.');
         },
@@ -347,38 +304,25 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       });
   }
 
-  // --- MODALES ---
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-    }
+    if (modal) { modal.classList.add('show'); modal.style.display = 'flex'; }
   }
 
   cerrarModal() {
     const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
+    if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; }
   }
 
   mostrarModalExito(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalSaludo');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-    }
+    if (modal) { modal.classList.add('show'); modal.style.display = 'flex'; }
   }
 
   cerrarModalExito() {
     const modal = document.getElementById('modalSaludo');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
+    if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; }
   }
 }
