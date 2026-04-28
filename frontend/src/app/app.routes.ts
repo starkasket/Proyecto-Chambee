@@ -16,6 +16,7 @@ import { CrearServicioComponent } from './pages/crear-servicio/crear-servicio.co
 import { JobDetailComponent } from './pages/job-detail/job-detail.component';
 import { Path } from 'leaflet';
 import { PerfilPostulanteEditarComponent } from './pages/perfil-postulante-editar/perfil-postulante-editar.component';
+import { EmployerJobsManageComponent } from './pages/employer-jobs-manage/employer-jobs-manage.component';
 
 export const routes: Routes = [
   {
@@ -73,6 +74,10 @@ export const routes: Routes = [
   {
     path: 'post-job',
     component: EmployerJobCreateComponent
+  },
+  {
+    path: 'mis-vacantes',
+    component: EmployerJobsManageComponent
   },
   {
     path: 'crear-servicio', 

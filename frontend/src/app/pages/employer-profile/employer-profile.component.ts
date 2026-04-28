@@ -24,7 +24,7 @@ interface EmployerProfile {
 interface EmployerAnnouncement {
   id: string;
   empresa: string;
-  estado: 'Activa' | 'Pausada' | 'Cerrada';
+  estado: 'Activa' | 'Borrador' | 'Oculta';
   ubicacion: string;
   fecha: string;
   candidatos: number;
@@ -105,7 +105,7 @@ export class EmployerProfileComponent implements OnInit {
     {
       id: 'demo-3',
       empresa: 'AT&T S.M.A',
-      estado: 'Pausada',
+      estado: 'Borrador',
       ubicacion: 'Dolores Hidalgo',
       fecha: 'Hace 1 semana',
       candidatos: 8,
@@ -116,7 +116,7 @@ export class EmployerProfileComponent implements OnInit {
     {
       id: 'demo-4',
       empresa: 'AT&T S.M.A',
-      estado: 'Cerrada',
+      estado: 'Oculta',
       ubicacion: 'San Luis de la Paz',
       fecha: 'Hace 2 semanas',
       candidatos: 26,
@@ -255,7 +255,7 @@ export class EmployerProfileComponent implements OnInit {
   // Clases visuales para badges de estado.
   getAnnouncementStateClass(estado: EmployerAnnouncement['estado']): string {
     if (estado === 'Activa') return 'state-active';
-    if (estado === 'Pausada') return 'state-paused';
+    if (estado === 'Borrador') return 'state-paused';
     return 'state-closed';
   }
 
@@ -272,6 +272,10 @@ export class EmployerProfileComponent implements OnInit {
 
   crearOferta() {
     this.router.navigate(['/post-job']);
+  }
+
+  administrarVacantes() {
+    this.router.navigate(['/mis-vacantes']);
   }
 
   toggleTheme() {
@@ -337,8 +341,8 @@ export class EmployerProfileComponent implements OnInit {
 
   private mapAnnouncementState(estado: string): EmployerAnnouncement['estado'] {
     if (estado === 'ACTIVO') return 'Activa';
-    if (estado === 'PAUSADO') return 'Pausada';
-    return 'Cerrada';
+    if (estado === 'BORRADOR') return 'Borrador';
+    return 'Oculta';
   }
 
   private formatearFecha(fecha: string | null): string {

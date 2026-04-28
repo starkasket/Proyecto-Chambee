@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { JobCardComponent } from './job-card.component';
 
@@ -8,12 +9,19 @@ describe('JobCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [JobCardComponent]
+      imports: [JobCardComponent],
+      providers: [provideRouter([])]
     })
     .compileComponents();
     
     fixture = TestBed.createComponent(JobCardComponent);
     component = fixture.componentInstance;
+    component.job = {
+      id: 1,
+      imageUrl: 'assets/LogoChambee.png',
+      title: 'Vacante de prueba',
+      company: 'Chambee'
+    };
     fixture.detectChanges();
   });
 

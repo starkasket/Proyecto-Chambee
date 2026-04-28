@@ -21,6 +21,7 @@ interface EmployerJobFormValue {
   codigo_postal: string;
   salario: number;
   modalidad: string;
+  etiquetas: string[];
 }
 
 interface NotificationItem {
@@ -68,18 +69,19 @@ export class EmployerJobCreateComponent implements OnInit {
   notificationsOpen = false;
   hasUnreadNotifications = true;
   isMobile = false;
+  categoriasDisponibles: string[] = [];
 
   notifications: NotificationItem[] = [
-    { id: 1, title: 'Consejo rapido', message: 'Agrega salario y modalidad para mejorar la conversion.', time: 'Hace 2 min', read: false },
+    { id: 1, title: 'Consejo rápido', message: 'Agrega salario, modalidad y etiquetas para mejorar la conversión.', time: 'Hace 2 min', read: false },
     { id: 2, title: 'Perfil actualizado', message: 'Tu empresa ya puede publicar nuevas ofertas.', time: 'Hace 1 hora', read: true }
   ];
 
   readonly opcionesEdad = [
     'Sin especificar',
     '18+',
-    '18 a 25 años',
-    '26 a 35 años',
-    '36 a 45 años',
+    '18-25 años',
+    '26-35 años',
+    '36-45 años',
     '46+'
   ];
 
@@ -87,7 +89,7 @@ export class EmployerJobCreateComponent implements OnInit {
     'Sin especificar',
     'Secundaria',
     'Preparatoria',
-    'Tecnico',
+    'Técnico',
     'Universidad trunca',
     'Licenciatura',
     'Ingenieria',
@@ -96,9 +98,9 @@ export class EmployerJobCreateComponent implements OnInit {
 
   readonly opcionesExperiencia = [
     'Sin experiencia',
-    'Menos de 1 año',
-    '1 a 2 años',
-    '3 a 5 años',
+    'Menos de 1 ano',
+    '1 a 2 anos',
+    '3 a 5 anos',
     'Más de 5 años'
   ];
 
@@ -108,7 +110,6 @@ export class EmployerJobCreateComponent implements OnInit {
     'Muy urgente'
   ];
 
-  // Los campos siguen la estructura real de la tabla `anuncios`.
   readonly ofertaForm = this.fb.group({
     titulo: ['', [Validators.required, Validators.maxLength(160)]],
     descripcion: ['', [Validators.required, Validators.maxLength(400)]],
@@ -123,7 +124,8 @@ export class EmployerJobCreateComponent implements OnInit {
     calle: ['', [Validators.required, Validators.maxLength(150)]],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
     salario: [null as number | null, [Validators.required, Validators.min(1)]],
-    modalidad: ['Presencial', [Validators.required]]
+    modalidad: ['Presencial', [Validators.required]],
+    etiquetas: this.fb.nonNullable.control<string[]>([], [Validators.required])
   });
 
   constructor(
@@ -135,29 +137,35 @@ export class EmployerJobCreateComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // 1. Primero cargamos la base de datos de códigos postales
+    this.api.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        this.categoriasDisponibles = categorias.map((categoria) => categoria.nombre);
+      },
+      error: () => {
+        this.categoriasDisponibles = [];
+      }
+    });
+
     this.api.getSepomex().subscribe(data => {
       this.sepomex = data;
 
-      // 2. Una vez que tenemos los datos, cargamos la sesión y el perfil
       const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
       const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
 
       if (!usuarioRaw) {
-        this.error = 'No hay sesion activa para crear una oferta laboral.';
+        this.error = 'No hay sesión activa para crear una oferta laboral.';
         return;
       }
 
       const usuario = JSON.parse(usuarioRaw);
       if (usuario.rol !== 'empleador' || !usuario.id) {
-        this.error = 'Solo un empleador con sesion activa puede crear ofertas laborales.';
+        this.error = 'Solo un empleador con sesión activa puede crear ofertas laborales.';
         return;
       }
 
       this.employerId = usuario.id;
       this.empresaNombre = usuario.nombre || this.empresaNombre;
 
-      // 3. Cargamos los datos del empleador (del local o de la API)
       if (perfilLocalRaw) {
         const perfil = JSON.parse(perfilLocalRaw);
         this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
@@ -169,10 +177,8 @@ export class EmployerJobCreateComponent implements OnInit {
           codigo_postal: perfil.codigo_postal || ''
         });
 
-        // Si ya tiene CP, llenamos las colonias de inmediato
         if (perfil.codigo_postal) {
           this.buscarCP();
-          // Forzamos a que mantenga la colonia guardada
           this.ofertaForm.patchValue({ colonia: perfil.colonia });
         }
       } else {
@@ -233,7 +239,8 @@ export class EmployerJobCreateComponent implements OnInit {
           calle: payload.calle,
           codigo_postal: payload.codigo_postal,
           salario: null,
-          modalidad: 'Presencial'
+          modalidad: 'Presencial',
+          etiquetas: []
         });
         this.mostrarModalExito('Tu oferta laboral fue publicada exitosamente.');
       },
@@ -289,6 +296,20 @@ export class EmployerJobCreateComponent implements OnInit {
     return Boolean(control && control.invalid && (control.touched || control.dirty));
   }
 
+  get etiquetasSeleccionadas(): string[] {
+    return this.ofertaForm.controls.etiquetas.value;
+  }
+
+  toggleEtiqueta(etiqueta: string) {
+    const actuales = this.etiquetasSeleccionadas;
+    const nuevasEtiquetas = actuales.includes(etiqueta)
+      ? actuales.filter((item) => item !== etiqueta)
+      : [...actuales, etiqueta];
+
+    this.ofertaForm.controls.etiquetas.setValue(nuevasEtiquetas);
+    this.ofertaForm.controls.etiquetas.markAsTouched();
+  }
+
   @HostListener('document:click')
   onDocumentClick() {
     if (this.notificationsOpen) {
@@ -311,7 +332,7 @@ export class EmployerJobCreateComponent implements OnInit {
       this.isMobile = false;
     }
   }
-  
+
   modalMensaje = '';
   sepomex: any[] = [];
   colonias: string[] = [];
@@ -319,7 +340,6 @@ export class EmployerJobCreateComponent implements OnInit {
   hoy = new Date().toISOString().split('T')[0];
 
   buscarCP() {
-    // 1. Obtenemos el CP del formulario reactivo
     const cp = this.ofertaForm.get('codigo_postal')?.value;
 
     if (!cp) {
@@ -327,16 +347,13 @@ export class EmployerJobCreateComponent implements OnInit {
       return;
     }
 
-    // 2. Filtramos en la variable sepomex que ya cargamos en el ngOnInit
     const resultados = this.sepomex.filter(r => String(r.cp) === String(cp).trim());
 
     if (resultados.length > 0) {
-      // 3. Actualizamos los campos de estado y ciudad
       this.ofertaForm.patchValue({
         estado: resultados[0].estado,
         ciudad: resultados[0].ciudad
       });
-      // 4. Llenamos el array de colonias para el select
       this.colonias = resultados.map(r => r.colonia);
     } else {
       this.mostrarModal('Código postal no encontrado');
@@ -344,8 +361,6 @@ export class EmployerJobCreateComponent implements OnInit {
       this.ofertaForm.patchValue({ estado: '', ciudad: '', colonia: '' });
     }
   }
-
-  // --- MODALES ---
 
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;

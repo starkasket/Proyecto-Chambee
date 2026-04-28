@@ -45,19 +45,16 @@
 
     <div class="container main-card-container" *ngIf="jobData">
         <div class="chambee-card">
-
             <div class="company-col">
                 <div class="company-info-top">
-                    <img [src]="jobData.companyLogo" alt="Logo de la empresa" class="company-logo">
+                    <img [src]="jobData.companyLogo || 'assets/LogoChambee.png'" alt="Logo de la empresa" class="company-logo">
                     <h3 class="company-name">{{ jobData.companyName }}</h3>
                     <p class="company-desc">{{ jobData.companyDesc }}</p>
                 </div>
 
                 <div class="ubicacion-section" *ngIf="mostrarMapa">
                     <h4 class="ubicacion-titulo">Ubicación</h4>
-                    <p class="ubicacion-direccion">
-                        {{ jobData.direccion }}
-                    </p>
+                    <p class="ubicacion-direccion">{{ jobData.ubicacion }}</p>
                     <div id="map"></div>
                 </div>
             </div>
@@ -68,23 +65,28 @@
                 <div class="job-header">
                     <div class="job-title-block">
                         <span class="job-urgency-badge" *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
+                        <span class="job-match-badge" *ngIf="jobData.interesMatch">Coincide con tus intereses</span>
                         <h2>{{ jobData.title }}</h2>
+                        <div class="job-tags" *ngIf="jobData.tags?.length">
+                            <span class="job-tag" *ngFor="let tag of jobData.tags">{{ tag }}</span>
+                        </div>
                     </div>
                     <i class="bi bi-bookmark fs-3" style="cursor: pointer;" title="Guardar vacante"></i>
                 </div>
 
                 <div class="job-requirements">
-                    <h4>Perfil Básico:</h4>
+                    <h4>Perfil básico:</h4>
                     <ul>
                         <li><strong>Edad:</strong> {{ jobData.edad }}</li>
                         <li><strong>Escolaridad:</strong> {{ jobData.escolaridad }}</li>
                         <li><strong>Experiencia:</strong> {{ jobData.experiencia }}</li>
                     </ul>
 
-                    <h4>Disponibilidad y Actitud:</h4>
+                    <h4>Disponibilidad y detalles:</h4>
                     <ul>
                         <li><strong>Modalidad:</strong> {{ jobData.disponibilidad }}</li>
-                        <li><strong>Detalles del puesto:</strong><br>
+                        <li>
+                            <strong>Detalles del puesto:</strong><br>
                             <p class="mt-2" style="white-space: pre-wrap; font-size: 0.95rem;">{{ jobData.higiene }}</p>
                         </li>
                     </ul>
@@ -99,7 +101,7 @@
                     </div>
                     <div class="actions">
                         <button class="btn-ver-mas" (click)="toggleVerMas()">
-                            {{ mostrarMapa ? 'Ver menos' : 'Ver Ubicación' }}
+                            {{ mostrarMapa ? 'Ver menos' : 'Ver ubicación' }}
                         </button>
                         <button class="btn-postular" (click)="postular()">Postular</button>
                     </div>
@@ -116,7 +118,7 @@
     </div>
 
     <div class="container related-section mt-5">
-        <h3 class="mb-4 fw-bold">Empleos Similares</h3>
+        <h3 class="mb-4 fw-bold">Empleos similares</h3>
         <div class="jobs-grid">
             <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)">
                 <img [src]="relJob.img" [alt]="relJob.company" />
@@ -124,6 +126,9 @@
                     <h4>{{ relJob.company }}</h4>
                     <p>{{ relJob.title }}</p>
                     <p class="salary">{{ relJob.salary }}</p>
+                    <div class="job-tags" *ngIf="relJob.tags?.length">
+                        <span class="job-tag" *ngFor="let tag of relJob.tags | slice:0:2">{{ tag }}</span>
+                    </div>
                     <div class="job-footer-card">
                         ★ {{ relJob.rating }} <span>{{ relJob.applicants }} postulados</span>
                     </div>

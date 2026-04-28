@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-job-preferences',
@@ -9,36 +10,36 @@ import { Router } from '@angular/router';
   templateUrl: './job-preferences.component.html',
   styleUrl: './job-preferences.component.css'
 })
-export class JobPreferencesComponent {
-  tags: string[] = [
-    'Tecnología / TI',
-    'Administración / Oficina',
-    'Ventas',
-    'Atención al cliente',
-    'Marketing / Publicidad',
-    'Diseño',
-    'Educación / Docencia',
-    'Salud / Medicina',
-    'Ingeniería',
-    'Construcción / Obra',
-    'Manufactura / Producción',
-    'Logística / Transporte',
-    'Restaurantes / Gastronomía',
-    'Turismo / Hotelería',
-    'Servicios de limpieza',
-    'Seguridad / Vigilancia',
-    'Recursos Humanos',
-    'Finanzas / Contabilidad',
-    'Legal / Derecho',
-    'Agricultura / Ganadería',
-    'Servicios técnicos / Mantenimiento'
-  ];
-  
+export class JobPreferencesComponent implements OnInit {
+  tags: string[] = [];
   modalMensaje = '';
-  // Arreglo que guardará lo que el usuario seleccione
   selectedTags: string[] = [];
+  guardando = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private api: ApiService
+  ) {}
+
+  ngOnInit(): void {
+    this.api.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        this.tags = categorias.map((categoria) => categoria.nombre);
+      },
+      error: () => {
+        this.tags = [];
+      }
+    });
+
+    this.api.obtenerMisEtiquetas().subscribe({
+      next: (response) => {
+        this.selectedTags = Array.isArray(response?.etiquetas) ? response.etiquetas : [];
+      },
+      error: () => {
+        this.selectedTags = [];
+      }
+    });
+  }
 
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -57,38 +58,35 @@ export class JobPreferencesComponent {
     }
   }
 
-  // Función que se ejecuta al hacer clic en una etiqueta
   toggleTag(tag: string) {
     const index = this.selectedTags.indexOf(tag);
     if (index > -1) {
-      // Si la etiqueta ya estaba seleccionada, la quitamos
       this.selectedTags.splice(index, 1);
     } else {
-      // Si no estaba, la agregamos
       this.selectedTags.push(tag);
     }
   }
 
-  // Función para el botón final de guardar
-  
-saveAndContinue() {
-  if (this.selectedTags.length === 0) {
-    this.mostrarModal('¡Elige lo que te apasiona para encontrar tu Chamba ideal!');
-    return;
-  }
-  console.log('Etiquetas guardadas:', this.selectedTags);
-  this.router.navigate(['/home-user']);
+  saveAndContinue() {
+    if (this.selectedTags.length === 0) {
+      this.mostrarModal('Elige al menos una etiqueta para personalizar tus recomendaciones.');
+      return;
+    }
 
-    
-    console.log('Etiquetas guardadas:', this.selectedTags);
-    // Redirigimos a la página de inicio
-    this.router.navigate(['/home-user']);
+    this.guardando = true;
+    this.api.guardarMisEtiquetas(this.selectedTags).subscribe({
+      next: () => {
+        this.guardando = false;
+        this.router.navigate(['/home-user']);
+      },
+      error: () => {
+        this.guardando = false;
+        this.mostrarModal('No fue posible guardar tus intereses. Intenta nuevamente.');
+      }
+    });
   }
 
-  // Función para omitir este paso
   skipPreferences() {
-    console.log('El usuario decidió omitir la selección de etiquetas.');
-    // Lo mandamos directo al home sin guardar nada
     this.router.navigate(['/home-user']);
   }
 }

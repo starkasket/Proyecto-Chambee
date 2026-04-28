@@ -133,7 +133,10 @@
           <ng-container *ngSwitchCase="'anuncios'">
             <div class="section-head">
               <h3>Mis anuncios</h3>
-              <button class="inline-create-btn" type="button" (click)="crearOferta()">Nueva oferta</button>
+              <div class="d-flex gap-2">
+                <button class="inline-create-btn" type="button" (click)="crearOferta()">Nueva oferta</button>
+                <button class="inline-create-btn secondary" type="button" (click)="administrarVacantes()">Administrar</button>
+              </div>
             </div>
 
             <div class="announcements-row">
@@ -148,6 +151,7 @@
                   <p class="vacancy-meta">{{ anuncio.ubicacion }} • {{ anuncio.fecha }}</p>
                   <p>{{ anuncio.resumen }}</p>
                   <p class="meta">{{ anuncio.candidatos }} postulantes</p>
+                  <button class="link-btn" type="button" (click)="administrarVacantes()">Editar vacante</button>
                 </div>
               </article>
             </div>

@@ -90,9 +90,108 @@ const LIMITES_CAMBIO = {
   sexo: 1
 };
 
+const CATEGORIAS_BASE = [
+  { nombre: "Tecnología / TI", descripcion: "Vacantes de desarrollo, soporte, datos e infraestructura." },
+  { nombre: "Administración / Oficina", descripcion: "Puestos administrativos, recepción y operaciones de oficina." },
+  { nombre: "Ventas", descripcion: "Roles comerciales, prospección y cierre de ventas." },
+  { nombre: "Atención al cliente", descripcion: "Soporte, seguimiento y servicio directo al cliente." },
+  { nombre: "Marketing / Publicidad", descripcion: "Contenido, campañas, redes sociales y posicionamiento." },
+  { nombre: "Diseño", descripcion: "Vacantes creativas de diseño gráfico, UX/UI y multimedia." },
+  { nombre: "Educación / Docencia", descripcion: "Roles de enseñanza, capacitación y acompañamiento académico." },
+  { nombre: "Salud / Medicina", descripcion: "Puestos clínicos, de enfermería y servicios de salud." },
+  { nombre: "Ingeniería", descripcion: "Vacantes de ingeniería industrial, civil, mecánica y afines." },
+  { nombre: "Construcción / Obra", descripcion: "Trabajos de obra, supervisión y mantenimiento estructural." },
+  { nombre: "Manufactura / Producción", descripcion: "Operaciones de planta, líneas de producción y calidad." },
+  { nombre: "Logística / Transporte", descripcion: "Distribución, almacén, rutas y movilidad." },
+  { nombre: "Restaurantes / Gastronomía", descripcion: "Cocina, meseros, barra y operación restaurantera." },
+  { nombre: "Turismo / Hotelería", descripcion: "Recepción, hospedaje, tours y atención al visitante." },
+  { nombre: "Servicios de limpieza", descripcion: "Limpieza domestica, comercial e industrial." },
+  { nombre: "Seguridad / Vigilancia", descripcion: "Monitoreo, vigilancia y prevención." },
+  { nombre: "Recursos Humanos", descripcion: "Reclutamiento, nómina, cultura y administración de personal." },
+  { nombre: "Finanzas / Contabilidad", descripcion: "Contabilidad, tesorería, análisis y administración financiera." },
+  { nombre: "Legal / Derecho", descripcion: "Asuntos jurídicos, contratos y cumplimiento." },
+  { nombre: "Agricultura / Ganadería", descripcion: "Producción agropecuaria, campo y cadena primaria." },
+  { nombre: "Servicios técnicos / Mantenimiento", descripcion: "Soporte técnico, reparación e instalaciones." }
+];
+
+async function ensureCategoriasBase(client = pool) {
+  const renombres = [
+    ["Tecnologia / TI", "Tecnología / TI"],
+    ["Administracion / Oficina", "Administración / Oficina"],
+    ["Atencion al cliente", "Atención al cliente"],
+    ["Diseno", "Diseño"],
+    ["Educacion / Docencia", "Educación / Docencia"],
+    ["Ingenieria", "Ingeniería"],
+    ["Construccion / Obra", "Construcción / Obra"],
+    ["Manufactura / Produccion", "Manufactura / Producción"],
+    ["Logistica / Transporte", "Logística / Transporte"],
+    ["Restaurantes / Gastronomia", "Restaurantes / Gastronomía"],
+    ["Turismo / Hoteleria", "Turismo / Hotelería"],
+    ["Agricultura / Ganaderia", "Agricultura / Ganadería"],
+    ["Servicios tecnicos / Mantenimiento", "Servicios técnicos / Mantenimiento"]
+  ];
+
+  for (const [anterior, nuevo] of renombres) {
+    await client.query(
+      `UPDATE categorias
+       SET nombre = $2
+       WHERE nombre = $1`,
+      [anterior, nuevo]
+    );
+  }
+
+  for (const categoria of CATEGORIAS_BASE) {
+    await client.query(
+      `INSERT INTO categorias (nombre, descripcion)
+       VALUES ($1, $2)
+       ON CONFLICT (nombre) DO NOTHING`,
+      [categoria.nombre, categoria.descripcion]
+    );
+  }
+}
+
+async function obtenerCategoriasPorNombre(nombres = [], client = pool) {
+  const nombresNormalizados = [...new Set(
+    nombres
+      .filter((item) => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  )];
+
+  if (!nombresNormalizados.length) {
+    return [];
+  }
+
+  const result = await client.query(
+    `SELECT id_categoria, nombre
+     FROM categorias
+     WHERE LOWER(nombre) = ANY($1::text[])`,
+    [nombresNormalizados.map((nombre) => nombre.toLowerCase())]
+  );
+
+  return result.rows;
+}
+
 /* ===== ENDPOINT DE PRUEBA ===== */
 app.get("/", (req, res) => {
   res.send("Servidor Chambee funcionando correctamente ");
+});
+
+app.get("/categorias", async (_req, res) => {
+  try {
+    await ensureCategoriasBase();
+
+    const result = await pool.query(
+      `SELECT id_categoria, nombre, descripcion
+       FROM categorias
+       ORDER BY nombre ASC`
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener categorias" });
+  }
 });
 
 /* ===== REGISTRO DE POSTULANTES ===== */
@@ -572,13 +671,102 @@ app.put("/empleadores/:id/perfil", async (req, res) => {
 });
 */
 
-app.get("/empleadores/:id/anuncios", async (req, res) => {
+app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), async (req, res) => {
   const { id } = req.params;
+
+  if (String(req.user.id) !== String(id)) {
+    return res.status(403).json({ error: "No autorizado para ver estas vacantes" });
+  }
 
   try {
     // El home y el perfil del empleador reutilizan esta lista resumida.
     const query = `SELECT
-      id_anuncio,
+      a.id_anuncio,
+      a.titulo,
+      a.descripcion,
+      a.tipo_anuncio,
+      a.urgencia,
+      a.edad,
+      a.educacion,
+      a.estado,
+      a.ciudad,
+      a.colonia,
+      a.calle,
+      a.codigo_postal,
+      a.salario,
+      a.modalidad,
+      a.fecha_publicacion,
+      a.estado_anuncio,
+      a.vistas,
+      COALESCE(
+        ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
+        ARRAY[]::VARCHAR[]
+      ) AS categorias
+    FROM anuncios a
+    LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
+    LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
+    WHERE a.id_empleador = $1
+    GROUP BY a.id_anuncio
+    ORDER BY a.fecha_publicacion DESC NULLS LAST`;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener anuncios del empleador" });
+  }
+});
+
+app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { id } = req.params;
+  if (String(req.user.id) !== String(id)) {
+    return res.status(403).json({ error: "No autorizado para crear vacantes en esta cuenta" });
+  }
+  const {
+    titulo,
+    descripcion,
+    tipo_anuncio,
+    urgencia = "Normal",
+    edad = "Sin especificar",
+    educacion = "Sin especificar",
+    estado,
+    ciudad,
+    colonia,
+    calle,
+    codigo_postal,
+    salario,
+    modalidad,
+    estado_anuncio = "ACTIVO",
+    etiquetas = []
+  } = req.body;
+
+  // Validar campos requeridos
+  if (!titulo || !descripcion || !estado || !ciudad || !colonia || !calle || !codigo_postal || salario === null || salario === undefined || !modalidad) {
+    return res.status(400).json({ error: "Faltan campos requeridos" });
+  }
+
+  // Convertir salario a número válido
+  const salarioNumero = parseFloat(salario);
+  if (isNaN(salarioNumero) || salarioNumero <= 0) {
+    return res.status(400).json({ error: "El salario debe ser un número válido mayor a 0" });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    await ensureCategoriasBase(client);
+
+    // Se crea una oferta laboral ligada al empleador autenticado.
+    const query = `INSERT INTO anuncios (
+      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion,
+      estado, ciudad, colonia, calle, codigo_postal, salario, modalidad,
+      estado_anuncio, id_empleador, vistas
+    )
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,0)
+    RETURNING *`;
+
+    const values = [
       titulo,
       descripcion,
       tipo_anuncio,
@@ -590,53 +778,259 @@ app.get("/empleadores/:id/anuncios", async (req, res) => {
       colonia,
       calle,
       codigo_postal,
-      salario,
+      salarioNumero,
       modalidad,
-      fecha_publicacion,
       estado_anuncio,
-      vistas
-    FROM anuncios
-    WHERE id_empleador = $1
-    ORDER BY fecha_publicacion DESC NULLS LAST`;
+      id,
+    ];
 
-    const result = await pool.query(query, [id]);
-    res.json(result.rows);
+    const result = await client.query(query, values);
+    const anuncio = result.rows[0];
+
+    const categorias = await obtenerCategoriasPorNombre(etiquetas, client);
+
+    for (const categoria of categorias) {
+      await client.query(
+        `INSERT INTO categoriaAnuncio (id_categoria, id_anuncio)
+         VALUES ($1, $2)`,
+        [categoria.id_categoria, anuncio.id_anuncio]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      message: "Oferta laboral creada correctamente",
+      anuncio: {
+        ...anuncio,
+        categorias: categorias.map((categoria) => categoria.nombre)
+      },
+    });
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error(err);
-    res.status(500).json({ error: "Error al obtener anuncios del empleador" });
+    res.status(500).json({
+      error: "Error al crear la oferta laboral",
+      detail: err.message,
+    });
+  } finally {
+    client.release();
   }
 });
 
-app.post("/empleadores/:id/anuncios", async (req, res) => {
-  const { id } = req.params;
-  const {
-    titulo, descripcion, tipo_anuncio, urgencia = 'Normal',
-    edad = 'Sin especificar', educacion = 'Sin especificar',
-    experiencia = 'Sin experiencia', // <-- Campo nuevo
-    estado, ciudad, colonia, calle, codigo_postal,
-    salario, modalidad, estado_anuncio = 'ACTIVO'
-  } = req.body;
+app.get("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { id, anuncioId } = req.params;
+
+  if (String(req.user.id) !== String(id)) {
+    return res.status(403).json({ error: "No autorizado para ver esta vacante" });
+  }
 
   try {
-    const query = `INSERT INTO anuncios (
-      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, experiencia,
-      estado, ciudad, colonia, calle, codigo_postal, salario, modalidad,
-      estado_anuncio, id_empleador, vistas
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,0)
-    RETURNING *`;
+    const result = await pool.query(
+      `SELECT
+        a.id_anuncio,
+        a.titulo,
+        a.descripcion,
+        a.tipo_anuncio,
+        a.urgencia,
+        a.edad,
+        a.educacion,
+        a.estado,
+        a.ciudad,
+        a.colonia,
+        a.calle,
+        a.codigo_postal,
+        a.salario,
+        a.modalidad,
+        a.fecha_publicacion,
+        a.estado_anuncio,
+        a.vistas,
+        COALESCE(
+          ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
+          ARRAY[]::VARCHAR[]
+        ) AS categorias
+      FROM anuncios a
+      LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
+      LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
+      WHERE a.id_empleador = $1 AND a.id_anuncio = $2
+      GROUP BY a.id_anuncio`,
+      [id, anuncioId]
+    );
 
-    const values = [
-      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, experiencia,
-      estado, ciudad, colonia, calle, codigo_postal, salario, modalidad,
-      estado_anuncio, id
-    ];
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Vacante no encontrada" });
+    }
 
-    const result = await pool.query(query, values);
-    res.status(201).json({ message: "Oferta creada", anuncio: result.rows[0] });
+    res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error al crear la oferta", detail: err.message });
+    res.status(500).json({ error: "Error al obtener la vacante" });
+  }
+});
+
+app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { id, anuncioId } = req.params;
+  if (String(req.user.id) !== String(id)) {
+    return res.status(403).json({ error: "No autorizado para editar esta vacante" });
+  }
+  const {
+    titulo,
+    descripcion,
+    tipo_anuncio,
+    urgencia = 'Normal',
+    edad = 'Sin especificar',
+    educacion = 'Sin especificar',
+    estado,
+    ciudad,
+    colonia,
+    calle,
+    codigo_postal,
+    salario,
+    modalidad,
+    etiquetas = []
+  } = req.body;
+
+  // Validar campos requeridos
+  if (!titulo || !descripcion || !estado || !ciudad || !colonia || !calle || !codigo_postal || salario === null || salario === undefined || !modalidad) {
+    return res.status(400).json({ error: "Faltan campos requeridos" });
+  }
+
+  // Convertir salario a número válido
+  const salarioNumero = parseFloat(salario);
+  if (isNaN(salarioNumero) || salarioNumero <= 0) {
+    return res.status(400).json({ error: "El salario debe ser un número válido mayor a 0" });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    await ensureCategoriasBase(client);
+
+    const updateResult = await client.query(
+      `UPDATE anuncios
+       SET titulo = $1,
+           descripcion = $2,
+           tipo_anuncio = $3,
+           urgencia = $4,
+           edad = $5,
+           educacion = $6,
+           estado = $7,
+           ciudad = $8,
+           colonia = $9,
+           calle = $10,
+           codigo_postal = $11,
+           salario = $12,
+           modalidad = $13
+       WHERE id_empleador = $14 AND id_anuncio = $15
+       RETURNING
+         id_anuncio,
+         titulo,
+         descripcion,
+         tipo_anuncio,
+         urgencia,
+         edad,
+         educacion,
+         estado,
+         ciudad,
+         colonia,
+         calle,
+         codigo_postal,
+         salario,
+         modalidad,
+         fecha_publicacion,
+         estado_anuncio,
+         vistas`,
+      [
+        titulo,
+        descripcion,
+        tipo_anuncio,
+        urgencia,
+        edad,
+        educacion,
+        estado,
+        ciudad,
+        colonia,
+        calle,
+        codigo_postal,
+        salarioNumero,
+        modalidad,
+        id,
+        anuncioId
+      ]
+    );
+
+    if (!updateResult.rows.length) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Vacante no encontrada" });
+    }
+
+    await client.query(
+      "DELETE FROM categoriaAnuncio WHERE id_anuncio = $1",
+      [anuncioId]
+    );
+
+    const categorias = await obtenerCategoriasPorNombre(etiquetas, client);
+
+    for (const categoria of categorias) {
+      await client.query(
+        `INSERT INTO categoriaAnuncio (id_categoria, id_anuncio)
+         VALUES ($1, $2)`,
+        [categoria.id_categoria, anuncioId]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.json({
+      message: "Vacante actualizada correctamente",
+      anuncio: {
+        ...updateResult.rows[0],
+        categorias: categorias.map((categoria) => categoria.nombre)
+      }
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({ error: "Error al actualizar la vacante", detail: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+app.patch("/empleadores/:id/anuncios/:anuncioId/estado", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { id, anuncioId } = req.params;
+  const { estado_anuncio } = req.body;
+  const estadosPermitidos = ["ACTIVO", "BORRADOR", "OCULTO"];
+
+  if (String(req.user.id) !== String(id)) {
+    return res.status(403).json({ error: "No autorizado para cambiar esta vacante" });
+  }
+
+  if (!estado_anuncio || !estadosPermitidos.includes(estado_anuncio)) {
+    return res.status(400).json({ error: "Estado de anuncio no válido. Debe ser: ACTIVO, BORRADOR, OCULTO" });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE anuncios
+       SET estado_anuncio = $1
+       WHERE id_empleador = $2 AND id_anuncio = $3
+       RETURNING id_anuncio, estado_anuncio`,
+      [estado_anuncio, id, anuncioId]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Vacante no encontrada. Verifique que el ID sea válido." });
+    }
+
+    res.json({
+      message: "Estado de vacante actualizado correctamente",
+      anuncio: result.rows[0]
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al actualizar el estado de la vacante", detail: err.message });
   }
 });
 
@@ -648,10 +1042,17 @@ app.get("/anuncios", async (_req, res) => {
       a.*,
       e.nombre_empresa,
       e.descripcion AS descripcion_empresa,
-      e.foto_perfil AS foto_empresa 
+      e.foto_perfil AS foto_empresa,
+      COALESCE(
+        ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
+        ARRAY[]::VARCHAR[]
+      ) AS categorias
     FROM anuncios a
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
+    LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
+    LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
     WHERE a.estado_anuncio = 'ACTIVO'
+    GROUP BY a.id_anuncio, e.nombre_empresa, e.descripcion, e.foto_perfil
     ORDER BY a.fecha_publicacion DESC NULLS LAST`;
 
     const result = await pool.query(query);
@@ -662,6 +1063,69 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
+app.get("/mi-etiquetas", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  try {
+    await ensureCategoriasBase();
+
+    const result = await pool.query(
+      `SELECT c.id_categoria, c.nombre
+       FROM seguimiento s
+       INNER JOIN categorias c ON c.id_categoria = s.id_categoria
+       WHERE s.id_postulante = $1
+       ORDER BY c.nombre ASC`,
+      [req.user.id]
+    );
+
+    res.json({
+      etiquetas: result.rows.map((row) => row.nombre),
+      categorias: result.rows
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener intereses del postulante" });
+  }
+});
+
+app.put("/mi-etiquetas", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const etiquetas = Array.isArray(req.body?.etiquetas) ? req.body.etiquetas : [];
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    await ensureCategoriasBase(client);
+
+    await client.query(
+      "DELETE FROM seguimiento WHERE id_postulante = $1",
+      [req.user.id]
+    );
+
+    const categorias = await obtenerCategoriasPorNombre(etiquetas, client);
+
+    for (const categoria of categorias) {
+      await client.query(
+        `INSERT INTO seguimiento (id_categoria, id_postulante)
+         VALUES ($1, $2)
+         ON CONFLICT (id_categoria, id_postulante) DO NOTHING`,
+        [categoria.id_categoria, req.user.id]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.json({
+      message: "Intereses actualizados correctamente",
+      etiquetas: categorias.map((categoria) => categoria.nombre)
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({ error: "Error al guardar intereses" });
+  } finally {
+    client.release();
+  }
+});
+
+/* ===== LOGIN ===== */
 app.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;
 

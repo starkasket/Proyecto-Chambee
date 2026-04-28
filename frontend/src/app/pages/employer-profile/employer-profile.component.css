@@ -566,6 +566,12 @@
   box-shadow: var(--shadow-soft);
 }
 
+.inline-create-btn.secondary {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+}
+
 .state-pill {
   display: inline-flex;
   align-items: center;

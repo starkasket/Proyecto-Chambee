@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { CarouselComponent } from './carousel.component';
 
@@ -8,12 +9,18 @@ describe('CarouselComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CarouselComponent]
+      imports: [CarouselComponent],
+      providers: [provideRouter([])]
     })
     .compileComponents();
     
     fixture = TestBed.createComponent(CarouselComponent);
     component = fixture.componentInstance;
+    component.job = {
+      id: 1,
+      imageUrl: 'assets/LogoChambee.png',
+      title: 'Vacante de prueba'
+    };
     fixture.detectChanges();
   });
 

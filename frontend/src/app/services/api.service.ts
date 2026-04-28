@@ -12,7 +12,6 @@ export class ApiService {
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
-  // --- AYUDANTE PARA HEADERS ---
   private getHeaders() {
     return {
       headers: new HttpHeaders({
@@ -21,7 +20,6 @@ export class ApiService {
     };
   }
 
-  // --- SECCIÓN: AUTENTICACIÓN Y PERFIL ---
   registrarEmpleador(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/empleadores/registro`, datos);
   }
@@ -47,7 +45,6 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/mi-perfil/cv`, { archivo_cv: archivoUrl }, this.getHeaders());
   }
 
-  // --- SECCIÓN: EMPLEADORES ---
   obtenerPerfilEmpleador(idEmpleador: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, this.getHeaders());
   }
@@ -60,27 +57,46 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, this.getHeaders());
   }
 
+  obtenerAnuncioEmpleador(idEmpleador: number | string, idAnuncio: number | string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios/${idAnuncio}`, this.getHeaders());
+  }
+
   crearAnuncioEmpleador(idEmpleador: number | string, datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, datos, this.getHeaders());
   }
 
-  // --- SECCIÓN: ANUNCIOS PÚBLICOS (POSTULANTES) ---
+  actualizarAnuncioEmpleador(idEmpleador: number | string, idAnuncio: number | string, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios/${idAnuncio}`, datos, this.getHeaders());
+  }
+
+  actualizarEstadoAnuncioEmpleador(idEmpleador: number | string, idAnuncio: number | string, estado_anuncio: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios/${idAnuncio}/estado`, { estado_anuncio }, this.getHeaders());
+  }
+
   obtenerAnunciosPublicos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/anuncios`);
   }
 
-  // NUEVO: Obtener un solo anuncio por ID (Mucho más eficiente)
   obtenerAnuncioPorId(idAnuncio: number | string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/anuncios/${idAnuncio}`);
   }
 
-  // NUEVO: Postularse a una vacante
   postularAAnuncio(idAnuncio: number | string): Observable<any> {
-    // Normalmente enviamos un objeto vacío o datos extra, el backend saca el ID del postulante del Token
     return this.http.post(`${this.apiUrl}/anuncios/${idAnuncio}/postular`, {}, this.getHeaders());
   }
 
-  // --- SECCIÓN: UTILIDADES ---
+  obtenerCategorias(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/categorias`);
+  }
+
+  obtenerMisEtiquetas(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/mi-etiquetas`, this.getHeaders());
+  }
+
+  guardarMisEtiquetas(etiquetas: string[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/mi-etiquetas`, { etiquetas }, this.getHeaders());
+  }
+
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');
   }

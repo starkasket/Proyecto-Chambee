@@ -136,6 +136,9 @@
   <div class="left">
     
     <h2 class="mb-4" style="font-weight: 700; color: var(--text-color);">Recomendado para ti</h2>
+    <div class="d-flex flex-wrap gap-2 mb-4" *ngIf="etiquetasInteres.length">
+      <span class="featured-chip" *ngFor="let etiqueta of etiquetasInteres">Interés: {{ etiqueta }}</span>
+    </div>
 
     <div class="carousel" *ngIf="slides.length; else noFeaturedJobs">
       <div class="carousel-container">
@@ -168,6 +171,7 @@
                 <span class="featured-chip">{{ slide.company }}</span>
                 <span class="featured-chip">{{ slide.mode }}</span>
                 <span class="featured-chip">{{ slide.location }}</span>
+                <span class="featured-chip" *ngFor="let tag of slide.tags | slice:0:3">{{ tag }}</span>
               </div>
 
              <button class="btn featured-btn" (click)="openFeaturedJob(slide.id); $event.stopPropagation()">Ver más</button>
@@ -198,6 +202,9 @@
           <h4>{{ job.company }}</h4>
           <p>{{ job.title }}</p>
           <p class="salary">{{ job.salary }}</p>
+          <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
+            <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
+          </div>
           <div class="job-footer">★ {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
         </div>
       </div>

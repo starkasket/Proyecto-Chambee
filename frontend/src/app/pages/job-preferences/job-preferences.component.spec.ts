@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { JobPreferencesComponent } from './job-preferences.component';
 
@@ -9,7 +11,11 @@ describe('JobPreferencesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [JobPreferencesComponent],
-      providers: [provideRouter([])] 
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ] 
     })
     .compileComponents();
       

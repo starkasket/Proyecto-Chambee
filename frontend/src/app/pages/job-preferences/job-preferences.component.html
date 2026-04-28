@@ -43,7 +43,7 @@
       <div class="d-flex flex-column align-items-center mt-2 gap-2">
         
         <button class="btn-crear w-100" type="button" (click)="saveAndContinue()">
-          Hecho
+          {{ guardando ? 'Guardando...' : 'Hecho' }}
         </button>
 
         <button class="btn btn-link text-secondary text-decoration-none mt-2" (click)="skipPreferences()">

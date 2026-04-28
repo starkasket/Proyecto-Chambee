@@ -324,8 +324,8 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
   private mapAnnouncementState(estado: string): string {
     if (estado === 'ACTIVO') return 'Activa';
-    if (estado === 'PAUSADO') return 'Pausada';
-    return 'Cerrada';
+    if (estado === 'BORRADOR') return 'Borrador';
+    return 'Oculta';
   }
 
   private formatearFecha(fecha: string | null): string {

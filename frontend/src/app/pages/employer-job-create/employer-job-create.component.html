@@ -137,6 +137,22 @@
           <small *ngIf="campoInvalido('descripcion')">Describe la oferta laboral.</small>
         </label>
 
+        <div class="field">
+          <span>Etiquetas de la vacante</span>
+          <p class="helper-copy">Selecciona las etiquetas que mejor describen el puesto para recomendarlo a candidatos con los mismos intereses.</p>
+          <div class="tags-grid">
+            <button
+              *ngFor="let categoria of categoriasDisponibles"
+              type="button"
+              class="tag-chip"
+              [class.active]="etiquetasSeleccionadas.includes(categoria)"
+              (click)="toggleEtiqueta(categoria)">
+              {{ categoria }}
+            </button>
+          </div>
+          <small *ngIf="campoInvalido('etiquetas')">Selecciona al menos una etiqueta.</small>
+        </div>
+
         <div class="form-grid">
           <label class="field">
             <span>Tipo de anuncio</span>
@@ -227,6 +243,9 @@
           <p>Edad: {{ ofertaForm.value.edad || 'Sin especificar' }}</p>
           <p>Educacion: {{ ofertaForm.value.educacion || 'Sin especificar' }}</p>
           <p>Experiencia: {{ ofertaForm.value.experiencia || 'Sin experiencia' }}</p>
+          <div class="preview-tags" *ngIf="etiquetasSeleccionadas.length">
+            <span class="preview-tag" *ngFor="let etiqueta of etiquetasSeleccionadas">{{ etiqueta }}</span>
+          </div>
           <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}
           </p>
         </div>
