@@ -92,7 +92,6 @@
           <div class="detail-col">
             <h3>Gestión de C.V</h3>
 
-            <!-- Input oculto, solo acepta PDF -->
             <input type="file" #cvInput accept="application/pdf" style="display: none"
               (change)="onCvSelected($event)" />
 
@@ -102,12 +101,10 @@
               {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
             </button>
 
-            <!-- Mensaje de error o éxito -->
             <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
               {{ cvMensaje }}
             </div>
 
-            <!-- Link al CV actual si existe -->
             <div *ngIf="perfil?.archivo_cv" class="mt-2" style="font-size: 0.85rem;">
               <a [href]="perfil.archivo_cv" target="_blank" rel="noopener">Ver C.V. actual →</a>
             </div>
@@ -125,6 +122,21 @@
             <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate' }}</p>
           </div>
         </div>
+
+        <div *ngIf="perfil.descripcion" class="profile-description" style="border-top: 1px solid var(--border-soft); padding: 18px 24px;">
+          <h3 style="margin: 0 0 8px; font-size: 1.1rem; color: var(--text-primary);">Sobre mí</h3>
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">{{ perfil.descripcion }}</p>
+        </div>
+
+        <div *ngIf="misEtiquetas && misEtiquetas.length > 0" class="profile-tags">
+          <h3>Intereses y Habilidades</h3>
+          <div class="tags-container">
+            <span class="tag-chip" *ngFor="let tag of misEtiquetas">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+
       </article>
     </section>
 
@@ -166,7 +178,6 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ post.empresa }}</strong>
-                    <!-- <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span> -->
                   </div>
                   <p class="vacancy-title">{{ post.vacante }}</p>
                   <p class="vacancy-meta">Postulado el: {{ post.fecha }}</p>
@@ -196,7 +207,6 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ fav.empresa }}</strong>
-       <!--              <span class="state-pill" [ngClass]="getJobStateClass(fav.estado)">{{ fav.estado }}</span> -->
                   </div>
                   <p class="vacancy-title">{{ fav.vacante }}</p>
                   <p class="vacancy-meta">{{ fav.ubicacion }} • {{ fav.fecha }}</p>

@@ -26,7 +26,7 @@ interface PostulanteProfile {
   rfc: string;
   foto_perfil?: string;
   archivo_cv?: string;
-  descripcion?: string; // ✨ AQUÍ AGREGAMOS LA DESCRIPCIÓN
+  descripcion?: string;
 }
 
 interface PostulanteApplication {
@@ -78,6 +78,9 @@ export class PerfilPostulanteComponent implements OnInit {
   subiendoCv = false;
   cvMensaje = '';
   cvError = false;
+  
+  // ✨ VARIABLE PARA LAS ETIQUETAS
+  misEtiquetas: string[] = [];
 
   private readonly CLOUDINARY_CLOUD_NAME = 'dqq9oeo4e';
   private readonly CLOUDINARY_UPLOAD_PRESET = 'Chambee-cv';
@@ -147,6 +150,17 @@ export class PerfilPostulanteComponent implements OnInit {
           }
         }
         console.error("Error al obtener perfil:", err);
+      }
+    });
+
+    // ✨ OBTENER ETIQUETAS GUARDADAS
+    this.api.obtenerMisEtiquetas().subscribe({
+      next: (response: any) => {
+        this.misEtiquetas = Array.isArray(response?.etiquetas) ? response.etiquetas : [];
+      },
+      error: (err) => {
+        console.error('No se pudieron obtener las etiquetas', err);
+        this.misEtiquetas = [];
       }
     });
 
