@@ -9,6 +9,7 @@ CREATE TABLE postulante (
     contrasena VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     sexo VARCHAR(20) CHECK (sexo IN ('Masculino','Femenino','Otro')),
+    descripcion VARCHAR(600) NOT NULL,
     pais VARCHAR(100) NOT NULL,
     estado VARCHAR(100) NOT NULL,
     ciudad VARCHAR(100) NOT NULL,
@@ -20,7 +21,8 @@ CREATE TABLE postulante (
     fecha_registro TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     estado_cuenta VARCHAR(20) DEFAULT 'ACTIVA', --Activa, Suspendida --- CHECK (estado_cuenta IN ('Activa','Suspendida', 'Eliminada'))
     curp VARCHAR(18) NOT NULL UNIQUE,
-    rfc VARCHAR(13) NOT NULL UNIQUE
+    rfc VARCHAR(13) NOT NULL UNIQUE,
+    token_version INT DEFAULT 0
 );
 
 CREATE TABLE empleador (
@@ -39,7 +41,8 @@ CREATE TABLE empleador (
     fecha_registro TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     estado_cuenta VARCHAR(20) DEFAULT 'ACTIVA', --Activa, Suspendida
     rfc VARCHAR(12) NOT NULL UNIQUE,
-    descripcion VARCHAR(255)
+    descripcion VARCHAR(400),
+    token_version INT DEFAULT 0
 );
 
 CREATE TABLE administrador (
@@ -47,7 +50,8 @@ CREATE TABLE administrador (
     nombre VARCHAR(50) NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
     correo_electronico VARCHAR(100) NOT NULL UNIQUE,
-    foto_perfil VARCHAR(255)
+    foto_perfil VARCHAR(255),
+    token_version INT DEFAULT 0
 );
 
 CREATE TABLE categorias (
@@ -59,7 +63,7 @@ CREATE TABLE categorias (
 CREATE TABLE anuncios (
     id_anuncio UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     titulo VARCHAR(150) NOT NULL,
-    descripcion VARCHAR(400) NOT NULL,
+    descripcion VARCHAR(600) NOT NULL,
     tipo_anuncio VARCHAR(20) NOT NULL,
     urgencia VARCHAR(30) DEFAULT 'Normal',
     edad VARCHAR(60) DEFAULT 'Sin especificar',
@@ -247,4 +251,14 @@ CREATE TABLE password_resets (
   token TEXT NOT NULL,
   expires BIGINT NOT NULL,
   user_type TEXT NOT NULL
+);
+
+CREATE TABLE historial_cambios (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id_postulante UUID,
+  id_empleador UUID,
+  campo VARCHAR(50),
+  valor_anterior TEXT,
+  valor_nuevo TEXT,
+  fecha_cambio TIMESTAMP DEFAULT NOW()
 );
