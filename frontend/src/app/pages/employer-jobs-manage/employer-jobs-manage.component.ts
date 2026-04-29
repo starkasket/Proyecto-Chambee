@@ -111,7 +111,7 @@ export class EmployerJobsManageComponent implements OnInit {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
@@ -199,7 +199,7 @@ export class EmployerJobsManageComponent implements OnInit {
         // Si hay un mensaje pendiente, mostrarlo después de cargar
         if (this.modalMensajePendiente) {
           setTimeout(() => {
-            this.mostrarModal(this.modalMensajePendiente);
+            this.mostrarModalExito(this.modalMensajePendiente);
             this.modalMensajePendiente = '';
           }, 300);
         }
@@ -222,8 +222,8 @@ export class EmployerJobsManageComponent implements OnInit {
     }
 
     // Asegurar que etiquetas siempre tiene un array válido
-    const etiquetas = Array.isArray(vacante.categorias) && vacante.categorias.length > 0 
-      ? vacante.categorias 
+    const etiquetas = Array.isArray(vacante.categorias) && vacante.categorias.length > 0
+      ? vacante.categorias
       : [];
 
     this.form.reset({
@@ -300,7 +300,7 @@ export class EmployerJobsManageComponent implements OnInit {
     }
 
     if (this.actualizandoEstado) return; // Prevenir múltiples clics
-    
+
     this.actualizandoEstado = true;
     this.cerrarModal();
     this.modalMensajePendiente = mensaje;
@@ -483,5 +483,26 @@ export class EmployerJobsManageComponent implements OnInit {
       month: 'short',
       year: 'numeric'
     });
+  }
+
+
+
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+
   }
 }

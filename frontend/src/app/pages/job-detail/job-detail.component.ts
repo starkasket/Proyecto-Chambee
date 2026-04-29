@@ -50,11 +50,11 @@ export class JobDetailComponent implements OnInit {
 
     this.api.postularAAnuncio(this.jobId).subscribe({
       next: () => {
-        alert('Postulacion enviada con exito. El empleador revisara tu perfil pronto.');
+        this.mostrarModalExito('Postulación enviada con éxito. El empleador revisará tu perfil pronto.');
       },
       error: (err) => {
         console.error('Error al postular:', err);
-        alert(err.error?.error || 'No fue posible completar la postulacion.');
+        this.mostrarModal(err.error?.error || 'No fue posible completar la postulación.');
       }
     });
   }
@@ -282,5 +282,44 @@ export class JobDetailComponent implements OnInit {
       currency: 'MXN',
       maximumFractionDigits: 0
     }).format(numero);
+  }
+  // Modal de mensaje 
+  modalMensaje = '';
+
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+
+    // this.router.navigate(['/donde-quieras']);
   }
 }

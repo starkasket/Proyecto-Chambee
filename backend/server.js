@@ -1063,7 +1063,47 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
+app.post("/anuncios/:idAnuncio/postular", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { idAnuncio } = req.params;
+  const idPostulante = req.user.id;
+
+  try {
+    // 1. Verificar que el anuncio exista
+    const checkAnuncio = await pool.query(
+      "SELECT id_anuncio FROM anuncios WHERE id_anuncio = $1",
+      [idAnuncio]
+    );
+
+    if (checkAnuncio.rows.length === 0) {
+      return res.status(404).json({ error: "Vacante no encontrada" });
+    }
+
+    // 2. Insertar la postulación
+    const query = `
+      INSERT INTO postulacion (id_postulante, id_anuncio, estado)
+      VALUES ($1, $2, 'En revisión')
+      RETURNING *`;
+
+    const result = await pool.query(query, [idPostulante, idAnuncio]);
+
+    res.status(201).json({
+      message: "Postulacion enviada con exito",
+      postulacion: result.rows[0]
+    });
+
+  } catch (err) {
+    // Si ya existe la postulación (Unique constraint error: 23505)
+    if (err.code === "23505") {
+      return res.status(400).json({ error: "Ya te has postulado a esta vacante anteriormente." });
+    }
+
+    console.error("Error al postular:", err);
+    res.status(500).json({ error: "Error interno al procesar la postulacion", detail: err.message });
+  }
+});
+
 app.get("/mi-etiquetas", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+
   try {
     await ensureCategoriasBase();
 

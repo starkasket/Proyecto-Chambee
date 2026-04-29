@@ -3,7 +3,8 @@
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
       <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
-      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ perfil?.nombre_empresa || 'Empresa' }}</span>
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ perfil?.nombre_empresa || 'Empresa'
+        }}</span>
     </div>
 
     <div class="search-container flex-grow-1 mx-4">
@@ -71,7 +72,7 @@
         <div class="company-main">
           <div class="company-brand">
             <div class="company-logo-box">
-             <img [src]="perfil.foto_perfil || 'assets/LogoChambee.png'" alt="Empresa"/>
+              <img [src]="perfil.foto_perfil || 'assets/LogoChambee.png'" alt="Empresa" />
             </div>
             <div class="company-info">
               <h2>{{ perfil.nombre_empresa }}</h2>
@@ -100,10 +101,7 @@
           <div class="detail-col">
             <h3>Descripcion</h3>
             <p>{{ descripcionVisible }}</p>
-            <button
-              type="button"
-              class="link-btn"
-              *ngIf="perfil.descripcion.length > 190"
+            <button type="button" class="link-btn" *ngIf="perfil.descripcion.length > 190"
               (click)="toggleDescripcion()">
               {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver mas' }}
             </button>
@@ -116,13 +114,15 @@
     <section *ngIf="!cargando && perfil" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
-          <button class="tab" type="button" [class.active]="activeTab === 'anuncios'" (click)="setActiveTab('anuncios')">
+          <button class="tab" type="button" [class.active]="activeTab === 'anuncios'"
+            (click)="setActiveTab('anuncios')">
             Anuncios <span class="tab-count">{{ anuncios.length }}</span>
           </button>
           <button class="tab" type="button" [class.active]="activeTab === 'resenas'" (click)="setActiveTab('resenas')">
             Reseñas <span class="tab-count">{{ resenas.length }}</span>
           </button>
-          <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'" (click)="setActiveTab('postulaciones')">
+          <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
+            (click)="setActiveTab('postulaciones')">
             Postulaciones recibidas <span class="tab-count">{{ postulacionesRecibidas.length }}</span>
           </button>
         </div>
@@ -135,7 +135,8 @@
               <h3>Mis anuncios</h3>
               <div class="d-flex gap-2">
                 <button class="inline-create-btn" type="button" (click)="crearOferta()">Nueva oferta</button>
-                <button class="inline-create-btn secondary" type="button" (click)="administrarVacantes()">Administrar</button>
+                <button class="inline-create-btn secondary" type="button"
+                  (click)="administrarVacantes()">Administrar</button>
               </div>
             </div>
 
@@ -145,7 +146,8 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ anuncio.empresa }}</strong>
-                    <span class="state-pill" [ngClass]="getAnnouncementStateClass(anuncio.estado)">{{ anuncio.estado }}</span>
+                    <span class="state-pill" [ngClass]="getAnnouncementStateClass(anuncio.estado)">{{ anuncio.estado
+                      }}</span>
                   </div>
                   <p class="vacancy-title">{{ anuncio.vacante }}</p>
                   <p class="vacancy-meta">{{ anuncio.ubicacion }} • {{ anuncio.fecha }}</p>
@@ -192,7 +194,8 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ postulacion.candidato }}</strong>
-                    <span class="state-pill" [ngClass]="getApplicationStateClass(postulacion.estado)">{{ postulacion.estado }}</span>
+                    <span class="state-pill" [ngClass]="getApplicationStateClass(postulacion.estado)">{{
+                      postulacion.estado }}</span>
                   </div>
                   <p><strong>Vacante:</strong> {{ postulacion.vacante }}</p>
                   <p><strong>Experiencia:</strong> {{ postulacion.experiencia }}</p>

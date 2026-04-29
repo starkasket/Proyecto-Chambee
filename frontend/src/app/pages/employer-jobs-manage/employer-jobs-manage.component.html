@@ -1,3 +1,35 @@
+<!-- MODAL DE ÉXITO -->
+<div id="modalSaludo" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+        <h4 class="text-success fw-bold">¡Operación exitosa!</h4>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ERROR -->
+<div id="modalAlerta" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="manage-page">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
@@ -99,12 +131,8 @@
           Aún no tienes vacantes creadas.
         </div>
 
-        <button
-          *ngFor="let vacante of vacantes"
-          type="button"
-          class="job-list-item"
-          [class.active]="vacante.id === vacanteSeleccionadaId"
-          (click)="seleccionarVacante(vacante.id)">
+        <button *ngFor="let vacante of vacantes" type="button" class="job-list-item"
+          [class.active]="vacante.id === vacanteSeleccionadaId" (click)="seleccionarVacante(vacante.id)">
           <div class="job-list-top">
             <strong>{{ vacante.titulo }}</strong>
             <span class="state-pill" [ngClass]="getEstadoClase(vacante.estado)">{{ vacante.estado }}</span>
@@ -121,9 +149,11 @@
           <div>
             <p class="eyebrow">Vacante seleccionada</p>
             <h2>{{ vacanteSeleccionada.titulo }}</h2>
-            <p class="hero-copy">{{ vacanteSeleccionada.candidatos }} postulaciones • {{ vacanteSeleccionada.modalidad }}</p>
+            <p class="hero-copy">{{ vacanteSeleccionada.candidatos }} postulaciones • {{ vacanteSeleccionada.modalidad
+              }}</p>
             <div class="editor-status-row">
-              <span class="state-pill" [ngClass]="getEstadoClase(vacanteSeleccionada.estado)">{{ vacanteSeleccionada.estado }}</span>
+              <span class="state-pill" [ngClass]="getEstadoClase(vacanteSeleccionada.estado)">{{
+                vacanteSeleccionada.estado }}</span>
               <span class="pending-pill" *ngIf="hayCambiosPendientes">Tienes cambios sin guardar</span>
             </div>
           </div>
@@ -132,7 +162,8 @@
             <button class="ghost-btn" type="button" (click)="guardarComoBorrador()" [disabled]="actualizandoEstado">
               Guardar como borrador
             </button>
-            <button class="ghost-btn danger-btn" type="button" (click)="ocultarVacante()" [disabled]="actualizandoEstado">
+            <button class="ghost-btn danger-btn" type="button" (click)="ocultarVacante()"
+              [disabled]="actualizandoEstado">
               Ocultar vacante
             </button>
             <button class="ghost-btn" type="button" (click)="publicarVacante()" [disabled]="actualizandoEstado">
@@ -156,7 +187,8 @@
 
             <div class="field full">
               <span>Descripción</span>
-              <textarea rows="6" formControlName="descripcion" placeholder="Describe responsabilidades, perfil y beneficios."></textarea>
+              <textarea rows="6" formControlName="descripcion"
+                placeholder="Describe responsabilidades, perfil y beneficios."></textarea>
               <small *ngIf="campoInvalido('descripcion')">La descripción es obligatoria.</small>
             </div>
 
@@ -217,12 +249,8 @@
 
             <div class="field full">
               <div class="tags-grid">
-                <button
-                  *ngFor="let categoria of categoriasDisponibles"
-                  type="button"
-                  class="tag-chip"
-                  [class.active]="etiquetasSeleccionadas.includes(categoria)"
-                  (click)="toggleEtiqueta(categoria)">
+                <button *ngFor="let categoria of categoriasDisponibles" type="button" class="tag-chip"
+                  [class.active]="etiquetasSeleccionadas.includes(categoria)" (click)="toggleEtiqueta(categoria)">
                   {{ categoria }}
                 </button>
               </div>
