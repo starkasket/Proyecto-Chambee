@@ -179,7 +179,7 @@
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-soft); cursor: pointer; margin-bottom: 12px;">
         <div class="d-flex justify-content-between w-100 align-items-center mb-1">
           <h5 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color);">{{ anuncio.titulo }}</h5>
-          <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem;">
+          <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem; margin-left: 3px;">
             {{ anuncio.estado }}
           </span>
         </div>
