@@ -12,30 +12,69 @@ import { RouterLink } from '@angular/router';
   styleUrl: './forgot-password.component.css'
 })
 export class ForgotPasswordComponent {
-forgotForm: FormGroup;
+  forgotForm: FormGroup;
 
-constructor(private fb: FormBuilder, private http: HttpClient) {
-  this.forgotForm = this.fb.group({
-    correo_electronico: ['', [Validators.required, Validators.email]]
-  })
-}
-
-onSubmit(){
-  if (this.forgotForm.valid) {
-    this.http.post('http://localhost:3000/auth/forgot-password', {
-      correo_electronico: this.forgotForm.value.correo_electronico
-    }).subscribe({
-      next: () => {
-        alert('Si el correo existe, revisa tu bandeja');
-      },
-      error: (err) => {
-        console.log(err);
-        
-        alert(err.error?.message || err.message || 'Error al enviar solicitud');
-      }
+  constructor(private fb: FormBuilder, private http: HttpClient) {
+    this.forgotForm = this.fb.group({
+      correo_electronico: ['', [Validators.required, Validators.email]]
     })
   }
-}
 
+  onSubmit() {
+    if (this.forgotForm.valid) {
+      this.http.post('http://localhost:3000/auth/forgot-password', {
+        correo_electronico: this.forgotForm.value.correo_electronico
+      }).subscribe({
+        next: () => {
+
+          this.mostrarModalExito('Si el correo existe, revisa tu bandeja');
+
+        },
+        error: (err) => {
+          console.log(err);
+
+          this.mostrarModal(err.error?.error || 'Error al enviar solicitud');
+
+        }
+      })
+    }
+  }
+
+  modalMensaje = '';
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+
+  }
 
 }
