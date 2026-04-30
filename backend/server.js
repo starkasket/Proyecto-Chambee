@@ -7,6 +7,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const nodemailer = require("nodemailer");
+const { decode } = require("punycode");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -54,7 +55,7 @@ if (!hasEmailConfig) {
   });
 }
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -65,6 +66,38 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+       let table = "";
+    let idField = "";
+
+    if (decoded.rol === "postulante") {
+      table = "postulante";
+      idField = "id_postulante"
+    }
+
+    if (decoded.rol === "empleador") {
+      table = "empleador";
+      idField = "id_empleador"
+    }
+
+    if (decoded.rol === "administrador") {
+      table = "administrador";
+      idField = "id_administrador"
+    }
+
+    const result = await pool.query(
+      `SELECT token_version FROM ${table} WHERE ${idField} = $1`, [decoded.id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(401).json({ error: "Usuario no válido" });
+    }
+
+    const currentVersion = result.rows[0].token_version;
+
+    if (decoded.tokenVersion !== currentVersion) {
+      return res.status(401).json({ error: "Sesión expirada" })
+    } 
+
     req.user = decoded;
     next();
   } catch (err) {
@@ -395,6 +428,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
   p.foto_perfil,
   p.curp, 
   p.rfc,
+  p.fecha_registro,
   c.archivo_cv
 FROM postulante p
 LEFT JOIN cv c ON c.id_postulante = p.id_postulante
@@ -1172,7 +1206,7 @@ app.post("/login", async (req, res) => {
   try {
     let usuario = null;
     const postulante = await pool.query(
-      `SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, 'postulante' AS rol
+      `SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, token_version, 'postulante' AS rol
        FROM postulante WHERE correo_electronico = $1`,
       [correo_electronico]
     );
@@ -1181,7 +1215,7 @@ app.post("/login", async (req, res) => {
 
     if (!usuario) {
       const empleador = await pool.query(
-        `SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, 'empleador' AS rol
+        `SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, token_version, 'empleador' AS rol
          FROM empleador WHERE correo_electronico = $1`,
         [correo_electronico]
       );
@@ -1191,7 +1225,7 @@ app.post("/login", async (req, res) => {
 
     if (!usuario) {
       const admin = await pool.query(
-        `SELECT id_administrador AS id, correo_electronico AS correo, contrasena, 'administrador' AS rol
+        `SELECT id_administrador AS id, correo_electronico AS correo, contrasena, token_version, 'administrador' AS rol
          FROM administrador WHERE correo_electronico = $1`,
         [correo_electronico]
       );
@@ -1215,7 +1249,8 @@ app.post("/login", async (req, res) => {
       {
         id: user.id,
         correo: user.correo,
-        rol: user.rol
+        rol: user.rol,
+        tokenVersion: user.token_version
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -1372,7 +1407,8 @@ app.post("/auth/reset-password", async (req, res) => {
     }
 
     await pool.query(
-      `UPDATE ${table} SET contrasena = $1 WHERE correo_electronico = $2`,
+      `UPDATE ${table} SET contrasena = $1, token_version = token_version + 1
+       WHERE correo_electronico = $2`,
       [hashedPassword, correo_electronico]
     );
 
