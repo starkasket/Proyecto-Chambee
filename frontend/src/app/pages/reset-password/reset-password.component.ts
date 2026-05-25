@@ -46,14 +46,15 @@ export class ResetPasswordComponent {
     }
 
     this.http.get(`http://localhost:3000/auth/validate-reset-token/${this.token}`)
-    .subscribe({
-      next: () => {
-      },
-      error: () => {
-        alert("El enlace ya no es válido o expiró");
-        this.router.navigate(['/login']);
-      }
-    });
+      .subscribe({
+        next: () => {
+        },
+        error: () => {
+          this.mostrarModalExpirado('El enlace ya no es válido o expiró');
+
+          this.router.navigate(['/login']);
+        }
+      });
 
 
   }
@@ -62,7 +63,11 @@ export class ResetPasswordComponent {
 
     if (this.resetForm.valid) {
       if (this.resetForm.value.password !== this.resetForm.value.confirmPassword) {
-        alert('Las contraseñas no coinciden');
+
+        if (this.resetForm.value.password !== this.resetForm.value.confirmPassword) {
+          this.mostrarModal('Las contraseñas no coinciden');
+          return;
+        }
         return;
       }
 
@@ -72,19 +77,80 @@ export class ResetPasswordComponent {
       }).subscribe({
         next: () => {
           console.log('Cambiando contraseña...', this.resetForm.value);
-          alert('Contraseña actualizada');
+
+          this.mostrarModalExito('Contraseña actualizada');
+
           this.router.navigate(['/login']);
         },
         error: (err: any) => {
-          alert(err.error?.error || 'Error al cambiar contraseña')
+          this.mostrarModal(err.error?.error || 'Error al cambiar contraseña');
+
         }
       });
 
     } else {
-      alert('Revisa que los campos sean correctos.');
+      this.mostrarModalExpirado('Revisa que los campos sean correctos.');
+
     }
   }
   passwordMatchValidator(form: FormGroup) {
     return form.get('password')?.value === form.get('confirmPassword')?.value ? null : { mismatch: true }
   }
+
+
+  modalMensaje = '';
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+
+  }
+
+  mostrarModalExpirado(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExpirado() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+
 }
