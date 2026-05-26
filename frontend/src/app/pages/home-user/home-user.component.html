@@ -222,7 +222,6 @@
   </div>
 
 <aside class="right services-desktop">
-    
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
       <h3 class="services-title" style="margin: 0;">Servicios y más</h3>
       
@@ -234,11 +233,20 @@
     </div>
 
     <div class="services-list services-list-desktop">
-      <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
+      <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0" style="position: relative;">
         <img [src]="service.img" [alt]="service.title" />
-        <div>
+        <div style="flex: 1;">
           <h5>{{ service.title }}</h5>
           <p>{{ service.description }}</p>
+        </div>
+        
+        <button class="menu-opciones-btn" (click)="toggleMenuServicio(idx, $event)" aria-label="Opciones de servicio">
+          ⋮
+        </button>
+
+        <div *ngIf="menuServicioAbierto === idx" class="menu-desplegable-servicio" (click)="$event.stopPropagation()">
+          <button (click)="editarServicio(idx); toggleMenuServicio(idx, $event)">Editar</button>
+          <button class="text-danger" (click)="eliminarServicio(idx); toggleMenuServicio(idx, $event)">Eliminar</button>
         </div>
       </div>
     </div>
@@ -248,11 +256,8 @@
         {{ servicesOpen ? 'Ver menos' : 'Ver más' }}
       </button>
     </div>
-    
   </aside>
-</div>
-
-<div *ngIf="servicesOpen" class="services-overlay" (click)="toggleServices()"></div>
+</div> <div *ngIf="servicesOpen" class="services-overlay" (click)="toggleServices()"></div>
 
 <section class="services-floating services-mobile">
   <div class="services-panel" *ngIf="servicesOpen" (click)="$event.stopPropagation()">
@@ -265,11 +270,20 @@
     </div>
 
     <div class="services-list">
-      <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
+      <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)" role="button" tabindex="0" style="position: relative;">
         <img [src]="service.img" [alt]="service.title" />
-        <div>
+        <div style="flex: 1;">
           <h5>{{ service.title }}</h5>
           <p>{{ service.description }}</p>
+        </div>
+        
+        <button class="menu-opciones-btn" (click)="toggleMenuServicio(idx, $event)" aria-label="Opciones de servicio">
+          ⋮
+        </button>
+
+        <div *ngIf="menuServicioAbierto === idx" class="menu-desplegable-servicio" (click)="$event.stopPropagation()">
+          <button (click)="editarServicio(idx); toggleMenuServicio(idx, $event)">Editar</button>
+          <button class="text-danger" (click)="eliminarServicio(idx); toggleMenuServicio(idx, $event)">Eliminar</button>
         </div>
       </div>
     </div>

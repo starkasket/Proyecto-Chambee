@@ -67,6 +67,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   isMobile = false;
   faqOpen: number | null = null;
   modalMensaje = '';
+  menuServicioAbierto: number | null = null;
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
@@ -256,6 +257,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     if (this.notificationsOpen) {
       this.notificationsOpen = false;
     }
+  if (this.menuServicioAbierto !== null) {
+      this.menuServicioAbierto = null;
+    }
   }
 
   logout() {
@@ -384,5 +388,20 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
+  }
+  toggleMenuServicio(index: number, event: Event) {
+    event.stopPropagation(); 
+    this.menuServicioAbierto = this.menuServicioAbierto === index ? null : index;
+  }
+
+  editarServicio(index: number) {
+    console.log('Editar servicio:', index);
+   
+  }
+
+  eliminarServicio(index: number) {
+    console.log('Eliminar servicio:', index);
+  
+    this.mostrarModalExito('El servicio ha sido eliminado correctamente.');
   }
 }
