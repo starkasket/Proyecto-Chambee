@@ -17,8 +17,15 @@ export class AuthService {
   }
 
   clearSession(){
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('perfilEmpleador');
+    localStorage.removeItem('perfilPostulante');
+
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('usuario');
+    sessionStorage.removeItem('perfilEmpleador');
+    sessionStorage.removeItem('perfilPostulante');
   }
 
   logout(){

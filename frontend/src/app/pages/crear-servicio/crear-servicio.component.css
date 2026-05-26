@@ -1,22 +1,13 @@
-
-/* ===== Base general de la pagina ===== */
-
-.container {
-  width: 95%;
-  max-width: 1200px;
-  margin: auto;
-}
-
-.main-wrapper {
-  background-color: var(--bg-app); /* Color adaptativo según el tema */
+.offer-page {
   min-height: 100vh;
-  padding-top: 75px;
-  transition: background-color 0.3s ease;
+  background:
+    radial-gradient(circle at top left, rgba(17, 17, 17, 0.06), transparent 20rem),
+    var(--bg-app);
+  color: var(--text-primary);
 }
 
-/* ===== Navbar fija superior ===== */
 .navbar-chambee {
-  background-color: var(--navbar-bg); 
+  background-color: var(--navbar-bg);
   width: 100%;
   height: 64px;
   display: flex;
@@ -26,66 +17,58 @@
   left: 0;
   z-index: 1000;
   box-shadow: var(--shadow-soft);
-  padding: 0 24px;
+  padding: 0 20px;
+  gap: 12px;
 }
 
-/* Buscador Principal */
+.logo {
+  object-fit: contain;
+}
+
 .search-container {
-  width: 100%;
-  max-width: 450px;
+  flex: 1 1 420px;
+  max-width: 420px;
+  min-width: 180px;
 }
 
 .search-container input {
   width: 100%;
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: 1px solid var(--border-soft); 
+  padding: 8px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
   background: var(--input-bg);
   color: var(--text-primary);
   font-size: 14px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-  outline: none;
-}
-.search-container input::placeholder {
-    color: var(--text-secondary);
 }
 
-/* Botones Nav */
-.btn-profile {
-  background: var(--surface-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-soft);
-  border-radius: 25px;
-  padding: 4px 15px;
-  font-weight: 700;
+.search-container input::placeholder {
+  color: var(--text-secondary);
+}
+
+.nav-buttons {
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: var(--shadow-soft);
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
+  position: relative;
 }
 
-/* ===== Theme Toggle Optimizado ===== */
+.btn-profile-navbar {
+  border-radius: 50px !important;
+  background-color: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-soft) !important;
+  padding: 6px 16px !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
 .theme-toggle {
-    border: none; 
-    background: transparent;
-    padding: 0;
-}
-
-.theme-toggle-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: var(--theme-toggle-knob);
-  color: var(--theme-toggle-icon);
-  transform: translateX(0);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  font-size: 12px;
+  cursor: pointer;
 }
 
 .theme-toggle-track {
@@ -98,98 +81,348 @@
   align-items: center;
   justify-content: flex-start;
   padding: 3px;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob);
+  color: var(--theme-toggle-icon);
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+  font-size: 12px;
 }
 
 :host-context(body.dark-theme) .theme-toggle-icon {
   transform: translateX(18px);
 }
 
-/* ===== Tarjetas (Cards) ===== */
-.card-chambee {
+.menu {
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.offer-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 94px 20px 40px;
+}
+
+.offer-hero,
+.offer-layout {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.offer-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-muted);
+}
+
+.offer-hero h1 {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.hero-copy p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 720px;
+}
+
+.offer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.8fr);
+  gap: 18px;
+}
+
+.offer-card {
   background: var(--surface-primary);
-  border: 1px solid var(--border-soft); 
-  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  padding: 24px;
   box-shadow: var(--shadow-card);
   color: var(--text-primary);
 }
 
-.side-card-yellow {
-    border-left: 6px solid #ffc107 !important;
+.offer-main {
+  display: grid;
+  gap: 18px;
 }
 
-/* Encabezados y Textos */
-.header-section-title h4, .card-title-dark {
-    color: var(--text-primary) !important;
+.offer-side {
+  display: grid;
+  gap: 16px;
+  align-content: start;
 }
 
-.text-muted-custom, .font-weight-bold {
-    color: var(--text-secondary) !important;
-    font-weight: 600;
+.card-head {
+  margin-bottom: 4px;
 }
 
-/* Iconos Decorativos */
-.icon-circle {
-    background-color: #ffc107;
-    color: #111;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px; 
-    height: 45px;
+.card-head h2 {
+  margin: 0;
+  color: var(--text-primary) !important;
 }
 
-/* ===== Inputs y Formularios ===== */
-.chambee-input {
-    background-color: var(--input-bg) !important;
-    border: 1px solid var(--border-soft) !important;
-    color: var(--text-primary) !important;
-    padding: 12px;
-    border-radius: 8px;
-}
-.chambee-input::placeholder {
-    color: var(--text-secondary);
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Grupo Input de Ubicación */
-.form-group-location {
-    background-color: var(--input-bg);
-    border: 1px solid var(--border-soft);
-}
-.text-input-location {
-    color: var(--text-primary) !important;
-}
-.text-input-location::placeholder {
-     color: var(--text-secondary);
-}
-.icon-location {
-    color: var(--text-secondary) !important;
+.field span {
+  font-weight: 700;
 }
 
-
-/* Interruptor Verde */
-.switch-success:checked {
-  background-color: #198754 !important;
-  border-color: #198754 !important;
-  box-shadow: none;
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  padding: 14px 16px;
+  font: inherit;
 }
 
-/* Etiquetas (Badges) */
-.badge-custom {
-    background-color: var(--surface-primary) !important;
-    color: #ffc107 !important;
-    border: 1px solid #ffc107;
+.field textarea {
+  resize: vertical;
+  min-height: 190px;
 }
 
-/* Botones de Acción Final */
-.btn-cancel-custom {
-    background-color: var(--surface-secondary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-soft) !important;
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: 2px solid rgba(244, 191, 0, 0.3);
+  border-color: rgba(244, 191, 0, 0.75);
 }
 
-.btn-publish-custom {
-    background-color: #ffc107 !important;
-    border: none;
+.field small {
+  color: #c2410c;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.single-col {
+  grid-template-columns: 1fr;
+}
+
+/* Direcciones Custom */
+.dir-label {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.form-control-custom {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  padding: 12px 14px;
+  font: inherit;
+  margin-bottom: 10px;
+}
+
+.form-control-custom:focus {
+  outline: 2px solid rgba(244, 191, 0, 0.3);
+  border-color: rgba(244, 191, 0, 0.75);
+}
+
+/* Preview Box */
+.preview-box {
+  border-radius: 20px;
+  padding: 18px;
+  background: color-mix(in srgb, var(--surface-secondary) 88%, #f7f0bf 12%);
+  border: 1px solid var(--border-soft);
+}
+
+.preview-label {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--accent-muted);
+}
+
+.preview-box strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.preview-box p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.text-muted-custom {
+  color: var(--text-secondary) !important;
+  font-size: 0.9rem;
+}
+
+.salary-preview {
+  margin-top: 10px !important;
+  color: var(--text-primary) !important;
+  font-weight: 700;
+}
+
+/* Botones de acción */
+.ghost-btn,
+.primary-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.ghost-btn {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+}
+
+.ghost-btn:hover {
+  background: var(--surface-secondary);
+}
+
+.primary-btn {
+  background: #f4bf00;
+  color: #111111;
+  box-shadow: var(--shadow-soft);
+}
+
+.primary-btn:hover {
+  background: #e0af00;
+}
+
+:host-context(body.dark-theme) .primary-btn {
+  background: #111111;
+  color: #ffffff;
+  border: 1px solid #f4bf00;
+}
+
+:host-context(body.dark-theme) .primary-btn:hover {
+  background: #222222;
+}
+
+.primary-btn:disabled,
+.ghost-btn:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+/* Modales */
+.modal {
+  transition: opacity 0.15s linear;
+}
+
+.modal-content {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: var(--shadow-float);
+}
+
+.modal-body p {
+  color: var(--text-secondary);
+}
+
+/* Responsividad */
+@media (max-width: 900px) {
+  .offer-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-chambee {
+    padding-left: 16px;
+    padding-right: 16px;
+    gap: 8px;
+  }
+
+  .navbar-chambee img {
+    height: 36px;
+  }
+
+  .search-container {
+    flex: 0 1 180px;
+    min-width: 120px;
+    max-width: 180px;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+  }
+
+  .search-container input {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .nav-buttons {
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .offer-shell {
+    padding: 86px 14px 28px;
+  }
+
+  .offer-hero {
+    flex-direction: column;
+    margin-bottom: 18px;
+  }
+
+  .offer-card {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions,
+  .ghost-btn,
+  .primary-btn {
+    width: 100%;
+  }
+
+  .offer-hero h1 {
+    font-size: clamp(1.8rem, 8vw, 2.4rem);
+  }
 }

@@ -21,6 +21,8 @@
         </span>
       </div>
 
+      
+
       <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
         
         <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
@@ -232,24 +234,22 @@
       </button>
     </div>
 
-    <div class="services-list services-list-desktop">
-      <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0" style="position: relative;">
-        <img [src]="service.img" [alt]="service.title" />
-        <div style="flex: 1;">
-          <h5>{{ service.title }}</h5>
-          <p>{{ service.description }}</p>
-        </div>
-        
-        <button class="menu-opciones-btn" (click)="toggleMenuServicio(idx, $event)" aria-label="Opciones de servicio">
-          ⋮
-        </button>
 
-        <div *ngIf="menuServicioAbierto === idx" class="menu-desplegable-servicio" (click)="$event.stopPropagation()">
-          <button (click)="editarServicio(idx); toggleMenuServicio(idx, $event)">Editar</button>
-          <button class="text-danger" (click)="eliminarServicio(idx); toggleMenuServicio(idx, $event)">Eliminar</button>
-        </div>
-      </div>
-    </div>
+    <div class="service-card" *ngFor="let service of visibleServices; let idx = index" 
+     (click)="openService(idx)" role="button" tabindex="0">
+  <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+  <div>
+    <!-- Badge borrador -->
+    <span *ngIf="service.es_borrador" 
+          style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e; 
+                 padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
+      Borrador
+    </span>
+    <h5>{{ service.title }}</h5>
+    <p>{{ service.description }}</p>
+  </div>
+</div>
+>>>>>>> Stashed changes
 
     <div class="services-footer">
       <button class="services-see-more" (click)="toggleServices()">
@@ -276,24 +276,8 @@
           <h5>{{ service.title }}</h5>
           <p>{{ service.description }}</p>
         </div>
-        
-        <button class="menu-opciones-btn" (click)="toggleMenuServicio(idx, $event)" aria-label="Opciones de servicio">
-          ⋮
-        </button>
-
-        <div *ngIf="menuServicioAbierto === idx" class="menu-desplegable-servicio" (click)="$event.stopPropagation()">
-          <button (click)="editarServicio(idx); toggleMenuServicio(idx, $event)">Editar</button>
-          <button class="text-danger" (click)="eliminarServicio(idx); toggleMenuServicio(idx, $event)">Eliminar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
-    <span class="services-bubble-icon">✦</span>
-    <span class="services-bubble-text">Servicios</span>
-  </button>
-</section>
+     
+  
 
 <section class="support-section">
   <div class="container">

@@ -100,4 +100,17 @@ export class ApiService {
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');
   }
+
+  // ── Servicios (oficios) ──────────────────────────────────────
+crearServicio(datos: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/servicios`, datos, this.getHeaders());
+}
+
+obtenerMisServicios(autorId: string): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/servicios/${autorId}`, this.getHeaders());
+}
+
+obtenerServiciosPublicos(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/servicios-publicos`);
+}
 }

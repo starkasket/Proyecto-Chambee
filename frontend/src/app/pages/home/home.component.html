@@ -58,6 +58,33 @@
     </aside>
   </div>
 </nav>
+<!-- MODAL LOGIN REQUERIDO -->
+<div *ngIf="modalLoginVisible"
+  style="display:flex; position:fixed; inset:0; z-index:9999; 
+         align-items:center; justify-content:center; 
+         background:rgba(0,0,0,0.5);">
+  <div style="background:var(--bg-color, #fff); border-radius:16px; 
+              padding:2rem; max-width:380px; width:90%; text-align:center;
+              box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+    <img src="assets/abejaAlerta.png" alt="alerta" height="140" class="mb-3" />
+    <h5 style="font-weight:700; color:var(--text-color);">¡Inicia sesión primero!</h5>
+    <p style="color:var(--text-muted, #666); margin-bottom:1.5rem;">
+      Para ver el detalle de este servicio necesitas una cuenta en Chambee.
+    </p>
+    <div style="display:flex; gap:1rem; justify-content:center;">
+      <button (click)="cerrarModalLogin()"
+        style="padding:10px 24px; border-radius:50px; border:1px solid #ccc; 
+               background:transparent; cursor:pointer; font-weight:600;">
+        Cancelar
+      </button>
+      <button (click)="irAlLogin()"
+        style="padding:10px 24px; border-radius:50px; border:none; 
+               background:#f59e0b; color:#fff; cursor:pointer; font-weight:700;">
+        Iniciar Sesión
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- MAIN LAYOUT:
   - izquierda: carrusel + grid de empleos
@@ -156,7 +183,7 @@
     <!-- Usa visibleServices para mostrar 4 o todos, segun servicesOpen. -->
     <div class="services-list services-list-desktop">
       <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
-        <img [src]="service.img" [alt]="service.title" />
+<img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div>
           <h5>{{ service.title }}</h5>
           <p>{{ service.description }}</p>
@@ -190,7 +217,7 @@
 
     <div class="services-list">
       <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
-        <img [src]="service.img" [alt]="service.title" />
+<img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div>
           <h5>{{ service.title }}</h5>
           <p>{{ service.description }}</p>

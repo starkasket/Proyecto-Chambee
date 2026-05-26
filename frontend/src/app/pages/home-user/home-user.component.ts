@@ -8,7 +8,6 @@ import { catchError } from 'rxjs/operators';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { ServiciosService, Service } from '../../services/servicios.service';
 
 interface Slide {
   id?: string | number;
@@ -79,43 +78,49 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   slides: Slide[] = [];
   jobs: Job[] = [];
-  services: Service[] = [];
-
+services: any[] = [];
   constructor(
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly http: HttpClient,
     private readonly api: ApiService,
     private readonly authApi: AuthService,
-    private serviciosService: ServiciosService
   ) {}
 
-  ngOnInit() {
-    this.serviciosService.servicios$.subscribe((servicios: Service[]) => {
-      this.services = servicios;
+ngOnInit() {
+  this.slideIntervalId = setInterval(() => {
+    this.nextSlide();
+  }, 9000);
+
+  this.checkMobile();
+  this.cargarOfertasPublicas();
+
+  const usuario = this.api.getUsuario();
+  if (usuario?.id) {
+
+    // Cargar perfil
+    this.api.getMiPerfil().subscribe({
+      next: (perfil: any) => {
+        this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
+        this.foto_perfil = perfil?.foto_perfil || '';
+      },
+      error: () => {
+        this.nombre_postulante = usuario?.nombre || 'Usuario';
+      }
     });
 
-    this.slideIntervalId = setInterval(() => {
-      this.nextSlide();
-    }, 9000);
-
-    this.checkMobile();
-    this.cargarOfertasPublicas();
-
-    const usuario = this.api.getUsuario();
-    if (usuario?.id) {
-      this.api.getMiPerfil().subscribe({
-        next: (perfil: any) => {
-          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
-          this.foto_perfil = perfil?.foto_perfil || '';
-        },
-        error: () => {
-          this.nombre_postulante = usuario?.nombre || 'Usuario';
-        }
-      });
-    }
+    // Cargar servicios desde la BD
+this.api.obtenerMisServicios(String(usuario.id)).subscribe({
+  next: (servicios) => {
+    this.services = servicios; // Sin filtro — mostrar todos
+  },
+  error: () => {
+    this.services = [];
   }
+});
 
+  }
+}
   ngOnDestroy() {
     if (this.slideIntervalId) {
       clearInterval(this.slideIntervalId);
@@ -252,8 +257,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.menuOpen = false;
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick() {
+ @HostListener('document:click', ['$event'])
+onDocumentClick(_event: Event) {
     if (this.notificationsOpen) {
       this.notificationsOpen = false;
     }
@@ -272,7 +277,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.router.navigate(['/crear-servicio']);
   }
 
-  get visibleServices(): Service[] {
+  get visibleServices(): any[] {
     return this.servicesOpen ? this.services : this.services.slice(0, 4);
   }
 

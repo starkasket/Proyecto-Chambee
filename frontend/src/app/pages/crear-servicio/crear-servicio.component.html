@@ -1,123 +1,200 @@
-<nav class="navbar-chambee position-relative px-4">
-  <div class="d-flex align-items-center ms-2 logo-wrapper" routerLink="/" style="cursor: pointer;">
-    <div class="d-flex align-items-center gap-2">
-      <img src="assets/LogoChambee.png" alt="Chambee" height="40" style="object-fit: contain;">
-      <span class="fs-4 fw-bold text-dark" style="letter-spacing: -0.5px;">Chambee</span>
+<div class="offer-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, Mi Perfil de Servicios</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar servicios, oficios, herramientas..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" (click)="irAlPerfil()">
+        <i class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">Mi Perfil</span>
+      </button>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="volverPanel()" role="button" title="Volver al panel">☰</div>
+    </div>
+  </nav>
+
+  <!-- MODAL DE ÉXITO -->
+  <div id="modalSaludo" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+          <h4 class="text-success fw-bold">¡Operación exitosa!</h4>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="search-container d-none d-md-flex position-absolute start-50 translate-middle-x">
-    <input type="text" placeholder="Buscar, categoría, puesto, ciudad y más...">
-  </div>
-
-  <div class="nav-buttons d-flex align-items-center gap-2 ms-auto">
-    <div class="notification-bell text-dark fs-4 position-relative mx-1" role="button">
-      <i class="bi bi-bell-fill"></i>
-      <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-top: 8px; margin-left: -4px;"></span>
-    </div>
-    
-    <button class="btn-profile mx-1" (click)="irAlPerfil()">
-      <i class="bi bi-person-circle fs-4"></i>
-      <span class="d-none d-xl-block">Mi Perfil</span>
-    </button>
-
-    <button class="theme-toggle mx-1" type="button" (click)="toggleTheme()">
-      <span class="theme-toggle-track">
-        <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
-      </span>
-    </button>
-
-    <div class="menu text-dark fs-2 ms-1" role="button" style="cursor: pointer; display: flex; align-items: center;">
-      <i class="bi bi-list"></i>
+  <!-- MODAL DE ERROR -->
+  <div id="modalAlerta" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+          <h5 class="text-danger fw-bold">¡Atención!</h5>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
     </div>
   </div>
-</nav>
 
-<div class="main-wrapper pb-5">
-  <div class="container mt-4">
-    
-    <form [formGroup]="servicioForm" (ngSubmit)="publicar()" class="row g-4 m-0">
-      
-      <div class="col-md-8">
-        <div class="card card-chambee p-4 p-md-5">
-          <div class="d-flex align-items-center gap-3 mb-4 header-section-title">
-              <div class="icon-circle shadow-sm">
-                <i class="bi bi-tools fs-5"></i>
-              </div>
-              <h4 class="fw-bold m-0">Información del servicio</h4>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <label class="form-label font-weight-bold">Nombre del servicio que necesitas</label>
-              <input type="text" formControlName="title" class="form-control chambee-input" placeholder="Ej. Reparación de fuga de agua">
-              <small class="text-danger" *ngIf="servicioForm.get('title')?.invalid && servicioForm.get('title')?.touched">Requerido</small>
-            </div>
-            <div class="col-md-6 mb-4">
-              <label class="form-label font-weight-bold">Categoría de oficio</label>
-              <select formControlName="categoria" class="form-select chambee-input">
-                <option value="Plomería">Plomería</option>
-                <option value="Electricidad">Electricidad</option>
-                <option value="Carpintería">Carpintería</option>
-                <option value="Limpieza">Limpieza</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <label class="form-label font-weight-bold">Presupuesto estimado (MXN)</label>
-              <input type="number" formControlName="presupuesto" class="form-control chambee-input" placeholder="$ 500">
-            </div>
-            <div class="col-md-6 mb-4">
-               <label class="form-label font-weight-bold">Ubicación del trabajo</label>
-               <div class="input-group overflow-hidden rounded-3 form-group-location">
-                  <input type="text" formControlName="ubicacion" class="form-control border-0 bg-transparent py-3 text-input-location" placeholder="San Miguel de Allende, Gto">
-                  <span class="input-group-text border-0 bg-transparent icon-location"><i class="bi bi-geo-alt-fill"></i></span>
-               </div>
-            </div>
-          </div>
-
-          <div class="mt-2">
-            <label class="form-label font-weight-bold">Descripción detallada de lo que solicitas</label>
-            <textarea formControlName="description" class="form-control chambee-input" rows="8" placeholder="Describe el problema, qué necesitas que hagan y cualquier detalle importante..."></textarea>
-            <small class="text-danger" *ngIf="servicioForm.get('description')?.invalid && servicioForm.get('description')?.touched">Requerido</small>
-          </div>
-        </div>
+  <div class="offer-shell">
+    <header class="offer-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Panel de candidato</p>
+        <h1>Crear nuevo servicio</h1>
+        <p>Publica un oficio o servicio técnico para que la comunidad y empresas puedan contactarte directamente.</p>
       </div>
 
-      <div class="col-md-4 side-cards">
-        <div class="card card-chambee p-4 side-card-yellow mb-4">
-          <h5 class="fw-bold m-0 card-title-dark">Estado de la Solicitud</h5>
-          <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
-            <span class="fw-semibold text-muted-custom">Visible para Oficios</span>
-            <div class="form-check form-switch fs-4 m-0">
-              <input class="form-check-input switch-success" type="checkbox" checked>
-            </div>
-          </div>
+      <div class="hero-actions">
+        <button type="button" class="ghost-btn" (click)="volverPanel()">Volver al inicio</button>
+      </div>
+    </header>
+
+    <form class="offer-layout" [formGroup]="servicioForm">
+      <!-- PANEL IZQUIERDO: INFORMACIÓN PRINCIPAL -->
+      <article class="offer-card offer-main">
+        <div class="card-head">
+          <p class="eyebrow">Detalles</p>
+          <h2>Información principal</h2>
         </div>
 
-        <div class="card card-chambee p-4 side-card-yellow">
-          <h5 class="fw-bold mb-3 card-title-dark">Etiquetas de búsqueda</h5>
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge badge-custom px-3 py-2 rounded-pill fw-bold">#Hogar</span>
-            <span class="badge badge-custom px-3 py-2 rounded-pill fw-bold">#Urgente</span>
-            <span class="badge badge-custom px-3 py-2 rounded-pill fw-bold">#Reparación</span>
-          </div>
-          <input type="text" class="form-control chambee-input p-2" placeholder="Añadir etiqueta...">
-        </div>
-      </div>
+        <label class="field">
+          <span>Nombre del servicio que ofreces</span>
+          <input type="text" formControlName="title" placeholder="Ej. Instalaciones eléctricas y mantenimiento" />
+          <small *ngIf="campoInvalido('title')">Escribe un título descriptivo y claro para tu servicio.</small>
+        </label>
 
-      <div class="col-12 d-flex justify-content-center gap-3 mt-5">
-        <button type="button" class="btn btn-secondary rounded-pill px-5 py-3 fw-bold border-0 shadow-sm btn-cancel-custom" routerLink="/home-user">
-          Cancelar
-        </button>
-        <button type="submit" class="btn btn-warning rounded-pill px-5 py-3 fw-bold shadow-sm text-dark btn-publish-custom">
-          Publicar Servicio
-        </button>
-      </div>
-      
+        <label class="field">
+          <span>Descripción detallada de tu servicio</span>
+          <textarea rows="8" formControlName="description"
+            placeholder="Explica detalladamente en qué consiste tu servicio, qué incluye, herramientas que usas y tu experiencia laboral..."></textarea>
+          <small *ngIf="campoInvalido('description')">Por favor, detalla tu experiencia o lo que incluye tu servicio.</small>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Categoría de oficio</span>
+            <select formControlName="categoria">
+              <option value="Plomería">Plomería</option>
+              <option value="Electricidad">Electricidad</option>
+              <option value="Carpintería">Carpintería</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Pintura">Pintura</option>
+              <option value="Jardinería">Jardinería</option>
+              <option value="Cerrajería">Cerrajería</option>
+              <option value="Mudanzas">Mudanzas</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Modalidad de trabajo</span>
+            <select formControlName="modalidad">
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">A domicilio / Remoto</option>
+              <option value="Hibrido">Híbrido</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Estatus de urgencia / Disponibilidad</span>
+            <select formControlName="urgencia">
+              <option value="Normal">Normal (Bajo agenda)</option>
+              <option value="Urgente">Urgente (Disponibilidad rápida)</option>
+              <option value="Muy urgente">Inmediata (24/7 emergencias)</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Tarifa / Presupuesto base estimado (MXN)</span>
+            <input type="number" formControlName="presupuesto" placeholder="Ej. 350" />
+            <small *ngIf="campoInvalido('presupuesto')">Ingresa un presupuesto base mayor a 0.</small>
+          </label>
+        </div>
+      </article>
+
+      <!-- PANEL DERECHO: UBICACIÓN Y VISTA PREVIA -->
+      <article class="offer-card offer-side">
+        <div class="card-head">
+          <p class="eyebrow">Zona de trabajo</p>
+          <h2>Dirección del servicio</h2>
+        </div>
+
+        <div class="form-grid single-col">
+          <label class="field">
+            <p class="dir-label">Dirección Completa (Guanajuato)</p>
+
+            <input type="text" class="form-control-custom" placeholder="Código Postal (C.P.)" formControlName="codigo_postal"
+              (blur)="buscarCP()" maxlength="5" />
+
+            <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Ciudad / Municipio" formControlName="ciudad" readonly />
+
+            <select class="form-control-custom" formControlName="colonia">
+              <option value="" disabled selected>Colonia / Localidad</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+
+            <input type="text" class="form-control-custom" placeholder="Calle y número" formControlName="calle" />
+
+            <small *ngIf="campoInvalido('calle')" class="support-error d-block mt-1" style="font-size: 0.8rem; color: #c2410c;">Calle y número requeridos.</small>
+          </label>
+        </div>
+
+        <div class="preview-box mt-3">
+          <p class="preview-label">Resumen rápido de tu servicio</p>
+          <strong>{{ servicioForm.value.title || 'Título de tu servicio' }}</strong>
+          <p class="mb-1 text-muted-custom">
+            <i class="bi bi-tag-fill me-1"></i>Categoría: {{ servicioForm.value.categoria || 'Sin definir' }}
+          </p>
+          <p class="mb-1 text-muted-custom">
+            <i class="bi bi-briefcase-fill me-1"></i>Modalidad: {{ servicioForm.value.modalidad || 'Presencial' }}
+          </p>
+          <p class="mb-1 text-muted-custom">
+            <i class="bi bi-geo-alt-fill me-1"></i>Ubicación: 
+            {{ (servicioForm.value.colonia ? servicioForm.value.colonia + ', ' : '') + (servicioForm.value.ciudad || 'Municipio') }}
+          </p>
+          <p class="mb-2 text-muted-custom">
+            <i class="bi bi-lightning-charge-fill me-1"></i>Urgencia: {{ servicioForm.value.urgencia || 'Normal' }}
+          </p>
+          <p class="salary-preview m-0" *ngIf="servicioForm.value.presupuesto">
+            Est. Base: MXN ${{ servicioForm.value.presupuesto | number:'1.0-0' }}
+          </p>
+        </div>
+
+        <!-- ACCIONES DE FORMULARIO -->
+        <div class="actions-wrapper d-flex flex-column gap-2 mt-3">
+          <button type="button" class="ghost-btn w-100 py-3" [disabled]="guardando" (click)="publicar(true)">
+            Guardar como Borrador
+          </button>
+          
+          <button type="button" class="primary-btn w-100 py-3" [disabled]="guardando" (click)="publicar(false)">
+            {{ guardando ? 'Guardando...' : 'Guardar y Publicar' }}
+          </button>
+        </div>
+      </article>
     </form>
-    
   </div>
 </div>

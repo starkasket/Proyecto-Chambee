@@ -6,10 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { ServiciosService, Service } from '../../services/servicios.service';
 
-
-// Estructura de cada tarjeta del carrusel principal.
 interface Slide {
   company: string;
   companyDescription: string;
@@ -22,7 +19,6 @@ interface Slide {
   img: string;
 }
 
-// Estructura de cada tarjeta de empleo del grid.
 interface Job {
   company: string;
   title: string;
@@ -32,9 +28,6 @@ interface Job {
   rating: string;
   applicants: number;
 }
-
-// Estructura de cada servicio mostrado en desktop y en la burbuja movil.
-
 
 @Component({
   selector: 'app-home',
@@ -50,8 +43,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly themeService: ThemeService,
     private http: HttpClient,
     private api: ApiService,
-    private readonly authApi: AuthService,
-    private serviciosService: ServiciosService
+    private readonly authApi: AuthService
   ) {}
 
   servicesOpen = false;
@@ -60,45 +52,38 @@ export class HomeComponent implements OnInit, OnDestroy {
   visibleCount = 8;
   maxVisible = 8;
   isMobile = false;
+  modalLoginVisible = false;
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
   slides: Slide[] = [];
-
-  services: Service[] = [
-    { title: 'Servicio 1', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?1' },
-    { title: 'Servicio 2', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?2' },
-    { title: 'Servicio 3', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?3' },
-    { title: 'Servicio 4', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?4' },
-    { title: 'Servicio 5', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?5' },
-    { title: 'Servicio 6', description: 'Descripcion breve', img: 'https://picsum.photos/80/80?6' }
-  ];
-
+  services: any[] = [];
   jobs: Job[] = [];
 
   ngOnInit() {
-
-    this.serviciosService.servicios$.subscribe((servicios: Service[]) => {
-      this.services = servicios;
-    });
-    
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
     this.checkMobile();
 
-    const token = this.authApi.getToken();
+    // Cargar servicios públicos desde la BD
+    this.api.obtenerServiciosPublicos().subscribe({
+      next: (servicios) => {
+        this.services = servicios;
+      },
+      error: () => {
+        this.services = [];
+      }
+    });
 
+    const token = this.authApi.getToken();
     if (token) {
       const usuario = this.api.getUsuario();
-
       if (usuario.rol === "empleador") {
-        this.router.navigate(['/home-employer'])
-      } else if (usuario.rol === "postulante"){
-        this.router.navigate(['/home-user'])
+        this.router.navigate(['/home-employer']);
+      } else if (usuario.rol === "postulante") {
+        this.router.navigate(['/home-user']);
       }
     }
-    
 
-    // Cargar ofertas públicas en lugar de datos hardcodeados
     this.api.obtenerAnunciosPublicos().subscribe({
       next: (anuncios: any[]) => {
         if (anuncios && anuncios.length > 0) {
@@ -143,7 +128,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.slideIntervalId) clearInterval(this.slideIntervalId);
   }
 
-  get visibleServices(): Service[] {
+  get visibleServices(): any[] {
     return this.servicesOpen ? this.services : this.services.slice(0, 4);
   }
 
@@ -152,8 +137,26 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleTheme() { this.themeService.toggleTheme(); }
   get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
 
-  openService(i: number) { void i; this.router.navigate(['/login']); }
-  openJob() { 
+  // Abre modal si no hay sesión
+  openService(_i: number) {
+    const token = this.authApi.getToken();
+    if (token) {
+      this.router.navigate(['/home-user']);
+    } else {
+      this.modalLoginVisible = true;
+    }
+  }
+
+  cerrarModalLogin() {
+    this.modalLoginVisible = false;
+  }
+
+  irAlLogin() {
+    this.modalLoginVisible = false;
+    this.router.navigate(['/login']);
+  }
+
+  openJob() {
     const token = this.authApi.getToken();
     if (token) {
       this.router.navigate(['/jobs']);
@@ -161,7 +164,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
     }
   }
-  openFeaturedJob() { 
+
+  openFeaturedJob() {
     const token = this.authApi.getToken();
     if (token) {
       this.router.navigate(['/jobs']);
@@ -202,7 +206,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.http.post('http://localhost:3000/api/support', form.value)
       .subscribe({
         next: () => {
-          alert("Mensaje enviado correctamente ");
+          alert("Mensaje enviado correctamente");
           form.resetForm({
             nombreCompleto: '',
             empresa: '',
@@ -212,7 +216,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             detalles: ''
           });
         },
-        error: () => alert("Error al enviar ")
+        error: () => alert("Error al enviar")
       });
   }
 }

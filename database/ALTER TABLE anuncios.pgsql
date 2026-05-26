@@ -34,3 +34,22 @@ ADD COLUMN IF NOT EXISTS id_empleador UUID
 ALTER TABLE postulante ADD COLUMN IF NOT EXISTS token_version INT DEFAULT 0;
 ALTER TABLE postulante ADD COLUMN IF NOT EXISTS descripcion VARCHAR(600) NOT NULL DEFAULT '';
 
+CREATE TABLE IF NOT EXISTS servicios (
+  id_servicio UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(160) NOT NULL,
+  description VARCHAR(400),
+  categoria VARCHAR(60),
+  presupuesto VARCHAR(60),
+  ubicacion TEXT,
+  estado VARCHAR(100),
+  ciudad VARCHAR(100),
+  colonia VARCHAR(100),
+  calle VARCHAR(150),
+  codigo_postal VARCHAR(10),
+  modalidad VARCHAR(50),
+  urgencia VARCHAR(50),
+  es_borrador BOOLEAN DEFAULT false,
+  autor_id UUID,
+  fecha_creacion TIMESTAMP DEFAULT NOW(),
+  FOREIGN KEY (autor_id) REFERENCES postulante(id_postulante)
+);

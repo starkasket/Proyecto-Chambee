@@ -1491,6 +1491,55 @@ app.put("/mi-perfil/cv", verifyToken, authorizeRoles("postulante"), async (req, 
     res.status(500).json({ error: "Error al actualizar CV" });
   }
 });
+/* ===== SERVICIOS (OFICIOS) ===== */
+app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const {
+    title, description, categoria, presupuesto,
+    ubicacion, estado, ciudad, colonia, calle,
+    codigo_postal, modalidad, urgencia, esBorrador, autorId
+  } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO servicios 
+        (title, description, categoria, presupuesto, ubicacion, estado,
+         ciudad, colonia, calle, codigo_postal, modalidad, urgencia,
+         es_borrador, autor_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+       RETURNING *`,
+      [title, description, categoria, presupuesto, ubicacion,
+       estado, ciudad, colonia, calle, codigo_postal,
+       modalidad, urgencia, esBorrador, autorId]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("[servicios] POST error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/servicios/:autorId", verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM servicios WHERE autor_id = $1 ORDER BY fecha_creacion DESC`,
+      [req.params.autorId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// GET /servicios-publicos — todos los servicios publicados (sin auth)
+app.get("/servicios-publicos", async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM servicios WHERE es_borrador = false ORDER BY fecha_creacion DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 /* ===== INICIAR SERVIDOR ===== */
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor corriendo en http://localhost:3000");
