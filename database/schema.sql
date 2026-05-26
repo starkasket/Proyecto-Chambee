@@ -9,7 +9,7 @@ CREATE TABLE postulante (
     contrasena VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     sexo VARCHAR(20) CHECK (sexo IN ('Masculino','Femenino','Otro')),
-    descripcion VARCHAR(600) NOT NULL,
+    descripcion VARCHAR(500) NOT NULL,
     pais VARCHAR(100) NOT NULL,
     estado VARCHAR(100) NOT NULL,
     ciudad VARCHAR(100) NOT NULL,
