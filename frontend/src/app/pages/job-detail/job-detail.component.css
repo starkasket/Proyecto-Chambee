@@ -256,6 +256,37 @@
   color: var(--text-primary); /* <-- Ajustado */
 }
 
+.favorite-toggle {
+  border: 1px solid var(--border-soft);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.favorite-toggle:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.favorite-toggle.active {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.favorite-toggle:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .job-requirements h4 {
   font-size: 1rem;
   font-weight: bold;

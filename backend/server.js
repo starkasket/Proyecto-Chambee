@@ -1136,6 +1136,120 @@ app.post("/anuncios/:idAnuncio/postular", verifyToken, authorizeRoles("postulant
   }
 });
 
+app.get("/favoritos", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  try {
+    const query = `SELECT
+      f.id_favoritos,
+      f.fecha_guardado,
+      a.id_anuncio,
+      a.titulo,
+      a.descripcion,
+      a.urgencia,
+      a.edad,
+      a.educacion,
+      a.estado,
+      a.ciudad,
+      a.colonia,
+      a.calle,
+      a.codigo_postal,
+      a.salario,
+      a.modalidad,
+      a.fecha_publicacion,
+      a.estado_anuncio,
+      a.vistas,
+      e.nombre_empresa,
+      e.descripcion AS descripcion_empresa,
+      e.foto_perfil AS foto_empresa,
+      COALESCE(
+        ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
+        ARRAY[]::VARCHAR[]
+      ) AS categorias
+    FROM favoritos f
+    INNER JOIN anuncios a ON a.id_anuncio = f.id_anuncio
+    INNER JOIN empleador e ON e.id_empleador = a.id_empleador
+    LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
+    LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
+    WHERE f.id_postulante = $1
+    GROUP BY f.id_favoritos, a.id_anuncio, e.nombre_empresa, e.descripcion, e.foto_perfil
+    ORDER BY f.fecha_guardado DESC`;
+
+    const result = await pool.query(query, [req.user.id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error al obtener favoritos:", err);
+    res.status(500).json({ error: "Error al obtener favoritos" });
+  }
+});
+
+app.get("/anuncios/:idAnuncio/favorito", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { idAnuncio } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT id_favoritos
+       FROM favoritos
+       WHERE id_postulante = $1 AND id_anuncio = $2`,
+      [req.user.id, idAnuncio]
+    );
+
+    res.json({ favorito: result.rows.length > 0 });
+  } catch (err) {
+    console.error("Error al revisar favorito:", err);
+    res.status(500).json({ error: "Error al revisar favorito" });
+  }
+});
+
+app.post("/anuncios/:idAnuncio/favoritos", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { idAnuncio } = req.params;
+
+  try {
+    const checkAnuncio = await pool.query(
+      "SELECT id_anuncio FROM anuncios WHERE id_anuncio = $1",
+      [idAnuncio]
+    );
+
+    if (checkAnuncio.rows.length === 0) {
+      return res.status(404).json({ error: "Vacante no encontrada" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO favoritos (id_postulante, id_anuncio)
+       VALUES ($1, $2)
+       ON CONFLICT (id_postulante, id_anuncio) DO NOTHING
+       RETURNING *`,
+      [req.user.id, idAnuncio]
+    );
+
+    res.status(result.rows.length ? 201 : 200).json({
+      message: "Vacante guardada en favoritos",
+      favorito: true
+    });
+  } catch (err) {
+    console.error("Error al guardar favorito:", err);
+    res.status(500).json({ error: "Error al guardar favorito" });
+  }
+});
+
+app.delete("/anuncios/:idAnuncio/favoritos", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { idAnuncio } = req.params;
+
+  try {
+    await pool.query(
+      `DELETE FROM favoritos
+       WHERE id_postulante = $1 AND id_anuncio = $2`,
+      [req.user.id, idAnuncio]
+    );
+
+    res.json({
+      message: "Vacante eliminada de favoritos",
+      favorito: false
+    });
+  } catch (err) {
+    console.error("Error al eliminar favorito:", err);
+    res.status(500).json({ error: "Error al eliminar favorito" });
+  }
+});
+
 app.get("/mi-etiquetas", verifyToken, authorizeRoles("postulante"), async (req, res) => {
 
   try {

@@ -103,7 +103,16 @@
                             <span class="job-tag" *ngFor="let tag of jobData.tags">{{ tag }}</span>
                         </div>
                     </div>
-                    <i class="bi bi-bookmark fs-3" style="cursor: pointer;" title="Guardar vacante"></i>
+                    <button
+                        class="favorite-toggle"
+                        type="button"
+                        (click)="toggleFavorito()"
+                        [disabled]="guardandoFavorito"
+                        [class.active]="esFavorito"
+                        [attr.aria-label]="esFavorito ? 'Quitar de favoritos' : 'Guardar vacante'"
+                        [title]="esFavorito ? 'Quitar de favoritos' : 'Guardar vacante'">
+                        <i class="bi" [class.bi-bookmark-fill]="esFavorito" [class.bi-bookmark]="!esFavorito"></i>
+                    </button>
                 </div>
 
                 <div class="job-requirements">

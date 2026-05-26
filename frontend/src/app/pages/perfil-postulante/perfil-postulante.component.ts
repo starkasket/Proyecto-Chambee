@@ -164,6 +164,7 @@ export class PerfilPostulanteComponent implements OnInit {
       }
     });
 
+    this.cargarFavoritos();
     this.checkMobile();
   }
 
@@ -234,7 +235,7 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   volverPanel() {
-    this.router.navigate(['/inicio-postulante']);
+    this.router.navigate(['/home-user']);
   }
 
   editarPerfil() {
@@ -242,7 +243,33 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   buscarEmpleos() {
-    this.router.navigate(['/buscar-empleos']);
+    this.router.navigate(['/home-user']);
+  }
+
+  verVacante(id: string) {
+    this.router.navigate(['/job', id]);
+  }
+
+  private cargarFavoritos() {
+    this.api.obtenerFavoritos().subscribe({
+      next: (favoritos: any[]) => {
+        this.favoritos = (favoritos || []).map((fav) => ({
+          id: fav.id_anuncio,
+          empresa: fav.nombre_empresa || 'Empresa Confidencial',
+          estado: fav.estado_anuncio === 'ACTIVO' ? 'Activa' as const : 'Pausada' as const,
+          ubicacion: [fav.ciudad, fav.estado].filter(Boolean).join(', '),
+          fecha: fav.fecha_guardado ? new Date(fav.fecha_guardado).toLocaleDateString('es-MX') : 'Reciente',
+          candidatos: fav.vistas || 0,
+          vacante: fav.titulo || 'Vacante',
+          resumen: fav.descripcion || 'Consulta los detalles de esta vacante.',
+          imagen: fav.foto_empresa || 'assets/LogoChambee.png'
+        }));
+      },
+      error: (err) => {
+        console.error('No se pudieron obtener favoritos', err);
+        this.favoritos = [];
+      }
+    });
   }
 
   logout() {

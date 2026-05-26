@@ -67,6 +67,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   faqOpen: number | null = null;
   modalMensaje = '';
   menuServicioAbierto: number | null = null;
+  favoriteJobIds = new Set<string>();
+  savingFavoriteId: string | null = null;
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
@@ -116,6 +118,26 @@ this.api.obtenerMisServicios(String(usuario.id)).subscribe({
   },
   error: () => {
     this.services = [];
+    this.slideIntervalId = setInterval(() => {
+      this.nextSlide();
+    }, 9000);
+
+    this.checkMobile();
+    this.cargarOfertasPublicas();
+    this.cargarFavoritosGuardados();
+
+    const usuario = this.api.getUsuario();
+    if (usuario?.id) {
+      this.api.getMiPerfil().subscribe({
+        next: (perfil: any) => {
+          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
+          this.foto_perfil = perfil?.foto_perfil || '';
+        },
+        error: () => {
+          this.nombre_postulante = usuario?.nombre || 'Usuario';
+        }
+      });
+    }
   }
 });
 
@@ -227,6 +249,24 @@ this.api.obtenerMisServicios(String(usuario.id)).subscribe({
     }).format(numero);
   }
 
+  private cargarFavoritosGuardados() {
+    const usuario = this.api.getUsuario();
+
+    if (usuario?.rol !== 'postulante') {
+      this.favoriteJobIds.clear();
+      return;
+    }
+
+    this.api.obtenerFavoritos().subscribe({
+      next: (favoritos: any[]) => {
+        this.favoriteJobIds = new Set((favoritos || []).map((fav) => String(fav.id_anuncio)));
+      },
+      error: () => {
+        this.favoriteJobIds.clear();
+      }
+    });
+  }
+
   irAlPerfil() {
     this.menuOpen = false;
     this.router.navigate(['/perfil-postulante']);
@@ -242,6 +282,44 @@ this.api.obtenerMisServicios(String(usuario.id)).subscribe({
     if (id) {
       this.router.navigate(['/job', id]);
     }
+  }
+
+  isFavorite(id?: string | number): boolean {
+    return id ? this.favoriteJobIds.has(String(id)) : false;
+  }
+
+  isSavingFavorite(id?: string | number): boolean {
+    return id ? this.savingFavoriteId === String(id) : false;
+  }
+
+  toggleFavorite(job: Job, event: Event) {
+    event.stopPropagation();
+
+    if (!job.id || this.savingFavoriteId) {
+      return;
+    }
+
+    const id = String(job.id);
+    this.savingFavoriteId = id;
+    const accion$ = this.isFavorite(id)
+      ? this.api.eliminarFavorito(id)
+      : this.api.guardarFavorito(id);
+
+    accion$.subscribe({
+      next: (response: any) => {
+        if (response?.favorito) {
+          this.favoriteJobIds.add(id);
+        } else {
+          this.favoriteJobIds.delete(id);
+        }
+        this.savingFavoriteId = null;
+      },
+      error: (err) => {
+        console.error('Error al actualizar favorito:', err);
+        this.mostrarModal(err.error?.error || 'No fue posible actualizar tus favoritos.');
+        this.savingFavoriteId = null;
+      }
+    });
   }
 
   toggleNotifications(event?: Event) {

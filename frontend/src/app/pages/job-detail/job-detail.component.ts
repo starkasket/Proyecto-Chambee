@@ -23,6 +23,8 @@ export class JobDetailComponent implements OnInit {
   jobData: any = null;
   relatedJobs: any[] = [];
   mostrarMapa = false;
+  esFavorito = false;
+  guardandoFavorito = false;
 
   private map: L.Map | null = null;
   private route = inject(ActivatedRoute);
@@ -37,6 +39,7 @@ export class JobDetailComponent implements OnInit {
     this.route.paramMap.subscribe((params) => {
       this.jobId = params.get('id');
       this.mostrarMapa = false;
+      this.esFavorito = false;
       this.cargarDetalles(this.jobId);
     });
 
@@ -55,6 +58,33 @@ export class JobDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error al postular:', err);
         this.mostrarModal(err.error?.error || 'No fue posible completar la postulación.');
+      }
+    });
+  }
+
+  toggleFavorito(): void {
+    if (!this.jobId || this.guardandoFavorito) {
+      return;
+    }
+
+    this.guardandoFavorito = true;
+    const accion$ = this.esFavorito
+      ? this.api.eliminarFavorito(this.jobId)
+      : this.api.guardarFavorito(this.jobId);
+
+    accion$.subscribe({
+      next: (response: any) => {
+        this.esFavorito = Boolean(response?.favorito);
+        const mensaje = this.esFavorito
+          ? 'Vacante guardada en favoritos.'
+          : 'Vacante eliminada de favoritos.';
+        this.mostrarModalExito(mensaje);
+        this.guardandoFavorito = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar favorito:', err);
+        this.mostrarModal(err.error?.error || 'No fue posible actualizar tus favoritos.');
+        this.guardandoFavorito = false;
       }
     });
   }
@@ -152,6 +182,8 @@ export class JobDetailComponent implements OnInit {
           }))
           .sort((a: any, b: any) => b.score - a.score)
           .slice(0, 4);
+
+        this.cargarEstadoFavorito(id);
       },
       error: (err) => {
         console.error('Error al obtener anuncios:', err);
@@ -174,6 +206,24 @@ export class JobDetailComponent implements OnInit {
       },
       error: (err) => {
         console.log('No se pudo cargar la foto de perfil:', err);
+      }
+    });
+  }
+
+  private cargarEstadoFavorito(id: string): void {
+    const usuario = this.api.getUsuario();
+
+    if (usuario?.rol !== 'postulante') {
+      this.esFavorito = false;
+      return;
+    }
+
+    this.api.revisarFavorito(id).subscribe({
+      next: (response: any) => {
+        this.esFavorito = Boolean(response?.favorito);
+      },
+      error: () => {
+        this.esFavorito = false;
       }
     });
   }

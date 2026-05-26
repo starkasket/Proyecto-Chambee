@@ -85,6 +85,22 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/anuncios/${idAnuncio}/postular`, {}, this.getHeaders());
   }
 
+  obtenerFavoritos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/favoritos`, this.getHeaders());
+  }
+
+  revisarFavorito(idAnuncio: number | string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/anuncios/${idAnuncio}/favorito`, this.getHeaders());
+  }
+
+  guardarFavorito(idAnuncio: number | string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/anuncios/${idAnuncio}/favoritos`, {}, this.getHeaders());
+  }
+
+  eliminarFavorito(idAnuncio: number | string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/anuncios/${idAnuncio}/favoritos`, this.getHeaders());
+  }
+
   obtenerCategorias(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/categorias`);
   }

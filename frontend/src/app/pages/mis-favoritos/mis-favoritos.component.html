@@ -1,0 +1,134 @@
+<div class="favorites-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3 logo-area" routerLink="/home-user">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ nombrePostulante }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar categoria, puesto, ciudad y mas..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <button class="btn-profile" type="button" (click)="irAlPerfil()">
+        <img *ngIf="fotoPerfil" [src]="fotoPerfil" alt="Foto de perfil" />
+        <i *ngIf="!fotoPerfil" class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">Mi Perfil</span>
+      </button>
+
+      <button
+        class="theme-toggle"
+        type="button"
+        (click)="toggleTheme()"
+        [attr.aria-pressed]="isDarkMode"
+        [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">
+            <i class="bi" [class.bi-sun-fill]="isDarkMode" [class.bi-moon-fill]="!isDarkMode"></i>
+          </span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menu" role="button">
+        <i class="bi bi-list"></i>
+      </div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
+        <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+        <a routerLink="/mis-favoritos" class="desktop-menu-link active">Mis favoritos</a>
+        <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <button class="mobile-close" type="button" aria-label="Cerrar menu" (click)="toggleMenu()">x</button>
+        <nav class="mobile-nav">
+          <div class="mobile-nav-link fw-bold highlight">Bienvenido, {{ nombrePostulante }}</div>
+          <hr />
+          <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
+          <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+          <a class="mobile-nav-link active" routerLink="/mis-favoritos" (click)="toggleMenu()">Mis favoritos</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
+          <hr />
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <main class="favorites-main">
+    <button class="back-button" type="button" (click)="volver()" aria-label="Volver">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <section class="favorites-header">
+      <div>
+        <p class="eyebrow">Chambee</p>
+        <h1>Mis favoritos</h1>
+        <p>Vacantes guardadas para revisar o postularte despues.</p>
+      </div>
+      <button class="refresh-btn" type="button" (click)="cargarFavoritos()" [disabled]="cargando">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span>Actualizar</span>
+      </button>
+    </section>
+
+    <div *ngIf="cargando" class="status-card">Cargando favoritos...</div>
+    <div *ngIf="!cargando && error" class="status-card error">{{ error }}</div>
+
+    <section *ngIf="!cargando && !error && favoritos.length === 0" class="empty-state">
+      <img src="assets/abejaSaludando.png" alt="Sin favoritos" />
+      <h2>Aun no tienes vacantes guardadas</h2>
+      <p>Cuando guardes una vacante, aparecera aqui para que puedas volver a revisarla.</p>
+      <button type="button" routerLink="/home-user">Explorar trabajos</button>
+    </section>
+
+    <section class="favorites-grid" *ngIf="!cargando && !error && favoritos.length > 0">
+      <article class="favorite-card" *ngFor="let job of favoritos" (click)="abrirDetalle(job.id_anuncio)" role="button" tabindex="0">
+        <div class="favorite-media">
+          <img [src]="job.foto_empresa || 'assets/LogoChambee.png'" [alt]="job.nombre_empresa" />
+          <span class="state-pill">{{ job.estado_anuncio }}</span>
+        </div>
+
+        <div class="favorite-copy">
+          <div class="favorite-top">
+            <div>
+              <p class="company">{{ job.nombre_empresa || 'Empresa Confidencial' }}</p>
+              <h2>{{ job.titulo }}</h2>
+            </div>
+            <button
+              class="remove-btn"
+              type="button"
+              (click)="quitarFavorito(job, $event)"
+              [disabled]="quitandoId === job.id_anuncio"
+              title="Quitar de favoritos"
+              aria-label="Quitar de favoritos">
+              <i class="bi bi-bookmark-x"></i>
+            </button>
+          </div>
+
+          <p class="description">{{ job.descripcion }}</p>
+
+          <div class="job-tags" *ngIf="job.categorias?.length">
+            <span class="job-tag" *ngFor="let tag of job.categorias | slice:0:3">{{ tag }}</span>
+          </div>
+
+          <div class="favorite-meta">
+            <span><i class="bi bi-geo-alt"></i> {{ job.ciudad }}, {{ job.estado }}</span>
+            <span><i class="bi bi-briefcase"></i> {{ job.modalidad }}</span>
+            <span><i class="bi bi-cash-stack"></i> {{ formatearSalario(job.salario) }}</span>
+          </div>
+
+          <div class="favorite-footer">
+            <span>Guardado el {{ formatearFecha(job.fecha_guardado) }}</span>
+            <button type="button" class="detail-btn">Ver vacante</button>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>

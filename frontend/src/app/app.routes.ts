@@ -14,9 +14,9 @@ import { EmployerProfileEditComponent } from './pages/employer-profile-edit/empl
 import { EmployerJobCreateComponent } from './pages/employer-job-create/employer-job-create.component';
 import { CrearServicioComponent } from './pages/crear-servicio/crear-servicio.component';
 import { JobDetailComponent } from './pages/job-detail/job-detail.component';
-import { Path } from 'leaflet';
 import { PerfilPostulanteEditarComponent } from './pages/perfil-postulante-editar/perfil-postulante-editar.component';
 import { EmployerJobsManageComponent } from './pages/employer-jobs-manage/employer-jobs-manage.component';
+import { MisFavoritosComponent } from './pages/mis-favoritos/mis-favoritos.component';
 
 export const routes: Routes = [
   {
@@ -90,6 +90,10 @@ export const routes: Routes = [
   {
     path: 'perfil-postulante/editar',
     component: PerfilPostulanteEditarComponent
+  },
+  {
+    path: 'mis-favoritos',
+    component: MisFavoritosComponent
   },
 
   {

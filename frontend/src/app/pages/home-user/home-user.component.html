@@ -74,6 +74,7 @@
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
       <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
       <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
+      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
       <a routerLink="/services" class="desktop-menu-link">Servicios</a>
       <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
       <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
@@ -90,6 +91,7 @@
         <hr />
         <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
         <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+        <a class="mobile-nav-link" routerLink="/mis-favoritos" (click)="toggleMenu()">Mis favoritos</a>
         <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
         <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
@@ -198,6 +200,16 @@
 
     <div class="jobs-grid mt-5" *ngIf="jobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button" tabindex="0">
+        <button
+          class="job-favorite-btn"
+          type="button"
+          (click)="toggleFavorite(job, $event)"
+          [disabled]="isSavingFavorite(job.id)"
+          [class.active]="isFavorite(job.id)"
+          [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
+          [title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
+          <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
+        </button>
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
