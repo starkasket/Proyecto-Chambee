@@ -84,6 +84,10 @@ export const routes: Routes = [
     component: CrearServicioComponent
   },
   {
+    path: 'editar-servicio/:id',
+    component: CrearServicioComponent
+  },
+  {
     path: 'job/:id',
     component: JobDetailComponent
   },

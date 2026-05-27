@@ -1674,6 +1674,31 @@ app.delete("/servicios/:id", verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Hubo un error al intentar eliminar el servicio' });
   }
 });
+
+app.put("/servicios/:id", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, categoria, presupuesto, ubicacion } = req.body;
+    
+    // Le mandamos los datos frescos a PostgreSQL
+    const result = await pool.query(
+      `UPDATE servicios 
+       SET title = $1, description = $2, categoria = $3, presupuesto = $4, ubicacion = $5
+       WHERE id_servicio = $6
+       RETURNING *`,
+      [title, description, categoria, presupuesto, ubicacion, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("[servicios] PUT error:", err.message);
+    res.status(500).json({ error: 'Hubo un error al actualizar el servicio' });
+  }
+});
 /* ===== INICIAR SERVIDOR ===== */
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor corriendo en http://localhost:3000");

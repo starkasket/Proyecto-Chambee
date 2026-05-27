@@ -71,6 +71,23 @@ export class ServiciosService {
     );
   }
 
+  // PUT: Actualiza un servicio en PostgreSQL
+  actualizarServicio(id: string, datosActualizados: Service): Observable<Service> {
+    return this.http.put<Service>(`${this.apiUrl}/${id}`, datosActualizados, { headers: this.getHeaders() }).pipe(
+      tap((servicioEditado) => {
+        // Actualizamos la lista de la pantalla en tiempo real
+        const actuales = this.serviciosSource.value;
+        const index = actuales.findIndex(s => (s.id_servicio || s.id) === id);
+        
+        if (index !== -1) {
+          actuales[index] = { ...actuales[index], ...datosActualizados };
+          this.serviciosSource.next([...actuales]);
+        }
+        console.log('[ServiciosService] Servicio actualizado en BD');
+      })
+    );
+  }
+
   // DELETE: Borra el servicio de PostgreSQL
   eliminarServicio(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() }).pipe(
