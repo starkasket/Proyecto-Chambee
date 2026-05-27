@@ -129,4 +129,17 @@ obtenerMisServicios(autorId: string): Observable<any[]> {
 obtenerServiciosPublicos(): Observable<any[]> {
   return this.http.get<any[]>(`${this.apiUrl}/servicios-publicos`);
 }
+
+eliminarServicio(idServicio: string): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/servicios/${idServicio}`, this.getHeaders());
+}
+
+publicarServicio(idServicio: string): Observable<any> {
+  return this.http.patch(
+    `${this.apiUrl}/servicios/${idServicio}/publicar`,
+    {},
+    this.getHeaders()
+  );
+
+}
 }

@@ -1,0 +1,196 @@
+<div class="favorites-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3 logo-area" routerLink="/home-user">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ nombrePostulante }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar categoria, puesto, ciudad y mas..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <button class="btn-profile" type="button" (click)="irAlPerfil()">
+        <img *ngIf="fotoPerfil" [src]="fotoPerfil" alt="Foto de perfil" />
+        <i *ngIf="!fotoPerfil" class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">Mi Perfil</span>
+      </button>
+
+      <button
+        class="theme-toggle"
+        type="button"
+        (click)="toggleTheme()"
+        [attr.aria-pressed]="isDarkMode"
+        [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">
+            <i class="bi" [class.bi-sun-fill]="isDarkMode" [class.bi-moon-fill]="!isDarkMode"></i>
+          </span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menu" role="button">
+        <i class="bi bi-list"></i>
+      </div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
+        <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+        <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+        <a routerLink="/borrador-servicio" class="desktop-menu-link active">Mis Borradores</a>
+        <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <button class="mobile-close" type="button" aria-label="Cerrar menu" (click)="toggleMenu()">x</button>
+        <nav class="mobile-nav">
+          <div class="mobile-nav-link fw-bold highlight">Bienvenido, {{ nombrePostulante }}</div>
+          <hr />
+          <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
+          <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/mis-favoritos" (click)="toggleMenu()">Mis favoritos</a>
+          <a class="mobile-nav-link active" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
+          <hr />
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <main class="favorites-main">
+    <button class="back-button" type="button" (click)="volver()" aria-label="Volver">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <section class="favorites-header">
+      <div>
+        <p class="eyebrow">Chambee</p>
+        <h1>Mis borradores</h1>
+        <p>Servicios guardados como borradores que aún no han sido publicados.</p>
+      </div>
+      <button class="refresh-btn" type="button" (click)="cargarBorradores()" [disabled]="cargando">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span>Actualizar</span>
+      </button>
+    </section>
+
+    <div *ngIf="cargando" class="status-card">Cargando borradores...</div>
+    <div *ngIf="!cargando && error" class="status-card error">{{ error }}</div>
+
+    <section *ngIf="!cargando && !error && borradores.length === 0" class="empty-state">
+      <img src="assets/abejaSaludando.png" alt="Sin borradores" />
+      <h2>Aun no tienes servicios guardados como borrador</h2>
+      <p>Cuando guardes un servicio como borrador, aparecerá aquí para que puedas revisarlo o publicarlo después.</p>
+      <button type="button" routerLink="/crear-servicio">Crear servicio</button>
+    </section>
+
+    <section class="favorites-grid" *ngIf="!cargando && !error && borradores.length > 0">
+      <article class="favorite-card" *ngFor="let servicio of borradores">
+        <div class="favorite-media">
+          <img src="assets/LogoChambee.png" alt="Borrador de servicio" />
+          <span class="state-pill">Borrador</span>
+        </div>
+
+        <div class="favorite-copy">
+          <div class="favorite-top">
+            <div>
+              <p class="company">{{ servicio.categoria }}</p>
+              <h2>{{ servicio.title }}</h2>
+            </div>
+            <button
+              class="remove-btn"
+              type="button"
+              (click)="solicitarEliminarBorrador(servicio, $event)"
+              [disabled]="eliminandoId === servicio.id_servicio"
+              title="Eliminar borrador"
+              aria-label="Eliminar borrador">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+
+          <p class="description">{{ servicio.description }}</p>
+
+          <div class="job-tags">
+            <span class="job-tag">{{ servicio.categoria }}</span>
+            <span class="job-tag">{{ servicio.modalidad }}</span>
+            <span class="job-tag urgency-tag" *ngIf="servicio.urgencia">{{ servicio.urgencia }}</span>
+          </div>
+
+          <div class="favorite-meta">
+            <span><i class="bi bi-geo-alt"></i> {{ servicio.ciudad }}, {{ servicio.estado }}</span>
+            <span><i class="bi bi-briefcase"></i> {{ servicio.modalidad }}</span>
+            <span><i class="bi bi-cash-stack"></i> {{ formatearPresupuesto(servicio.presupuesto) }}</span>
+          </div>
+
+          <div class="favorite-footer">
+            <span>Creado el {{ formatearFecha(servicio.fecha_creacion) }}</span>
+            <button
+              type="button"
+              class="detail-btn"
+              (click)="publicarBorrador(servicio, $event)"
+              [disabled]="publicandoId === servicio.id_servicio">
+              Publicar servicio
+            </button>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
+<div *ngIf="modalConfirmacionAbierto" class="modal" tabindex="-1"
+  style="display:flex; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center" style="background: var(--surface-primary); color: var(--text-primary); border: 1px solid var(--border-soft); border-radius: 14px; box-shadow: var(--shadow-float);">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+        <h5 class="text-danger fw-bold fs-4">¿Eliminar borrador?</h5>
+        <p class="mb-0" style="padding: 0 15px; color: var(--text-secondary);">¿Estás seguro de que deseas eliminar el borrador "{{ servicioSeleccionado?.title }}"? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4 gap-3">
+        <button type="button" class="btn btn-secondary px-4 py-2" style="border-radius: 999px; font-weight: 700;" (click)="cancelarEliminarBorrador()">Cancelar</button>
+        <button type="button" class="btn btn-danger px-4 py-2" style="border-radius: 999px; font-weight: 700;" (click)="confirmarEliminarBorrador()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ÉXITO -->
+<div *ngIf="modalExitoAbierto" class="modal" tabindex="-1"
+  style="display:flex; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center" style="background: var(--surface-primary); color: var(--text-primary); border: 1px solid var(--border-soft); border-radius: 14px; box-shadow: var(--shadow-float);">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+        <h4 class="text-success fw-bold fs-4">¡Operación exitosa!</h4>
+        <p class="mb-0" style="padding: 0 15px; color: var(--text-secondary);">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4 py-2" style="border-radius: 999px; font-weight: 700; background: var(--button-primary-bg); color: var(--button-primary-text); border: none;" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ERROR / ALERTA -->
+<div *ngIf="modalAlertaAbierto" class="modal" tabindex="-1"
+  style="display:flex; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center" style="background: var(--surface-primary); color: var(--text-primary); border: 1px solid var(--border-soft); border-radius: 14px; box-shadow: var(--shadow-float);">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+        <h5 class="text-danger fw-bold fs-4">¡Atención!</h5>
+        <p class="mb-0" style="padding: 0 15px; color: var(--text-secondary);">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4 py-2" style="border-radius: 999px; font-weight: 700; background: var(--button-primary-bg); color: var(--button-primary-text); border: none;" (click)="cerrarModalAlerta()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1699,6 +1699,29 @@ app.put("/servicios/:id", verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Hubo un error al actualizar el servicio' });
   }
 });
+app.patch("/servicios/:id/publicar", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `UPDATE servicios 
+       SET es_borrador = false 
+       WHERE id_servicio = $1 AND autor_id = $2
+       RETURNING *`,
+      [id, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Servicio no encontrado o no autorizado" });
+    }
+
+    res.json({ mensaje: "Servicio publicado correctamente", servicio: result.rows[0] });
+  } catch (err) {
+    console.error("[servicios] PATCH publicar error:", err.message);
+    res.status(500).json({ error: "Error al publicar el servicio" });
+  }
+});
+
 /* ===== INICIAR SERVIDOR ===== */
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor corriendo en http://localhost:3000");

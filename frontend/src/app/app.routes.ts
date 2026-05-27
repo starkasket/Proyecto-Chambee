@@ -17,6 +17,7 @@ import { JobDetailComponent } from './pages/job-detail/job-detail.component';
 import { PerfilPostulanteEditarComponent } from './pages/perfil-postulante-editar/perfil-postulante-editar.component';
 import { EmployerJobsManageComponent } from './pages/employer-jobs-manage/employer-jobs-manage.component';
 import { MisFavoritosComponent } from './pages/mis-favoritos/mis-favoritos.component';
+import { BorradorServicioComponent } from './pages/borrador-servicio/borrador-servicio.component';
 
 export const routes: Routes = [
   {
@@ -101,6 +102,16 @@ export const routes: Routes = [
   },
 
   {
+    path: 'borrador-servicio',
+    component: BorradorServicioComponent
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  }
+  ,
+  {
+    
     path: '**',
     redirectTo: ''
   }
