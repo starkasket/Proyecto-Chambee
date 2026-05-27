@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export interface Service {
-  id?: string;
+  id_servicio?: string; // ID que viene de PostgreSQL
+  id?: string; // Fallback por si acaso
   title: string;
   description: string;
   img?: string;
@@ -16,9 +19,9 @@ export interface Service {
   codigo_postal?: string;
   modalidad?: string;
   urgencia?: string;
-  esBorrador?: boolean;
-  autorId?: string;
-  fechaCreacion?: string;
+  es_borrador?: boolean;
+  autor_id?: string;
+  fecha_creacion?: string;
 }
 
 @Injectable({
@@ -26,154 +29,62 @@ export interface Service {
 })
 export class ServiciosService {
 
-  private readonly STORAGE_KEY = 'chambee_servicios_v3';
+  private apiUrl = 'http://localhost:3000/servicios'; // Ruta de tu backend
   private serviciosSource = new BehaviorSubject<Service[]>([]);
   servicios$ = this.serviciosSource.asObservable();
 
-  constructor() {
-    console.log('[ServiciosService] Servicio inicializado');
-    this.cargarServicios();
+  constructor(private http: HttpClient) {
+    console.log('[ServiciosService] Servicio inicializado, conectando a BD...');
+    // Carga inicial de los servicios públicos al arrancar
+    this.cargarServiciosPublicos();
   }
 
-  // Lee siempre directo de localStorage — fuente de verdad
-  private leerDeStorage(): Service[] {
-    try {
-      const raw = localStorage.getItem(this.STORAGE_KEY);
-      console.log('[ServiciosService] Leyendo localStorage key:', this.STORAGE_KEY, '| valor:', raw ? `${raw.length} chars` : 'NULL');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          console.log('[ServiciosService] Servicios encontrados:', parsed.length);
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error('[ServiciosService] Error al leer localStorage:', e);
-    }
-    return [];
+  // Extrae el token de la sesión para los permisos del backend
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token'); 
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
   }
 
-  // Escribe siempre directo a localStorage
-  private escribirEnStorage(servicios: Service[]): boolean {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(servicios));
-      // Verificación inmediata de que se guardó
-      const verificacion = localStorage.getItem(this.STORAGE_KEY);
-      const ok = verificacion !== null;
-      console.log('[ServiciosService] Guardado en localStorage:', ok ? 'OK' : 'FALLÓ', '| Servicios:', servicios.length);
-      return ok;
-    } catch (e) {
-      console.error('[ServiciosService] Error al escribir en localStorage:', e);
-      return false;
-    }
-  }
-
-  private cargarServicios(): void {
-    const serviciosGuardados = this.leerDeStorage();
-
-    if (serviciosGuardados.length > 0) {
-      // Hay datos guardados, usarlos directamente
-      this.serviciosSource.next(serviciosGuardados);
-      return;
-    }
-
-    // Primera vez: inicializar con servicios de ejemplo
-    console.log('[ServiciosService] Primera carga — inicializando con servicios de ejemplo');
-    const serviciosEjemplo: Service[] = [
-      {
-        id: 'ejemplo-001',
-        title: 'Plomería y Reparación de Fugas',
-        description: 'Servicio profesional de plomería general, destape de drenajes, reparación de tuberías y fugas de agua urgentes.',
-        img: 'https://picsum.photos/80/80?random=101',
-        categoria: 'Plomería',
-        presupuesto: '$350 MXN',
-        ubicacion: 'Centro, Guanajuato, Gto',
-        modalidad: 'Presencial',
-        urgencia: 'Urgente',
-        esBorrador: false,
-        autorId: 'sistema',
-        fechaCreacion: new Date().toISOString()
+  // GET: Obtiene todos los servicios directamente de PostgreSQL
+  cargarServiciosPublicos(): void {
+    this.http.get<Service[]>('http://localhost:3000/servicios-publicos').subscribe({
+      next: (servicios) => {
+        console.log('[ServiciosService] Servicios cargados desde PostgreSQL:', servicios.length);
+        this.serviciosSource.next(servicios);
       },
-      {
-        id: 'ejemplo-002',
-        title: 'Instalaciones Eléctricas Residenciales',
-        description: 'Instalación de iluminación LED, reparación de cortocircuitos, cableado estructurado e instalación de tableros de control seguros.',
-        img: 'https://picsum.photos/80/80?random=102',
-        categoria: 'Electricidad',
-        presupuesto: '$500 MXN',
-        ubicacion: 'Marfil, Guanajuato, Gto',
-        modalidad: 'Presencial',
-        urgencia: 'Normal',
-        esBorrador: false,
-        autorId: 'sistema',
-        fechaCreacion: new Date().toISOString()
-      },
-      {
-        id: 'ejemplo-003',
-        title: 'Limpieza y Sanitización Profesional',
-        description: 'Limpieza profunda para casas, departamentos y oficinas. Lavado de alfombras, vidrios y sanitización integral de áreas comunes.',
-        img: 'https://picsum.photos/80/80?random=103',
-        categoria: 'Limpieza',
-        presupuesto: '$280 MXN',
-        ubicacion: 'San Javier, Guanajuato, Gto',
-        modalidad: 'Presencial',
-        urgencia: 'Normal',
-        esBorrador: false,
-        autorId: 'sistema',
-        fechaCreacion: new Date().toISOString()
+      error: (err) => {
+        console.error('[ServiciosService] Error al cargar servicios de la BD:', err);
       }
-    ];
-
-    this.escribirEnStorage(serviciosEjemplo);
-    this.serviciosSource.next(serviciosEjemplo);
+    });
   }
 
-  agregarServicio(nuevoServicio: Service): void {
-    // Generar ID único
-    if (!nuevoServicio.id) {
-      nuevoServicio.id = `srv-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-    }
-    if (!nuevoServicio.img) {
-      nuevoServicio.img = `https://picsum.photos/80/80?random=${Math.floor(Math.random() * 900) + 100}`;
-    }
-    if (!nuevoServicio.fechaCreacion) {
-      nuevoServicio.fechaCreacion = new Date().toISOString();
-    }
-
-    // SIEMPRE leer el estado más reciente desde localStorage (no del BehaviorSubject)
-    const actuales = this.leerDeStorage();
-    const nuevos = [nuevoServicio, ...actuales];
-
-    // Guardar PRIMERO en localStorage
-    const guardadoOk = this.escribirEnStorage(nuevos);
-    
-    if (guardadoOk) {
-      // Solo si el guardado fue exitoso, actualizar el estado en memoria
-      this.serviciosSource.next(nuevos);
-      console.log('[ServiciosService] Servicio agregado y persistido. Total:', nuevos.length);
-    } else {
-      console.error('[ServiciosService] No se pudo guardar el servicio en localStorage');
-    }
+  // POST: Guarda un nuevo servicio en PostgreSQL
+  agregarServicio(nuevoServicio: Service): Observable<Service> {
+    return this.http.post<Service>(this.apiUrl, nuevoServicio, { headers: this.getHeaders() }).pipe(
+      tap((servicioCreado) => {
+        const actuales = this.serviciosSource.value;
+        this.serviciosSource.next([servicioCreado, ...actuales]);
+        console.log('[ServiciosService] Servicio guardado en BD exitosamente');
+      })
+    );
   }
 
-  // Fuerza una re-lectura desde localStorage y actualiza el stream
-  recargarDesdeStorage(): void {
-    console.log('[ServiciosService] Recargando desde localStorage...');
-    const servicios = this.leerDeStorage();
-    if (servicios.length > 0) {
-      this.serviciosSource.next(servicios);
-    } else {
-      // Si localStorage está vacío (fue borrado externamente), reinicializar
-      this.cargarServicios();
-    }
+  // DELETE: Borra el servicio de PostgreSQL
+  eliminarServicio(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() }).pipe(
+      tap(() => {
+        // Actualizamos la lista local automáticamente
+        const actuales = this.serviciosSource.value;
+        this.serviciosSource.next(actuales.filter(s => (s.id_servicio || s.id) !== id));
+        console.log('[ServiciosService] Servicio eliminado de la BD');
+      })
+    );
   }
 
-  obtenerServiciosPorAutor(autorId: string): Service[] {
-    return this.leerDeStorage().filter(s => s.autorId === autorId);
-  }
-
-  // Expone todos los servicios actuales de forma síncrona
-  obtenerTodos(): Service[] {
-    return this.leerDeStorage();
+  // GET: Obtiene los servicios de un autor específico
+  obtenerServiciosPorAutor(autorId: string): Observable<Service[]> {
+    return this.http.get<Service[]>(`${this.apiUrl}/${autorId}`, { headers: this.getHeaders() });
   }
 }

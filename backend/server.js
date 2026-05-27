@@ -1654,6 +1654,26 @@ app.get("/servicios-publicos", async (_req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.delete("/servicios/:id", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ejecutamos la consulta para borrar de la tabla servicios
+    const result = await pool.query(
+      'DELETE FROM servicios WHERE id_servicio = $1 RETURNING *', 
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    res.status(200).json({ mensaje: 'Servicio eliminado correctamente' });
+  } catch (err) {
+    console.error("[servicios] DELETE error:", err.message);
+    res.status(500).json({ error: 'Hubo un error al intentar eliminar el servicio' });
+  }
+});
 /* ===== INICIAR SERVIDOR ===== */
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor corriendo en http://localhost:3000");

@@ -96,6 +96,7 @@ ngOnInit() {
 
   this.checkMobile();
   this.cargarOfertasPublicas();
+  this.cargarFavoritosGuardados();
 
   const usuario = this.api.getUsuario();
   if (usuario?.id) {
@@ -111,35 +112,15 @@ ngOnInit() {
       }
     });
 
-    // Cargar servicios desde la BD
-this.api.obtenerMisServicios(String(usuario.id)).subscribe({
-  next: (servicios) => {
-    this.services = servicios; // Sin filtro — mostrar todos
-  },
-  error: () => {
-    this.services = [];
-    this.slideIntervalId = setInterval(() => {
-      this.nextSlide();
-    }, 9000);
-
-    this.checkMobile();
-    this.cargarOfertasPublicas();
-    this.cargarFavoritosGuardados();
-
-    const usuario = this.api.getUsuario();
-    if (usuario?.id) {
-      this.api.getMiPerfil().subscribe({
-        next: (perfil: any) => {
-          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
-          this.foto_perfil = perfil?.foto_perfil || '';
-        },
-        error: () => {
-          this.nombre_postulante = usuario?.nombre || 'Usuario';
-        }
-      });
-    }
-  }
-});
+    // Cargar servicios desde la BD — solo publicados (no borradores)
+    this.api.obtenerMisServicios(String(usuario.id)).subscribe({
+      next: (servicios) => {
+        this.services = (servicios || []).filter((s: any) => !s.es_borrador);
+      },
+      error: () => {
+        this.services = [];
+      }
+    });
 
   }
 }
@@ -477,14 +458,40 @@ onDocumentClick(_event: Event) {
     this.menuServicioAbierto = this.menuServicioAbierto === index ? null : index;
   }
 
-  editarServicio(index: number) {
-    console.log('Editar servicio:', index);
-   
+editarServicio(index: number) {
+    const servicioSeleccionado = this.visibleServices[index];
+    const id = servicioSeleccionado.id_servicio || servicioSeleccionado.id;
+    
+    if (id) {
+      this.router.navigate(['/editar-servicio', id]);
+    }
   }
 
   eliminarServicio(index: number) {
-    console.log('Eliminar servicio:', index);
-  
-    this.mostrarModalExito('El servicio ha sido eliminado correctamente.');
+    const servicioSeleccionado = this.visibleServices[index];
+    const id = servicioSeleccionado.id_servicio || servicioSeleccionado.id;
+    
+    if (!id) {
+      console.error('No se encontró el ID del servicio:', servicioSeleccionado);
+      return;
+    }
+
+    // Usamos HttpClient directo porque no sé si lo tienes en api.service
+    // Asegúrate de enviar el token
+    const token = localStorage.getItem('token');
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    this.http.delete(`http://localhost:3000/servicios/${id}`, { headers }).subscribe({
+      next: () => {
+        // Borramos el servicio de las listas visuales
+        this.services = this.services.filter(s => (s.id_servicio || s.id) !== id);
+        this.menuServicioAbierto = null; 
+        this.mostrarModalExito('El servicio ha sido eliminado correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al intentar eliminar:', err);
+        this.mostrarModal('Hubo un error al intentar eliminar el servicio.');
+      }
+    });
   }
 }
