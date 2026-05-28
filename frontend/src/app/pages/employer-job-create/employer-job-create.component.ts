@@ -22,6 +22,7 @@ interface EmployerJobFormValue {
   salario: number;
   modalidad: string;
   etiquetas: string[];
+  estatus?: string; // Agregado para manejar el estado en la base de datos
 }
 
 interface NotificationItem {
@@ -62,6 +63,7 @@ export class EmployerJobCreateComponent implements OnInit {
   employerId = '';
   empresaNombre = 'Empresa';
   guardando = false;
+  guardandoBorrador = false; // Variable para el estado de carga del borrador
   cargandoPerfil = false;
   error = '';
   exito = '';
@@ -221,6 +223,7 @@ export class EmployerJobCreateComponent implements OnInit {
 
     this.guardando = true;
     const payload = this.ofertaForm.getRawValue() as EmployerJobFormValue;
+    payload.estatus = 'Publicado'; // Aseguramos que se guarde como oferta activa
 
     this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
       next: () => {
@@ -247,6 +250,33 @@ export class EmployerJobCreateComponent implements OnInit {
       error: (err) => {
         this.guardando = false;
         this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.');
+      }
+    });
+  }
+
+  guardarBorrador() {
+    this.error = '';
+    this.exito = '';
+
+    // Mantenemos la validación por si tu base de datos exige que los campos no sean nulos
+    if (this.ofertaForm.invalid) {
+      this.ofertaForm.markAllAsTouched();
+      this.error = 'Completa los campos requeridos antes de guardar el borrador.';
+      return;
+    }
+
+    this.guardandoBorrador = true;
+    const payload = this.ofertaForm.getRawValue() as EmployerJobFormValue;
+    payload.estatus = 'Borrador'; // Le indicamos a la BD que es un borrador
+
+    this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
+      next: () => {
+        this.guardandoBorrador = false;
+        this.mostrarModalExito('El borrador de tu vacante se ha guardado de forma segura.');
+      },
+      error: (err) => {
+        this.guardandoBorrador = false;
+        this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible guardar el borrador.');
       }
     });
   }

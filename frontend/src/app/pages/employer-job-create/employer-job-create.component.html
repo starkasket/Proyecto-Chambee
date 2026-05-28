@@ -64,7 +64,7 @@
       <div class="modal-content text-center">
         <div class="modal-body pt-4">
           <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
-          <h4 class="text-success fw-bold">¡Oferta publicada con éxito!</h4>
+          <h4 class="text-success fw-bold">¡Éxito!</h4>
           <p class="mb-0">{{ modalMensaje }}</p>
         </div>
         <div class="modal-footer border-0 justify-content-center pb-4">
@@ -250,9 +250,15 @@
           </p>
         </div>
 
-        <button type="submit" class="primary-btn" [disabled]="guardando">
-          {{ guardando ? 'Publicando...' : 'Publicar oferta' }}
-        </button>
+        <div class="action-buttons">
+          <button type="submit" class="primary-btn" [disabled]="guardando || guardandoBorrador">
+            {{ guardando ? 'Publicando...' : 'Publicar oferta' }}
+          </button>
+          
+          <button type="button" class="draft-btn" [disabled]="guardando || guardandoBorrador" (click)="guardarBorrador()">
+            {{ guardandoBorrador ? 'Guardando...' : 'Guardar como borrador' }}
+          </button>
+        </div>
       </article>
     </form>
   </div>
