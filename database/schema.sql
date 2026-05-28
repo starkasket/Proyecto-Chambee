@@ -9,7 +9,7 @@ CREATE TABLE postulante (
     contrasena VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     sexo VARCHAR(20) CHECK (sexo IN ('Masculino','Femenino','Otro')),
-    descripcion VARCHAR(500) NOT NULL,
+    descripcion VARCHAR(600) NOT NULL,
     pais VARCHAR(100) NOT NULL,
     estado VARCHAR(100) NOT NULL,
     ciudad VARCHAR(100) NOT NULL,
@@ -74,14 +74,14 @@ CREATE TABLE anuncios (
     calle VARCHAR(100) NOT NULL,
     codigo_postal VARCHAR(100) NOT NULL,
     salario DECIMAL(10,2) NOT NULL, 
-    modalidad VARCHAR(20) NOT NULL, --Remoto, Presencial
+    modalidad VARCHAR(20) NOT NULL, 
     fecha_publicacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    estado_anuncio VARCHAR(40) NOT NULL, --En revisión, Abierta, Cerrada, Eliminada -- Cambiar estado_anuncio en diagrama
+    estado_anuncio VARCHAR(40) NOT NULL, 
     id_empleador UUID NOT NULL,
-  --  id_categoria UUID  NOT NULL,
+  
     vistas INT DEFAULT 0,
     CONSTRAINT fk_anuncios_empleador FOREIGN KEY (id_empleador) REFERENCES Empleador(id_empleador)
-    -- CONSTRAINT fk_anuncios_categoria FOREIGN KEY (id_categoria) REFERENCES Categorias(id_categoria)
+    
 );
 
 CREATE TABLE cv (
