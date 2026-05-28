@@ -6,23 +6,25 @@ import { AuthService } from '../../services/auth.service';
 // Importa tu servicio de tema si lo tienes en esta ruta, si no, ajusta el path:
 // import { ThemeService } from '../../services/theme.service'; 
 
-interface RecentApplicant {
+interface Applicant {
+  id: string;
+  applicationId?: string;
   name: string;
   appliedFor: string;
-  profession: string;
-  experience: string;
   description: string;
+  skills?: string;
   profilePic: string;
-  timeAgo: string;
+  dateApplied?: string;
+  cvUrl?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
 }
 
-interface Applicant {
-  name: string;
-  appliedFor: string;
-  description: string;
-  skills: string;
-  profilePic: string;
-  dateApplied: string;
+interface RecentApplicant extends Applicant {
+  profession: string;
+  experience: string;
+  timeAgo: string;
 }
 
 interface Anuncio {
@@ -80,30 +82,39 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   // Postulantes para el carrusel superior
   recentApplicants: RecentApplicant[] = [
     {
+      id: '201',
       name: 'Carlos R.',
       appliedFor: 'Fullstack Developer',
       profession: 'Ingeniero en Sistemas',
       experience: '3 años',
       description: 'Desarrollador enfocado en aplicaciones web escalables utilizando Angular y bases de datos relacionales como PostgreSQL.',
+      skills: 'Angular • Node.js • PostgreSQL',
       profilePic: 'https://i.pravatar.cc/150?img=11',
+      dateApplied: 'Hoy',
       timeAgo: 'Hace 2 horas'
     },
     {
+      id: '202',
       name: 'Mariana Gómez',
       appliedFor: 'UI/UX Designer',
       profession: 'Diseñadora Interactiva',
       experience: '5 años',
       description: 'Especialista en interfaces de usuario limpias y sistemas de diseño para aplicaciones móviles.',
+      skills: 'UI/UX • Figma • Prototipos',
       profilePic: 'https://i.pravatar.cc/150?img=5',
+      dateApplied: 'Ayer',
       timeAgo: 'Hace 5 horas'
     },
     {
+      id: '203',
       name: 'Luis Fernando',
       appliedFor: 'Asesor de Ventas',
       profession: 'Lic. en Administración',
       experience: '2 años',
       description: 'Experiencia en atención al cliente, alcance de metas mensuales y manejo de inventario en retail.',
+      skills: 'Ventas • CRM • Negociación',
       profilePic: 'https://i.pravatar.cc/150?img=15',
+      dateApplied: 'Hace 1 día',
       timeAgo: 'Hace 1 día'
     }
   ];
@@ -134,16 +145,14 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   ];
 
   // Todos los postulantes para el grid inferior
-  allApplicants: Applicant[] = [
-    { name: 'Andrea López', appliedFor: 'Backend Developer', description: 'Experta en Node.js y APIs RESTful. Apasionada por el código limpio.', skills: 'Node.js • Express • MongoDB', profilePic: 'https://i.pravatar.cc/150?img=1', dateApplied: 'Hoy' },
-    { name: 'Miguel Torres', appliedFor: 'Ejecutivo de Ventas', description: 'Historial comprobado de superar cuotas de ventas B2B.', skills: 'Ventas B2B • CRM • Negociación', profilePic: 'https://i.pravatar.cc/150?img=12', dateApplied: 'Ayer' },
-    { name: 'Sofía Ruiz', appliedFor: 'Frontend Developer', description: 'Desarrollo de SPAs rápidas y accesibles con frameworks modernos.', skills: 'Angular • TypeScript • Tailwind', profilePic: 'https://i.pravatar.cc/150?img=9', dateApplied: 'Ayer' },
-    { name: 'Jorge Pérez', appliedFor: 'Data Scientist', description: 'Análisis predictivo y visualización de datos complejos.', skills: 'Python • Pandas • PostgreSQL', profilePic: 'https://i.pravatar.cc/150?img=13', dateApplied: 'Hace 2 días' },
-    { name: 'Daniela Castro', appliedFor: 'DevOps Engineer', description: 'Automatización de despliegues y gestión de nubes en AWS.', skills: 'AWS • Docker • CI/CD', profilePic: 'https://i.pravatar.cc/150?img=20', dateApplied: 'Hace 2 días' },
-    { name: 'Roberto Díaz', appliedFor: 'Mobile Engineer', description: 'Creación de aplicaciones nativas para iOS.', skills: 'Swift • iOS • Firebase', profilePic: 'https://i.pravatar.cc/150?img=14', dateApplied: 'Hace 3 días' },
-    { name: 'Elena Martínez', appliedFor: 'Cloud Engineer', description: 'Migración y mantenimiento de infraestructuras en Azure.', skills: 'Azure • Kubernetes • Terraform', profilePic: 'https://i.pravatar.cc/150?img=22', dateApplied: 'Hace 4 días' },
-    { name: 'Hugo Sánchez', appliedFor: 'UI/UX Designer', description: 'Diseño centrado en el usuario e investigación UX.', skills: 'Figma • Prototipado • Wireframing', profilePic: 'https://i.pravatar.cc/150?img=18', dateApplied: 'Hace 5 días' }
-  ];
+  allApplicants: Applicant[] = [];
+  sampleApplicants: Applicant[] = [
+    { id: '101', name: 'Andrea López', appliedFor: 'Backend Developer', description: 'Experta en Node.js y APIs RESTful. Apasionada por el código limpio.', skills: 'Node.js • Express • MongoDB', profilePic: 'https://i.pravatar.cc/150?img=1', dateApplied: 'Hoy', cvUrl: 'https://example.com/cv-andrea-lopez.pdf', email: 'andrea.lopez@example.com', phone: '+52 1 55 1234 5678' },
+    { id: '102', name: 'Miguel Torres', appliedFor: 'Ejecutivo de Ventas', description: 'Historial comprobado de superar cuotas de ventas B2B.', skills: 'Ventas B2B • CRM • Negociación', profilePic: 'https://i.pravatar.cc/150?img=12', dateApplied: 'Ayer', cvUrl: 'https://example.com/cv-miguel-torres.pdf', email: 'miguel.torres@example.com', phone: '+52 1 55 8765 4321' },
+    { id: '103', name: 'Sofía Ruiz', appliedFor: 'Frontend Developer', description: 'Desarrollo de SPAs rápidas y accesibles con frameworks modernos.', skills: 'Angular • TypeScript • Tailwind', profilePic: 'https://i.pravatar.cc/150?img=9', dateApplied: 'Ayer', cvUrl: 'https://example.com/cv-sofia-ruiz.pdf', email: 'sofia.ruiz@example.com', phone: '+52 1 55 2222 3333' },
+    { id: '104', name: 'Jorge Pérez', appliedFor: 'Data Scientist', description: 'Análisis predictivo y visualización de datos complejos.', skills: 'Python • Pandas • PostgreSQL', profilePic: 'https://i.pravatar.cc/150?img=13', dateApplied: 'Hace 2 días', cvUrl: 'https://example.com/cv-jorge-perez.pdf', email: 'jorge.perez@example.com', phone: '+52 1 55 4444 5555' },
+    { id: '105', name: 'Daniela Castro', appliedFor: 'DevOps Engineer', description: 'Automatización de despliegues y gestión de nubes en AWS.', skills: 'AWS • Docker • CI/CD', profilePic: 'https://i.pravatar.cc/150?img=20', dateApplied: 'Hace 2 días', cvUrl: '', email: '', phone: '' }
+   ];
 
   constructor(
     private readonly router: Router,
@@ -175,6 +184,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
       });
       // Cargar anuncios publicados por esta empresa
       this.cargarAnuncios(usuario.id);
+      this.cargarPostulantes();
     } else {
       // Si no tiene ID de usuario, usar fallback
       this.nombre_empleador = usuario?.nombre || 'Usuario';
@@ -187,9 +197,6 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
     // 4. Detectar si es mobile para responsive design
     this.checkMobile();
-
-    // 5. Llenar lista de postulantes hasta 28 elementos
-    this.fillApplicantsToMax();
   }
 
   ngOnDestroy() {
@@ -241,8 +248,22 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   }
 
   // --- ACCIONES ---
-  viewCV(applicant: any) {
-    console.log('Abriendo CV de:', applicant.name);
+  viewProfile(applicant: Applicant) {
+    if (!applicant?.id) {
+      alert('El perfil del postulante no está disponible.');
+      return;
+    }
+
+    this.router.navigate(['/perfil-postulante', applicant.id]);
+  }
+
+  viewCV(applicant: Applicant) {
+    if (applicant.cvUrl) {
+      window.open(applicant.cvUrl, '_blank');
+      return;
+    }
+
+    alert('CV no disponible para este postulante.');
   }
 
   logout() {
@@ -310,7 +331,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
           titulo: anuncio.titulo,
           ubicacion: `${anuncio.ciudad}, ${anuncio.estado}`,
           fechaPublicacion: this.formatearFecha(anuncio.fecha_publicacion),
-          candidatos: anuncio.vistas || 0,
+          candidatos: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
           estado: this.mapAnnouncementState(anuncio.estado_anuncio),
           descripcion: anuncio.descripcion,
           modalidad: anuncio.modalidad
@@ -341,16 +362,69 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     });
   }
 
+  private cargarPostulantes() {
+    const usuario = this.api.getUsuario();
+    if (!usuario?.id) {
+      this.allApplicants = [...this.sampleApplicants];
+      return;
+    }
+
+    this.api.obtenerPostulacionesEmpleador(usuario.id).subscribe({
+      next: (postulaciones: any[]) => {
+        if (!Array.isArray(postulaciones) || postulaciones.length === 0) {
+          this.allApplicants = [...this.sampleApplicants];
+          return;
+        }
+
+        this.allApplicants = postulaciones.map((item, index) => ({
+          id: item.id_postulante || item.id_postulacion || `p-${index}`,
+          applicationId: item.id_postulacion,
+          name: `${item.nombre_postulante || ''} ${item.apellido_paterno_postulante || ''}`.trim(),
+          appliedFor: item.vacante || 'Vacante desconocida',
+          description: item.perfil_postulante || 'Candidato interesado.',
+          skills: item.perfil_postulante ? item.perfil_postulante.slice(0, 90) : 'Detalle no disponible',
+          profilePic: item.foto_perfil || `https://i.pravatar.cc/150?img=${index + 30}`,
+          dateApplied: item.fecha_postulacion ? new Date(item.fecha_postulacion).toLocaleDateString('es-MX') : 'Reciente',
+          cvUrl: item.archivo_cv || '',
+          email: item.correo_electronico || 'No disponible',
+          phone: item.telefono || 'No disponible'
+        }));
+
+        if (this.allApplicants.length > 0) {
+          this.recentApplicants = this.allApplicants.slice(0, 3).map((item) => ({
+            ...item,
+            profession: item.appliedFor,
+            experience: 'Nuevo',
+            timeAgo: 'Reciente'
+          } as RecentApplicant));
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando postulaciones del empleador:', err);
+        this.allApplicants = [...this.sampleApplicants];
+      }
+    });
+  }
+
   // --- CARRUSEL ---
   nextSlide() {
+    if (!this.recentApplicants.length) {
+      return;
+    }
     this.currentSlide = (this.currentSlide + 1) % this.recentApplicants.length;
   }
 
   prevSlide() {
+    if (!this.recentApplicants.length) {
+      return;
+    }
     this.currentSlide = (this.currentSlide - 1 + this.recentApplicants.length) % this.recentApplicants.length;
   }
 
   goToSlide(index: number) {
+    if (index < 0 || index >= this.recentApplicants.length) {
+      return;
+    }
     this.currentSlide = index;
   }
 }

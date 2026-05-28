@@ -57,6 +57,14 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, this.getHeaders());
   }
 
+  obtenerPostulacionesEmpleador(idEmpleador: number | string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/postulaciones`, this.getHeaders());
+  }
+
+  obtenerPostulantes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/postulantes`, this.getHeaders());
+  }
+
   obtenerAnuncioEmpleador(idEmpleador: number | string, idAnuncio: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios/${idAnuncio}`, this.getHeaders());
   }
@@ -111,6 +119,10 @@ export class ApiService {
 
   guardarMisEtiquetas(etiquetas: string[]): Observable<any> {
     return this.http.put(`${this.apiUrl}/mi-etiquetas`, { etiquetas }, this.getHeaders());
+  }
+
+  obtenerPerfilPostulante(idPostulante: number | string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/postulantes/${idPostulante}`, this.getHeaders());
   }
 
   getSepomex(): Observable<any[]> {

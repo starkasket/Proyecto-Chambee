@@ -65,6 +65,14 @@ export const routes: Routes = [
     component: PerfilPostulanteComponent
   },
   {
+    path: 'perfil-postulante/editar',
+    component: PerfilPostulanteEditarComponent
+  },
+  {
+    path: 'perfil-postulante/:id',
+    component: PerfilPostulanteComponent
+  },
+  {
     path: 'perfil',
     component: EmployerProfileComponent
   },
@@ -93,10 +101,6 @@ export const routes: Routes = [
     component: JobDetailComponent
   },
   {
-    path: 'perfil-postulante/editar',
-    component: PerfilPostulanteEditarComponent
-  },
-  {
     path: 'mis-favoritos',
     component: MisFavoritosComponent
   },
@@ -109,11 +113,4 @@ export const routes: Routes = [
     path: '**',
     redirectTo: ''
   }
-  ,
-  {
-    
-    path: '**',
-    redirectTo: ''
-  }
-
 ];

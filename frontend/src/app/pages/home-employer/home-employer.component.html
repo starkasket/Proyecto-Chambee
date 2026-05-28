@@ -84,7 +84,7 @@
     <div class="carousel">
       <div class="carousel-container">
         <div class="carousel-slide" *ngFor="let slide of recentApplicants; let i = index" [class.active]="i === currentSlide">
-          <div class="featured-card featured-clickable" (click)="viewCV(slide)">
+          <div class="featured-card featured-clickable" (click)="viewProfile(slide)">
             <div class="featured-upper">
               <div class="featured-company">
                 <div class="featured-media">
@@ -109,7 +109,10 @@
                 <span class="featured-chip">Postulacion Nueva</span>
                 <span class="featured-chip">{{ slide.timeAgo }}</span>
               </div>
-              <button class="btn featured-btn" (click)="viewCV(slide); $event.stopPropagation()">Ver CV</button>
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn featured-btn" (click)="viewProfile(slide); $event.stopPropagation()">Ver perfil</button>
+                <button class="btn featured-btn" (click)="viewCV(slide); $event.stopPropagation()">Ver CV</button>
+              </div>
             </div>
           </div>
         </div>
@@ -144,19 +147,26 @@
               </div>
               <small class="text-muted">{{ applicant.dateApplied }}</small>
             </div>
-            <p style="font-size: 0.9rem; color: var(--text-color); margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            <p style="font-size: 0.9rem; color: var(--text-color); margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2; overflow: hidden;">
               {{ applicant.description }}
             </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.85rem; font-size: 0.85rem; color: var(--text-muted);">
+              <span><strong>Email:</strong> {{ applicant.email || 'No disponible' }}</span>
+              <span><strong>Tel:</strong> {{ applicant.phone || 'No disponible' }}</span>
+            </div>
           </div>
         </div>
 
         <hr class="my-3" style="border-color: var(--border-soft);">
 
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
             {{ applicant.skills }}
           </div>
-          <a href="javascript:void(0)" class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; padding: 5px 15px; font-weight: 600;" (click)="viewCV(applicant)">Ver CV</a>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; padding: 5px 15px; font-weight: 600;" (click)="viewProfile(applicant)">Ver perfil</button>
+            <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; padding: 5px 15px; font-weight: 600;" (click)="viewCV(applicant)">Ver CV</button>
+          </div>
         </div>
       </div>
     </div>

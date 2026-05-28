@@ -154,7 +154,7 @@ export class EmployerJobsManageComponent implements OnInit {
           descripcion: anuncio.descripcion,
           ubicacion: `${anuncio.ciudad}, ${anuncio.estado}`,
           fecha: this.formatearFecha(anuncio.fecha_publicacion),
-          candidatos: anuncio.vistas || 0,
+          candidatos: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
           estado: this.mapAnnouncementState(anuncio.estado_anuncio),
           modalidad: anuncio.modalidad || 'Presencial',
           categorias: anuncio.categorias || [],

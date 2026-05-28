@@ -212,7 +212,7 @@ export class EmployerProfileComponent implements OnInit {
           estado: this.mapAnnouncementState(anuncio.estado_anuncio),
           ubicacion: `${anuncio.ciudad}, ${anuncio.estado}`,
           fecha: this.formatearFecha(anuncio.fecha_publicacion),
-          candidatos: anuncio.vistas || 0,
+          candidatos: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
           vacante: anuncio.titulo,
           resumen: anuncio.descripcion,
           imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'

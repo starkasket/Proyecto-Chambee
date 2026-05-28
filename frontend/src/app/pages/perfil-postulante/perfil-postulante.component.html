@@ -88,27 +88,33 @@
             <h3>Datos de contacto</h3>
             <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
             <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
-            <p><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
+            <p *ngIf="!isEmployerView"><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
           </div>
 
           <div class="detail-col">
             <h3>Gestión de C.V</h3>
 
-            <input type="file" #cvInput accept="application/pdf" style="display: none"
-              (change)="onCvSelected($event)" />
+            <ng-container *ngIf="!isEmployerView">
+              <input type="file" #cvInput accept="application/pdf" style="display: none"
+                (change)="onCvSelected($event)" />
 
-            <button class="inline-create-btn mb-3"
-              style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);"
-              type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
-              {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
-            </button>
+              <button class="inline-create-btn mb-3"
+                style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);"
+                type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
+                {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
+              </button>
 
-            <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
-              {{ cvMensaje }}
-            </div>
+              <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
+                {{ cvMensaje }}
+              </div>
+            </ng-container>
 
-            <div *ngIf="perfil?.archivo_cv" class="mt-2" style="font-size: 0.85rem;">
-              <a [href]="perfil.archivo_cv" target="_blank" rel="noopener">Ver C.V. actual →</a>
+            <div *ngIf="perfil?.archivo_cv" class="mt-2 cv-section">
+              <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
+                <span>Ver C.V. del postulante</span>
+                <i class="bi bi-file-earmark-text"></i>
+              </a>
+              <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
             </div>
 
             <div class="mt-2" style="display: flex; gap: 8px; align-items: center;">
@@ -120,7 +126,7 @@
           <div class="detail-col">
             <h3>Información general</h3>
             <p><strong>País:</strong> {{ perfil.pais }}</p>
-            <p><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
+            <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
             <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
           </div>
         </div>
@@ -142,7 +148,7 @@
       </article>
     </section>
 
-    <section *ngIf="!cargando && perfil" class="announcements-shell">
+    <section *ngIf="!cargando && perfil && !isEmployerView" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
           <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
@@ -248,7 +254,7 @@
     </section>
   </main>
 
-  <button class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
+  <button *ngIf="!isEmployerView" class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
     <span class="fab-plus"><i class="bi bi-search"></i></span>
     <span class="fab-text">Buscar Empleos</span>
   </button>

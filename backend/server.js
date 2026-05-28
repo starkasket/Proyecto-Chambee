@@ -450,6 +450,79 @@ WHERE p.id_postulante = $1`;
   }
 });
 
+app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante"), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (req.user.rol === "postulante" && req.user.id !== id) {
+      return res.status(403).json({ error: "No autorizado para ver este perfil" });
+    }
+
+    const query = `SELECT 
+      p.id_postulante, 
+      p.nombre_postulante, 
+      p.apellido_paterno_postulante,
+      p.apellido_materno_postulante, 
+      p.correo_electronico, 
+      p.fecha_nacimiento, 
+      p.sexo, 
+      p.pais,
+      p.estado, 
+      p.ciudad, 
+      p.colonia, 
+      p.calle, 
+      p.codigo_postal,
+      p.telefono, 
+      p.foto_perfil,
+      p.curp, 
+      p.rfc,
+      p.fecha_registro,
+      c.archivo_cv
+    FROM postulante p
+    LEFT JOIN cv c ON c.id_postulante = p.id_postulante
+    WHERE p.id_postulante = $1`;
+
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Postulante no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error en GET /postulantes/:id", err);
+    res.status(500).json({ error: "Error al obtener perfil del postulante" });
+  }
+});
+
+app.get("/postulantes", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT
+      p.id_postulante,
+      p.nombre_postulante,
+      p.apellido_paterno_postulante,
+      p.apellido_materno_postulante,
+      p.correo_electronico,
+      p.telefono,
+      p.foto_perfil,
+      p.descripcion,
+      c.archivo_cv
+    FROM postulante p
+    LEFT JOIN cv c ON c.id_postulante = p.id_postulante
+    ORDER BY p.fecha_registro DESC`);
+
+    const postulantes = result.rows.map((p) => ({
+      ...p,
+      nombre_completo: `${p.nombre_postulante || ''} ${p.apellido_paterno_postulante || ''}`.trim()
+    }));
+
+    res.json(postulantes);
+  } catch (err) {
+    console.error("Error en GET /postulantes", err);
+    res.status(500).json({ error: "Error al obtener postulantes" });
+  }
+});
+
 async function puedeCambiarCampo(id, campo) {
   const diasLimite = LIMITES_CAMBIO[campo];
   if (!diasLimite) return true;
@@ -732,11 +805,13 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
       a.fecha_publicacion,
       a.estado_anuncio,
       a.vistas,
+      COUNT(po.id_postulacion) AS postulaciones_count,
       COALESCE(
         ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
         ARRAY[]::VARCHAR[]
       ) AS categorias
     FROM anuncios a
+    LEFT JOIN postulacion po ON po.id_anuncio = a.id_anuncio
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
     WHERE a.id_empleador = $1
@@ -748,6 +823,44 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener anuncios del empleador" });
+  }
+});
+
+app.get("/empleadores/:id/postulaciones", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { id } = req.params;
+
+  if (String(req.user.id) !== String(id)) {
+    return res.status(403).json({ error: "No autorizado para ver estas postulaciones" });
+  }
+
+  try {
+    const query = `SELECT
+      po.id_postulacion,
+      po.id_postulante,
+      po.id_anuncio,
+      po.estado AS estado_postulacion,
+      po.fecha_postulacion,
+      p.nombre_postulante,
+      p.apellido_paterno_postulante,
+      p.apellido_materno_postulante,
+      p.correo_electronico,
+      p.telefono,
+      p.foto_perfil,
+      p.descripcion AS perfil_postulante,
+      c.archivo_cv,
+      a.titulo AS vacante
+    FROM postulacion po
+    INNER JOIN postulante p ON p.id_postulante = po.id_postulante
+    INNER JOIN anuncios a ON a.id_anuncio = po.id_anuncio
+    LEFT JOIN cv c ON c.id_postulante = p.id_postulante
+    WHERE a.id_empleador = $1
+    ORDER BY po.fecha_postulacion DESC`;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener postulaciones del empleador" });
   }
 });
 

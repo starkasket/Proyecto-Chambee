@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
@@ -90,6 +90,8 @@ export class PerfilPostulanteComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
   activeTab: ProfileSectionTab = 'postulaciones';
+  isEmployerView = false;
+  selectedPerfilId = '';
 
   postulaciones: PostulanteApplication[] = [];
   favoritos: PostulanteFavorites[] = [];
@@ -101,6 +103,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private authApi: AuthService,
     private readonly api: ApiService,
     private readonly themeService: ThemeService
@@ -108,11 +111,26 @@ export class PerfilPostulanteComponent implements OnInit {
 
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
-    const perfilLocalRaw = localStorage.getItem('perfilPostulante') || sessionStorage.getItem('perfilPostulante');
+    const perfilRouteId = this.route.snapshot.paramMap.get('id')?.trim();
 
     if (!usuario) {
       this.error = 'No hay sesión activa. Inicia sesión para ver tu perfil.';
       this.cargando = false;
+      return;
+    }
+
+    if (perfilRouteId) {
+      this.selectedPerfilId = perfilRouteId;
+      this.isEmployerView = usuario.rol === 'empleador';
+
+      if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId) {
+        this.error = 'No estás autorizado para ver este perfil.';
+        this.cargando = false;
+        return;
+      }
+
+      this.loadPerfilById(perfilRouteId);
+      this.checkMobile();
       return;
     }
 
@@ -122,6 +140,7 @@ export class PerfilPostulanteComponent implements OnInit {
       return;
     }
 
+    const perfilLocalRaw = localStorage.getItem('perfilPostulante') || sessionStorage.getItem('perfilPostulante');
     if (perfilLocalRaw) {
       this.perfil = JSON.parse(perfilLocalRaw);
     }
@@ -153,7 +172,6 @@ export class PerfilPostulanteComponent implements OnInit {
       }
     });
 
-    // ✨ OBTENER ETIQUETAS GUARDADAS
     this.api.obtenerMisEtiquetas().subscribe({
       next: (response: any) => {
         this.misEtiquetas = Array.isArray(response?.etiquetas) ? response.etiquetas : [];
@@ -235,6 +253,10 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   volverPanel() {
+    if (this.isEmployerView) {
+      this.router.navigate(['/home-employer']);
+      return;
+    }
     this.router.navigate(['/home-user']);
   }
 
@@ -248,6 +270,29 @@ export class PerfilPostulanteComponent implements OnInit {
 
   verVacante(id: string) {
     this.router.navigate(['/job', id]);
+  }
+
+  private loadPerfilById(id: string) {
+    this.api.obtenerPerfilPostulante(id).subscribe({
+      next: (perfilDb: any) => {
+        this.perfil = perfilDb;
+        this.error = '';
+        this.cargando = false;
+      },
+      error: (err) => {
+        this.cargando = false;
+        if (err.status === 401 || err.status === 403) {
+          this.error = 'No estás autorizado para ver este perfil.';
+          return;
+        }
+        if (err.status === 404) {
+          this.error = 'No se encontró el perfil del postulante.';
+          return;
+        }
+        this.error = 'No fue posible cargar el perfil en este momento.';
+        console.error('Error al obtener perfil del postulante:', err);
+      }
+    });
   }
 
   private cargarFavoritos() {
