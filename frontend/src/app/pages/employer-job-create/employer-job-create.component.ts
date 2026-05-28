@@ -100,9 +100,9 @@ export class EmployerJobCreateComponent implements OnInit {
 
   readonly opcionesExperiencia = [
     'Sin experiencia',
-    'Menos de 1 ano',
-    '1 a 2 anos',
-    '3 a 5 anos',
+    'Menos de 1 año',
+    '1 a 2 años',
+    '3 a 5 años',
     'Más de 5 años'
   ];
 

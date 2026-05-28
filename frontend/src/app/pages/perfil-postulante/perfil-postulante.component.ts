@@ -79,7 +79,7 @@ export class PerfilPostulanteComponent implements OnInit {
   cvMensaje = '';
   cvError = false;
   
-  // ✨ VARIABLE PARA LAS ETIQUETAS
+// VARIABLE PARA LAS ETIQUETAS
   misEtiquetas: string[] = [];
 
   private readonly CLOUDINARY_CLOUD_NAME = 'dqq9oeo4e';
@@ -92,6 +92,7 @@ export class PerfilPostulanteComponent implements OnInit {
   activeTab: ProfileSectionTab = 'postulaciones';
   isEmployerView = false;
   selectedPerfilId = '';
+  usuarioActual: any = null;
 
   postulaciones: PostulanteApplication[] = [];
   favoritos: PostulanteFavorites[] = [];
@@ -118,6 +119,8 @@ export class PerfilPostulanteComponent implements OnInit {
       this.cargando = false;
       return;
     }
+
+    this.usuarioActual = usuario;
 
     if (perfilRouteId) {
       this.selectedPerfilId = perfilRouteId;
@@ -191,6 +194,13 @@ export class PerfilPostulanteComponent implements OnInit {
     return `${this.perfil.calle || ''}, ${this.perfil.colonia || ''}, ${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}, ${this.perfil.pais || ''}`.replace(/^, | ,|, $/g, '').trim();
   }
 
+  get navbarWelcomeName(): string {
+    if (this.isEmployerView) {
+      return this.usuarioActual?.nombre || 'Empresa';
+    }
+    return this.perfil?.nombre_postulante || 'Usuario';
+  }
+
   setActiveTab(tabName: ProfileSectionTab) {
     this.activeTab = tabName;
   }
@@ -261,6 +271,9 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   editarPerfil() {
+    if (this.isEmployerView) {
+      return;
+    }
     this.router.navigate(['/perfil-postulante/editar']);
   }
 

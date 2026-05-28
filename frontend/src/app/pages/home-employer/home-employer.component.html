@@ -53,9 +53,7 @@
 
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
       <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis Vacantes</a>
-      <a routerLink="/buscar-talento" class="desktop-menu-link">Buscar Talento</a>
       <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear Vacante</a>
-      <a routerLink="/facturacion" class="desktop-menu-link">Facturacion</a>
       <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
       <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
     </div>
@@ -68,7 +66,6 @@
         <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Panel de Empresa</div>
         <hr />
         <a class="mobile-nav-link" routerLink="/mis-vacantes" (click)="toggleMenu()">Mis Vacantes</a>
-        <a class="mobile-nav-link" routerLink="/buscar-talento" (click)="toggleMenu()">Buscar Talento</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear Vacante</a>
         <hr />
         <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
@@ -129,7 +126,7 @@
       <h2 style="font-weight: 700; color: var(--text-color);">Todas las Postulaciones</h2>
       <div class="employer-top-actions">
         <button class="btn register" type="button" (click)="crearOferta()">+ Nueva oferta</button>
-        <button class="btn register" routerLink="/buscar-talento">Buscar mas talento</button>
+        <button class="btn register" routerLink="/mis-vacantes">Buscar mas talento</button>
       </div>
     </div>
 

@@ -214,6 +214,16 @@
     <div class="jobs-grid mt-5" *ngIf="jobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button"
         tabindex="0">
+        <button
+          class="job-favorite-btn"
+          type="button"
+          [class.active]="isFavorite(job.id)"
+          [disabled]="isSavingFavorite(job.id)"
+          (click)="toggleFavorite(job, $event)"
+          [attr.title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
+          [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
+          <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
+        </button>
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
