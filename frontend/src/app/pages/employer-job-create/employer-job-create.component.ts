@@ -22,7 +22,8 @@ interface EmployerJobFormValue {
   salario: number;
   modalidad: string;
   etiquetas: string[];
-  estatus?: string; // Agregado para manejar el estado en la base de datos
+  estado_anuncio?: string;
+  estatus?: string;
 }
 
 interface NotificationItem {
@@ -63,7 +64,7 @@ export class EmployerJobCreateComponent implements OnInit {
   employerId = '';
   empresaNombre = 'Empresa';
   guardando = false;
-  guardandoBorrador = false; // Variable para el estado de carga del borrador
+  guardandoBorrador = false;
   cargandoPerfil = false;
   error = '';
   exito = '';
@@ -100,9 +101,9 @@ export class EmployerJobCreateComponent implements OnInit {
 
   readonly opcionesExperiencia = [
     'Sin experiencia',
-    'Menos de 1 año',
-    '1 a 2 años',
-    '3 a 5 años',
+    'Menos de 1 ano',
+    '1 a 2 anos',
+    '3 a 5 anos',
     'Más de 5 años'
   ];
 
@@ -129,6 +130,11 @@ export class EmployerJobCreateComponent implements OnInit {
     modalidad: ['Presencial', [Validators.required]],
     etiquetas: this.fb.nonNullable.control<string[]>([], [Validators.required])
   });
+
+  modalMensaje = '';
+  sepomex: any[] = [];
+  colonias: string[] = [];
+  hoy = new Date().toISOString().split('T')[0];
 
   constructor(
     private readonly fb: FormBuilder,
@@ -223,7 +229,8 @@ export class EmployerJobCreateComponent implements OnInit {
 
     this.guardando = true;
     const payload = this.ofertaForm.getRawValue() as EmployerJobFormValue;
-    payload.estatus = 'Publicado'; // Aseguramos que se guarde como oferta activa
+    payload.estado_anuncio = 'ACTIVO';
+    payload.estatus = 'Publicado';
 
     this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
       next: () => {
@@ -258,7 +265,6 @@ export class EmployerJobCreateComponent implements OnInit {
     this.error = '';
     this.exito = '';
 
-    // Mantenemos la validación por si tu base de datos exige que los campos no sean nulos
     if (this.ofertaForm.invalid) {
       this.ofertaForm.markAllAsTouched();
       this.error = 'Completa los campos requeridos antes de guardar el borrador.';
@@ -267,7 +273,8 @@ export class EmployerJobCreateComponent implements OnInit {
 
     this.guardandoBorrador = true;
     const payload = this.ofertaForm.getRawValue() as EmployerJobFormValue;
-    payload.estatus = 'Borrador'; // Le indicamos a la BD que es un borrador
+    payload.estado_anuncio = 'BORRADOR';
+    payload.estatus = 'Borrador';
 
     this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
       next: () => {
@@ -362,12 +369,6 @@ export class EmployerJobCreateComponent implements OnInit {
       this.isMobile = false;
     }
   }
-
-  modalMensaje = '';
-  sepomex: any[] = [];
-  colonias: string[] = [];
-
-  hoy = new Date().toISOString().split('T')[0];
 
   buscarCP() {
     const cp = this.ofertaForm.get('codigo_postal')?.value;
