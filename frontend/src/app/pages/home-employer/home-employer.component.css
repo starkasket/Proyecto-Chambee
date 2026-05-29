@@ -394,46 +394,159 @@ body {
   background: var(--dot-active);
 }
 
-/* ===== Grid de empleos ===== */
+/* ===== NUEVO GRID Y CARDS DE POSTULANTES ===== */
 .jobs-grid {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: auto;
-  gap: 15px;
+  /* Este grid responsive acomoda automáticamente 3 columnas en pantallas grandes, 2 en tablets y 1 en móviles */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
 }
 
-.job-card {
+.applicant-card {
   background: var(--surface-primary);
-  color: var(--text-primary);
-  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
   box-shadow: var(--shadow-card);
 }
 
-.job-card img {
-  width: 100%;
-}
-
-.job-content {
-  padding: 10px;
-}
-
-.salary {
-  font-weight: bold;
-}
-
-.job-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-}
-
-.job-card:hover {
+.applicant-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-hover);
+}
+
+.applicant-header {
+  padding: 20px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.applicant-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-soft);
+}
+
+.applicant-title {
+  flex: 1;
+  min-width: 0; /* Permite truncar el texto si es muy largo */
+}
+
+.applicant-title h4 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  background: rgba(0, 86, 204, 0.1);
+  color: #0056cc;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+:host-context(body.dark-theme) .role-badge {
+  background: rgba(96, 165, 250, 0.15);
+  color: #93c5fd;
+}
+
+.applicant-body {
+  padding: 0 20px 16px;
+  flex-grow: 1;
+}
+
+.applicant-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.applicant-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.applicant-contact i {
+  margin-right: 6px;
+  color: var(--text-secondary);
+}
+
+.applicant-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface-secondary);
+}
+
+.applicant-skills {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.applicant-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.action-btn.outline {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  color: var(--text-primary);
+}
+
+.action-btn.outline:hover {
+  background: var(--border-soft);
+}
+
+.action-btn.solid {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.action-btn.solid:hover {
+  filter: brightness(0.9);
 }
 
 /* Boton centrado para mostrar mas empleos. */
@@ -490,6 +603,12 @@ body {
   padding: 10px 20px;
   border-radius: 10px;
   cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+
+.services-see-more:hover {
+  filter: brightness(0.9);
 }
 
 .services-footer {
@@ -697,6 +816,7 @@ body {
   font-size: 22px;
   cursor: pointer;
   padding: 6px;
+  color: var(--text-primary);
 }
 
 .mobile-nav {
@@ -790,10 +910,6 @@ body {
     display: block;
   }
 
-  .jobs-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   /* En este punto se oculta la columna fija y entra la burbuja flotante. */
   .services-desktop {
     display: none;
@@ -883,10 +999,6 @@ body {
     align-items: flex-start;
   }
 
-  .jobs-grid {
-    grid-template-columns: 1fr;
-  }
-
   .jobs-more {
     margin-top: 22px;
   }
@@ -966,34 +1078,4 @@ body {
   .next {
     right: 2px;
   }
-}
-/* ===== Grid de Postulantes (Reemplaza a jobs-grid antiguo) ===== */
-.jobs-grid {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: auto;
-  gap: 15px;
-}
-
-.applicant-card {
-  background: var(--surface-primary);
-  color: var(--text-primary);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-soft);
-}
-
-.applicant-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-hover);
-}
-
-/* Boton centrado para mostrar mas postulaciones. */
-.jobs-more {
-  display: flex;
-  justify-content: center;
-  margin: 28px 0 8px;
 }
