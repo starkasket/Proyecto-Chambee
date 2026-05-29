@@ -428,6 +428,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
   p.foto_perfil,
   p.curp, 
   p.rfc,
+  c.visible_empresas,
   p.fecha_registro,
   c.archivo_cv
 FROM postulante p
@@ -458,6 +459,8 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       return res.status(403).json({ error: "No autorizado para ver este perfil" });
     }
 
+    const esPropioPostulante = req.user.rol === "postulante" && req.user.id === id;
+
     const query = `SELECT 
       p.id_postulante, 
       p.nombre_postulante, 
@@ -471,12 +474,23 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       p.telefono, 
       p.foto_perfil,
       p.fecha_registro,
-      c.archivo_cv
+      CASE
+        WHEN $2 = true THEN c.archivo_cv
+        WHEN c.visible_empresas = true THEN c.archivo_cv
+        WHEN EXISTS (
+          SELECT 1 
+          FROM postulacion po 
+          JOIN anuncios a ON a.id_anuncio = po.id_anuncio 
+          WHERE po.id_postulante = p.id_postulante 
+            AND a.id_empleador = $3
+        ) THEN c.archivo_cv
+        ELSE NULL
+      END AS archivo_cv
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
     WHERE p.id_postulante = $1`;
 
-    const result = await pool.query(query, [id]);
+    const result = await pool.query(query, [id, esPropioPostulante, req.user.id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Postulante no encontrado" });
@@ -491,6 +505,8 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
 
 app.get("/postulantes", verifyToken, authorizeRoles("empleador"), async (req, res) => {
   try {
+    // Los empleadores solo ven el CV si el postulante lo tiene en público (visible_empresas = true)
+    // o si el postulante se ha postulado a alguna de sus ofertas de trabajo.
     const result = await pool.query(`SELECT
       p.id_postulante,
       p.nombre_postulante,
@@ -500,10 +516,20 @@ app.get("/postulantes", verifyToken, authorizeRoles("empleador"), async (req, re
       p.telefono,
       p.foto_perfil,
       p.descripcion,
-      c.archivo_cv
+      CASE 
+        WHEN c.visible_empresas = true THEN c.archivo_cv 
+        WHEN EXISTS (
+          SELECT 1 
+          FROM postulacion po 
+          JOIN anuncios a ON a.id_anuncio = po.id_anuncio 
+          WHERE po.id_postulante = p.id_postulante 
+            AND a.id_empleador = $1
+        ) THEN c.archivo_cv
+        ELSE NULL 
+      END AS archivo_cv
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
-    ORDER BY p.fecha_registro DESC`);
+    ORDER BY p.fecha_registro DESC`, [req.user.id]);
 
     const postulantes = result.rows.map((p) => ({
       ...p,
@@ -1692,9 +1718,7 @@ app.put("/mi-perfil/cv", verifyToken, authorizeRoles("postulante"), async (req, 
 
     if (existing.rows.length > 0) {
       await pool.query(
-        `UPDATE cv 
-         SET archivo_cv = $1, ultima_actualizacion = NOW() 
-         WHERE id_postulante = $2`,
+        `UPDATE cv SET archivo_cv = $1, ultima_actualizacion = NOW() WHERE id_postulante = $2`,
         [archivo_cv, id]
       );
     } else {
@@ -1711,7 +1735,50 @@ app.put("/mi-perfil/cv", verifyToken, authorizeRoles("postulante"), async (req, 
     console.error("Error en PUT /mi-perfil/cv:", err);
     res.status(500).json({ error: "Error al actualizar CV" });
   }
-});
+}); 
+
+/* ===== TOGGLE VISIBILIDAD CV ===== */
+app.patch("/mi-perfil/cv/visibilidad", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  try {
+    const { visible_empresas } = req.body;
+    const id = req.user.id;
+
+    if (typeof visible_empresas !== "boolean") {
+      return res.status(400).json({ error: "visible_empresas debe ser true o false" });
+    }
+
+    const existing = await pool.query(
+      "SELECT id_cv FROM cv WHERE id_postulante = $1", [id]
+    );
+
+    if (existing.rows.length === 0) {
+      // Si no existe, creamos el registro con un archivo_cv vacío y el estado de visibilidad deseado
+      await pool.query(
+        `INSERT INTO cv (id_postulante, archivo_cv, visible_empresas, fecha_subida, ultima_actualizacion)
+         VALUES ($1, $2, $3, NOW(), NOW())`,
+        [id, "", visible_empresas]
+      );
+    } else {
+      await pool.query(
+        "UPDATE cv SET visible_empresas = $1, ultima_actualizacion = NOW() WHERE id_postulante = $2",
+        [visible_empresas, id]
+      );
+    }
+
+    res.json({
+      message: `CV ahora es ${visible_empresas ? "público" : "privado"}`,
+      visible_empresas
+    });
+
+  } catch (err) {
+    console.error("Error en PATCH /mi-perfil/cv/visibilidad:", err);
+    res.status(500).json({ error: "Error al actualizar visibilidad del CV" });
+  }
+}); 
+
+
+
+
 /* ===== SERVICIOS (OFICIOS) ===== */
 app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, res) => {
   const {

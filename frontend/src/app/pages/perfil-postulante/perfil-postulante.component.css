@@ -869,3 +869,141 @@
 :host-context(body.dark-theme) .tag-chip:hover {
   background: rgba(96, 165, 250, 0.25);
 }
+
+/* ============================
+   INTERRUPTOR CV VISIBILIDAD
+   ============================ */
+.cv-visibility-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.cv-visibility-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* El label que envuelve todo el switch */
+.cv-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Input oculto */
+.cv-switch__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Pista (track) del interruptor */
+.cv-switch__track {
+  position: relative;
+  width: 54px;
+  height: 30px;
+  border-radius: 999px;
+  background: #d1d5db;
+  border: 2px solid #b0b7c3;
+  transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+}
+
+/* Track encendido */
+.cv-switch--on .cv-switch__track {
+  background: #22c55e;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
+/* Perilla (thumb) del interruptor */
+.cv-switch__thumb {
+  position: absolute;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+  transition: left 0.28s cubic-bezier(.4,0,.2,1), background 0.28s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+/* Thumb encendido: se mueve a la derecha y el icono se vuelve verde */
+.cv-switch--on .cv-switch__thumb {
+  left: calc(100% - 25px);
+  color: #16a34a;
+}
+
+/* Focus visible para accesibilidad */
+.cv-switch__input:focus-visible ~ .cv-switch__track {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Hover sutil */
+.cv-switch:hover .cv-switch__track {
+  filter: brightness(0.96);
+}
+
+/* Badge de estado */
+.cv-visibility-status {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(156, 163, 175, 0.18);
+  color: #6b7280;
+  transition: background 0.28s ease, color 0.28s ease;
+  letter-spacing: 0.02em;
+}
+
+.cv-visibility-status--on {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+/* ── Modo oscuro ── */
+:host-context(body.dark-theme) .cv-switch__track {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+:host-context(body.dark-theme) .cv-switch--on .cv-switch__track {
+  background: #16a34a;
+  border-color: #15803d;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22);
+}
+
+:host-context(body.dark-theme) .cv-switch__thumb {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+:host-context(body.dark-theme) .cv-switch--on .cv-switch__thumb {
+  color: #15803d;
+}
+
+:host-context(body.dark-theme) .cv-visibility-status {
+  background: rgba(156, 163, 175, 0.14);
+  color: #9ca3af;
+}
+
+:host-context(body.dark-theme) .cv-visibility-status--on {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+}
