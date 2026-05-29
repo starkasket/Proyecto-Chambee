@@ -7,7 +7,7 @@
   <div class="search-container flex-grow-1 mx-4">
     <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
   </div>
-
+ 
   <div class="nav-buttons d-flex align-items-center gap-3">
 
     <div class="notification-wrapper" style="position: relative;">
@@ -227,7 +227,7 @@
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
-          <h4>{{ job.company }}</h4>
+          <h4 class="job-company">{{ job.company }}</h4>
           <p>{{ job.title }}</p>
           <p class="salary">{{ job.salary }}</p>
           <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
@@ -272,8 +272,8 @@
              padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
       Borrador
     </span>
-    <h5>{{ service.title }}</h5>
-    <p>{{ service.description }}</p>
+    <h5 class="service-title">{{ service.title }}</h5>
+    <p class="service-desc">{{ service.description }}</p>
   </div>
 
   <!-- Botón 3 puntos -->
@@ -338,10 +338,20 @@
         role="button" tabindex="0" style="position: relative;">
         <img [src]="service.img" [alt]="service.title" />
         <div style="flex: 1;">
-          <h5>{{ service.title }}</h5>
-          <p>{{ service.description }}</p>
+          <h5 class="service-title">{{ service.title }}</h5>
+          <p class="service-desc">{{ service.description }}</p>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Burbuja que abre o cierra el panel de servicios en movil/tablet. -->
+  <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
+    <span class="services-bubble-icon">✦</span>
+    <span class="services-bubble-text">Servicios</span>
+  </button>
+</section>
 
 
         <section class="support-section">

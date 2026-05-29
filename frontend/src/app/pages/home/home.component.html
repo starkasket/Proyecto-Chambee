@@ -178,15 +178,15 @@
 
   <!-- Columna fija de servicios para desktop. -->
   <aside class="right services-desktop">
-    <h3 class="services-title">Servicios y mas</h3>
+    <h3 class="services-title">Servicios y más</h3>
 
     <!-- Usa visibleServices para mostrar 4 o todos, segun servicesOpen. -->
     <div class="services-list services-list-desktop">
       <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
 <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div>
-          <h5>{{ service.title }}</h5>
-          <p>{{ service.description }}</p>
+          <h5 class="service-title">{{ service.title }}</h5>
+          <p class="service-desc">{{ service.description }}</p>
         </div>
       </div>
     </div>
@@ -210,7 +210,7 @@
     <div class="services-panel-header">
       <div>
         <p class="services-panel-eyebrow">Chambee</p>
-        <h3>Servicios y mas</h3>
+        <h3>Servicios y más</h3>
       </div>
       <button class="services-close" (click)="toggleServices()" aria-label="Cerrar servicios">×</button>
     </div>
@@ -219,8 +219,8 @@
       <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
 <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div>
-          <h5>{{ service.title }}</h5>
-          <p>{{ service.description }}</p>
+          <h5 class="service-title">{{ service.title }}</h5>
+          <p class="service-desc">{{ service.description }}</p>
         </div>
       </div>
     </div>

@@ -226,6 +226,7 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--accent-surface);
+  min-width: 0;
 }
 
 .featured-media {
@@ -245,10 +246,11 @@ body {
   padding: 18px 20px 22px;
   color: var(--accent-text);
 
-
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
-
- 
 
 .featured-company-copy h3,
 .featured-company-copy p,
@@ -257,25 +259,32 @@ body {
   margin: 0;
 }
 
-.featured-job p, .featured-job h3{
-   display: -webkit-box;
-  -webkit-line-clamp: 3;   /* número de líneas */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  width: 469px;
-}
-
 .featured-company-copy h3 {
   margin-top: 12px;
   font-size: 22px;
+    display: -webkit-box;
+  -webkit-line-clamp: 3;   
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
 }
 
 .featured-company-copy p {
-  margin-top: 8px;
+   margin-top: 8px;
   line-height: 1.5;
-  white-space: nowrap; 
+
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+
+}
+
+.featured-job p, .featured-job h3{
+   display: -webkit-box;
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
 }
 
 .featured-job {
@@ -494,8 +503,17 @@ body {
   -webkit-line-clamp: 3;   
   -webkit-box-orient: vertical;
   overflow: hidden;
-  width: 171px;
+  width: 100%;
 }
+
+.job-company{
+display: -webkit-box;
+  -webkit-line-clamp: 3;   
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 90%;
+}
+
 .salary {
   font-weight: bold;
 }
@@ -1226,4 +1244,20 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.service-desc{
+display: -webkit-box; 
+-webkit-line-clamp: 4; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 100%;
+}
+
+.service-title{
+display: -webkit-box; 
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 90%;
 }

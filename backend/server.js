@@ -468,14 +468,8 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       p.sexo, 
       p.pais,
       p.estado, 
-      p.ciudad, 
-      p.colonia, 
-      p.calle, 
-      p.codigo_postal,
       p.telefono, 
       p.foto_perfil,
-      p.curp, 
-      p.rfc,
       p.fecha_registro,
       c.archivo_cv
     FROM postulante p
