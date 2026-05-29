@@ -24,10 +24,13 @@ export class CrearServicioComponent implements OnInit {
 
   servicioForm: FormGroup;
   
+ foto_perfil = ''; 
+
   // Variables para la edición
   esEdicion = false;
   idServicioActual = '';
-
+  titulo = ''
+  ending = ''
   // Variables que el HTML necesita para funcionar
   modalMensaje = '';
   guardando = false;
@@ -39,7 +42,8 @@ export class CrearServicioComponent implements OnInit {
       categoria: ['Plomería'],
       presupuesto: [''],
       description: ['', Validators.required],
-      // Campos extra que pide tu HTML
+      cobertura: ['Colonia'], 
+      disponibilidad: ['Entre semana'],
       codigo_postal: [''],
       estado: [''],
       ciudad: [''],
@@ -54,12 +58,32 @@ export class CrearServicioComponent implements OnInit {
       if (id) {
         this.esEdicion = true;
         this.idServicioActual = id;
+        this.titulo = 'Editar servicio'
+        this.ending = 'Guardar cambios'
         this.cargarDatosDelServicio(id);
+      } else {
+        this.titulo = 'Crear nuevo servicio'
+        this.ending = 'Guardar y publicar'
+
+      }
+    });
+    const usuario = this.api.getUsuario();
+  if (usuario?.id) {
+
+    // Cargar perfil
+    this.api.getMiPerfil().subscribe({
+      next: (perfil: any) => {
+        this.foto_perfil = perfil?.foto_perfil || '';
+      },
+      error: () => {
+      console.log("Ocurrió un error");
       }
     });
   }
+  }
 
   cargarDatosDelServicio(id: string) {
+    
     const usuario = this.api.getUsuario();
     if (usuario && usuario.id) {
       this.api.obtenerMisServicios(String(usuario.id)).subscribe({
@@ -71,6 +95,8 @@ export class CrearServicioComponent implements OnInit {
               categoria: servicioAModificar.categoria || 'Plomería',
               presupuesto: servicioAModificar.presupuesto || '',
               description: servicioAModificar.description,
+              cobertura: servicioAModificar.cobertura || 'Colonia',
+              disponibilidad: servicioAModificar.disponibilidad || 'Disponible entre semana',
               codigo_postal: servicioAModificar.codigo_postal || '',
               estado: servicioAModificar.estado || '',
               ciudad: servicioAModificar.ciudad || '',
@@ -99,6 +125,7 @@ export class CrearServicioComponent implements OnInit {
       };
 
       if (this.esEdicion) {
+        
         this.serviciosService.actualizarServicio(this.idServicioActual, payload).subscribe({
           next: () => {
             this.guardando = false;
@@ -118,7 +145,11 @@ export class CrearServicioComponent implements OnInit {
         this.serviciosService.agregarServicio(payload).subscribe({
           next: () => {
             this.guardando = false;
+            if (esBorrador == true) {
+               alert("¡Éxito! Se guardó tu borrador.");
+            } else{
             alert("¡Éxito! El servicio se creó nuevo.");
+            }
             this.router.navigate(['/home-user']);
           },
           error: (err) => {

@@ -134,7 +134,7 @@
         <button *ngFor="let vacante of vacantes" type="button" class="job-list-item"
           [class.active]="vacante.id === vacanteSeleccionadaId" (click)="seleccionarVacante(vacante.id)">
           <div class="job-list-top">
-            <strong>{{ vacante.titulo }}</strong>
+            <strong class="job-title">{{ vacante.titulo }}</strong>
             <span class="state-pill" [ngClass]="getEstadoClase(vacante.estado)">{{ vacante.estado }}</span>
           </div>
           <p>{{ vacante.ubicacion }} • {{ vacante.fecha }}</p>
@@ -168,6 +168,10 @@
             </button>
             <button class="ghost-btn" type="button" (click)="publicarVacante()" [disabled]="actualizandoEstado">
               Publicar
+            </button>
+             <button class="ghost-btn danger-btn" type="button" (click)="eliminarVacante()"
+              [disabled]="actualizandoEstado">
+              Eliminar vacante
             </button>
           </div>
         </div>

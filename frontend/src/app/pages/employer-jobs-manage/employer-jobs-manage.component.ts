@@ -289,12 +289,17 @@ export class EmployerJobsManageComponent implements OnInit {
     this.cambiarEstado('OCULTO', 'La vacante fue ocultada. Ya no aparecerá públicamente.');
   }
 
+   eliminarVacante() {
+    if (this.actualizandoEstado) return;
+    this.cambiarEstado('ELIMINADO', 'Se ha eliminado tu vacante.');
+  }
+
   publicarVacante() {
     if (this.actualizandoEstado) return;
     this.cambiarEstado('ACTIVO', 'La vacante volvió a estar publicada.');
   }
 
-  private cambiarEstado(estado: 'ACTIVO' | 'BORRADOR' | 'OCULTO', mensaje: string) {
+  private cambiarEstado(estado: 'ACTIVO' | 'BORRADOR' | 'OCULTO' | 'ELIMINADO', mensaje: string) {
     if (!this.vacanteSeleccionadaId) {
       return;
     }
@@ -308,10 +313,14 @@ export class EmployerJobsManageComponent implements OnInit {
     this.api.actualizarEstadoAnuncioEmpleador(this.employerId, this.vacanteSeleccionadaId, estado).subscribe({
       next: () => {
         this.actualizandoEstado = false;
+          if (estado === 'ELIMINADO') {
+        this.vacanteSeleccionadaId = '';
+      }
         this.cargarVacantes();
       },
       error: (err) => {
         this.actualizandoEstado = false;
+        
         this.modalMensajePendiente = '';
         const errorMsg = err?.error?.detail || err?.error?.error || 'No fue posible cambiar el estado de la vacante.';
         this.mostrarModal(`❌ Error: ${errorMsg}`);

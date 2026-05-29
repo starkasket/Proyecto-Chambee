@@ -11,7 +11,9 @@
 
     <div class="nav-buttons d-flex align-items-center gap-3">
       <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" (click)="irAlPerfil()">
-        <i class="bi bi-person-circle fs-5"></i>
+        <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
         <span class="d-none d-md-block">Mi Perfil</span>
       </button>
 
@@ -63,7 +65,7 @@
     <header class="offer-hero">
       <div class="hero-copy">
         <p class="eyebrow">Panel de candidato</p>
-        <h1>Crear nuevo servicio</h1>
+        <h1> {{ titulo }} </h1>
         <p>Publica un oficio o servicio técnico para que la comunidad y empresas puedan contactarte directamente.</p>
       </div>
 
@@ -107,22 +109,35 @@
               <option value="Mudanzas">Mudanzas</option>
             </select>
           </label>
+          
+          <!--  <label class="field">
+            <span>Horario</span>
+            <select formControlName="modalidad">
+              <option value="Mañanas">Mañanas</option>
+              <option value="Tardes">Tardes / Remoto</option>
+              <option value="Noches">Noches</option>
+              <option value="24 horas">24 horas</option>
+            </select>
+          </label>  -->
+
 
           <label class="field">
-            <span>Modalidad de trabajo</span>
-            <select formControlName="modalidad">
-              <option value="Presencial">Presencial</option>
-              <option value="Remoto">A domicilio / Remoto</option>
-              <option value="Hibrido">Híbrido</option>
+            <span>Cobertura</span>
+            <select formControlName="cobertura">
+              <option value="Colonia">Solo mi colonia y cercanías</option>
+              <option value="Ciudad">Toda la ciudad</option>
+              <option value="Municipios cercanos">Municipios cercanos</option>
             </select>
           </label>
 
           <label class="field">
-            <span>Estatus de urgencia / Disponibilidad</span>
-            <select formControlName="urgencia">
-              <option value="Normal">Normal (Bajo agenda)</option>
-              <option value="Urgente">Urgente (Disponibilidad rápida)</option>
-              <option value="Muy urgente">Inmediata (24/7 emergencias)</option>
+            <span>Estatus de disponibilidad</span>
+            <select formControlName="disponibilidad">
+              <option value="Entre semana">Disponible entre semana</option>
+              <option value="Fines de semana">Disponible solo fines de semana</option>
+              <option value="Toda la semana">Disponible durante la semana </option>
+              <option value="Cita previa">Disponible con cita previa </option>
+              <option value="Horario flexible">Horario flexible </option>
             </select>
           </label>
 
@@ -186,12 +201,12 @@
 
         <!-- ACCIONES DE FORMULARIO -->
         <div class="actions-wrapper d-flex flex-column gap-2 mt-3">
-          <button type="button" class="ghost-btn w-100 py-3" [disabled]="guardando" (click)="publicar(true)">
+          <button type="button" class="ghost-btn w-100 py-3" [disabled]="guardando" (click)="publicar(true)" *ngIf="!esEdicion">
             Guardar como Borrador
           </button>
           
           <button type="button" class="primary-btn w-100 py-3" [disabled]="guardando" (click)="publicar(false)">
-            {{ guardando ? 'Guardando...' : 'Guardar y Publicar' }}
+            {{ ending }}
           </button>
         </div>
       </article>

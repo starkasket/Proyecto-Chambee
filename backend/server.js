@@ -470,27 +470,21 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       p.fecha_nacimiento, 
       p.sexo, 
       p.pais,
-      p.estado, 
+      p.estado,
+      p.ciudad, 
       p.telefono, 
       p.foto_perfil,
       p.fecha_registro,
       CASE
         WHEN $2 = true THEN c.archivo_cv
         WHEN c.visible_empresas = true THEN c.archivo_cv
-        WHEN EXISTS (
-          SELECT 1 
-          FROM postulacion po 
-          JOIN anuncios a ON a.id_anuncio = po.id_anuncio 
-          WHERE po.id_postulante = p.id_postulante 
-            AND a.id_empleador = $3
-        ) THEN c.archivo_cv
         ELSE NULL
       END AS archivo_cv
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
     WHERE p.id_postulante = $1`;
 
-    const result = await pool.query(query, [id, esPropioPostulante, req.user.id]);
+    const result = await pool.query(query, [id, esPropioPostulante]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Postulante no encontrado" });
@@ -517,19 +511,12 @@ app.get("/postulantes", verifyToken, authorizeRoles("empleador"), async (req, re
       p.foto_perfil,
       p.descripcion,
       CASE 
-        WHEN c.visible_empresas = true THEN c.archivo_cv 
-        WHEN EXISTS (
-          SELECT 1 
-          FROM postulacion po 
-          JOIN anuncios a ON a.id_anuncio = po.id_anuncio 
-          WHERE po.id_postulante = p.id_postulante 
-            AND a.id_empleador = $1
-        ) THEN c.archivo_cv
-        ELSE NULL 
+        WHEN c.visible_empresas = true THEN c.archivo_cv           
+        ELSE NULL
       END AS archivo_cv
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
-    ORDER BY p.fecha_registro DESC`, [req.user.id]);
+    ORDER BY p.fecha_registro DESC`);
 
     const postulantes = result.rows.map((p) => ({
       ...p,
@@ -835,6 +822,7 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
     WHERE a.id_empleador = $1
+    AND a.estado_anuncio != 'ELIMINADO'
     GROUP BY a.id_anuncio
     ORDER BY a.fecha_publicacion DESC NULLS LAST`;
 
@@ -867,7 +855,10 @@ app.get("/empleadores/:id/postulaciones", verifyToken, authorizeRoles("empleador
       p.telefono,
       p.foto_perfil,
       p.descripcion AS perfil_postulante,
-      c.archivo_cv,
+       CASE
+        WHEN c.visible_empresas = true THEN c.archivo_cv
+        ELSE NULL
+        END AS archivo_cv,
       a.titulo AS vacante
     FROM postulacion po
     INNER JOIN postulante p ON p.id_postulante = po.id_postulante
@@ -1168,7 +1159,7 @@ app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
 app.patch("/empleadores/:id/anuncios/:anuncioId/estado", verifyToken, authorizeRoles("empleador"), async (req, res) => {
   const { id, anuncioId } = req.params;
   const { estado_anuncio } = req.body;
-  const estadosPermitidos = ["ACTIVO", "BORRADOR", "OCULTO"];
+  const estadosPermitidos = ["ACTIVO", "BORRADOR", "OCULTO", "ELIMINADO"];
 
   if (String(req.user.id) !== String(id)) {
     return res.status(403).json({ error: "No autorizado para cambiar esta vacante" });
@@ -1784,7 +1775,7 @@ app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, re
   const {
     title, description, categoria, presupuesto,
     ubicacion, estado, ciudad, colonia, calle,
-    codigo_postal, modalidad, urgencia, esBorrador, autorId
+    codigo_postal, cobertura, disponibilidad, esBorrador, autorId
   } = req.body;
 
   try {
@@ -1797,7 +1788,7 @@ app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, re
        RETURNING *`,
       [title, description, categoria, presupuesto, ubicacion,
        estado, ciudad, colonia, calle, codigo_postal,
-       modalidad, urgencia, esBorrador, autorId]
+       cobertura, disponibilidad, esBorrador, autorId]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -1809,7 +1800,7 @@ app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, re
 app.get("/servicios/:autorId", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM servicios WHERE autor_id = $1 ORDER BY fecha_creacion DESC`,
+      `SELECT *, modalidad AS cobertura, urgencia AS disponibilidad FROM servicios WHERE autor_id = $1 ORDER BY fecha_creacion DESC`,
       [req.params.autorId]
     );
     res.json(result.rows);
@@ -1852,15 +1843,15 @@ app.delete("/servicios/:id", verifyToken, async (req, res) => {
 app.put("/servicios/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, categoria, presupuesto, ubicacion } = req.body;
+    const { title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion } = req.body;
     
     // Le mandamos los datos frescos a PostgreSQL
     const result = await pool.query(
       `UPDATE servicios 
-       SET title = $1, description = $2, categoria = $3, presupuesto = $4, ubicacion = $5
-       WHERE id_servicio = $6
+       SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7
+       WHERE id_servicio = $8
        RETURNING *`,
-      [title, description, categoria, presupuesto, ubicacion, id]
+      [title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion, id]
     );
 
     if (result.rowCount === 0) {

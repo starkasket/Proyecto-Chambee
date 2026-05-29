@@ -562,6 +562,16 @@ body {
   color: var(--accent-text);
   padding: 10px;
   border-radius: 10px;
+  justify-content: center;
+
+}
+
+.post-title{
+display: -webkit-box; 
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 85%;
 }
 
 .right {
@@ -668,7 +678,7 @@ body {
 
 .services-floating {
   position: fixed;
-  right: 24px;
+  left: 24px;
   bottom: 24px;
   z-index: 1400;
 }
@@ -735,6 +745,7 @@ body {
   color: var(--button-primary-text);
   box-shadow: var(--shadow-float);
   cursor: pointer;
+   margin-right: auto;
 }
 
 .services-bubble-icon {

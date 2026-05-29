@@ -29,6 +29,15 @@
   min-width: 180px;
 }
 
+
+.job-title{
+display: -webkit-box; 
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 85%;
+}
+
 .search-container input,
 .field input,
 .field textarea,
@@ -452,6 +461,7 @@
   background: var(--surface-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-soft);
+  margin-bottom: 6px;
 }
 
 .danger-btn {

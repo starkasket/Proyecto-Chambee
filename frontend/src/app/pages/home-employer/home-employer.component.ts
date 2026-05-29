@@ -385,11 +385,13 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
           skills: item.perfil_postulante ? item.perfil_postulante.slice(0, 90) : 'Detalle no disponible',
           profilePic: item.foto_perfil || `https://i.pravatar.cc/150?img=${index + 30}`,
           dateApplied: item.fecha_postulacion ? new Date(item.fecha_postulacion).toLocaleDateString('es-MX') : 'Reciente',
-          cvUrl: item.archivo_cv || '',
+          cvUrl: item.archivo_cv ?? null,
           email: item.correo_electronico || 'No disponible',
           phone: item.telefono || 'No disponible'
         }));
 
+        console.log(postulaciones);
+        
         if (this.allApplicants.length > 0) {
           this.recentApplicants = this.allApplicants.slice(0, 3).map((item) => ({
             ...item,

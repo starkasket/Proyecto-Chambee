@@ -108,7 +108,7 @@
               </div>
               <div class="d-flex gap-2 flex-wrap">
                 <button class="btn featured-btn" (click)="viewProfile(slide); $event.stopPropagation()">Ver perfil</button>
-                <button class="btn featured-btn" (click)="viewCV(slide); $event.stopPropagation()">Ver CV</button>
+                <button *ngIf="slide.cvUrl" class="btn featured-btn" (click)="viewCV(slide); $event.stopPropagation()">Ver CV</button>
               </div>
             </div>
           </div>
@@ -154,7 +154,7 @@
           </div>
           <div class="applicant-actions">
             <button class="action-btn outline" (click)="viewProfile(applicant)">Perfil</button>
-            <button class="action-btn solid" (click)="viewCV(applicant)">Ver CV</button>
+            <button *ngIf="applicant.cvUrl"  class="action-btn solid" (click)="viewCV(applicant)">Ver CV</button>
           </div>
         </div>
       </div>
@@ -177,8 +177,8 @@
 
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-soft); cursor: pointer; margin-bottom: 12px;">
         <div class="d-flex justify-content-between w-100 align-items-center mb-1">
-          <h5 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color);">{{ anuncio.titulo }}</h5>
-          <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem; margin-left: 3px;">
+          <h5 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color);" class="post-title">{{ anuncio.titulo }}</h5>
+          <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem; margin-left: 7px;">
             {{ anuncio.estado }}
           </span>
         </div>
@@ -224,7 +224,7 @@
       </div>
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); margin-bottom: 12px;">
         <div class="d-flex justify-content-between w-100 align-items-center mb-1">
-          <h5 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-color);">{{ anuncio.titulo }}</h5>
+          <h5 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-color);" class="post-title">{{ anuncio.titulo }}</h5>
           <span class="badge" [ngClass]="anuncio.estado === 'Activa' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.7rem;">
             {{ anuncio.estado }}
           </span>
