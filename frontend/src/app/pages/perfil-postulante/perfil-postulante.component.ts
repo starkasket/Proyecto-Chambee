@@ -78,6 +78,7 @@ export class PerfilPostulanteComponent implements OnInit {
   subiendoCv = false;
   cvMensaje = '';
   cvError = false;
+  cvPublico = true;
   
 // VARIABLE PARA LAS ETIQUETAS
   misEtiquetas: string[] = [];
@@ -151,6 +152,8 @@ export class PerfilPostulanteComponent implements OnInit {
     this.api.getMiPerfil().subscribe({
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
+        this.cvPublico = perfilDb.visible_empresas ?? true; 
+
         this.error = '';
 
         if (localStorage.getItem('token')) {
@@ -289,6 +292,7 @@ export class PerfilPostulanteComponent implements OnInit {
     this.api.obtenerPerfilPostulante(id).subscribe({
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
+
         this.error = '';
         this.cargando = false;
       },
@@ -397,6 +401,23 @@ export class PerfilPostulanteComponent implements OnInit {
     } finally {
       this.subiendoCv = false;
     }
+  }
+
+  toggleCvVisibilidad(): void {
+    const nuevoEstado = !this.cvPublico;
+this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
+        next: () => {
+        this.cvPublico = nuevoEstado;
+        this.cvMensaje = `Tu C.V. ahora es ${nuevoEstado ? 'público' : 'privado'}.`;
+        this.cvError = false;
+      },
+      error: (err: any) => {
+        console.error('Error al cambiar visibilidad:', err);
+      this.cvError = true;
+      this.cvMensaje = 'No se pudo cambiar la visibilidad del C.V.';
+      }
+    })
+
   }
 
 }

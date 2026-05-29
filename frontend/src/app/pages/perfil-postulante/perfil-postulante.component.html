@@ -100,66 +100,84 @@
         </div>
 
         <div class="company-details-grid">
-          <div class="detail-col">
-            <h3>Datos de contacto</h3>
-            <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
-            <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
-            <p *ngIf="!isEmployerView"><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
-          </div>
+  <div class="detail-col">
+    <h3>Datos de contacto</h3>
+    <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
+    <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
+    <p *ngIf="!isEmployerView"><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
+  </div>
 
-          <div class="detail-col">
-            <h3>Gestión de C.V</h3>
+  <div class="detail-col">
+    <h3>Gestión de C.V</h3>
 
-            <ng-container *ngIf="!isEmployerView">
-              <input type="file" #cvInput accept="application/pdf" style="display: none"
-                (change)="onCvSelected($event)" />
+    <div *ngIf="perfil?.archivo_cv" class="mt-2 cv-section">
+      <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
+        <span>Ver C.V. del postulante</span>
+        <i class="bi bi-file-earmark-text"></i>
+      </a>
+      <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
+    </div>
 
-              <button class="inline-create-btn mb-3"
-                style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);"
-                type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
-                {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
-              </button>
+    <ng-container *ngIf="!isEmployerView">
+      <input type="file" #cvInput accept="application/pdf" style="display: none"
+        (change)="onCvSelected($event)" />
+      <button class="inline-create-btn mb-3"
+        style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);"
+        type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
+        {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
+      </button>
+      <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
+        {{ cvMensaje }}
+      </div>
+    </ng-container>
 
-              <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
-                {{ cvMensaje }}
-              </div>
-            </ng-container>
+    <div *ngIf="!isEmployerView" class="cv-visibility-row">
+      <span class="cv-visibility-label">C.V. Público</span>
 
-            <div *ngIf="perfil?.archivo_cv" class="mt-2 cv-section">
-              <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
-                <span>Ver C.V. del postulante</span>
-                <i class="bi bi-file-earmark-text"></i>
-              </a>
-              <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
-            </div>
+      <label class="cv-switch" 
+             [class.cv-switch--on]="cvPublico" 
+             [attr.aria-label]="cvPublico ? 'CV público, click para hacer privado' : 'CV privado, click para hacer público'"
+             (click)="$event.preventDefault(); toggleCvVisibilidad()">
+        <input type="checkbox"
+               [checked]="cvPublico"
+               class="cv-switch__input"
+               readonly>
+        <span class="cv-switch__track">
+          <span class="cv-switch__thumb">
+            <svg *ngIf="cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg *ngIf="!cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+        </span>
+      </label>
 
-            <div class="mt-2" style="display: flex; gap: 8px; align-items: center;">
-              <strong>C.V. Público:</strong>
-              <span class="state-pill state-active">Activado</span>
-            </div>
-          </div>
+      <span class="cv-visibility-status" [class.cv-visibility-status--on]="cvPublico">
+        {{ cvPublico ? 'Activado' : 'Desactivado' }}
+      </span>
+    </div>
 
-          <div class="detail-col">
-            <h3>Información general</h3>
-            <p><strong>País:</strong> {{ perfil.pais }}</p>
-            <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
-            <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
-          </div>
-        </div>
+  </div>
 
-        <div *ngIf="perfil.descripcion" class="profile-description" style="border-top: 1px solid var(--border-soft); padding: 18px 24px;">
-          <h3 style="margin: 0 0 8px; font-size: 1.1rem; color: var(--text-primary);">Sobre mí</h3>
-          <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">{{ perfil.descripcion }}</p>
-        </div>
+  <div class="detail-col">
+    <h3>Información general</h3>
+    <p><strong>País:</strong> {{ perfil.pais }}</p>
+    <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
+    <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
+  </div>
+</div>
 
-        <div *ngIf="misEtiquetas && misEtiquetas.length > 0" class="profile-tags">
-          <h3>Intereses y Habilidades</h3>
-          <div class="tags-container">
-            <span class="tag-chip" *ngFor="let tag of misEtiquetas">
-              {{ tag }}
-            </span>
-          </div>
-        </div>
+<div *ngIf="perfil.descripcion" class="profile-description"
+  style="border-top: 1px solid var(--border-soft); padding: 18px 24px;">
+  <h3 style="margin: 0 0 8px; font-size: 1.1rem; color: var(--text-primary);">Sobre mí</h3>
+  <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">
+    {{ perfil.descripcion }}</p>
+</div>
+
+<div *ngIf="misEtiquetas && misEtiquetas.length > 0" class="profile-tags">
+  <h3>Intereses y Habilidades</h3>
+  <div class="tags-container">
+    <span class="tag-chip" *ngFor="let tag of misEtiquetas">{{ tag }}</span>
+  </div>
+</div>
 
       </article>
     </section>
@@ -226,7 +244,8 @@
             </div>
 
             <div class="announcements-row" *ngIf="favoritos.length > 0">
-              <article class="announcement-card" *ngFor="let fav of favoritos" (click)="verVacante(fav.id)" role="button" tabindex="0">
+              <article class="announcement-card" *ngFor="let fav of favoritos" (click)="verVacante(fav.id)"
+                role="button" tabindex="0">
                 <img [src]="fav.imagen" alt="Cover" />
                 <div class="announcement-copy">
                   <div class="card-top">
@@ -269,8 +288,9 @@
       </div>
     </section>
   </main>
-<!-- Solo para postulantes, no se muestra a empleadores -->
-  <button *ngIf="!isEmployerView" class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
+  <!-- Solo para postulantes, no se muestra a empleadores -->
+  <button *ngIf="!isEmployerView" class="fab-create" type="button" (click)="buscarEmpleos()"
+    aria-label="Buscar empleos">
     <span class="fab-plus"><i class="bi bi-search"></i></span>
     <span class="fab-text">Buscar Empleos</span>
   </button>

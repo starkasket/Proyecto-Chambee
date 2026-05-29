@@ -154,4 +154,11 @@ publicarServicio(idServicio: string): Observable<any> {
   );
 
 }
+toggleVisibilidadCv(visible_empresas: boolean): Observable<any> {
+  return this.http.patch(
+    `${this.apiUrl}/mi-perfil/cv/visibilidad`,
+    { visible_empresas },
+    this.getHeaders()
+  );
+}
 }
