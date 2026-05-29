@@ -510,11 +510,24 @@
 .vacancy-title {
   font-size: 0.84rem;
   font-weight: 700;
+  display: -webkit-box; 
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 90%;
 }
 
 .vacancy-meta {
   color: var(--text-secondary);
   font-size: 0.74rem;
+}
+
+.vacancy-description{
+  display: -webkit-box; 
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 90%;
 }
 
 .announcement-copy p {
