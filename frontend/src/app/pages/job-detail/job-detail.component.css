@@ -136,6 +136,14 @@ text-align: center;
 
 }
 
+.job-title{
+  display: -webkit-box; 
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 85%;
+}
+
 .company-logo { max-width: 150px; margin-bottom: 20px; }
 
 .company-name {
@@ -274,8 +282,13 @@ transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s eas
 }
 
 .favorite-toggle:hover:not(:disabled) {
+<<<<<<< HEAD
 transform: translateY(-2px);
 box-shadow: var(--shadow-hover);
+=======
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+>>>>>>> 5d76a19790a8a9dd1c85a5660560fe92eea5dae2
 }
 
 .favorite-toggle.active {

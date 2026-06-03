@@ -249,7 +249,7 @@
                 <img [src]="relJob.img" [alt]="relJob.company" />
                 <div class="job-content">
                     <h4>{{ relJob.company }}</h4>
-                    <p>{{ relJob.title }}</p>
+                    <p class="job-title">{{ relJob.title }}</p>
                     <p class="salary">{{ relJob.salary }}</p>
                     <div class="job-tags" *ngIf="relJob.tags?.length">
                         <span class="job-tag" *ngFor="let tag of relJob.tags | slice:0:2">{{ tag }}</span>
