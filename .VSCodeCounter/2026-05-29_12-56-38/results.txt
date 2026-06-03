@@ -1,0 +1,201 @@
+Date : 2026-05-29 12:56:38
+Directory : c:\TrabajoChambee\Proyecto-Chambee
+Total : 127 files,  108568 codes, 546 comments, 3423 blanks, all 112537 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| JSON               |         10 |     87,679 |          2 |         11 |     87,692 |
+| PostCSS            |         27 |      9,327 |        191 |      1,569 |     11,087 |
+| TypeScript         |         56 |      5,730 |        119 |      1,004 |      6,853 |
+| HTML               |         27 |      3,590 |         65 |        505 |      4,160 |
+| JavaScript         |          1 |      1,464 |        162 |        279 |      1,905 |
+| MS SQL             |          2 |        645 |          0 |         33 |        678 |
+| YAML               |          1 |         52 |          0 |          4 |         56 |
+| Python             |          1 |         43 |          6 |         15 |         64 |
+| JSON with Comments |          1 |         32 |          1 |          2 |         35 |
+| Ignore             |          1 |          6 |          0 |          1 |          7 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                          | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                             |        127 |    108,568 |        546 |      3,423 |    112,537 |
+| . (Files)                                                                                                                     |          4 |      1,324 |          0 |          7 |      1,331 |
+| backend                                                                                                                       |          3 |      2,826 |        162 |        281 |      3,269 |
+| database                                                                                                                      |          1 |        232 |          0 |         33 |        265 |
+| frontend                                                                                                                      |        118 |    104,143 |        378 |      3,087 |    107,608 |
+| frontend (Files)                                                                                                              |          7 |     13,940 |          3 |          9 |     13,952 |
+| frontend\src                                                                                                                  |        111 |     90,203 |        375 |      3,078 |     93,656 |
+| frontend\src (Files)                                                                                                          |          3 |        308 |          2 |         53 |        363 |
+| frontend\src\app                                                                                                              |        106 |     18,335 |        373 |      3,025 |     21,733 |
+| frontend\src\app (Files)                                                                                                      |          5 |        144 |          0 |         11 |        155 |
+| frontend\src\app\components                                                                                                   |         24 |        231 |          6 |         63 |        300 |
+| frontend\src\app\components\carousel                                                                                          |          4 |         49 |          3 |         10 |         62 |
+| frontend\src\app\components\footer                                                                                            |          4 |         29 |          0 |         11 |         40 |
+| frontend\src\app\components\job-card                                                                                          |          4 |         52 |          3 |         10 |         65 |
+| frontend\src\app\components\job-list                                                                                          |          4 |         29 |          0 |         11 |         40 |
+| frontend\src\app\components\navbarForms                                                                                       |          4 |         43 |          0 |         10 |         53 |
+| frontend\src\app\components\services-sidebar                                                                                  |          4 |         29 |          0 |         11 |         40 |
+| frontend\src\app\interceptors                                                                                                 |          2 |         43 |          0 |         15 |         58 |
+| frontend\src\app\pages                                                                                                        |         69 |     17,559 |        353 |      2,849 |     20,761 |
+| frontend\src\app\pages\borrador-servicio                                                                                      |          4 |        833 |          6 |        126 |        965 |
+| frontend\src\app\pages\crear-servicio                                                                                         |          3 |        685 |         16 |        114 |        815 |
+| frontend\src\app\pages\employer-job-create                                                                                    |          3 |      1,118 |          2 |        174 |      1,294 |
+| frontend\src\app\pages\employer-jobs-manage                                                                                   |          3 |      1,190 |          4 |        188 |      1,382 |
+| frontend\src\app\pages\employer-profile                                                                                       |          3 |      1,203 |         12 |        191 |      1,406 |
+| frontend\src\app\pages\employer-profile-edit                                                                                  |          3 |      1,147 |          9 |        198 |      1,354 |
+| frontend\src\app\pages\employerRegister                                                                                       |          4 |        398 |         15 |         59 |        472 |
+| frontend\src\app\pages\forgot-password                                                                                        |          4 |        286 |         11 |         50 |        347 |
+| frontend\src\app\pages\home                                                                                                   |          4 |      1,433 |         67 |        235 |      1,735 |
+| frontend\src\app\pages\home-employer                                                                                          |          4 |      1,530 |         57 |        245 |      1,832 |
+| frontend\src\app\pages\home-user                                                                                              |          4 |      1,932 |         35 |        324 |      2,291 |
+| frontend\src\app\pages\job-detail                                                                                             |          4 |        950 |         18 |        146 |      1,114 |
+| frontend\src\app\pages\job-preferences                                                                                        |          4 |        250 |         12 |         42 |        304 |
+| frontend\src\app\pages\login                                                                                                  |          4 |        433 |         17 |         61 |        511 |
+| frontend\src\app\pages\mis-favoritos                                                                                          |          3 |        703 |          0 |        108 |        811 |
+| frontend\src\app\pages\perfil-postulante                                                                                      |          4 |      1,496 |         19 |        248 |      1,763 |
+| frontend\src\app\pages\perfil-postulante-editar                                                                               |          4 |      1,218 |         33 |        193 |      1,444 |
+| frontend\src\app\pages\register                                                                                               |          3 |        372 |         13 |         74 |        459 |
+| frontend\src\app\pages\reset-password                                                                                         |          4 |        382 |          7 |         73 |        462 |
+| frontend\src\app\services                                                                                                     |          6 |        358 |         14 |         87 |        459 |
+| frontend\src\assets                                                                                                           |          1 |     71,556 |          0 |          0 |     71,556 |
+| frontend\src\environments                                                                                                     |          1 |          4 |          0 |          0 |          4 |
+| scratch                                                                                                                       |          1 |         43 |          6 |         15 |         64 |
++-------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                                                                      | language           | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| c:\TrabajoChambee\Proyecto-Chambee\.dockerignore                                                                              | Ignore             |          6 |          0 |          1 |          7 |
+| c:\TrabajoChambee\Proyecto-Chambee\backend\package-lock.json                                                                  | JSON               |      1,337 |          0 |          1 |      1,338 |
+| c:\TrabajoChambee\Proyecto-Chambee\backend\package.json                                                                       | JSON               |         25 |          0 |          1 |         26 |
+| c:\TrabajoChambee\Proyecto-Chambee\backend\server.js                                                                          | JavaScript         |      1,464 |        162 |        279 |      1,905 |
+| c:\TrabajoChambee\Proyecto-Chambee\database\schema.sql                                                                        | MS SQL             |        232 |          0 |         33 |        265 |
+| c:\TrabajoChambee\Proyecto-Chambee\docker-compose.yaml                                                                        | YAML               |         52 |          0 |          4 |         56 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\angular.json                                                                      | JSON               |        100 |          0 |          3 |        103 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\chambee_db.sql                                                                    | MS SQL             |        413 |          0 |          0 |        413 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\package-lock.json                                                                 | JSON               |     13,326 |          0 |          1 |     13,327 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\package.json                                                                      | JSON               |         43 |          0 |          1 |         44 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\app.component.css                                                         | PostCSS            |          0 |          0 |          1 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\app.component.html                                                        | HTML               |          1 |          0 |          0 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\app.component.ts                                                          | TypeScript         |         11 |          0 |          5 |         16 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\app.config.ts                                                             | TypeScript         |         18 |          0 |          2 |         20 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\app.routes.ts                                                             | TypeScript         |        114 |          0 |          3 |        117 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\carousel\carousel.component.css                                | PostCSS            |          0 |          0 |          1 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\carousel\carousel.component.html                               | HTML               |          3 |          0 |          0 |          3 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\carousel\carousel.component.spec.ts                            | TypeScript         |         25 |          0 |          6 |         31 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\carousel\carousel.component.ts                                 | TypeScript         |         21 |          3 |          3 |         27 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\footer\footer.component.css                                    | PostCSS            |          0 |          0 |          1 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\footer\footer.component.html                                   | HTML               |          1 |          0 |          1 |          2 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\footer\footer.component.spec.ts                                | TypeScript         |         18 |          0 |          6 |         24 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\footer\footer.component.ts                                     | TypeScript         |         10 |          0 |          3 |         13 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-card\job-card.component.css                                | PostCSS            |          0 |          0 |          1 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-card\job-card.component.html                               | HTML               |          5 |          0 |          0 |          5 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-card\job-card.component.spec.ts                            | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-card\job-card.component.ts                                 | TypeScript         |         21 |          3 |          3 |         27 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-list\job-list.component.css                                | PostCSS            |          0 |          0 |          1 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-list\job-list.component.html                               | HTML               |          1 |          0 |          1 |          2 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-list\job-list.component.spec.ts                            | TypeScript         |         18 |          0 |          6 |         24 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\job-list\job-list.component.ts                                 | TypeScript         |         10 |          0 |          3 |         13 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\navbarForms\navbar.component.css                               | PostCSS            |         10 |          0 |          1 |         11 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\navbarForms\navbar.component.html                              | HTML               |          5 |          0 |          0 |          5 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\navbarForms\navbar.component.spec.ts                           | TypeScript         |         18 |          0 |          6 |         24 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\navbarForms\navbar.component.ts                                | TypeScript         |         10 |          0 |          3 |         13 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\services-sidebar\services-sidebar.component.css                | PostCSS            |          0 |          0 |          1 |          1 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\services-sidebar\services-sidebar.component.html               | HTML               |          1 |          0 |          1 |          2 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\services-sidebar\services-sidebar.component.spec.ts            | TypeScript         |         18 |          0 |          6 |         24 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\components\services-sidebar\services-sidebar.component.ts                 | TypeScript         |         10 |          0 |          3 |         13 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\interceptors\auth.interceptor.spec.ts                                     | TypeScript         |         13 |          0 |          5 |         18 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\interceptors\auth.interceptor.ts                                          | TypeScript         |         30 |          0 |         10 |         40 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\borrador-servicio\borrador-servicio.component.css                   | PostCSS            |        421 |          0 |         64 |        485 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\borrador-servicio\borrador-servicio.component.html                  | HTML               |        174 |          3 |         20 |        197 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\borrador-servicio\borrador-servicio.component.spec.ts               | TypeScript         |         18 |          0 |          6 |         24 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\borrador-servicio\borrador-servicio.component.ts                    | TypeScript         |        220 |          3 |         36 |        259 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\crear-servicio\crear-servicio.component.css                         | PostCSS            |        359 |          5 |         64 |        428 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\crear-servicio\crear-servicio.component.html                        | HTML               |        169 |          5 |         26 |        200 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\crear-servicio\crear-servicio.component.ts                          | TypeScript         |        157 |          6 |         24 |        187 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-job-create\employer-job-create.component.css               | PostCSS            |        510 |          2 |         87 |        599 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-job-create\employer-job-create.component.html              | HTML               |        230 |          0 |         35 |        265 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-job-create\employer-job-create.component.ts                | TypeScript         |        378 |          0 |         52 |        430 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-jobs-manage\employer-jobs-manage.component.css             | PostCSS            |        476 |          0 |         81 |        557 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-jobs-manage\employer-jobs-manage.component.html            | HTML               |        277 |          2 |         37 |        316 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-jobs-manage\employer-jobs-manage.component.ts              | TypeScript         |        437 |          2 |         70 |        509 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-profile-edit\employer-profile-edit.component.css           | PostCSS            |        589 |          0 |        101 |        690 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-profile-edit\employer-profile-edit.component.html          | HTML               |        232 |          1 |         37 |        270 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-profile-edit\employer-profile-edit.component.ts            | TypeScript         |        326 |          8 |         60 |        394 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-profile\employer-profile.component.css                     | PostCSS            |        701 |          2 |        123 |        826 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-profile\employer-profile.component.html                    | HTML               |        194 |          4 |         21 |        219 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employer-profile\employer-profile.component.ts                      | TypeScript         |        308 |          6 |         47 |        361 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employerRegister\employerRegister.component.css                     | PostCSS            |        136 |          7 |         20 |        163 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employerRegister\employerRegister.component.html                    | HTML               |         98 |          0 |         12 |        110 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employerRegister\employerRegister.component.spec.ts                 | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\employerRegister\employerRegister.component.ts                      | TypeScript         |        138 |          8 |         21 |        167 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\forgot-password\forgot-password.component.css                       | PostCSS            |        145 |          9 |         22 |        176 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\forgot-password\forgot-password.component.html                      | HTML               |         50 |          2 |          6 |         58 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\forgot-password\forgot-password.component.spec.ts                   | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\forgot-password\forgot-password.component.ts                        | TypeScript         |         65 |          0 |         16 |         81 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-employer\home-employer.component.css                           | PostCSS            |        903 |         23 |        155 |      1,081 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-employer\home-employer.component.html                          | HTML               |        255 |          1 |         32 |        288 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-employer\home-employer.component.spec.ts                       | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-employer\home-employer.component.ts                            | TypeScript         |        346 |         33 |         52 |        431 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-user\home-user.component.css                                   | PostCSS            |      1,053 |         25 |        185 |      1,263 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-user\home-user.component.html                                  | HTML               |        428 |          5 |         65 |        498 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-user\home-user.component.spec.ts                               | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home-user\home-user.component.ts                                    | TypeScript         |        425 |          5 |         68 |        498 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home\home.component.css                                             | PostCSS            |        904 |         32 |        158 |      1,094 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home\home.component.html                                            | HTML               |        311 |         33 |         43 |        387 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home\home.component.spec.ts                                         | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\home\home.component.ts                                              | TypeScript         |        192 |          2 |         28 |        222 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-detail\job-detail.component.css                                 | PostCSS            |        415 |         14 |         67 |        496 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-detail\job-detail.component.html                                | HTML               |        162 |          2 |         17 |        181 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-detail\job-detail.component.spec.ts                             | TypeScript         |         54 |          0 |          7 |         61 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-detail\job-detail.component.ts                                  | TypeScript         |        319 |          2 |         55 |        376 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-preferences\job-preferences.component.css                       | PostCSS            |         95 |         11 |         16 |        122 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-preferences\job-preferences.component.html                      | HTML               |         47 |          1 |         10 |         58 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-preferences\job-preferences.component.spec.ts                   | TypeScript         |         26 |          0 |          5 |         31 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\job-preferences\job-preferences.component.ts                        | TypeScript         |         82 |          0 |         11 |         93 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\login\login.component.css                                           | PostCSS            |        228 |         12 |         30 |        270 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\login\login.component.html                                          | HTML               |         73 |          0 |         10 |         83 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\login\login.component.spec.ts                                       | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\login\login.component.ts                                            | TypeScript         |        106 |          5 |         15 |        126 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\mis-favoritos\mis-favoritos.component.css                           | PostCSS            |        416 |          0 |         63 |        479 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\mis-favoritos\mis-favoritos.component.html                          | HTML               |        118 |          0 |         17 |        135 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\mis-favoritos\mis-favoritos.component.ts                            | TypeScript         |        169 |          0 |         28 |        197 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante-editar\perfil-postulante-editar.component.css     | PostCSS            |        560 |         21 |         92 |        673 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante-editar\perfil-postulante-editar.component.html    | HTML               |        276 |          0 |         39 |        315 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante-editar\perfil-postulante-editar.component.spec.ts | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante-editar\perfil-postulante-editar.component.ts      | TypeScript         |        356 |         12 |         56 |        424 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante\perfil-postulante.component.css                   | PostCSS            |        848 |         15 |        147 |      1,010 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante\perfil-postulante.component.html                  | HTML               |        264 |          1 |         32 |        297 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante\perfil-postulante.component.spec.ts               | TypeScript         |         26 |          0 |          6 |         32 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\perfil-postulante\perfil-postulante.component.ts                    | TypeScript         |        358 |          3 |         63 |        424 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\register\register.component.css                                     | PostCSS            |        136 |          7 |         23 |        166 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\register\register.component.html                                    | HTML               |        111 |          2 |         24 |        137 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\register\register.component.ts                                      | TypeScript         |        125 |          4 |         27 |        156 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\reset-password\reset-password.component.css                         | PostCSS            |        139 |          4 |         17 |        160 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\reset-password\reset-password.component.html                        | HTML               |         87 |          3 |         16 |        106 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\reset-password\reset-password.component.spec.ts                     | TypeScript         |         34 |          0 |          6 |         40 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\pages\reset-password\reset-password.component.ts                          | TypeScript         |        122 |          0 |         34 |        156 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\services\api.service.spec.ts                                              | TypeScript         |         21 |          0 |          5 |         26 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\services\api.service.ts                                                   | TypeScript         |        127 |          1 |         37 |        165 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\services\auth.service.spec.ts                                             | TypeScript         |         21 |          0 |          5 |         26 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\services\auth.service.ts                                                  | TypeScript         |         51 |          2 |         16 |         69 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\services\servicios.service.ts                                             | TypeScript         |         87 |          9 |         11 |        107 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\app\services\theme.service.ts                                                 | TypeScript         |         51 |          2 |         13 |         66 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\assets\sepomex_gto.json                                                       | JSON               |     71,556 |          0 |          0 |     71,556 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\environments\environment.ts                                                   | TypeScript         |          4 |          0 |          0 |          4 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\index.html                                                                    | HTML               |         17 |          0 |          3 |         20 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\main.ts                                                                       | TypeScript         |          8 |          0 |          3 |         11 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\src\styles.css                                                                    | PostCSS            |        283 |          2 |         47 |        332 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\tsconfig.app.json                                                                 | JSON               |         13 |          1 |          1 |         15 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\tsconfig.json                                                                     | JSON with Comments |         32 |          1 |          2 |         35 |
+| c:\TrabajoChambee\Proyecto-Chambee\frontend\tsconfig.spec.json                                                                | JSON               |         13 |          1 |          1 |         15 |
+| c:\TrabajoChambee\Proyecto-Chambee\package-lock.json                                                                          | JSON               |      1,241 |          0 |          1 |      1,242 |
+| c:\TrabajoChambee\Proyecto-Chambee\package.json                                                                               | JSON               |         25 |          0 |          1 |         26 |
+| c:\TrabajoChambee\Proyecto-Chambee\scratch\check_html.py                                                                      | Python             |         43 |          6 |         15 |         64 |
+| Total                                                                                                                         |                    |    108,568 |        546 |      3,423 |    112,537 |
++-------------------------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

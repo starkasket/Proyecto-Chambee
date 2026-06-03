@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms'; 
 import * as L from 'leaflet';
 
 import { JobCardComponent } from '../../components/job-card/job-card.component';
@@ -13,7 +14,7 @@ import { ApiService } from '../../services/api.service';
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, JobCardComponent],
+  imports: [CommonModule, RouterModule, JobCardComponent, FormsModule], 
   templateUrl: './job-detail.component.html',
   styleUrl: './job-detail.component.css'
 })
@@ -26,6 +27,13 @@ export class JobDetailComponent implements OnInit {
   esFavorito = false;
   guardandoFavorito = false;
 
+  // VARIABLES PARA COMENTARIOS
+  usuarioActual: any = null;
+  comentarios: any[] = [];
+  nuevoComentario: string = '';
+  enviandoComentario = false;
+  dropdownOpenIndex: number | null = null; // Controla qué menú de 3 puntos está abierto
+
   private map: L.Map | null = null;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -36,20 +44,113 @@ export class JobDetailComponent implements OnInit {
   private http = inject(HttpClient);
 
   ngOnInit(): void {
+    // Obtenemos el usuario para validar su rol
+    this.usuarioActual = this.api.getUsuario();
+
     this.route.paramMap.subscribe((params) => {
       this.jobId = params.get('id');
       this.mostrarMapa = false;
       this.esFavorito = false;
       this.cargarDetalles(this.jobId);
+      this.cargarComentarios(this.jobId);
     });
 
     this.cargarFotoPerfil();
   }
 
-  postular(): void {
-    if (!this.jobId) {
-      return;
+  // Cargar comentarios
+  cargarComentarios(id: string | null) {
+    if (!id) return;
+    
+    // Simulación de datos. (La bandera "esMio" determina si aparecen los 3 puntos)
+    this.comentarios = [
+      { 
+        autor: 'María López', 
+        texto: 'Trabajé aquí hace 2 años, el ambiente es excelente y pagan puntual.', 
+        fecha: 'Hace 2 días',
+        esMio: false,
+        editando: false,
+        textoEditado: ''
+      },
+      { 
+        autor: 'Carlos Ramírez', 
+        texto: '¿Alguien sabe si el horario es flexible? Me interesa mucho.', 
+        fecha: 'Hace 1 semana',
+        esMio: false,
+        editando: false,
+        textoEditado: ''
+      }
+    ];
+  }
+
+  // Enviar nuevo comentario
+  agregarComentario() {
+    if (!this.nuevoComentario.trim() || !this.jobId) return;
+
+    this.enviandoComentario = true;
+
+    setTimeout(() => {
+      // Agregamos el comentario con "esMio" en true para que pueda editarlo/borrarlo
+      this.comentarios.unshift({
+        autor: 'Tú', // Aquí irá el nombre real del usuario
+        texto: this.nuevoComentario,
+        fecha: 'Justo ahora',
+        esMio: true, 
+        editando: false,
+        textoEditado: ''
+      });
+      
+      this.nuevoComentario = '';
+      this.enviandoComentario = false;
+      this.mostrarModalExito('Tu comentario se publicó correctamente.');
+    }, 800);
+  }
+
+  // ================= METODOS DE EDICIÓN Y ELIMINACIÓN =================
+
+  // Abre y cierra el menú de 3 puntos
+  toggleDropdown(index: number) {
+    this.dropdownOpenIndex = this.dropdownOpenIndex === index ? null : index;
+  }
+
+  // Cambia a modo de edición
+  editarComentario(index: number) {
+    this.comentarios[index].editando = true;
+    this.comentarios[index].textoEditado = this.comentarios[index].texto;
+    this.dropdownOpenIndex = null; // Cierra el menú desplegable
+  }
+
+  // Guarda los cambios del comentario
+  guardarEdicion(index: number) {
+    const textoModificado = this.comentarios[index].textoEditado.trim();
+    if (textoModificado) {
+      this.comentarios[index].texto = textoModificado;
+      this.comentarios[index].editando = false;
+      this.mostrarModalExito('Comentario actualizado correctamente.');
+      // Aquí harías la llamada a tu API: this.api.editarComentario(id, textoModificado).subscribe(...)
     }
+  }
+
+  // Cancela la edición
+  cancelarEdicion(index: number) {
+    this.comentarios[index].editando = false;
+  }
+
+  // Elimina un comentario
+  eliminarComentario(index: number) {
+    this.dropdownOpenIndex = null; // Cierra el menú primero
+    
+    // Alerta de confirmación nativa del navegador
+    if (confirm('¿Estás seguro de que deseas eliminar este comentario?')) {
+      this.comentarios.splice(index, 1);
+      // Aquí harías la llamada a tu API: this.api.eliminarComentario(id).subscribe(...)
+    }
+  }
+
+  // ====================================================================
+
+  postular(): void {
+    if (!this.jobId) return;
 
     this.api.postularAAnuncio(this.jobId).subscribe({
       next: () => {
@@ -63,9 +164,7 @@ export class JobDetailComponent implements OnInit {
   }
 
   toggleFavorito(): void {
-    if (!this.jobId || this.guardandoFavorito) {
-      return;
-    }
+    if (!this.jobId || this.guardandoFavorito) return;
 
     this.guardandoFavorito = true;
     const accion$ = this.esFavorito
@@ -196,9 +295,7 @@ export class JobDetailComponent implements OnInit {
   private cargarFotoPerfil(): void {
     const usuario = this.api.getUsuario();
 
-    if (!usuario?.id) {
-      return;
-    }
+    if (!usuario?.id) return;
 
     this.api.getMiPerfil().subscribe({
       next: (perfil: any) => {
@@ -229,9 +326,7 @@ export class JobDetailComponent implements OnInit {
   }
 
   private initMap(): void {
-    if (!this.jobData?.direccion) {
-      return;
-    }
+    if (!this.jobData?.direccion) return;
 
     if (this.map) {
       this.map.remove();
@@ -273,9 +368,7 @@ export class JobDetailComponent implements OnInit {
 
         setTimeout(() => this.map?.invalidateSize(), 200);
       },
-      error: (err) => {
-        console.error('Error de geocodificacion:', err);
-      }
+      error: (err) => console.error('Error de geocodificacion:', err)
     });
   }
 
@@ -312,30 +405,23 @@ export class JobDetailComponent implements OnInit {
   }
 
   private calcularCoincidencias(origen: string[], destino: string[]): number {
-    if (!origen.length || !destino.length) {
-      return 0;
-    }
-
+    if (!origen.length || !destino.length) return 0;
     const base = new Set(destino.map((item) => String(item).toLowerCase()));
     return origen.filter((item) => base.has(String(item).toLowerCase())).length;
   }
 
   private formatearSalario(salario: string | number): string {
     const numero = Number(salario);
-
-    if (Number.isNaN(numero) || numero === 0) {
-      return 'Salario a convenir';
-    }
-
+    if (Number.isNaN(numero) || numero === 0) return 'Salario a convenir';
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN',
       maximumFractionDigits: 0
     }).format(numero);
   }
-  // Modal de mensaje 
-  modalMensaje = '';
 
+  // Modales
+  modalMensaje = '';
 
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -369,7 +455,5 @@ export class JobDetailComponent implements OnInit {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
-
-    // this.router.navigate(['/donde-quieras']);
   }
 }

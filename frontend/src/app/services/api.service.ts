@@ -130,35 +130,64 @@ export class ApiService {
   }
 
   // ── Servicios (oficios) ──────────────────────────────────────
-crearServicio(datos: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/servicios`, datos, this.getHeaders());
-}
+  crearServicio(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/servicios`, datos, this.getHeaders());
+  }
 
-obtenerMisServicios(autorId: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/servicios/${autorId}`, this.getHeaders());
-}
+  obtenerMisServicios(autorId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/servicios/${autorId}`, this.getHeaders());
+  }
 
-obtenerServiciosPublicos(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/servicios-publicos`);
-}
+  obtenerServiciosPublicos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/servicios-publicos`);
+  }
 
-eliminarServicio(idServicio: string): Observable<any> {
-  return this.http.delete(`${this.apiUrl}/servicios/${idServicio}`, this.getHeaders());
-}
+  eliminarServicio(idServicio: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/servicios/${idServicio}`, this.getHeaders());
+  }
 
-publicarServicio(idServicio: string): Observable<any> {
-  return this.http.patch(
-    `${this.apiUrl}/servicios/${idServicio}/publicar`,
-    {},
-    this.getHeaders()
-  );
+  publicarServicio(idServicio: string): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}/servicios/${idServicio}/publicar`,
+      {},
+      this.getHeaders()
+    );
+  }
 
-}
-toggleVisibilidadCv(visible_empresas: boolean): Observable<any> {
-  return this.http.patch(
-    `${this.apiUrl}/mi-perfil/cv/visibilidad`,
-    { visible_empresas },
-    this.getHeaders()
-  );
-}
+  toggleVisibilidadCv(visible_empresas: boolean): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}/mi-perfil/cv/visibilidad`,
+      { visible_empresas },
+      this.getHeaders()
+    );
+  }
+
+  // ── Comentarios ─────────────────────────────────────────────
+  
+  obtenerComentariosAnuncio(idAnuncio: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/comentarios/${idAnuncio}`);
+  }
+
+  agregarComentario(idAnuncio: string, idPostulante: string, texto: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/comentarios`, {
+      id_anuncio: idAnuncio,
+      id_postulante: idPostulante,
+      texto: texto
+    }, this.getHeaders());
+  }
+
+  editarComentario(idComentario: string, idPostulante: string, texto: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/comentarios/${idComentario}`, {
+      id_postulante: idPostulante,
+      texto: texto
+    }, this.getHeaders());
+  }
+
+  eliminarComentario(idComentario: string, idPostulante: string): Observable<any> {
+    const options = {
+      headers: this.getHeaders().headers,
+      body: { id_postulante: idPostulante }
+    };
+    return this.http.delete<any>(`${this.apiUrl}/comentarios/${idComentario}`, options);
+  }
 }
