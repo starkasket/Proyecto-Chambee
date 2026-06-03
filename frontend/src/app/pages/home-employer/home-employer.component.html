@@ -160,15 +160,9 @@
           <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
             {{ applicant.skills }}
           </div>
-<<<<<<< HEAD
-          <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; padding: 5px 15px; font-weight: 600;" (click)="viewProfile(applicant)">Ver perfil</button>
-            <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; border-radius: 20px; padding: 5px 15px; font-weight: 600;" (click)="viewCV(applicant)">Ver CV</button>
-=======
           <div class="applicant-actions">
             <button class="action-btn outline" (click)="viewProfile(applicant)">Perfil</button>
             <button *ngIf="applicant.cvUrl"  class="action-btn solid" (click)="viewCV(applicant)">Ver CV</button>
->>>>>>> 5d76a19790a8a9dd1c85a5660560fe92eea5dae2
           </div>
         </div>
       </div>

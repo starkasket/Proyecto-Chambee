@@ -89,6 +89,8 @@ export class LoginComponent {
           const user = res.user;
           const remember = this.loginForm.value.remember;
 
+          this.authService.clearSession();
+
           if (remember) {
             localStorage.setItem("token", res.token);
             localStorage.setItem('usuario', JSON.stringify({

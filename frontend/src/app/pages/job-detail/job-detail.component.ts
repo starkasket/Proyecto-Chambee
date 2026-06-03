@@ -208,6 +208,14 @@ export class JobDetailComponent implements OnInit {
     this.router.navigate(['/job', id]);
   }
 
+  verPerfilEmpresa(): void {
+    if (!this.jobData?.employerId) {
+      return;
+    }
+
+    this.router.navigate(['/empresa', this.jobData.employerId]);
+  }
+
   toggleVerMas(): void {
     this.mostrarMapa = !this.mostrarMapa;
 
@@ -247,8 +255,9 @@ export class JobDetailComponent implements OnInit {
 
         this.jobData = {
           id: anuncio.id_anuncio,
+          employerId: anuncio.id_empleador,
           companyName: anuncio.nombre_empresa || 'Empresa Certificada',
-          companyLogo: 'assets/LogoChambee.png',
+          companyLogo: anuncio.foto_empresa || 'assets/LogoChambee.png',
           companyDesc: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
           title: anuncio.titulo || 'Vacante',
           urgency: anuncio.urgencia || 'Normal',
@@ -375,6 +384,7 @@ export class JobDetailComponent implements OnInit {
   private getFallbackData(id: string | null, title: string): any {
     return {
       id,
+      employerId: null,
       companyName: 'Chambee',
       companyLogo: 'assets/LogoChambee.png',
       companyDesc: 'No fue posible cargar los detalles de la vacante.',

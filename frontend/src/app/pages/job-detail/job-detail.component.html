@@ -83,6 +83,9 @@
                         class="company-logo">
                     <h3 class="company-name">{{ jobData.companyName }}</h3>
                     <p class="company-desc">{{ jobData.companyDesc }}</p>
+                    <button class="btn-company-profile" type="button" (click)="verPerfilEmpresa()" [disabled]="!jobData.employerId">
+                        Ver perfil de empresa
+                    </button>
                 </div>
 
                 <div class="ubicacion-section" *ngIf="mostrarMapa">

@@ -34,16 +34,16 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    const token =  localStorage.getItem('token') || sessionStorage.getItem('token');
+    const sessionToken = sessionStorage.getItem('token');
+    const localToken = localStorage.getItem('token');
 
-    if (!token) return null;
+    const validSessionToken = sessionToken && !this.isTokenExpired(sessionToken) ? sessionToken : null;
+    const validLocalToken = localToken && !this.isTokenExpired(localToken) ? localToken : null;
 
-    if (this.isTokenExpired(token)) {
-      this.logout();
-      return null;
-    }
+    if (validSessionToken) return validSessionToken;
+    if (validLocalToken) return validLocalToken;
 
-    return token;
+    return null;
   }
 
   parseJwt(token: string): any {

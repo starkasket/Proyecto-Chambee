@@ -498,6 +498,7 @@ width: 100%;
 box-sizing: border-box;
 }
 
+<<<<<<< Updated upstream
 /* ===== SECCIÓN DE COMENTARIOS ===== */
 .comments-section {
 padding: 30px;
@@ -587,3 +588,26 @@ background-color: var(--surface-secondary);
 .custom-dropdown-menu .dropdown-item.text-danger:hover {
 background-color: rgba(220, 38, 38, 0.1);
 }
+=======
+.btn-company-profile {
+  margin-top: 14px;
+  border: none;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-company-profile:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-company-profile:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+>>>>>>> Stashed changes

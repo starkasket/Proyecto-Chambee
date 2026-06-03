@@ -1221,6 +1221,69 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
+app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const perfilResult = await pool.query(
+      `SELECT
+        e.id_empleador,
+        e.nombre_empresa,
+        e.estado,
+        e.ciudad,
+        e.calle,
+        e.descripcion,
+        e.foto_perfil,
+        COUNT(a.id_anuncio)::int AS vacantes_activas
+      FROM empleador e
+      INNER JOIN anuncios a ON a.id_empleador = e.id_empleador
+      WHERE e.id_empleador = $1
+        AND a.estado_anuncio = 'ACTIVO'
+      GROUP BY e.id_empleador, e.nombre_empresa, e.estado, e.ciudad, e.calle, e.descripcion, e.foto_perfil`,
+      [id]
+    );
+
+    if (!perfilResult.rows.length) {
+      return res.status(404).json({ error: "Empresa no encontrada o sin vacantes activas" });
+    }
+
+    const anunciosResult = await pool.query(
+      `SELECT
+        a.id_anuncio,
+        a.titulo,
+        a.descripcion,
+        a.urgencia,
+        a.estado,
+        a.ciudad,
+        a.calle,
+        a.salario,
+        a.modalidad,
+        a.fecha_publicacion,
+        a.vistas,
+        COALESCE(
+          ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
+          ARRAY[]::VARCHAR[]
+        ) AS categorias
+      FROM anuncios a
+      LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
+      LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
+      WHERE a.id_empleador = $1
+        AND a.estado_anuncio = 'ACTIVO'
+      GROUP BY a.id_anuncio
+      ORDER BY a.fecha_publicacion DESC NULLS LAST`,
+      [id]
+    );
+
+    res.json({
+      perfil: perfilResult.rows[0],
+      anuncios: anunciosResult.rows
+    });
+  } catch (err) {
+    console.error("Error en GET /empresas/:id/perfil-publico:", err);
+    res.status(500).json({ error: "Error al obtener el perfil publico de la empresa" });
+  }
+});
+
 app.post("/anuncios/:idAnuncio/postular", verifyToken, authorizeRoles("postulante"), async (req, res) => {
   const { idAnuncio } = req.params;
   const idPostulante = req.user.id;

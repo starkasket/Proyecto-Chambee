@@ -29,7 +29,7 @@ export class ApiService {
   }
 
   getUsuario(): any {
-    const user = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+    const user = sessionStorage.getItem('usuario') || localStorage.getItem('usuario');
     return user ? JSON.parse(user) : null;
   }
 
@@ -87,6 +87,10 @@ export class ApiService {
 
   obtenerAnuncioPorId(idAnuncio: number | string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/anuncios/${idAnuncio}`);
+  }
+
+  obtenerPerfilPublicoEmpresa(idEmpleador: number | string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/empresas/${idEmpleador}/perfil-publico`, this.getHeaders());
   }
 
   postularAAnuncio(idAnuncio: number | string): Observable<any> {
