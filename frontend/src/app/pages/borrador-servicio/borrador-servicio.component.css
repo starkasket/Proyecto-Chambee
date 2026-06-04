@@ -3,7 +3,6 @@
   background: var(--bg-app);
   color: var(--text-primary);
 }
-
 .navbar-chambee {
   background-color: var(--navbar-bg);
   width: 100%;
@@ -18,17 +17,14 @@
   padding: 0 20px;
   gap: 12px;
 }
-
 .logo-area {
   cursor: pointer;
 }
-
 .search-container {
   flex: 1 1 420px;
   max-width: 420px;
   min-width: 180px;
 }
-
 .search-container input {
   width: 100%;
   padding: 8px 10px;
@@ -38,14 +34,12 @@
   color: var(--text-primary);
   font-size: 14px;
 }
-
 .nav-buttons {
   display: flex;
   align-items: center;
   gap: 8px;
   position: relative;
 }
-
 .btn-profile {
   border-radius: 50px;
   background-color: var(--surface-primary);
@@ -58,14 +52,12 @@
   align-items: center;
   gap: 8px;
 }
-
 .btn-profile img {
   width: 28px;
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
 }
-
 .theme-toggle {
   border: none;
   background: transparent;
@@ -74,7 +66,6 @@
   align-items: center;
   cursor: pointer;
 }
-
 .theme-toggle-track {
   width: 48px;
   height: 28px;
@@ -86,7 +77,6 @@
   justify-content: flex-start;
   padding: 3px;
 }
-
 .theme-toggle-icon {
   width: 20px;
   height: 20px;
@@ -100,16 +90,13 @@
   transition: transform 0.2s ease;
   font-size: 12px;
 }
-
 :host-context(body.dark-theme) .theme-toggle-icon {
   transform: translateX(18px);
 }
-
 .menu {
   cursor: pointer;
   color: var(--text-primary);
 }
-
 .desktop-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -124,7 +111,6 @@
   flex-direction: column;
   gap: 6px;
 }
-
 .desktop-menu-link {
   display: block;
   padding: 8px 10px;
@@ -133,12 +119,10 @@
   border-radius: 6px;
   font-weight: 600;
 }
-
 .desktop-menu-link:hover,
 .desktop-menu-link.active {
   background: var(--surface-secondary);
 }
-
 .mobile-menu-backdrop {
   position: fixed;
   inset: 0;
@@ -147,7 +131,6 @@
   display: flex;
   justify-content: flex-end;
 }
-
 .mobile-menu-panel {
   width: 84%;
   max-width: 320px;
@@ -157,7 +140,6 @@
   padding: 18px 14px;
   box-shadow: var(--shadow-float);
 }
-
 .mobile-close {
   display: block;
   margin-left: auto;
@@ -167,14 +149,12 @@
   font-size: 22px;
   cursor: pointer;
 }
-
 .mobile-nav {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 12px;
 }
-
 .mobile-nav-link {
   display: block;
   padding: 10px 8px;
@@ -184,17 +164,14 @@
   background: var(--surface-secondary);
   font-weight: 600;
 }
-
 .mobile-nav-link.active,
 .mobile-nav-link.highlight {
   color: #0056cc;
 }
-
 .favorites-main {
   width: min(1180px, 94%);
   margin: 84px auto 32px;
 }
-
 .back-button {
   border: none;
   background: transparent;
@@ -204,7 +181,6 @@
   cursor: pointer;
   margin-bottom: 10px;
 }
-
 .favorites-header {
   display: flex;
   justify-content: space-between;
@@ -216,7 +192,6 @@
   padding: 22px;
   box-shadow: var(--shadow-card);
 }
-
 .eyebrow {
   margin: 0 0 6px;
   font-weight: 800;
@@ -224,18 +199,15 @@
   font-size: 0.8rem;
   text-transform: uppercase;
 }
-
 .favorites-header h1 {
   margin: 0;
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   line-height: 1;
 }
-
 .favorites-header p:last-child {
   margin: 8px 0 0;
   color: var(--text-secondary);
 }
-
 .refresh-btn,
 .empty-state button,
 .detail-btn {
@@ -251,12 +223,10 @@
   cursor: pointer;
   box-shadow: var(--shadow-soft);
 }
-
 .refresh-btn:disabled {
   cursor: wait;
   opacity: 0.7;
 }
-
 .status-card,
 .empty-state {
   margin-top: 18px;
@@ -267,38 +237,31 @@
   box-shadow: var(--shadow-card);
   color: var(--text-primary);
 }
-
 .status-card.error {
   color: #b91c1c;
 }
-
 .empty-state {
   text-align: center;
 }
-
 .empty-state img {
   width: 180px;
   max-width: 70%;
   margin-bottom: 12px;
 }
-
 .empty-state h2 {
   margin: 0 0 8px;
 }
-
 .empty-state p {
   margin: 0 auto 18px;
   color: var(--text-secondary);
   max-width: 520px;
 }
-
 .favorites-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-top: 18px;
 }
-
 .favorite-card {
   background: var(--surface-primary);
   border: 1px solid var(--border-soft);
@@ -308,24 +271,20 @@
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .favorite-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-hover);
 }
-
 .favorite-media {
   position: relative;
   height: 150px;
   background: var(--surface-secondary);
 }
-
 .favorite-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .state-pill {
   position: absolute;
   top: 12px;
@@ -337,31 +296,26 @@
   font-size: 0.72rem;
   font-weight: 800;
 }
-
 .favorite-copy {
   padding: 16px;
 }
-
 .favorite-top {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   align-items: flex-start;
 }
-
 .company {
   margin: 0 0 4px;
   color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 700;
 }
-
 .favorite-copy h2 {
   margin: 0;
   font-size: 1.2rem;
   line-height: 1.2;
 }
-
 .remove-btn {
   width: 40px;
   height: 40px;
@@ -376,12 +330,10 @@
   flex: 0 0 auto;
   background-color: rgb(230, 32, 32)
 }
-
 .remove-btn:disabled {
   opacity: 0.7;
   cursor: wait;
 }
-
 .description {
   margin: 12px 0;
   color: var(--text-secondary);
@@ -390,14 +342,12 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 .job-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
 }
-
 .job-tag {
   border-radius: 999px;
   padding: 5px 10px;
@@ -406,12 +356,10 @@
   font-size: 0.78rem;
   font-weight: 700;
 }
-
 .job-tag.urgency-tag {
   background: rgba(239, 68, 68, 0.14);
   color: #ef4444;
 }
-
 .favorite-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -419,11 +367,9 @@
   color: var(--text-secondary);
   font-size: 0.82rem;
 }
-
 .favorite-meta span {
   min-width: 0;
 }
-
 .favorite-footer {
   display: flex;
   justify-content: space-between;
@@ -435,47 +381,38 @@
   color: var(--text-secondary);
   font-size: 0.84rem;
 }
-
 .detail-btn {
   padding: 8px 12px;
   box-shadow: none;
 }
-
 @media (max-width: 900px) {
   .favorites-grid {
     grid-template-columns: 1fr;
   }
-
   .favorite-meta {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 768px) {
   .desktop-menu {
     display: none !important;
   }
-
   .navbar-chambee {
     padding-left: 16px;
     padding-right: 16px;
     gap: 8px;
   }
-
   .navbar-chambee img {
     height: 36px;
   }
-
   .search-container {
     display: none;
   }
-
   .favorites-header,
   .favorite-footer {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .refresh-btn,
   .detail-btn {
     width: 100%;

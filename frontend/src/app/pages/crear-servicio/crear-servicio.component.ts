@@ -24,16 +24,17 @@ export class CrearServicioComponent implements OnInit {
 
   servicioForm: FormGroup;
   
- foto_perfil = ''; 
+  foto_perfil = ''; 
 
   // Variables para la edición
   esEdicion = false;
   idServicioActual = '';
-  titulo = ''
-  ending = ''
+  titulo = '';
+  ending = '';
   // Variables que el HTML necesita para funcionar
   modalMensaje = '';
   guardando = false;
+  sepomex: any[] = [];
   colonias: string[] = []; // Se llena al buscar el CP
 
   constructor() {
@@ -44,52 +45,71 @@ export class CrearServicioComponent implements OnInit {
       description: ['', Validators.required],
       cobertura: ['Colonia'], 
       disponibilidad: ['Entre semana'],
-      codigo_postal: [''],
-      estado: [''],
-      ciudad: [''],
-      colonia: [''],
-      calle: ['']
+      codigo_postal: ['', [Validators.required, Validators.maxLength(5)]],
+      estado: ['', Validators.required],
+      ciudad: ['', Validators.required],
+      colonia: ['', Validators.required],
+      calle: ['', Validators.required]
     });
   }
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.esEdicion = true;
-        this.idServicioActual = id;
-        this.titulo = 'Editar servicio'
-        this.ending = 'Guardar cambios'
-        this.cargarDatosDelServicio(id);
-      } else {
-        this.titulo = 'Crear nuevo servicio'
-        this.ending = 'Guardar y publicar'
-
-      }
-    });
-    const usuario = this.api.getUsuario();
-  if (usuario?.id) {
-
-    // Cargar perfil
-    this.api.getMiPerfil().subscribe({
-      next: (perfil: any) => {
-        this.foto_perfil = perfil?.foto_perfil || '';
+    // Cargar sepomex primero para que las colonias se precarguen al editar
+    this.api.getSepomex().subscribe({
+      next: (data) => {
+        this.sepomex = data;
+        
+        this.route.paramMap.subscribe(params => {
+          const id = params.get('id');
+          if (id) {
+            this.esEdicion = true;
+            this.idServicioActual = id;
+            this.titulo = 'Editar servicio';
+            this.ending = 'Guardar cambios';
+            this.cargarDatosDelServicio(id);
+          } else {
+            this.titulo = 'Crear nuevo servicio';
+            this.ending = 'Guardar y publicar';
+          }
+        });
       },
-      error: () => {
-      console.log("Ocurrió un error");
+      error: (err) => {
+        console.error('Error al cargar sepomex:', err);
       }
     });
-  }
+
+    const usuario = this.api.getUsuario();
+    if (usuario?.id) {
+      // Cargar perfil
+      this.api.getMiPerfil().subscribe({
+        next: (perfil: any) => {
+          this.foto_perfil = perfil?.foto_perfil || '';
+        },
+        error: () => {
+          console.log("Ocurrió un error");
+        }
+      });
+    }
   }
 
   cargarDatosDelServicio(id: string) {
-    
     const usuario = this.api.getUsuario();
     if (usuario && usuario.id) {
       this.api.obtenerMisServicios(String(usuario.id)).subscribe({
         next: (misServicios: any[]) => {
           const servicioAModificar = misServicios.find(s => (s.id_servicio || s.id) === id);
           if (servicioAModificar) {
+            // Precargar colonias si ya tiene CP registrado
+            const cp = servicioAModificar.codigo_postal || '';
+            if (cp) {
+              const resultados = this.sepomex.filter(r => String(r.cp).trim() === String(cp).trim());
+              if (resultados.length > 0) {
+                this.colonias = resultados.map((r: any) => r.colonia);
+              } else {
+                this.colonias = [];
+              }
+            }
+
             this.servicioForm.patchValue({
               title: servicioAModificar.title,
               categoria: servicioAModificar.categoria || 'Plomería',
@@ -97,7 +117,7 @@ export class CrearServicioComponent implements OnInit {
               description: servicioAModificar.description,
               cobertura: servicioAModificar.cobertura || 'Colonia',
               disponibilidad: servicioAModificar.disponibilidad || 'Disponible entre semana',
-              codigo_postal: servicioAModificar.codigo_postal || '',
+              codigo_postal: cp,
               estado: servicioAModificar.estado || '',
               ciudad: servicioAModificar.ciudad || '',
               colonia: servicioAModificar.colonia || '',
@@ -125,17 +145,15 @@ export class CrearServicioComponent implements OnInit {
       };
 
       if (this.esEdicion) {
-        
         this.serviciosService.actualizarServicio(this.idServicioActual, payload).subscribe({
           next: () => {
             this.guardando = false;
-            alert("¡Éxito! El servicio se actualizó en la base de datos.");
-            this.router.navigate(['/home-user']);
+            this.mostrarModalExito("El servicio se actualizó correctamente.");
           },
           error: (err) => {
             this.guardando = false;
             console.error(err);
-            alert("Error del servidor: " + err.message);
+            this.mostrarModalError("Error del servidor: " + err.message);
           }
         });
       } else {
@@ -146,16 +164,15 @@ export class CrearServicioComponent implements OnInit {
           next: () => {
             this.guardando = false;
             if (esBorrador == true) {
-               alert("¡Éxito! Se guardó tu borrador.");
-            } else{
-            alert("¡Éxito! El servicio se creó nuevo.");
+              this.mostrarModalExito("Se guardó tu borrador correctamente.");
+            } else {
+              this.mostrarModalExito("El servicio se creó correctamente.");
             }
-            this.router.navigate(['/home-user']);
           },
           error: (err) => {
             this.guardando = false;
             console.error(err);
-            alert("Error del servidor al crear: " + err.message);
+            this.mostrarModalError("Error del servidor al crear: " + err.message);
           }
         });
       }
@@ -165,7 +182,7 @@ export class CrearServicioComponent implements OnInit {
         const control = this.servicioForm.get(key);
         if (control) control.markAsTouched();
       });
-      alert('¡El formulario es inválido! Revisa que no te falte el título o la descripción.');
+      this.mostrarModalError('¡El formulario es inválido! Revisa que no te falte el título, la descripción o los datos de dirección.');
     }
   }
 
@@ -177,10 +194,26 @@ export class CrearServicioComponent implements OnInit {
   }
 
   buscarCP() {
-    const cp = this.servicioForm.get('codigo_postal')?.value;
-    if (cp && cp.length === 5) {
-      this.servicioForm.patchValue({ estado: 'Guanajuato', ciudad: 'Guanajuato' });
-      this.colonias = ['Centro', 'San Javier', 'Marfil'];
+    const cp = this.servicioForm.get('codigo_postal')?.value?.trim();
+    if (!cp) return;
+
+    const resultados = this.sepomex.filter(r => String(r.cp).trim() === String(cp));
+
+    if (resultados.length > 0) {
+      this.servicioForm.patchValue({
+        estado: resultados[0].estado,
+        ciudad: resultados[0].ciudad,
+        colonia: resultados[0].colonia
+      });
+      this.colonias = resultados.map(r => r.colonia);
+    } else {
+      this.servicioForm.patchValue({
+        estado: '',
+        ciudad: '',
+        colonia: ''
+      });
+      this.colonias = [];
+      this.mostrarModalError('Código postal no encontrado');
     }
   }
 
@@ -189,18 +222,25 @@ export class CrearServicioComponent implements OnInit {
   }
 
   cerrarModal() {
-    const modal = document.getElementById('modalError');
+    const modal = document.getElementById('modalAlerta');
     if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; }
   }
 
   cerrarModalExito() {
-    const modal = document.getElementById('modalExito');
+    const modal = document.getElementById('modalSaludo');
     if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; }
     this.router.navigate(['/home-user']);
   }
 
-  mostrarModalError() {
-    const modal = document.getElementById('modalError');
+  mostrarModalError(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) { modal.classList.add('show'); modal.style.display = 'flex'; }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
     if (modal) { modal.classList.add('show'); modal.style.display = 'flex'; }
   }
 

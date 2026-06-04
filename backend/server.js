@@ -1906,15 +1906,20 @@ app.delete("/servicios/:id", verifyToken, async (req, res) => {
 app.put("/servicios/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion } = req.body;
+    const {
+      title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion,
+      estado, ciudad, colonia, calle, codigo_postal
+    } = req.body;
     
     // Le mandamos los datos frescos a PostgreSQL
     const result = await pool.query(
       `UPDATE servicios 
-       SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7
-       WHERE id_servicio = $8
+       SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7,
+           estado = $8, ciudad = $9, colonia = $10, calle = $11, codigo_postal = $12
+       WHERE id_servicio = $13
        RETURNING *`,
-      [title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion, id]
+      [title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion,
+       estado, ciudad, colonia, calle, codigo_postal, id]
     );
 
     if (result.rowCount === 0) {
