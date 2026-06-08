@@ -444,7 +444,49 @@ WHERE p.id_postulante = $1`;
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    res.json(result.rows[0]);
+    let responseData = result.rows[0];
+
+    if (rol === "postulante") {
+      // Obtener estadísticas de valoraciones del postulante
+      const ratingsQuery = `
+        SELECT 
+          COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion,
+          COUNT(v.id_valoracion)::int AS total_valoraciones
+        FROM postulante_valoracion pv
+        JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+        WHERE pv.id_postulante = $1
+      `;
+      const ratingsRes = await pool.query(ratingsQuery, [id]);
+      const promedio_valoracion = parseFloat(ratingsRes.rows[0]?.promedio_valoracion || 0);
+      const total_valoraciones = ratingsRes.rows[0]?.total_valoraciones || 0;
+
+      // Obtener el listado de valoraciones/opiniones con los nombres de las empresas
+      const reviewsQuery = `
+        SELECT 
+          v.id_valoracion,
+          v.puntuacion,
+          v.comentario,
+          v.fecha_valoracion,
+          e.nombre_empresa,
+          e.foto_perfil AS foto_empresa
+        FROM postulante_valoracion pv
+        JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+        JOIN empleador e ON pv.id_empleador = e.id_empleador
+        WHERE pv.id_postulante = $1
+        ORDER BY v.fecha_valoracion DESC
+      `;
+      const reviewsRes = await pool.query(reviewsQuery, [id]);
+      const valoraciones_recibidas = reviewsRes.rows;
+
+      responseData = {
+        ...responseData,
+        promedio_valoracion,
+        total_valoraciones,
+        valoraciones_recibidas
+      };
+    }
+
+    res.json(responseData);
   } catch (err) {
     console.error("Error en /mi-perfil:", err);
     res.status(500).json({ error: "Error al obtener perfil" });
@@ -490,10 +532,156 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       return res.status(404).json({ error: "Postulante no encontrado" });
     }
 
-    res.json(result.rows[0]);
+    // Obtener estadísticas de valoraciones del postulante
+    const ratingsQuery = `
+      SELECT 
+        COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion,
+        COUNT(v.id_valoracion)::int AS total_valoraciones
+      FROM postulante_valoracion pv
+      JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+      WHERE pv.id_postulante = $1
+    `;
+    const ratingsRes = await pool.query(ratingsQuery, [id]);
+    const promedio_valoracion = parseFloat(ratingsRes.rows[0]?.promedio_valoracion || 0);
+    const total_valoraciones = ratingsRes.rows[0]?.total_valoraciones || 0;
+
+    // Obtener el listado de valoraciones/opiniones con los nombres de las empresas
+    const reviewsQuery = `
+      SELECT 
+        v.id_valoracion,
+        v.puntuacion,
+        v.comentario,
+        v.fecha_valoracion,
+        e.nombre_empresa,
+        e.foto_perfil AS foto_empresa
+      FROM postulante_valoracion pv
+      JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+      JOIN empleador e ON pv.id_empleador = e.id_empleador
+      WHERE pv.id_postulante = $1
+      ORDER BY v.fecha_valoracion DESC
+    `;
+    const reviewsRes = await pool.query(reviewsQuery, [id]);
+    const valoraciones_recibidas = reviewsRes.rows;
+
+    // Obtener la valoración propia del empleador logueado si aplica
+    let valoracion_propia = null;
+    if (req.user.rol === "empleador") {
+      const ownRatingQuery = `
+        SELECT v.puntuacion
+        FROM postulante_valoracion pv
+        JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+        WHERE pv.id_postulante = $1 AND pv.id_empleador = $2
+      `;
+      const ownRatingRes = await pool.query(ownRatingQuery, [id, req.user.id]);
+      if (ownRatingRes.rows.length > 0) {
+        valoracion_propia = ownRatingRes.rows[0].puntuacion;
+      }
+    }
+
+    const perfilData = {
+      ...result.rows[0],
+      promedio_valoracion,
+      total_valoraciones,
+      valoracion_propia,
+      valoraciones_recibidas
+    };
+
+    res.json(perfilData);
   } catch (err) {
     console.error("Error en GET /postulantes/:id", err);
     res.status(500).json({ error: "Error al obtener perfil del postulante" });
+  }
+});
+
+/* ===== AGREGAR VALORACIÓN A POSTULANTE ===== */
+app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { id } = req.params;
+  const { puntuacion, comentario } = req.body;
+  const id_empleador = req.user.id;
+
+  if (puntuacion === undefined || puntuacion < 1 || puntuacion > 5) {
+    return res.status(400).json({ error: "La puntuación debe estar entre 1 y 5 estrellas" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Verificar si ya existe una valoración de este empleador para este postulante
+    const checkQuery = `
+      SELECT pv.id_valoracion
+      FROM postulante_valoracion pv
+      WHERE pv.id_postulante = $1 AND pv.id_empleador = $2
+    `;
+    const checkRes = await client.query(checkQuery, [id, id_empleador]);
+
+    let id_valoracion;
+    if (checkRes.rows.length > 0) {
+      // Actualizar la valoración existente
+      id_valoracion = checkRes.rows[0].id_valoracion;
+      await client.query(
+        `UPDATE valoracion 
+         SET puntuacion = $1, comentario = $2, fecha_valoracion = CURRENT_TIMESTAMP
+         WHERE id_valoracion = $3`,
+        [puntuacion, comentario || null, id_valoracion]
+      );
+    } else {
+      // Crear nueva valoración
+      const insertValQuery = `
+        INSERT INTO valoracion (puntuacion, comentario)
+        VALUES ($1, $2)
+        RETURNING id_valoracion
+      `;
+      const insertValRes = await client.query(insertValQuery, [puntuacion, comentario || null]);
+      id_valoracion = insertValRes.rows[0].id_valoracion;
+
+      // Vincular relación
+      const insertRelQuery = `
+        INSERT INTO postulante_valoracion (id_valoracion, id_postulante, id_empleador)
+        VALUES ($1, $2, $3)
+      `;
+      await client.query(insertRelQuery, [id_valoracion, id, id_empleador]);
+    }
+
+    await client.query("COMMIT");
+
+    // Obtener estadísticas y opiniones actualizadas
+    const updatedStatsRes = await pool.query(`
+      SELECT 
+        COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion,
+        COUNT(v.id_valoracion)::int AS total_valoraciones
+      FROM postulante_valoracion pv
+      JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+      WHERE pv.id_postulante = $1
+    `, [id]);
+
+    const updatedReviewsRes = await pool.query(`
+      SELECT 
+        v.id_valoracion,
+        v.puntuacion,
+        v.comentario,
+        v.fecha_valoracion,
+        e.nombre_empresa,
+        e.foto_perfil AS foto_empresa
+      FROM postulante_valoracion pv
+      JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
+      JOIN empleador e ON pv.id_empleador = e.id_empleador
+      WHERE pv.id_postulante = $1
+      ORDER BY v.fecha_valoracion DESC
+    `, [id]);
+
+    res.json({
+      message: "Valoración guardada correctamente",
+      promedio_valoracion: parseFloat(updatedStatsRes.rows[0]?.promedio_valoracion || 0),
+      total_valoraciones: updatedStatsRes.rows[0]?.total_valoraciones || 0,
+      valoraciones_recibidas: updatedReviewsRes.rows
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error al registrar valoración del postulante:", err);
+    res.status(500).json({ error: "Error interno al calificar al postulante" });
+  } finally {
+    client.release();
   }
 });
 
@@ -1955,9 +2143,43 @@ app.patch("/servicios/:id/publicar", verifyToken, authorizeRoles("postulante"), 
   }
 });
 
+/* ===== MIGRACIÓN DE BASE DE DATOS DINÁMICA ===== */
+async function ensureDatabaseSchema() {
+  try {
+    // 1. Asegurar que comentario sea opcional en valoracion
+    await pool.query("ALTER TABLE valoracion ALTER COLUMN comentario DROP NOT NULL");
+    
+    // 2. Agregar id_empleador a postulante_valoracion si no existe
+    await pool.query(`
+      ALTER TABLE postulante_valoracion 
+      ADD COLUMN IF NOT EXISTS id_empleador UUID REFERENCES empleador(id_empleador) ON DELETE CASCADE
+    `);
+    
+    // 3. Agregar restricción unique_postulante_empleador
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 
+          FROM pg_constraint 
+          WHERE conname = 'unique_postulante_empleador'
+        ) THEN
+          ALTER TABLE postulante_valoracion 
+          ADD CONSTRAINT unique_postulante_empleador UNIQUE (id_postulante, id_empleador);
+        END IF;
+      END;
+      $$;
+    `);
+    console.log("[db] Estructura de base de datos verificada y actualizada correctamente.");
+  } catch (err) {
+    console.error("[db] Error al verificar/actualizar la estructura de la base de datos:", err.message);
+  }
+}
+
 /* ===== INICIAR SERVIDOR ===== */
-app.listen(3000, "0.0.0.0", () => {
+app.listen(3000, "0.0.0.0", async () => {
   console.log("Servidor corriendo en http://localhost:3000");
+  await ensureDatabaseSchema();
 });
 
 
