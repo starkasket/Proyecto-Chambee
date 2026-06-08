@@ -160,7 +160,7 @@ CREATE TABLE reporte_a_anuncio (
 
 CREATE TABLE valoracion (
     id_valoracion UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    comentario VARCHAR(255)  NOT NULL,
+    comentario VARCHAR(255),
     puntuacion INT CHECK (puntuacion BETWEEN 1 AND 5)  NOT NULL,
     fecha_valoracion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -204,8 +204,11 @@ CREATE TABLE postulante_valoracion (
     id_pv UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     id_valoracion UUID  NOT NULL,
     id_postulante UUID  NOT NULL,
+    id_empleador UUID  NOT NULL,
     CONSTRAINT fk_pv_valoracion FOREIGN KEY (id_valoracion) REFERENCES Valoracion(id_valoracion),
-    CONSTRAINT fk_pv_postulante FOREIGN KEY (id_postulante) REFERENCES Postulante(id_postulante)
+    CONSTRAINT fk_pv_postulante FOREIGN KEY (id_postulante) REFERENCES Postulante(id_postulante),
+    CONSTRAINT fk_pv_empleador FOREIGN KEY (id_empleador) REFERENCES Empleador(id_empleador) ON DELETE CASCADE,
+    CONSTRAINT unique_postulante_empleador UNIQUE (id_postulante, id_empleador)
 );
 
 CREATE TABLE anuncio_valoracion (
