@@ -156,6 +156,12 @@ export class BorradorServicioComponent implements OnInit {
     });
   }
 
+  verBorrador(servicio: ServiceDraft, event: Event): void {
+    event.stopPropagation(); // Evita que se disparen otros eventos si la tarjeta entera fuera clickeable
+    // Navegamos a la ruta de editar servicio pasándole el id del borrador
+    this.router.navigate(['/editar-servicio', servicio.id_servicio]);
+  }
+
   mostrarExito(mensaje: string): void {
     this.modalMensaje = mensaje;
     this.modalExitoAbierto = true;

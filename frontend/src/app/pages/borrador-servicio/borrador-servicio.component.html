@@ -129,21 +129,28 @@
 
           <div class="favorite-footer">
             <span>Creado el {{ formatearFecha(servicio.fecha_creacion) }}</span>
-            <button
-              type="button"
-              class="detail-btn"
-              (click)="publicarBorrador(servicio, $event)"
-              [disabled]="publicandoId === servicio.id_servicio">
-              Publicar servicio
-            </button>
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-primary" 
+                style="border-radius: 999px; font-weight: 600;"
+                (click)="verBorrador(servicio, $event)">
+                Ver borrador
+              </button>
+              <button
+                type="button"
+                class="detail-btn"
+                (click)="publicarBorrador(servicio, $event)"
+                [disabled]="publicandoId === servicio.id_servicio">
+                Publicar servicio
+              </button>
+            </div>
           </div>
-        </div>
-      </article>
+        </div> </article>
     </section>
   </main>
 </div>
 
-<!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
 <div *ngIf="modalConfirmacionAbierto" class="modal" tabindex="-1"
   style="display:flex; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
@@ -161,7 +168,6 @@
   </div>
 </div>
 
-<!-- MODAL DE ÉXITO -->
 <div *ngIf="modalExitoAbierto" class="modal" tabindex="-1"
   style="display:flex; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
@@ -178,7 +184,6 @@
   </div>
 </div>
 
-<!-- MODAL DE ERROR / ALERTA -->
 <div *ngIf="modalAlertaAbierto" class="modal" tabindex="-1"
   style="display:flex; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">

@@ -60,6 +60,11 @@ export class ServiciosService {
     });
   }
 
+  // GET: Obtiene un servicio específico por su ID
+  obtenerServicioPorId(id: string): Observable<Service> {
+    return this.http.get<Service>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+  }
+
   // POST: Guarda un nuevo servicio en PostgreSQL
   agregarServicio(nuevoServicio: Service): Observable<Service> {
     return this.http.post<Service>(this.apiUrl, nuevoServicio, { headers: this.getHeaders() }).pipe(
