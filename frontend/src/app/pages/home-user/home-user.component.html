@@ -26,8 +26,6 @@
         </span>
       </div>
 
-
-
       <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
         style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
 
@@ -111,7 +109,6 @@
   </div>
 </nav>
 
-<!-- MODAL DE ÉXITO -->
 <div id="modalSaludo" class="modal" tabindex="-1"
   style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
@@ -128,7 +125,6 @@
   </div>
 </div>
 
-<!-- MODAL DE ERROR -->
 <div id="modalAlerta" class="modal" tabindex="-1"
   style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
   <div class="modal-dialog modal-dialog-centered">
@@ -242,6 +238,34 @@
       </div>
     </ng-template>
 
+    <div class="recently-viewed-section mt-5" *ngIf="vistosRecientemente.length > 0">
+      <h3 class="mb-4" style="font-weight: 700; color: var(--text-color);">Vistos recientemente</h3>
+      <div class="jobs-horizontal-scroll">
+        <div class="job-card" *ngFor="let job of vistosRecientemente" (click)="openJob(job.id)" role="button" tabindex="0">
+          <button
+            class="job-favorite-btn"
+            type="button"
+            [class.active]="isFavorite(job.id)"
+            [disabled]="isSavingFavorite(job.id)"
+            (click)="toggleFavorite(job, $event)"
+            [attr.title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
+            [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
+            <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
+          </button>
+          <img [src]="job.img" [alt]="job.company" />
+          <div class="job-content">
+            <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
+            <h4 class="job-company">{{ job.company }}</h4>
+            <p>{{ job.title }}</p>
+            <p class="salary">{{ job.salary }}</p>
+            <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
+              <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
+            </div>
+            <div class="job-footer">★ {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="jobs-more" *ngIf="visibleCount < maxVisible">
       <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>
     </div>
@@ -274,7 +298,6 @@
     <p class="service-desc">{{ service.description }}</p>
   </div>
 
-  <!-- Botón 3 puntos -->
   <button
     (click)="toggleMenuServicio(idx, $event)"
     style="position: absolute; top: 8px; right: 8px; background: none; border: none;
@@ -285,7 +308,6 @@
     &#8942;
   </button>
 
-  <!-- Dropdown editar / eliminar -->
   <div *ngIf="menuServicioAbierto === idx"
     (click)="$event.stopPropagation()"
     style="position: absolute; top: 36px; right: 8px; background: var(--bg-color, #fff);
@@ -344,7 +366,6 @@
     </div>
   </div>
 
-  <!-- Burbuja que abre o cierra el panel de servicios en movil/tablet. -->
   <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
     <span class="services-bubble-icon">✦</span>
     <span class="services-bubble-text">Servicios</span>

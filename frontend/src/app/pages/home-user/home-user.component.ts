@@ -80,7 +80,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   slides: Slide[] = [];
   jobs: Job[] = [];
-services: any[] = [];
+  services: any[] = [];
+  vistosRecientemente: Job[] = [];
+
   constructor(
     private readonly router: Router,
     private readonly themeService: ThemeService,
@@ -89,41 +91,42 @@ services: any[] = [];
     private readonly authApi: AuthService,
   ) {}
 
-ngOnInit() {
-  this.slideIntervalId = setInterval(() => {
-    this.nextSlide();
-  }, 9000);
+  ngOnInit() {
+    this.slideIntervalId = setInterval(() => {
+      this.nextSlide();
+    }, 9000);
 
-  this.checkMobile();
-  this.cargarOfertasPublicas();
-  this.cargarFavoritosGuardados();
+    this.checkMobile();
+    this.cargarOfertasPublicas();
+    this.cargarFavoritosGuardados();
 
-  const usuario = this.api.getUsuario();
-  if (usuario?.id) {
+    const usuario = this.api.getUsuario();
+    if (usuario?.id) {
 
-    // Cargar perfil
-    this.api.getMiPerfil().subscribe({
-      next: (perfil: any) => {
-        this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
-        this.foto_perfil = perfil?.foto_perfil || '';
-      },
-      error: () => {
-        this.nombre_postulante = usuario?.nombre || 'Usuario';
-      }
-    });
+      // Cargar perfil
+      this.api.getMiPerfil().subscribe({
+        next: (perfil: any) => {
+          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
+          this.foto_perfil = perfil?.foto_perfil || '';
+        },
+        error: () => {
+          this.nombre_postulante = usuario?.nombre || 'Usuario';
+        }
+      });
 
-    // Cargar servicios desde la BD — solo publicados (no borradores)
-    this.api.obtenerMisServicios(String(usuario.id)).subscribe({
-      next: (servicios) => {
-        this.services = (servicios || []).filter((s: any) => !s.es_borrador);
-      },
-      error: () => {
-        this.services = [];
-      }
-    });
+      // Cargar servicios desde la BD — solo publicados (no borradores)
+      this.api.obtenerMisServicios(String(usuario.id)).subscribe({
+        next: (servicios) => {
+          this.services = (servicios || []).filter((s: any) => !s.es_borrador);
+        },
+        error: () => {
+          this.services = [];
+        }
+      });
 
+    }
   }
-}
+
   ngOnDestroy() {
     if (this.slideIntervalId) {
       clearInterval(this.slideIntervalId);
@@ -147,6 +150,7 @@ ngOnInit() {
         if (!anuncios || !anuncios.length) {
           this.slides = [];
           this.jobs = [];
+          this.vistosRecientemente = [];
           return;
         }
 
@@ -196,6 +200,8 @@ ngOnInit() {
         this.currentSlide = 0;
         this.maxVisible = Math.max(8, this.jobs.length);
         this.visibleCount = Math.min(8, this.maxVisible);
+
+        this.cargarVistosRecientemente();
       },
       error: () => {
         this.slides = [];
@@ -204,6 +210,7 @@ ngOnInit() {
         this.visibleCount = 8;
         this.maxVisible = 8;
         this.etiquetasInteres = [];
+        this.vistosRecientemente = [];
       }
     });
   }
@@ -248,6 +255,48 @@ ngOnInit() {
     });
   }
 
+  // --- HISTORIAL DE VISTOS ---
+  private cargarVistosRecientemente() {
+    const stored = localStorage.getItem('chambee_vistos_recientemente');
+    if (stored && this.jobs.length > 0) {
+      try {
+        const ids = JSON.parse(stored) as string[];
+        this.vistosRecientemente = ids
+          .map(id => this.jobs.find(j => String(j.id) === String(id)))
+          .filter(j => j !== undefined) as Job[];
+      } catch (e) {
+        console.error("Error leyendo historial", e);
+      }
+    }
+  }
+
+  private registrarVista(id: string | number) {
+    const strId = String(id);
+    let historial: string[] = [];
+    const stored = localStorage.getItem('chambee_vistos_recientemente');
+    if (stored) {
+      try {
+        historial = JSON.parse(stored);
+      } catch (e) {
+        historial = [];
+      }
+    }
+    
+    // Remover si ya existe para pasarlo al inicio
+    historial = historial.filter(itemId => itemId !== strId);
+    
+    // Agregar al inicio
+    historial.unshift(strId);
+    
+    // Mantener un máximo de 10 elementos
+    if (historial.length > 10) {
+      historial = historial.slice(0, 10);
+    }
+    
+    localStorage.setItem('chambee_vistos_recientemente', JSON.stringify(historial));
+  }
+  // ---------------------------
+
   irAlPerfil() {
     this.menuOpen = false;
     this.router.navigate(['/perfil-postulante']);
@@ -255,12 +304,14 @@ ngOnInit() {
 
   openJob(id?: string | number) {
     if (id) {
+      this.registrarVista(id);
       this.router.navigate(['/job', id]);
     }
   }
 
   openFeaturedJob(id?: string | number) {
     if (id) {
+      this.registrarVista(id);
       this.router.navigate(['/job', id]);
     }
   }
@@ -316,12 +367,12 @@ ngOnInit() {
     this.menuOpen = false;
   }
 
- @HostListener('document:click', ['$event'])
-onDocumentClick(_event: Event) {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(_event: Event) {
     if (this.notificationsOpen) {
       this.notificationsOpen = false;
     }
-  if (this.menuServicioAbierto !== null) {
+    if (this.menuServicioAbierto !== null) {
       this.menuServicioAbierto = null;
     }
   }
@@ -453,12 +504,13 @@ onDocumentClick(_event: Event) {
       modal.style.display = 'none';
     }
   }
+
   toggleMenuServicio(index: number, event: Event) {
     event.stopPropagation(); 
     this.menuServicioAbierto = this.menuServicioAbierto === index ? null : index;
   }
 
-editarServicio(index: number) {
+  editarServicio(index: number) {
     const servicioSeleccionado = this.visibleServices[index];
     const id = servicioSeleccionado.id_servicio || servicioSeleccionado.id;
     
@@ -476,14 +528,11 @@ editarServicio(index: number) {
       return;
     }
 
-    // Usamos HttpClient directo porque no sé si lo tienes en api.service
-    // Asegúrate de enviar el token
     const token = localStorage.getItem('token');
     const headers = { 'Authorization': `Bearer ${token}` };
 
     this.http.delete(`http://localhost:3000/servicios/${id}`, { headers }).subscribe({
       next: () => {
-        // Borramos el servicio de las listas visuales
         this.services = this.services.filter(s => (s.id_servicio || s.id) !== id);
         this.menuServicioAbierto = null; 
         this.mostrarModalExito('El servicio ha sido eliminado correctamente.');

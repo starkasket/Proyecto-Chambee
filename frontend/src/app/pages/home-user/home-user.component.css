@@ -540,6 +540,30 @@ display: -webkit-box;
   text-align: center;
 }
 
+/* Vistos recientemente - Scroll horizontal */
+.jobs-horizontal-scroll {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+}
+
+.jobs-horizontal-scroll .job-card {
+  min-width: 240px;
+  max-width: 240px;
+  flex: 0 0 auto;
+}
+
+.jobs-horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.jobs-horizontal-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border-soft);
+  border-radius: 4px;
+}
+
 /* Boton centrado para mostrar mas empleos. */
 .jobs-more {
   display: flex;

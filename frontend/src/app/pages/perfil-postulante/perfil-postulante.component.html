@@ -193,9 +193,9 @@
             (click)="setActiveTab('favoritos')">
             Mis favoritos <span class="tab-count">{{ favoritos.length || 0 }}</span>
           </button>
-          <button class="tab" type="button" [class.active]="activeTab === 'recomendados'"
-            (click)="setActiveTab('recomendados')">
-            Recomendados <span class="tab-count">{{ recomendados.length || 0 }}</span>
+          <button class="tab" type="button" [class.active]="activeTab === 'historial'"
+            (click)="setActiveTab('historial')">
+            Historial <span class="tab-count">{{ vistosRecientemente.length || 0 }}</span>
           </button>
         </div>
       </div>
@@ -262,25 +262,29 @@
             </div>
           </ng-container>
 
-          <ng-container *ngSwitchCase="'recomendados'">
+          <ng-container *ngSwitchCase="'historial'">
             <div class="section-head">
-              <h3>Sugerencias para tu perfil</h3>
+              <h3>Historial de vacantes vistas</h3>
             </div>
 
-            <div class="announcements-row">
-              <article class="announcement-card compact" *ngFor="let rec of recomendados">
+            <div *ngIf="vistosRecientemente.length === 0" class="alert alert-info"
+              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+              Aún no tienes un historial de vacantes vistas recientemente.
+            </div>
+
+            <div class="announcements-row" *ngIf="vistosRecientemente.length > 0">
+              <article class="announcement-card" *ngFor="let job of vistosRecientemente" (click)="verVacante(job.id)"
+                role="button" tabindex="0">
+                <img [src]="job.imagen" alt="Cover" />
                 <div class="announcement-copy">
                   <div class="card-top">
-                    <strong>{{ rec.empresa }}</strong>
-                    <span class="stars" style="color: #28a745; font-size: 0.8rem;">Coincidencia Alta</span>
+                    <strong class="vacancy-entreprise">{{ job.empresa }}</strong>
                   </div>
-                  <p class="vacancy-title">{{ rec.vacante }}</p>
-                  <p class="meta">{{ rec.ubicacion }}</p>
+                  <p class="vacancy-title">{{ job.vacante }}</p>
+                  <p class="vacancy-meta">{{ job.ubicacion }}</p>
+                  <p class="vacancy-description">{{ job.resumen }}</p>
                 </div>
               </article>
-            </div>
-            <div class="section-footer">
-              <button class="see-more" type="button">Explorar más ofertas</button>
             </div>
           </ng-container>
 
@@ -288,7 +292,6 @@
       </div>
     </section>
   </main>
-  <!-- Solo para postulantes, no se muestra a empleadores -->
   <button *ngIf="!isEmployerView" class="fab-create" type="button" (click)="buscarEmpleos()"
     aria-label="Buscar empleos">
     <span class="fab-plus"><i class="bi bi-search"></i></span>

@@ -61,7 +61,7 @@ interface NotificationItem {
   read: boolean;
 }
 
-type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'recomendados';
+type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'historial';
 
 @Component({
   selector: 'app-perfil-postulante',
@@ -97,7 +97,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   postulaciones: PostulanteApplication[] = [];
   favoritos: PostulanteFavorites[] = [];
-  recomendados: PostulanteFavorites[] = [];
+  vistosRecientemente: PostulanteFavorites[] = [];
 
   notifications: NotificationItem[] = [
     { id: 1, title: '¡Bienvenido!', message: 'Tu perfil está listo.', time: 'Hace 1 min', read: false }
@@ -189,6 +189,7 @@ export class PerfilPostulanteComponent implements OnInit {
     });
 
     this.cargarFavoritos();
+    this.cargarHistorial();
     this.checkMobile();
   }
 
@@ -332,6 +333,46 @@ export class PerfilPostulanteComponent implements OnInit {
         this.favoritos = [];
       }
     });
+  }
+
+  private cargarHistorial() {
+    const stored = localStorage.getItem('chambee_vistos_recientemente');
+    if (!stored) {
+      this.vistosRecientemente = [];
+      return;
+    }
+    
+    try {
+      const ids = JSON.parse(stored) as string[];
+      if (ids.length === 0) return;
+
+      this.api.obtenerAnunciosPublicos().subscribe({
+        next: (anuncios: any[]) => {
+          if (!anuncios) return;
+          
+          const historyJobs = ids.map(id => anuncios.find(a => String(a.id_anuncio) === String(id)))
+                                 .filter(a => a !== undefined);
+
+          this.vistosRecientemente = historyJobs.map(anuncio => ({
+            id: anuncio.id_anuncio,
+            empresa: anuncio.nombre_empresa || 'Empresa Confidencial',
+            estado: 'Activa',
+            ubicacion: `${anuncio.ciudad || ''}, ${anuncio.estado || ''}`.replace(/^, | ,|, $/g, '').trim(),
+            fecha: anuncio.fecha_publicacion ? new Date(anuncio.fecha_publicacion).toLocaleDateString('es-MX') : 'Reciente',
+            candidatos: anuncio.vistas || 0,
+            vacante: anuncio.titulo,
+            resumen: anuncio.descripcion,
+            imagen: anuncio.foto_empresa || 'assets/LogoChambee.png'
+          }));
+        },
+        error: () => {
+          this.vistosRecientemente = [];
+        }
+      });
+    } catch (e) {
+      console.error("Error leyendo historial", e);
+      this.vistosRecientemente = [];
+    }
   }
 
   logout() {
