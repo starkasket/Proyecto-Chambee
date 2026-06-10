@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
@@ -27,6 +28,10 @@ interface PostulanteProfile {
   foto_perfil?: string;
   archivo_cv?: string;
   descripcion?: string;
+  promedio_valoracion?: number;
+  total_valoraciones?: number;
+  valoracion_propia?: number | null;
+  valoraciones_recibidas?: any[];
 }
 
 interface PostulanteApplication {
@@ -66,7 +71,7 @@ type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'historial';
 @Component({
   selector: 'app-perfil-postulante',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './perfil-postulante.component.html',
   styleUrls: ['./perfil-postulante.component.css']
 })
@@ -98,6 +103,14 @@ export class PerfilPostulanteComponent implements OnInit {
   postulaciones: PostulanteApplication[] = [];
   favoritos: PostulanteFavorites[] = [];
   vistosRecientemente: PostulanteFavorites[] = [];
+
+  // Variables para valoración
+  ratingEnviando = false;
+  ratingExito = '';
+  ratingError = '';
+  nuevoComentario = '';
+  ratingSeleccionado = 0;
+  ratingHover = 0;
 
   notifications: NotificationItem[] = [
     { id: 1, title: '¡Bienvenido!', message: 'Tu perfil está listo.', time: 'Hace 1 min', read: false }
@@ -293,6 +306,9 @@ export class PerfilPostulanteComponent implements OnInit {
     this.api.obtenerPerfilPostulante(id).subscribe({
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
+        if (perfilDb && perfilDb.valoracion_propia) {
+          this.ratingSeleccionado = perfilDb.valoracion_propia;
+        }
 
         this.error = '';
         this.cargando = false;
@@ -461,4 +477,63 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
 
   }
 
+<<<<<<< HEAD
 }
+=======
+  setRating(puntuacion: number): void {
+    this.ratingSeleccionado = puntuacion;
+  }
+
+  setHover(puntuacion: number): void {
+    this.ratingHover = puntuacion;
+  }
+
+  getStarsArray(promedio: number = 0): string[] {
+    const stars: string[] = [];
+    const roundPromedio = Math.round(promedio * 2) / 2;
+    
+    for (let i = 1; i <= 5; i++) {
+      if (i <= roundPromedio) {
+        stars.push('full');
+      } else if (i - 0.5 === roundPromedio) {
+        stars.push('half');
+      } else {
+        stars.push('empty');
+      }
+    }
+    return stars;
+  }
+
+  enviarCalificacion(): void {
+    if (!this.ratingSeleccionado) {
+      this.ratingError = 'Por favor, selecciona una calificación (estrellas) antes de enviar.';
+      return;
+    }
+
+    this.ratingEnviando = true;
+    this.ratingExito = '';
+    this.ratingError = '';
+
+    this.api.calificarPostulante(this.selectedPerfilId, this.ratingSeleccionado, this.nuevoComentario).subscribe({
+      next: (res: any) => {
+        this.ratingEnviando = false;
+        this.ratingExito = '¡Calificación registrada con éxito!';
+        
+        if (this.perfil) {
+          this.perfil.promedio_valoracion = res.promedio_valoracion;
+          this.perfil.total_valoraciones = res.total_valoraciones;
+          this.perfil.valoracion_propia = this.ratingSeleccionado;
+          this.perfil.valoraciones_recibidas = res.valoraciones_recibidas;
+        }
+        this.nuevoComentario = '';
+      },
+      error: (err: any) => {
+        this.ratingEnviando = false;
+        this.ratingError = err.error?.error || 'Error al enviar la calificación.';
+        console.error('Error al calificar postulante:', err);
+      }
+    });
+  }
+
+}
+>>>>>>> 33f9f088180a9e0f10acb897a1479476852e2848

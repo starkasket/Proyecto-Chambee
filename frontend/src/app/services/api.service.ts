@@ -129,6 +129,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/postulantes/${idPostulante}`, this.getHeaders());
   }
 
+  calificarPostulante(idPostulante: string, puntuacion: number, comentario?: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/postulantes/${idPostulante}/valoracion`, { puntuacion, comentario }, this.getHeaders());
+  }
+
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');
   }

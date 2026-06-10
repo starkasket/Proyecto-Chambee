@@ -94,6 +94,19 @@
               <h2>{{ perfil.nombre_postulante }} {{ perfil.apellido_paterno_postulante }}</h2>
               <p class="subtitle">Candidato en Chambee</p>
               <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
+              
+              <!-- Promedio de Calificación con estrellas -->
+              <div class="profile-rating-summary mt-2 d-flex align-items-center gap-2">
+                <div class="stars-display d-flex align-items-center">
+                  <ng-container *ngFor="let starState of getStarsArray(perfil.promedio_valoracion)">
+                    <i *ngIf="starState === 'full'" class="bi bi-star-fill star-icon yellow-star"></i>
+                    <i *ngIf="starState === 'half'" class="bi bi-star-half star-icon yellow-star"></i>
+                    <i *ngIf="starState === 'empty'" class="bi bi-star star-icon empty-star"></i>
+                  </ng-container>
+                </div>
+                <span class="rating-number fw-semibold">{{ perfil.promedio_valoracion || 0 | number:'1.1-1' }}</span>
+                <span class="rating-count text-muted">({{ perfil.total_valoraciones || 0 }} {{ (perfil.total_valoraciones === 1) ? 'calificación' : 'calificaciones' }})</span>
+              </div>
             </div>
           </div>
           <button *ngIf="!isEmployerView" class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
@@ -179,6 +192,100 @@
   </div>
 </div>
 
+      </article>
+
+      <!-- Sección para calificar al postulante (solo para empleadores) -->
+      <article *ngIf="isEmployerView" class="rating-feedback-card mt-4">
+        <div class="card-header-premium">
+          <h3>Calificar a este Candidato</h3>
+          <p class="subtitle-premium">Comparte tu valoración y experiencia sobre este postulante con otras empresas.</p>
+        </div>
+        <div class="card-body-premium">
+          <!-- Estrellas Interactivas -->
+          <div class="interactive-stars-row">
+            <span class="rating-label">Tu Calificación:</span>
+            <div class="stars-interactive d-flex gap-2">
+              <button 
+                *ngFor="let starIndex of [1, 2, 3, 4, 5]" 
+                type="button" 
+                class="star-btn" 
+                (click)="setRating(starIndex)"
+                (mouseenter)="setHover(starIndex)"
+                (mouseleave)="setHover(0)"
+                [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'"
+              >
+                <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
+              </button>
+            </div>
+            <span *ngIf="ratingSeleccionado > 0" class="rating-text fw-semibold ms-2">
+              {{ ratingSeleccionado }} {{ ratingSeleccionado === 1 ? 'estrella' : 'estrellas' }}
+            </span>
+          </div>
+
+          <!-- Comentario Opcional -->
+          <div class="comment-field mt-3">
+            <label for="comentario-empleador" class="form-label fw-medium">Escribe una opinión (opcional):</label>
+            <textarea 
+              id="comentario-empleador" 
+              class="form-control premium-textarea" 
+              rows="3" 
+              placeholder="Ej. Excelente comunicación, actitud proactiva y muy profesional en la entrevista..." 
+              [(ngModel)]="nuevoComentario"
+            ></textarea>
+          </div>
+
+          <!-- Acciones -->
+          <div class="actions-row mt-3 d-flex align-items-center gap-3">
+            <button 
+              type="button" 
+              class="btn btn-premium-submit" 
+              [disabled]="ratingEnviando || ratingSeleccionado === 0"
+              (click)="enviarCalificacion()"
+            >
+              {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
+            </button>
+            <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
+            <span *ngIf="ratingError" class="text-danger small">{{ ratingError }}</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sección de opiniones (visible para todos) -->
+      <article class="reviews-list-card mt-4">
+        <div class="card-header-premium">
+          <h3>Opiniones de Empresas</h3>
+          <p class="subtitle-premium">Historial de calificaciones y comentarios recibidos por este candidato.</p>
+        </div>
+        <div class="card-body-premium">
+          <div *ngIf="!perfil.valoraciones_recibidas || perfil.valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
+            <i class="bi bi-chat-left-heart display-6 text-muted"></i>
+            <p class="mt-2 text-muted">Este postulante aún no ha recibido calificaciones ni comentarios de empresas.</p>
+          </div>
+
+          <div *ngIf="perfil.valoraciones_recibidas && perfil.valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
+            <div *ngFor="let rev of perfil.valoraciones_recibidas" class="review-item-premium p-3">
+              <div class="review-header d-flex justify-content-between align-items-start">
+                <div class="reviewer-info d-flex align-items-center gap-2">
+                  <div class="reviewer-logo-box">
+                    <img [src]="rev.foto_empresa || 'assets/LogoChambee.png'" alt="Logo Empresa" class="reviewer-logo" />
+                  </div>
+                  <div>
+                    <h4 class="reviewer-name mb-0">{{ rev.nombre_empresa }}</h4>
+                    <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
+                  </div>
+                </div>
+                <div class="review-stars-display d-flex gap-1">
+                  <i *ngFor="let s of [1,2,3,4,5]" 
+                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
+                  ></i>
+                </div>
+              </div>
+              <div *ngIf="rev.comentario" class="review-comment mt-2">
+                <p class="mb-0">{{ rev.comentario }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </article>
     </section>
 
