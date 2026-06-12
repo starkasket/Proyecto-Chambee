@@ -7,6 +7,38 @@
         }}</span>
     </div>
 
+
+<div id="modalSaludo" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalAceptar" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Adiós</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
     <div class="search-container flex-grow-1 mx-4">
       <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
     </div>
@@ -86,25 +118,28 @@
         <div class="company-details-grid">
           <div class="detail-col">
             <h3>Datos de contacto</h3>
-            <p><strong>Numero de telefono:</strong><br />{{ perfil.telefono }}</p>
-            <p><strong>Correo electronico:</strong><br />{{ perfil.correo_electronico }}</p>
+            <p><strong>Número de telófono:</strong><br />{{ perfil.telefono }}</p>
+            <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
             <p><strong>RFC:</strong><br />{{ perfil.rfc }}</p>
-            <p><strong>Codigo postal:</strong><br />{{ perfil.codigo_postal }}</p>
+            <p><strong>Código postal:</strong><br />{{ perfil.codigo_postal }}</p>
           </div>
 
           <div class="detail-col">
-            <h3>Informacion general</h3>
-            <p><strong>Pais:</strong> {{ perfil.pais }}</p>
-            <p><strong>Direccion:</strong><br />{{ direccionCompleta }}</p>
+            <h3>Información general</h3>
+            <p><strong>País:</strong> {{ perfil.pais }}</p>
+            <p><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
           </div>
 
           <div class="detail-col">
-            <h3>Descripcion</h3>
-            <p>{{ descripcionVisible }}</p>
+            <h3>Descripción</h3>
+            <p class="employer-desc">{{ descripcionVisible }}</p>
             <button type="button" class="link-btn" *ngIf="perfil.descripcion.length > 190"
               (click)="toggleDescripcion()">
-              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver mas' }}
+              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver más' }}
             </button>
+
+            <button class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
+
           </div>
         </div>
       </article>
@@ -158,7 +193,7 @@
               </article>
             </div>
             <div class="section-footer">
-              <button class="see-more" type="button">Ver mas</button>
+              <button class="see-more" type="button">Ver más</button>
             </div>
           </ng-container>
 

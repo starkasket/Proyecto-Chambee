@@ -8,6 +8,56 @@
       <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
     </div>
 
+  
+
+<div id="modalAlerta" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4" (click)="reportarPerfil()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalSaludo" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalAceptar" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Lamentamos verte partir!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
     <div class="nav-buttons d-flex align-items-center gap-3">
       <div class="notification-wrapper">
         <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
@@ -109,6 +159,7 @@
               </div>
             </div>
           </div>
+          <button *ngIf="isEmployerView" class="report-btn" type="button" (click)="abrirModal()">Reportar cuenta</button>
           <button *ngIf="!isEmployerView" class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
         </div>
 
@@ -175,6 +226,8 @@
     <p><strong>País:</strong> {{ perfil.pais }}</p>
     <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
     <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
+    <button *ngIf="!isEmployerView" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
+
   </div>
 </div>
 

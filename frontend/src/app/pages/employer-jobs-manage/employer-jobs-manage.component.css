@@ -468,6 +468,13 @@ width: 85%;
   color: #b91c1c;
 }
 
+.warn-btn{
+  color: #c98332;
+}
+
+.draft-btn{
+ color:  #b45309;
+}
 .primary-btn {
   background: #f4bf00;
   color: #111111;

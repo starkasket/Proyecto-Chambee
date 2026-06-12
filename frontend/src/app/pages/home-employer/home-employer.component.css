@@ -412,6 +412,19 @@ body {
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: var(--shadow-card);
+  height: 100%;
+}
+
+.applicant-content {
+  flex: 1;
+}
+
+.applicant-name{
+  display: -webkit-box; 
+-webkit-line-clamp: 1; 
+-webkit-box-orient: vertical;
+overflow: hidden; 
+width: 90%;
 }
 
 .applicant-card:hover {
@@ -492,6 +505,7 @@ body {
   color: var(--text-muted);
 }
 
+
 .applicant-contact i {
   margin-right: 6px;
   color: var(--text-secondary);
@@ -516,6 +530,9 @@ body {
 .applicant-actions {
   display: flex;
   gap: 10px;
+  width: 100%;
+  margin-top: auto;
+
 }
 
 .action-btn {
