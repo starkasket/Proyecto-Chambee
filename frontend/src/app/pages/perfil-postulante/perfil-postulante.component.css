@@ -487,6 +487,7 @@
   display: -webkit-box; 
 -webkit-line-clamp: 3; 
 -webkit-box-orient: vertical;
+  line-clamp: 3;
 overflow: hidden; 
 width: 90%;
 }
@@ -501,6 +502,7 @@ width: 90%;
   display: -webkit-box; 
 -webkit-line-clamp: 3; 
 -webkit-box-orient: vertical;
+  line-clamp: 3;
 overflow: hidden; 
 width: 90%;
 }
@@ -509,6 +511,7 @@ width: 90%;
   display: -webkit-box; 
 -webkit-line-clamp: 3; 
 -webkit-box-orient: vertical;
+  line-clamp: 3;
 overflow: hidden; 
 width: 90%;
 }
@@ -1028,14 +1031,10 @@ width: 90%;
 :host-context(body.dark-theme) .cv-visibility-status--on {
   background: rgba(34, 197, 94, 0.18);
   color: #4ade80;
-<<<<<<< HEAD
-}
-=======
 }
 
-/* ==========================================
-   ESTILOS DE CALIFICACIÓN Y OPINIONES (STARS)
-   ========================================== */
+
+
 
 .yellow-star, .active-star {
   color: #fbbf24 !important;
@@ -1254,4 +1253,3 @@ width: 90%;
   color: var(--text-secondary);
   white-space: pre-wrap;
 }
->>>>>>> 33f9f088180a9e0f10acb897a1479476852e2848

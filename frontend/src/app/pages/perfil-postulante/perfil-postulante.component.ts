@@ -477,9 +477,6 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
 
   }
 
-<<<<<<< HEAD
-}
-=======
   setRating(puntuacion: number): void {
     this.ratingSeleccionado = puntuacion;
   }
@@ -536,4 +533,3 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
   }
 
 }
->>>>>>> 33f9f088180a9e0f10acb897a1479476852e2848
