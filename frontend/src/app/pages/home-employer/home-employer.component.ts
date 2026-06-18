@@ -65,6 +65,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   hasUnreadNotifications = true;
   isDarkMode = false; // Manejo local temporal si no inyectas el ThemeService
 
+  
   currentSlide = 0;
   visibleCount = 8;
   maxVisible = 28;

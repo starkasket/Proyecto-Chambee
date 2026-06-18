@@ -85,6 +85,10 @@ export class PerfilPostulanteComponent implements OnInit {
   cvError = false;
   cvPublico = true;
   
+  modalMensaje = '';
+
+  
+
 // VARIABLE PARA LAS ETIQUETAS
   misEtiquetas: string[] = [];
 
@@ -275,6 +279,55 @@ export class PerfilPostulanteComponent implements OnInit {
     this.themeService.toggleTheme();
   }
 
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+  mostrarModalAceptar(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+  cerrarModalAceptar() {
+    const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+    mostrarModalEliminar(mensaje: string) {
+    const modal = document.getElementById('modalSaludo');
+    this.modalMensaje = mensaje;
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalEliminar() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
   get isDarkMode(): boolean {
     return this.themeService.isDarkMode();
   }
@@ -292,6 +345,31 @@ export class PerfilPostulanteComponent implements OnInit {
       return;
     }
     this.router.navigate(['/perfil-postulante/editar']);
+  }
+
+  reportarPerfil(){
+  
+  }
+
+  eliminarCuenta(){
+     this.api.eliminarPostulante().subscribe({
+    next: () => {
+      localStorage.removeItem('token');
+      this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.")
+      this.router.navigate(['/login']);
+    },
+    error: (err) => {
+      console.error(err);
+      alert('Ocurrió un error');
+    }
+  });
+  }
+
+  abrirModal(){
+      this.mostrarModal("¿Estás seguro de querer reportar este perfil?")        
+  }
+  abrirModalEliminar(){
+    this.mostrarModalEliminar("¿Estás seguro de querer eliminar tu cuenta?")
   }
 
   buscarEmpleos() {

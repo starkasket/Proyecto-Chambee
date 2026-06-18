@@ -404,6 +404,25 @@
   font-weight: 700;
   cursor: pointer;
   padding: 0;
+  align-self: center;
+   margin-top: auto;
+}
+
+
+.report-btn {
+  border: none;
+  background: #fbbf24;
+  color: var(--button-primary-text);
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.report-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(251, 191, 36, 0.28);
+  opacity: 0.96;
 }
 
 .announcements-shell {
@@ -448,6 +467,8 @@
   box-shadow: var(--shadow-soft);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
 .announcement-card:hover {
@@ -463,6 +484,9 @@
 
 .announcement-copy {
   padding: 10px;
+   display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .card-top {
@@ -522,6 +546,7 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .job-tag {
@@ -537,7 +562,6 @@
 
 .see-job-btn {
   width: 100%;
-  margin-top: 10px;
   border: none;
   background: var(--button-primary-bg);
   color: var(--button-primary-text);
@@ -545,6 +569,7 @@
   padding: 8px 12px;
   font-weight: 700;
   cursor: pointer;
+  margin-top: auto;
 }
 
 .empty-state {

@@ -77,6 +77,7 @@ export class EmployerProfileComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
   activeTab: ProfileSectionTab = 'anuncios';
+  modalMensaje = '';
 
   // Estos datos sirven como respaldo visual si la tabla `anuncios` aun no tiene registros.
   anuncios: EmployerAnnouncement[] = [
@@ -236,10 +237,13 @@ export class EmployerProfileComponent implements OnInit {
     if (!this.perfil?.descripcion) {
       return '';
     }
-    const limite = 190;
+    const limite = 100;
     if (this.mostrarDescripcionCompleta || this.perfil.descripcion.length <= limite) {
       return this.perfil.descripcion;
     }
+
+
+  
     return `${this.perfil.descripcion.slice(0, limite)}...`;
   }
 
@@ -356,5 +360,68 @@ export class EmployerProfileComponent implements OnInit {
       month: 'short',
       year: 'numeric'
     });
+  }
+
+  
+   eliminarCuenta(){
+     this.api.eliminarEmpleador().subscribe({
+    next: () => {
+      localStorage.removeItem('token');
+      this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.")
+      this.router.navigate(['/login']);
+    },
+    error: (err) => {
+      console.error(err);
+      alert('Ocurrió un error');
+    }
+  });
+  }
+
+
+  abrirModalEliminar(){
+    this.mostrarModalEliminar("¿Estás seguro de querer eliminar tu cuenta?")
+  }
+
+  
+  
+  mostrarModalAceptar(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+  cerrarModalAceptar() {
+    const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+    mostrarModalEliminar(mensaje: string) {
+    const modal = document.getElementById('modalSaludo');
+    this.modalMensaje = mensaje;
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalEliminar() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
 }

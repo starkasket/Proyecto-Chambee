@@ -53,6 +53,10 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos, this.getHeaders());
   }
 
+   eliminarEmpleador(){
+    return this.http.delete(`${this.apiUrl}/empleadores/eliminar-cuenta`);
+  }
+
   obtenerAnunciosEmpleador(idEmpleador: number | string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios`, this.getHeaders());
   }
@@ -127,6 +131,10 @@ export class ApiService {
 
   obtenerPerfilPostulante(idPostulante: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/postulantes/${idPostulante}`, this.getHeaders());
+  }
+
+  eliminarPostulante(){
+    return this.http.delete(`${this.apiUrl}/postulantes/eliminar-cuenta`);
   }
 
   calificarPostulante(idPostulante: string, puntuacion: number, comentario?: string): Observable<any> {

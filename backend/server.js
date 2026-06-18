@@ -85,11 +85,17 @@ const verifyToken = async (req, res, next) => {
     }
 
     const result = await pool.query(
-      `SELECT token_version FROM ${table} WHERE ${idField} = $1`, [decoded.id]
+      `SELECT token_version, estado_cuenta FROM ${table} WHERE ${idField} = $1`, [decoded.id]
     );
 
     if (!result.rows.length) {
       return res.status(401).json({ error: "Usuario no válido" });
+    }
+
+    if (result.rows[0].estado_cuenta === 'ELIMINADA') {
+      return res.status(401).json({
+      error: "Cuenta eliminada"
+    });
     }
 
     const currentVersion = result.rows[0].token_version;
@@ -233,9 +239,10 @@ app.post("/postulantes/registro", async (req, res) => {
     nombre_postulante, apellido_paterno_postulante,
     apellido_materno_postulante, correo_electronico, contrasena,
     fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle,
-    codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
+    codigo_postal, telefono, foto_perfil, curp, rfc
   } = req.body;
 
+  const estado_cuenta = 'ACTIVA';
   try {
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
@@ -246,7 +253,7 @@ app.post("/postulantes/registro", async (req, res) => {
       codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
-    RETURNING id_postulante AS id, nombre_postulante AS nombre, correo_electronico AS correo, estado_cuenta`;
+    RETURNING id_postulante AS id, nombre_postulante AS nombre, correo_electronico AS correo, estado_cuenta, token_version`;
 
     const values = [
       nombre_postulante, apellido_paterno_postulante,
@@ -293,6 +300,7 @@ app.post("/empleadores/registro", async (req, res) => {
     rfc, descripcion
   } = req.body;
 
+  const estado_cuenta = "ACTIVA";
   try {
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
@@ -302,7 +310,7 @@ app.post("/empleadores/registro", async (req, res) => {
       rfc, descripcion
     )
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-    RETURNING id_empleador AS id, nombre_empresa AS nombre, correo_electronico AS correo, estado`;
+    RETURNING id_empleador AS id, nombre_empresa AS nombre, correo_electronico AS correo, estado, token_version`;
 
     const values = [
       nombre_empresa, correo_electronico, hashedPassword, pais,
@@ -454,7 +462,8 @@ WHERE p.id_postulante = $1`;
           COUNT(v.id_valoracion)::int AS total_valoraciones
         FROM postulante_valoracion pv
         JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
-        WHERE pv.id_postulante = $1
+        JOIN empleador e ON e.id_empleador = pv.id_empleador
+        WHERE pv.id_postulante = $1 AND e.estado_cuenta = 'ACTIVA'
       `;
       const ratingsRes = await pool.query(ratingsQuery, [id]);
       const promedio_valoracion = parseFloat(ratingsRes.rows[0]?.promedio_valoracion || 0);
@@ -472,7 +481,7 @@ WHERE p.id_postulante = $1`;
         FROM postulante_valoracion pv
         JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
         JOIN empleador e ON pv.id_empleador = e.id_empleador
-        WHERE pv.id_postulante = $1
+        WHERE pv.id_postulante = $1 AND e.estado_cuenta = 'ACTIVA'
         ORDER BY v.fecha_valoracion DESC
       `;
       const reviewsRes = await pool.query(reviewsQuery, [id]);
@@ -524,7 +533,7 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       END AS archivo_cv
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
-    WHERE p.id_postulante = $1`;
+    WHERE p.id_postulante = $1 AND p.estado_cuenta = 'ACTIVA'`;
 
     const result = await pool.query(query, [id, esPropioPostulante]);
 
@@ -539,7 +548,8 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
         COUNT(v.id_valoracion)::int AS total_valoraciones
       FROM postulante_valoracion pv
       JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
-      WHERE pv.id_postulante = $1
+       JOIN empleador e ON e.id_empleador = pv.id_empleador
+        WHERE pv.id_postulante = $1 AND e.estado_cuenta = 'ACTIVA'
     `;
     const ratingsRes = await pool.query(ratingsQuery, [id]);
     const promedio_valoracion = parseFloat(ratingsRes.rows[0]?.promedio_valoracion || 0);
@@ -557,7 +567,7 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       FROM postulante_valoracion pv
       JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
       JOIN empleador e ON pv.id_empleador = e.id_empleador
-      WHERE pv.id_postulante = $1
+      WHERE pv.id_postulante = $1 AND e.estado_cuenta = 'ACTIVA'
       ORDER BY v.fecha_valoracion DESC
     `;
     const reviewsRes = await pool.query(reviewsQuery, [id]);
@@ -652,7 +662,8 @@ app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador")
         COUNT(v.id_valoracion)::int AS total_valoraciones
       FROM postulante_valoracion pv
       JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
-      WHERE pv.id_postulante = $1
+       JOIN empleador e ON e.id_empleador = pv.id_empleador
+        WHERE pv.id_postulante = $1 AND e.estado_cuenta = 'ACTIVA'
     `, [id]);
 
     const updatedReviewsRes = await pool.query(`
@@ -666,7 +677,7 @@ app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador")
       FROM postulante_valoracion pv
       JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
       JOIN empleador e ON pv.id_empleador = e.id_empleador
-      WHERE pv.id_postulante = $1
+      WHERE pv.id_postulante = $1 AND e.estado_cuenta = 'ACTIVA'
       ORDER BY v.fecha_valoracion DESC
     `, [id]);
 
@@ -705,6 +716,7 @@ app.get("/postulantes", verifyToken, authorizeRoles("empleador"), async (req, re
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
     ORDER BY p.fecha_registro DESC`);
+    /* WHERE estado_cuenta = 'ACTIVA' */
 
     const postulantes = result.rows.map((p) => ({
       ...p,
@@ -1000,6 +1012,7 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
       a.fecha_publicacion,
       a.estado_anuncio,
       a.vistas,
+      a.id_empleador,
       COUNT(po.id_postulacion) AS postulaciones_count,
       COALESCE(
         ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
@@ -1009,7 +1022,8 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
     LEFT JOIN postulacion po ON po.id_anuncio = a.id_anuncio
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
-    WHERE a.id_empleador = $1
+    LEFT JOIN empleador e ON e.id_empleador = a.id_empleador
+    WHERE a.id_empleador = $1 AND e.estado_cuenta = 'ACTIVA'
     AND a.estado_anuncio != 'ELIMINADO'
     GROUP BY a.id_anuncio
     ORDER BY a.fecha_publicacion DESC NULLS LAST`;
@@ -1052,7 +1066,7 @@ app.get("/empleadores/:id/postulaciones", verifyToken, authorizeRoles("empleador
     INNER JOIN postulante p ON p.id_postulante = po.id_postulante
     INNER JOIN anuncios a ON a.id_anuncio = po.id_anuncio
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
-    WHERE a.id_empleador = $1
+    WHERE a.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
     ORDER BY po.fecha_postulacion DESC`;
 
     const result = await pool.query(query, [id]);
@@ -1191,6 +1205,7 @@ app.get("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
         a.fecha_publicacion,
         a.estado_anuncio,
         a.vistas,
+        id_empleador,
         COALESCE(
           ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL),
           ARRAY[]::VARCHAR[]
@@ -1198,7 +1213,8 @@ app.get("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
       FROM anuncios a
       LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
       LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
-      WHERE a.id_empleador = $1 AND a.id_anuncio = $2
+      LEFT JOIN empleador e ON e.id_empleador = a.id_empleador
+      WHERE a.id_empleador = $1 AND a.id_anuncio = $2 AND e.estado_cuenta = 'ACTIVA'
       GROUP BY a.id_anuncio`,
       [id, anuncioId]
     );
@@ -1397,7 +1413,7 @@ app.get("/anuncios", async (_req, res) => {
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
-    WHERE a.estado_anuncio = 'ACTIVO'
+    WHERE a.estado_anuncio = 'ACTIVO' AND e.estado_cuenta = 'ACTIVA'
     GROUP BY a.id_anuncio, e.nombre_empresa, e.descripcion, e.foto_perfil
     ORDER BY a.fecha_publicacion DESC NULLS LAST`;
 
@@ -1426,7 +1442,7 @@ app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"
       FROM empleador e
       INNER JOIN anuncios a ON a.id_empleador = e.id_empleador
       WHERE e.id_empleador = $1
-        AND a.estado_anuncio = 'ACTIVO'
+        AND a.estado_anuncio = 'ACTIVO' AND e.estado_cuenta = 'ACTIVA'
       GROUP BY e.id_empleador, e.nombre_empresa, e.estado, e.ciudad, e.calle, e.descripcion, e.foto_perfil`,
       [id]
     );
@@ -1544,7 +1560,7 @@ app.get("/favoritos", verifyToken, authorizeRoles("postulante"), async (req, res
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
-    WHERE f.id_postulante = $1
+    WHERE f.id_postulante = $1 and e.estado_cuenta = 'ACTIVA'
     GROUP BY f.id_favoritos, a.id_anuncio, e.nombre_empresa, e.descripcion, e.foto_perfil
     ORDER BY f.fecha_guardado DESC`;
 
@@ -1625,7 +1641,7 @@ app.delete("/anuncios/:idAnuncio/favoritos", verifyToken, authorizeRoles("postul
   }
 });
 
-app.get("/mi-etiquetas", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+app.get("/mi-etiquetas", verifyToken, async (req, res) => {
 
   try {
     await ensureCategoriasBase();
@@ -1695,7 +1711,7 @@ app.post("/login", async (req, res) => {
   try {
     let usuario = null;
     const postulante = await pool.query(
-      `SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, token_version, 'postulante' AS rol
+      `SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, token_version, estado_cuenta, 'postulante' AS rol
        FROM postulante WHERE correo_electronico = $1`,
       [correo_electronico]
     );
@@ -1704,7 +1720,7 @@ app.post("/login", async (req, res) => {
 
     if (!usuario) {
       const empleador = await pool.query(
-        `SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, token_version, 'empleador' AS rol
+        `SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, token_version, estado_cuenta, 'empleador' AS rol
          FROM empleador WHERE correo_electronico = $1`,
         [correo_electronico]
       );
@@ -1724,6 +1740,10 @@ app.post("/login", async (req, res) => {
 
     if (!usuario) {
       return res.status(401).json({ error: "Usuario no encontrado" });
+    }
+
+    if (usuario.estado_cuenta === 'ELIMINADA') {
+      return res.status(401).json({ error: "Usuario no encontrado" }); 
     }
 
     const validPassword = await bcrypt.compare(contrasena, usuario.contrasena);
@@ -1799,6 +1819,53 @@ app.post("/api/support", async (req, res) => {
   }
 });
 
+
+app.delete('/postulantes/eliminar-cuenta', verifyToken, async (req, res) => {  
+    try {
+        const id = req.user.id;
+        const resultado = await pool.query(
+            `UPDATE postulante
+             SET estado_cuenta = 'ELIMINADA',
+                 token_version = token_version + 1
+             WHERE id_postulante = $1`,
+            [id]
+        );
+
+        res.status(200).json({
+            mensaje: 'Cuenta eliminada correctamente'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            mensaje: 'Error al eliminar la cuenta'
+        });
+    }
+});
+
+app.delete('/empleadores/eliminar-cuenta', verifyToken, async (req, res) => {  
+    try {
+        const id = req.user.id;
+        const resultado = await pool.query(
+            `UPDATE empleador
+             SET estado_cuenta = 'ELIMINADA',
+                 token_version = token_version + 1
+             WHERE id_empleador = $1`,
+            [id]
+        );
+
+        res.status(200).json({
+            mensaje: 'Cuenta eliminada correctamente'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            mensaje: 'Error al eliminar la cuenta'
+        });
+    }
+});
+
 app.post("/auth/forgot-password", async (req, res) => {
   const { correo_electronico } = req.body;
 
@@ -1807,8 +1874,8 @@ app.post("/auth/forgot-password", async (req, res) => {
     return res.json({ message: "Modo desarrollo: email no enviado" });
   }
 
-  const postulante = await pool.query("SELECT * FROM postulante WHERE correo_electronico = $1", [correo_electronico]);
-  const empleador = await pool.query("SELECT * FROM empleador WHERE correo_electronico = $1", [correo_electronico]);
+  const postulante = await pool.query("SELECT * FROM postulante WHERE correo_electronico = $1 AND estado_cuenta = 'ACTIVA'", [correo_electronico]);
+  const empleador = await pool.query("SELECT * FROM empleador WHERE correo_electronico = $1 AND estado_cuenta = 'ACTIVA'", [correo_electronico]);
   const admin = await pool.query("SELECT * FROM administrador WHERE correo_electronico = $1", [correo_electronico]);
 
   const user = postulante.rows[0] || empleador.rows[0] || admin.rows[0];
@@ -2063,8 +2130,10 @@ app.get("/servicios/:autorId", verifyToken, async (req, res) => {
 app.get("/servicios-publicos", async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM servicios WHERE es_borrador = false ORDER BY fecha_creacion DESC`
+      `SELECT s .* FROM servicios s INNER JOIN postulante p ON p.id_postulante = s.autor_id WHERE s.es_borrador = false AND p.estado_cuenta='ACTIVA' ORDER BY fecha_creacion DESC`
     );
+
+    
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -2142,6 +2211,9 @@ app.patch("/servicios/:id/publicar", verifyToken, authorizeRoles("postulante"), 
     res.status(500).json({ error: "Error al publicar el servicio" });
   }
 });
+
+
+
 
 /* ===== MIGRACIÓN DE BASE DE DATOS DINÁMICA ===== */
 async function ensureDatabaseSchema() {

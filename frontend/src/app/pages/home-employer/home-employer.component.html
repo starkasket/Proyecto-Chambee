@@ -133,16 +133,16 @@
     <div class="jobs-grid" style="display: grid; gap: 1rem;">
       <div class="applicant-card p-3" *ngFor="let applicant of allApplicants | slice:0:visibleCount"
            style="background-color: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-soft);">
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3 applicant-content">
           <img [src]="applicant.profilePic" [alt]="applicant.name" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
 
           <div class="flex-grow-1">
             <div class="d-flex justify-content-between align-items-start">
               <div>
-                <h4 style="font-size: 1.1rem; margin-bottom: 2px; color: var(--text-color);">{{ applicant.name }}</h4>
-                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 5px;">Postulo a: <strong>{{ applicant.appliedFor }}</strong></p>
+                <h4 style="font-size: 1.1rem; margin-bottom: 2px; color: var(--text-color);" class="applicant-name">{{ applicant.name }}</h4>
+                <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 5px;">Postuló a: <strong>{{ applicant.appliedFor }}</strong></p>
               </div>
-              <small class="text-muted">{{ applicant.dateApplied }}</small>
+              <small class="date-muted">{{ applicant.dateApplied }}</small>
             </div>
             <p style="font-size: 0.9rem; color: var(--text-color); margin-bottom: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2; overflow: hidden;">
               {{ applicant.description }}
@@ -156,10 +156,10 @@
 
         <hr class="my-3" style="border-color: var(--border-soft);">
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 ">
+        <!--   <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
             {{ applicant.skills }}
-          </div>
+          </div> -->
           <div class="applicant-actions">
             <button class="action-btn outline" (click)="viewProfile(applicant)">Perfil</button>
             <button *ngIf="applicant.cvUrl"  class="action-btn solid" (click)="viewCV(applicant)">Ver CV</button>
