@@ -454,6 +454,42 @@ WHERE p.id_postulante = $1`;
 
     let responseData = result.rows[0];
 
+    if (rol === "empleador") {
+      const ratingsQuery = `
+        SELECT
+          COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion,
+          COUNT(v.id_valoracion)::int AS total_valoraciones
+        FROM empleador_valoracion ev
+        JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+        JOIN postulante p ON p.id_postulante = ev.id_postulante
+        WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+      `;
+      const ratingsRes = await pool.query(ratingsQuery, [id]);
+
+      const reviewsQuery = `
+        SELECT
+          v.id_valoracion,
+          v.puntuacion,
+          v.comentario,
+          v.fecha_valoracion,
+          p.nombre_postulante,
+          p.foto_perfil AS foto_postulante
+        FROM empleador_valoracion ev
+        JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+        JOIN postulante p ON ev.id_postulante = p.id_postulante
+        WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+        ORDER BY v.fecha_valoracion DESC
+      `;
+      const reviewsRes = await pool.query(reviewsQuery, [id]);
+
+      responseData = {
+        ...responseData,
+        promedio_valoracion: parseFloat(ratingsRes.rows[0]?.promedio_valoracion || 0),
+        total_valoraciones: ratingsRes.rows[0]?.total_valoraciones || 0,
+        valoraciones_recibidas: reviewsRes.rows
+      };
+    }
+
     if (rol === "postulante") {
       // Obtener estadísticas de valoraciones del postulante
       const ratingsQuery = `
@@ -1478,13 +1514,157 @@ app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"
       [id]
     );
 
+    const ratingsRes = await pool.query(`
+      SELECT
+        COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion,
+        COUNT(v.id_valoracion)::int AS total_valoraciones
+      FROM empleador_valoracion ev
+      JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+      JOIN postulante p ON p.id_postulante = ev.id_postulante
+      WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+    `, [id]);
+
+    const reviewsRes = await pool.query(`
+      SELECT
+        v.id_valoracion,
+        v.puntuacion,
+        v.comentario,
+        v.fecha_valoracion,
+        p.nombre_postulante,
+        p.foto_perfil AS foto_postulante
+      FROM empleador_valoracion ev
+      JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+      JOIN postulante p ON ev.id_postulante = p.id_postulante
+      WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+      ORDER BY v.fecha_valoracion DESC
+    `, [id]);
+
+    let valoracion_propia = null;
+    const ownRatingRes = await pool.query(`
+      SELECT v.puntuacion
+      FROM empleador_valoracion ev
+      JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+      WHERE ev.id_empleador = $1 AND ev.id_postulante = $2
+    `, [id, req.user.id]);
+    if (ownRatingRes.rows.length > 0) {
+      valoracion_propia = ownRatingRes.rows[0].puntuacion;
+    }
+
     res.json({
-      perfil: perfilResult.rows[0],
-      anuncios: anunciosResult.rows
+      perfil: {
+        ...perfilResult.rows[0],
+        promedio_valoracion: parseFloat(ratingsRes.rows[0]?.promedio_valoracion || 0),
+        total_valoraciones: ratingsRes.rows[0]?.total_valoraciones || 0,
+        valoracion_propia
+      },
+      anuncios: anunciosResult.rows,
+      valoraciones_recibidas: reviewsRes.rows
     });
   } catch (err) {
     console.error("Error en GET /empresas/:id/perfil-publico:", err);
     res.status(500).json({ error: "Error al obtener el perfil publico de la empresa" });
+  }
+});
+
+/* ===== AGREGAR VALORACIÓN A EMPLEADOR (postulante → empleador) ===== */
+app.post("/empleadores/:id/valoracion", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { id } = req.params;
+  const { puntuacion, comentario } = req.body;
+  const id_postulante = req.user.id;
+
+  if (puntuacion !== undefined && (puntuacion < 1 || puntuacion > 5)) {
+    return res.status(400).json({ error: "La puntuación debe estar entre 1 y 5 estrellas" });
+  }
+
+  if (!puntuacion && !comentario?.trim()) {
+    return res.status(400).json({ error: "Debes enviar una calificación o un comentario" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const checkQuery = `
+      SELECT ev.id_valoracion
+      FROM empleador_valoracion ev
+      WHERE ev.id_empleador = $1 AND ev.id_postulante = $2
+    `;
+    const checkRes = await client.query(checkQuery, [id, id_postulante]);
+
+    let id_valoracion;
+    if (checkRes.rows.length > 0) {
+      id_valoracion = checkRes.rows[0].id_valoracion;
+      const updateFields = [];
+      const updateValues = [];
+      let paramIndex = 1;
+
+      if (puntuacion) {
+        updateFields.push(`puntuacion = $${paramIndex++}`);
+        updateValues.push(puntuacion);
+      }
+      if (comentario?.trim()) {
+        updateFields.push(`comentario = $${paramIndex++}`);
+        updateValues.push(comentario.trim());
+      }
+      updateFields.push(`fecha_valoracion = CURRENT_TIMESTAMP`);
+      updateValues.push(id_valoracion);
+
+      await client.query(
+        `UPDATE valoracion SET ${updateFields.join(', ')} WHERE id_valoracion = $${paramIndex}`,
+        updateValues
+      );
+    } else {
+      const insertValRes = await client.query(
+        `INSERT INTO valoracion (puntuacion, comentario) VALUES ($1, $2) RETURNING id_valoracion`,
+        [puntuacion || null, comentario?.trim() || null]
+      );
+      id_valoracion = insertValRes.rows[0].id_valoracion;
+
+      await client.query(
+        `INSERT INTO empleador_valoracion (id_valoracion, id_empleador, id_postulante) VALUES ($1, $2, $3)`,
+        [id_valoracion, id, id_postulante]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    const updatedStatsRes = await pool.query(`
+      SELECT
+        COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion,
+        COUNT(v.id_valoracion)::int AS total_valoraciones
+      FROM empleador_valoracion ev
+      JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+      JOIN postulante p ON p.id_postulante = ev.id_postulante
+      WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+    `, [id]);
+
+    const updatedReviewsRes = await pool.query(`
+      SELECT
+        v.id_valoracion,
+        v.puntuacion,
+        v.comentario,
+        v.fecha_valoracion,
+        p.nombre_postulante,
+        p.foto_perfil AS foto_postulante
+      FROM empleador_valoracion ev
+      JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
+      JOIN postulante p ON ev.id_postulante = p.id_postulante
+      WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+      ORDER BY v.fecha_valoracion DESC
+    `, [id]);
+
+    res.json({
+      message: "Valoración guardada correctamente",
+      promedio_valoracion: parseFloat(updatedStatsRes.rows[0]?.promedio_valoracion || 0),
+      total_valoraciones: updatedStatsRes.rows[0]?.total_valoraciones || 0,
+      valoraciones_recibidas: updatedReviewsRes.rows
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error al registrar valoración del empleador:", err);
+    res.status(500).json({ error: "Error interno al calificar al empleador" });
+  } finally {
+    client.release();
   }
 });
 

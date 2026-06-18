@@ -110,6 +110,17 @@
               <h2>{{ perfil.nombre_empresa }}</h2>
               <p class="subtitle">Empresa registrada en Chambee</p>
               <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
+              <div *ngIf="perfil.total_valoraciones && perfil.total_valoraciones > 0" class="profile-rating-summary d-flex align-items-center gap-2 mt-1">
+                <div class="stars-display d-flex">
+                  <ng-container *ngFor="let starState of getStarsArray(perfil.promedio_valoracion || 0)">
+                    <i *ngIf="starState === 'full'" class="bi bi-star-fill yellow-star"></i>
+                    <i *ngIf="starState === 'half'" class="bi bi-star-half yellow-star"></i>
+                    <i *ngIf="starState === 'empty'" class="bi bi-star empty-star"></i>
+                  </ng-container>
+                </div>
+                <span class="rating-number fw-bold">{{ perfil.promedio_valoracion | number:'1.1-1' }}</span>
+                <span class="text-muted">({{ perfil.total_valoraciones }} {{ perfil.total_valoraciones === 1 ? 'calificación' : 'calificaciones' }})</span>
+              </div>
             </div>
           </div>
           <button class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
@@ -145,6 +156,46 @@
       </article>
     </section>
 
+    <!-- Sección de opiniones de postulantes (card independiente, igual que en perfil-postulante) -->
+    <section *ngIf="!cargando && perfil" class="reviews-shell">
+      <article class="reviews-list-card">
+        <div class="card-header-premium">
+          <h3>Opiniones de Postulantes</h3>
+          <p class="subtitle-premium">Historial de calificaciones y comentarios recibidos por tu empresa.</p>
+        </div>
+        <div class="card-body-premium">
+          <div *ngIf="!resenas || resenas.length === 0" class="no-reviews-state text-center py-4">
+            <i class="bi bi-chat-left-heart display-6 text-muted"></i>
+            <p class="mt-2 text-muted">Aún no has recibido calificaciones ni comentarios de postulantes.</p>
+          </div>
+
+          <div *ngIf="resenas && resenas.length > 0" class="reviews-container d-flex flex-column gap-3">
+            <div *ngFor="let rev of resenas" class="review-item-premium p-3">
+              <div class="review-header d-flex justify-content-between align-items-start">
+                <div class="reviewer-info d-flex align-items-center gap-2">
+                  <div class="reviewer-logo-box">
+                    <img [src]="rev.foto_postulante || 'assets/LogoChambee.png'" alt="Foto Postulante" class="reviewer-logo" />
+                  </div>
+                  <div>
+                    <h4 class="reviewer-name mb-0">{{ rev.nombre_postulante }}</h4>
+                    <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
+                  </div>
+                </div>
+                <div *ngIf="rev.puntuacion" class="review-stars-display d-flex gap-1">
+                  <i *ngFor="let s of [1,2,3,4,5]"
+                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
+                  ></i>
+                </div>
+              </div>
+              <div *ngIf="rev.comentario" class="review-comment mt-2">
+                <p class="mb-0">{{ rev.comentario }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <!-- Seccion profesional con ceja de tabs funcional -->
     <section *ngIf="!cargando && perfil" class="announcements-shell">
       <div class="tabs-ceja">
@@ -152,9 +203,6 @@
           <button class="tab" type="button" [class.active]="activeTab === 'anuncios'"
             (click)="setActiveTab('anuncios')">
             Anuncios <span class="tab-count">{{ anuncios.length }}</span>
-          </button>
-          <button class="tab" type="button" [class.active]="activeTab === 'resenas'" (click)="setActiveTab('resenas')">
-            Reseñas <span class="tab-count">{{ resenas.length }}</span>
           </button>
           <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
             (click)="setActiveTab('postulaciones')">
@@ -194,28 +242,6 @@
             </div>
             <div class="section-footer">
               <button class="see-more" type="button">Ver más</button>
-            </div>
-          </ng-container>
-
-          <ng-container *ngSwitchCase="'resenas'">
-            <div class="section-head">
-              <h3>Reseñas recientes</h3>
-            </div>
-
-            <div class="announcements-row">
-              <article class="announcement-card compact" *ngFor="let resena of resenas">
-                <div class="announcement-copy">
-                  <div class="card-top">
-                    <strong>{{ resena.autor }}</strong>
-                    <span class="stars">{{ resena.calificacion }}/5</span>
-                  </div>
-                  <p>{{ resena.comentario }}</p>
-                  <p class="meta">{{ resena.fecha }}</p>
-                </div>
-              </article>
-            </div>
-            <div class="section-footer">
-              <button class="see-more" type="button">Ver mas</button>
             </div>
           </ng-container>
 

@@ -161,7 +161,7 @@ CREATE TABLE reporte_a_anuncio (
 CREATE TABLE valoracion (
     id_valoracion UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     comentario VARCHAR(255),
-    puntuacion INT CHECK (puntuacion BETWEEN 1 AND 5)  NOT NULL,
+    puntuacion INT CHECK (puntuacion IS NULL OR puntuacion BETWEEN 1 AND 5),
     fecha_valoracion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -223,8 +223,11 @@ CREATE TABLE empleador_valoracion (
     id_ev UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     id_empleador UUID  NOT NULL,
     id_valoracion UUID  NOT NULL,
+    id_postulante UUID  NOT NULL,
     CONSTRAINT fk_ev_empleador FOREIGN KEY (id_empleador) REFERENCES Empleador(id_empleador),
-    CONSTRAINT fk_ev_valoracion FOREIGN KEY (id_valoracion) REFERENCES Valoracion(id_valoracion)
+    CONSTRAINT fk_ev_valoracion FOREIGN KEY (id_valoracion) REFERENCES Valoracion(id_valoracion),
+    CONSTRAINT fk_ev_postulante FOREIGN KEY (id_postulante) REFERENCES Postulante(id_postulante) ON DELETE CASCADE,
+    CONSTRAINT unique_empleador_postulante UNIQUE (id_empleador, id_postulante)
 );
 
 CREATE TABLE postulacion (
@@ -285,3 +288,13 @@ CREATE TABLE servicios (
   fecha_creacion TIMESTAMP DEFAULT NOW(),
   FOREIGN KEY (autor_id) REFERENCES postulante(id_postulante)
 );
+ALTER TABLE empleador_valoracion
+  ADD COLUMN id_postulante UUID NOT NULL,
+  ADD CONSTRAINT fk_ev_postulante FOREIGN KEY (id_postulante) REFERENCES Postulante(id_postulante) ON DELETE CASCADE,
+  ADD CONSTRAINT unique_empleador_postulante UNIQUE (id_empleador, id_postulante);
+
+  ALTER TABLE empleador_valoracion ALTER COLUMN id_postulante SET NOT NULL;
+
+  ALTER TABLE valoracion DROP CONSTRAINT valoracion_puntuacion_check;
+ALTER TABLE valoracion ALTER COLUMN puntuacion DROP NOT NULL;
+ALTER TABLE valoracion ADD CONSTRAINT valoracion_puntuacion_check CHECK (puntuacion IS NULL OR puntuacion BETWEEN 1 AND 5);

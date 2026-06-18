@@ -1,5 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -14,6 +15,9 @@ interface PublicCompanyProfile {
   descripcion: string;
   foto_perfil?: string;
   vacantes_activas: number;
+  promedio_valoracion?: number;
+  total_valoraciones?: number;
+  valoracion_propia?: number;
 }
 
 interface PublicCompanyJob {
@@ -34,13 +38,14 @@ interface PublicCompanyJob {
 @Component({
   selector: 'app-company-public-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './company-public-profile.component.html',
   styleUrl: './company-public-profile.component.css'
 })
 export class CompanyPublicProfileComponent implements OnInit {
   perfil: PublicCompanyProfile | null = null;
   anuncios: PublicCompanyJob[] = [];
+  valoraciones_recibidas: any[] = [];
   fotoPostulante = '';
   nombrePostulante = 'Usuario';
   cargando = true;
@@ -50,6 +55,13 @@ export class CompanyPublicProfileComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
   mostrarDescripcionCompleta = false;
+
+  ratingSeleccionado = 0;
+  ratingHover = 0;
+  nuevoComentario = '';
+  ratingEnviando = false;
+  ratingExito = '';
+  ratingError = '';
 
   notifications = [
     { id: 1, title: 'Vacantes activas', message: 'Revisa el perfil de la empresa antes de postularte.', time: 'Ahora', read: false },
@@ -126,12 +138,17 @@ export class CompanyPublicProfileComponent implements OnInit {
       next: (response: any) => {
         this.perfil = response?.perfil || null;
         this.anuncios = response?.anuncios || [];
+        this.valoraciones_recibidas = response?.valoraciones_recibidas || [];
+        if (this.perfil?.valoracion_propia) {
+          this.ratingSeleccionado = this.perfil.valoracion_propia;
+        }
         this.cargando = false;
       },
       error: (err) => {
         this.error = err.error?.error || 'No fue posible cargar el perfil de la empresa.';
         this.perfil = null;
         this.anuncios = [];
+        this.valoraciones_recibidas = [];
         this.cargando = false;
       }
     });
@@ -253,5 +270,61 @@ export class CompanyPublicProfileComponent implements OnInit {
     } catch {
       this.isMobile = false;
     }
+  }
+
+  setRating(puntuacion: number): void {
+    this.ratingSeleccionado = puntuacion;
+  }
+
+  setHover(puntuacion: number): void {
+    this.ratingHover = puntuacion;
+  }
+
+  getStarsArray(promedio: number): string[] {
+    const stars: string[] = [];
+    for (let i = 1; i <= 5; i++) {
+      if (promedio >= i) {
+        stars.push('full');
+      } else if (promedio >= i - 0.5) {
+        stars.push('half');
+      } else {
+        stars.push('empty');
+      }
+    }
+    return stars;
+  }
+
+  enviarCalificacion(): void {
+    if (!this.perfil?.id_empleador || (this.ratingSeleccionado === 0 && !this.nuevoComentario.trim())) return;
+
+    this.ratingEnviando = true;
+    this.ratingExito = '';
+    this.ratingError = '';
+
+    this.api.calificarEmpleador(
+      this.perfil.id_empleador,
+      this.ratingSeleccionado || undefined as any,
+      this.nuevoComentario.trim() || undefined
+    ).subscribe({
+      next: (res: any) => {
+        this.ratingEnviando = false;
+        this.ratingExito = res.message || 'Valoración guardada correctamente';
+        if (this.perfil) {
+          this.perfil.promedio_valoracion = res.promedio_valoracion;
+          this.perfil.total_valoraciones = res.total_valoraciones;
+          if (this.ratingSeleccionado > 0) {
+            this.perfil.valoracion_propia = this.ratingSeleccionado;
+          }
+        }
+        this.valoraciones_recibidas = res.valoraciones_recibidas || [];
+        this.nuevoComentario = '';
+        setTimeout(() => this.ratingExito = '', 4000);
+      },
+      error: (err) => {
+        this.ratingEnviando = false;
+        this.ratingError = err.error?.error || 'Error al enviar la calificación';
+        setTimeout(() => this.ratingError = '', 4000);
+      }
+    });
   }
 }

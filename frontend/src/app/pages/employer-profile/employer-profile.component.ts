@@ -18,7 +18,10 @@ interface EmployerProfile {
   telefono: string;
   rfc: string;
   descripcion: string;
-  foto_perfil?: string; 
+  foto_perfil?: string;
+  promedio_valoracion?: number;
+  total_valoraciones?: number;
+  valoraciones_recibidas?: any[];
 }
 
 interface EmployerAnnouncement {
@@ -31,14 +34,6 @@ interface EmployerAnnouncement {
   vacante: string;
   resumen: string;
   imagen: string;
-}
-
-interface EmployerReview {
-  id: number;
-  autor: string;
-  calificacion: number;
-  comentario: string;
-  fecha: string;
 }
 
 interface ReceivedApplication {
@@ -57,7 +52,7 @@ interface NotificationItem {
   read: boolean;
 }
 
-type ProfileSectionTab = 'anuncios' | 'resenas' | 'postulaciones';
+type ProfileSectionTab = 'anuncios' | 'postulaciones';
 
 @Component({
   selector: 'app-employer-profile',
@@ -127,12 +122,7 @@ export class EmployerProfileComponent implements OnInit {
     }
   ];
 
-  resenas: EmployerReview[] = [
-    { id: 1, autor: 'Carlos M.', calificacion: 5, comentario: 'Proceso rapido y trato excelente del equipo de RH.', fecha: 'Hace 2 dias' },
-    { id: 2, autor: 'Ana Torres', calificacion: 4, comentario: 'Vacante clara y seguimiento constante durante el proceso.', fecha: 'Hace 1 semana' },
-    { id: 3, autor: 'J. Hernandez', calificacion: 5, comentario: 'Comunicacion muy profesional en cada etapa.', fecha: 'Hace 2 semanas' },
-    { id: 4, autor: 'Miguel S.', calificacion: 4, comentario: 'Buen ambiente laboral y onboarding bien estructurado.', fecha: 'Hace 1 mes' }
-  ];
+  resenas: any[] = [];
 
   postulacionesRecibidas: ReceivedApplication[] = [
     { id: 1, candidato: 'Fernanda Lopez', vacante: 'Ejecutivo(a) de Ventas', experiencia: '3 anos', estado: 'Nueva' },
@@ -178,6 +168,7 @@ export class EmployerProfileComponent implements OnInit {
     this.api.getMiPerfil().subscribe({
       next: (perfil: any) => {
         this.perfil = perfil;
+        this.resenas = perfil.valoraciones_recibidas || [];
 
         if (localStorage.getItem('token')) {
           localStorage.setItem("perfilEmpleador", JSON.stringify(perfil));
@@ -268,6 +259,20 @@ export class EmployerProfileComponent implements OnInit {
     if (estado === 'En revision') return 'app-review';
     if (estado === 'Entrevista') return 'app-interview';
     return 'app-discarded';
+  }
+
+  getStarsArray(promedio: number): string[] {
+    const stars: string[] = [];
+    for (let i = 1; i <= 5; i++) {
+      if (promedio >= i) {
+        stars.push('full');
+      } else if (promedio >= i - 0.5) {
+        stars.push('half');
+      } else {
+        stars.push('empty');
+      }
+    }
+    return stars;
   }
 
   editarPerfil() {
