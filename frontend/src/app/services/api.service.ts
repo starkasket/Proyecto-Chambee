@@ -145,6 +145,10 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/empleadores/${idEmpleador}/valoracion`, { puntuacion, comentario }, this.getHeaders());
   }
 
+  eliminarValoracion(idValoracion: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/valoraciones/${idValoracion}`, this.getHeaders());
+  }
+
   getSepomex(): Observable<any[]> {
     return this.http.get<any[]>('assets/sepomex_gto.json');
   }

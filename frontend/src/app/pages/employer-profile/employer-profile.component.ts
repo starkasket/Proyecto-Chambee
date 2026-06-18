@@ -329,6 +329,9 @@ export class EmployerProfileComponent implements OnInit {
     if (this.menuOpen) {
       this.menuOpen = false;
     }
+    if (this.menuAbiertoId) {
+      this.menuAbiertoId = null;
+    }
   }
 
   @HostListener('window:resize')
@@ -428,5 +431,29 @@ export class EmployerProfileComponent implements OnInit {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
+  }
+
+  menuAbiertoId: string | null = null;
+
+  toggleMenuValoracion(id: string, event: Event): void {
+    event.stopPropagation();
+    this.menuAbiertoId = this.menuAbiertoId === id ? null : id;
+  }
+
+  eliminarValoracion(idValoracion: string): void {
+    this.menuAbiertoId = null;
+    this.api.eliminarValoracion(idValoracion).subscribe({
+      next: () => {
+        this.api.getMiPerfil().subscribe({
+          next: (perfil: any) => {
+            this.perfil = perfil;
+            this.resenas = perfil.valoraciones_recibidas || [];
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error al eliminar valoración:', err);
+      }
+    });
   }
 }

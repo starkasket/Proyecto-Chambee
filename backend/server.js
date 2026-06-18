@@ -1668,6 +1668,60 @@ app.post("/empleadores/:id/valoracion", verifyToken, authorizeRoles("postulante"
   }
 });
 
+/* ===== ELIMINAR VALORACIÓN ===== */
+app.delete("/valoraciones/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+  const rol = req.user.rol;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    let autorizado = false;
+
+    const pvCheck = await client.query(
+      `SELECT id_postulante, id_empleador FROM postulante_valoracion WHERE id_valoracion = $1`, [id]
+    );
+    if (pvCheck.rows.length > 0) {
+      const row = pvCheck.rows[0];
+      if ((rol === "empleador" && row.id_empleador === userId) ||
+          (rol === "postulante" && row.id_postulante === userId)) {
+        autorizado = true;
+        await client.query(`DELETE FROM postulante_valoracion WHERE id_valoracion = $1`, [id]);
+      }
+    }
+
+    const evCheck = await client.query(
+      `SELECT id_postulante, id_empleador FROM empleador_valoracion WHERE id_valoracion = $1`, [id]
+    );
+    if (evCheck.rows.length > 0) {
+      const row = evCheck.rows[0];
+      if ((rol === "postulante" && row.id_postulante === userId) ||
+          (rol === "empleador" && row.id_empleador === userId)) {
+        autorizado = true;
+        await client.query(`DELETE FROM empleador_valoracion WHERE id_valoracion = $1`, [id]);
+      }
+    }
+
+    if (!autorizado) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({ error: "No tienes permiso para eliminar esta valoración" });
+    }
+
+    await client.query(`DELETE FROM valoracion WHERE id_valoracion = $1`, [id]);
+    await client.query("COMMIT");
+
+    res.json({ message: "Valoración eliminada correctamente" });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error al eliminar valoración:", err);
+    res.status(500).json({ error: "Error interno al eliminar la valoración" });
+  } finally {
+    client.release();
+  }
+});
+
 app.post("/anuncios/:idAnuncio/postular", verifyToken, authorizeRoles("postulante"), async (req, res) => {
   const { idAnuncio } = req.params;
   const idPostulante = req.user.id;

@@ -260,6 +260,7 @@ export class PerfilPostulanteComponent implements OnInit {
   onDocumentClick() {
     if (this.notificationsOpen) this.notificationsOpen = false;
     if (this.menuOpen && !this.isMobile) this.menuOpen = false;
+    this.menuAbiertoId = null;
   }
 
   @HostListener('window:resize')
@@ -606,6 +607,29 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
         this.ratingEnviando = false;
         this.ratingError = err.error?.error || 'Error al enviar la calificación.';
         console.error('Error al calificar postulante:', err);
+      }
+    });
+  }
+
+  menuAbiertoId: string | null = null;
+
+  toggleMenuValoracion(id: string, event: Event): void {
+    event.stopPropagation();
+    this.menuAbiertoId = this.menuAbiertoId === id ? null : id;
+  }
+
+  eliminarValoracion(idValoracion: string): void {
+    this.menuAbiertoId = null;
+    this.api.eliminarValoracion(idValoracion).subscribe({
+      next: () => {
+        if (this.selectedPerfilId) {
+          this.loadPerfilById(this.selectedPerfilId);
+        } else {
+          this.ngOnInit();
+        }
+      },
+      error: (err) => {
+        console.error('Error al eliminar valoración:', err);
       }
     });
   }

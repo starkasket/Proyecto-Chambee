@@ -257,6 +257,7 @@ export class CompanyPublicProfileComponent implements OnInit {
   onDocumentClick(): void {
     this.notificationsOpen = false;
     this.menuOpen = false;
+    this.menuAbiertoId = null;
   }
 
   @HostListener('window:resize')
@@ -324,6 +325,27 @@ export class CompanyPublicProfileComponent implements OnInit {
         this.ratingEnviando = false;
         this.ratingError = err.error?.error || 'Error al enviar la calificación';
         setTimeout(() => this.ratingError = '', 4000);
+      }
+    });
+  }
+
+  menuAbiertoId: string | null = null;
+
+  toggleMenuValoracion(id: string, event: Event): void {
+    event.stopPropagation();
+    this.menuAbiertoId = this.menuAbiertoId === id ? null : id;
+  }
+
+  eliminarValoracion(idValoracion: string): void {
+    this.menuAbiertoId = null;
+    this.api.eliminarValoracion(idValoracion).subscribe({
+      next: () => {
+        if (this.perfil?.id_empleador) {
+          this.cargarPerfilEmpresa(this.perfil.id_empleador);
+        }
+      },
+      error: (err) => {
+        console.error('Error al eliminar valoración:', err);
       }
     });
   }
