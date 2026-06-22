@@ -1285,3 +1285,145 @@ display: -webkit-box;
 overflow: hidden; 
 width: 90%;
 }
+/* ===== Buscador Autocompletado (Estilo Coursera) ===== */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background: var(--surface-primary, #ffffff);
+  border: 1px solid var(--border-soft, #e0e0e0);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 2500;
+  max-height: 350px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-soft, #f0f0f0);
+  transition: background-color 0.2s;
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-item:hover {
+  background-color: var(--surface-secondary, rgba(0,0,0,0.05));
+}
+
+.search-item-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  background: rgba(243, 156, 18, 0.15); /* Naranja Chambee tenue */
+  color: #d68910;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+:host-context(body.dark-theme) .search-item-icon {
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+}
+
+.search-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.search-item-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary, #333);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-item-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary, #777);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-tipo {
+  background: var(--surface-secondary, #eee);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.search-empty {
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--text-secondary, #777);
+  font-size: 14px;
+  font-weight: 500;
+}
+/* ===== Mejoras Pro del Buscador ===== */
+.text-highlight {
+  font-weight: 800;
+  color: #d68910; /* Naranja Chambee */
+}
+
+:host-context(body.dark-theme) .text-highlight {
+  color: #f39c12; 
+}
+
+.search-dropdown-header {
+  padding: 12px 16px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #777);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-see-all {
+  padding: 14px 16px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: #d68910;
+  border-top: 1px solid var(--border-soft, #f0f0f0);
+  cursor: pointer;
+  background: var(--surface-secondary, rgba(0,0,0,0.02));
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.search-see-all:hover {
+  background: rgba(243, 156, 18, 0.1);
+}
+
+:host-context(body.dark-theme) .search-see-all {
+  color: #f39c12;
+  background: rgba(255,255,255,0.02);
+}
+
+:host-context(body.dark-theme) .search-see-all:hover {
+  background: rgba(243, 156, 18, 0.15);
+}

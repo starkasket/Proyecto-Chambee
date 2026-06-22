@@ -1,10 +1,10 @@
+import { Subject, forkJoin, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -70,6 +70,13 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   favoriteJobIds = new Set<string>();
   savingFavoriteId: string | null = null;
 
+  // Variables para el buscador estilo Coursera
+  searchTerm = '';
+  searchSubject = new Subject<string>();
+  searchResults: any[] = [];
+  showSearchDropdown = false;
+  recentSearches: string[] = [];
+
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
   notifications: NotificationItem[] = [
@@ -99,6 +106,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.checkMobile();
     this.cargarOfertasPublicas();
     this.cargarFavoritosGuardados();
+    this.cargarBusquedasRecientes(); // Cargamos el historial del buscador
 
     const usuario = this.api.getUsuario();
     if (usuario?.id) {
@@ -125,6 +133,14 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       });
 
     }
+
+    // Escuchar lo que el usuario escribe, esperando 300ms antes de buscar
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.ejecutarBusqueda(query);
+    });
   }
 
   ngOnDestroy() {
@@ -542,5 +558,98 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         this.mostrarModal('Hubo un error al intentar eliminar el servicio.');
       }
     });
+  }
+
+  // --- LÓGICA DEL BUSCADOR ESTILO COURSERA (PRO) ---
+  
+  onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm = value;
+    this.showSearchDropdown = true; // Mostrar siempre, ya sea historial o resultados
+    
+    if (value.trim().length > 0) {
+      this.searchSubject.next(value);
+    } else {
+      this.searchResults = [];
+    }
+  }
+
+  ejecutarBusqueda(query: string) {
+    const lowerQuery = query.toLowerCase();
+    
+    const jobsResults = this.jobs.filter(job =>
+      job.title.toLowerCase().includes(lowerQuery) ||
+      job.company.toLowerCase().includes(lowerQuery) ||
+      job.tags.some(t => t.toLowerCase().includes(lowerQuery))
+    ).map(j => ({ ...j, tipo: 'empleo' }));
+
+    const servicesResults = this.services.filter(service =>
+      service.title.toLowerCase().includes(lowerQuery) ||
+      (service.description && service.description.toLowerCase().includes(lowerQuery))
+    ).map(s => ({ ...s, tipo: 'servicio' }));
+
+    this.searchResults = [...jobsResults, ...servicesResults].slice(0, 6);
+  }
+
+  cerrarBuscador() {
+    setTimeout(() => {
+      this.showSearchDropdown = false;
+    }, 200);
+  }
+
+  irAResultado(resultado: any) {
+    this.guardarBusquedaReciente(this.searchTerm || resultado.title);
+    this.showSearchDropdown = false;
+    this.searchTerm = ''; 
+    
+    if (resultado.tipo === 'empleo') {
+      this.openJob(resultado.id);
+    } else {
+      const idx = this.services.findIndex(s => (s.id_servicio || s.id) === (resultado.id_servicio || resultado.id));
+      if(idx !== -1) this.openService(idx);
+    }
+  }
+
+  // --- NUEVAS FUNCIONES PRO ---
+
+  cargarBusquedasRecientes() {
+    const stored = localStorage.getItem('chambee_busquedas_recientes');
+    if (stored) {
+      try { this.recentSearches = JSON.parse(stored); } catch(e) {}
+    }
+  }
+
+  guardarBusquedaReciente(term: string) {
+    if(!term || term.trim() === '') return;
+    let searches = [...this.recentSearches];
+    // Evitar duplicados
+    searches = searches.filter(t => t.toLowerCase() !== term.toLowerCase());
+    // Agregar al inicio
+    searches.unshift(term);
+    // Guardar solo las últimas 4
+    if(searches.length > 4) searches = searches.slice(0, 4);
+    
+    this.recentSearches = searches;
+    localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
+  }
+
+  seleccionarBusquedaReciente(term: string) {
+    this.searchTerm = term;
+    this.searchSubject.next(term);
+  }
+
+  verTodosResultados() {
+    this.guardarBusquedaReciente(this.searchTerm);
+    this.showSearchDropdown = false;
+    // Te redirige a la vista general de trabajos pasando el término en la URL
+    this.router.navigate(['/jobs'], { queryParams: { q: this.searchTerm } });
+  }
+
+  highlightText(text: string, query: string): string {
+    if (!query || !text) return text;
+    // Escapa caracteres especiales y envuelve la coincidencia en un span
+    const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    const regex = new RegExp(`(${safeQuery})`, 'gi');
+    return text.replace(regex, '<span class="text-highlight">$1</span>');
   }
 }
