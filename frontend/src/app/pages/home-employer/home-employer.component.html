@@ -22,7 +22,10 @@
           <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
         </div>
         <div style="max-height: 350px; overflow-y: auto;">
-          <div *ngFor="let notif of notifications" style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+          <div *ngIf="notifications.length === 0" style="padding: 20px; text-align: center; color: var(--text-muted, #888); font-size: 0.9rem;">
+            No tienes notificaciones nuevas.
+          </div>
+          <div *ngFor="let notif of notifications" (click)="onNotificationClick(notif, $event)" style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
             <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
             <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
             <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
@@ -157,9 +160,6 @@
         <hr class="my-3" style="border-color: var(--border-soft);">
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 ">
-        <!--   <div class="skills-preview" style="font-size: 0.8rem; color: var(--primary-color); font-weight: 500;">
-            {{ applicant.skills }}
-          </div> -->
           <div class="applicant-actions">
             <button class="action-btn outline" (click)="viewProfile(applicant)">Perfil</button>
             <button *ngIf="applicant.cvUrl"  class="action-btn solid" (click)="viewCV(applicant)">Ver CV</button>
@@ -280,7 +280,6 @@
   </div>
 </footer>
 
-<!-- Acceso flotante reutilizable para publicar nuevas vacantes. -->
 <button class="offer-fab" type="button" (click)="crearOferta()" aria-label="Crear oferta laboral">
   <span class="offer-fab-plus">+</span>
   <span class="offer-fab-text">Crear oferta</span>
