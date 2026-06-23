@@ -79,6 +79,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   menuServicioAbierto: number | null = null;
   favoriteJobIds = new Set<string>();
   savingFavoriteId: string | null = null;
+  usuarioActualId: string | null = null;
 
   // Variables para el buscador estilo Coursera
   searchTerm = '';
@@ -132,17 +133,20 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Cargar servicios desde la BD — solo publicados (no borradores)
-      this.api.obtenerMisServicios(String(usuario.id)).subscribe({
-        next: (servicios) => {
-          this.services = (servicios || []).filter((s: any) => !s.es_borrador);
-        },
-        error: () => {
-          this.services = [];
-        }
-      });
-
     }
+
+    // Cargar servicios públicos de TODOS los postulantes
+    this.api.obtenerServiciosPublicos().subscribe({
+      next: (servicios) => {
+        this.services = servicios || [];
+      },
+      error: () => {
+        this.services = [];
+      }
+    });
+
+    // Guardar el ID del usuario actual para identificar sus propios servicios
+    this.usuarioActualId = usuario?.id ? String(usuario.id) : null;
 
     // Escuchar lo que el usuario escribe, esperando 300ms antes de buscar
     this.searchSubject.pipe(

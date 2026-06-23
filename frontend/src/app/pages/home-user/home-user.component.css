@@ -592,10 +592,13 @@ display: -webkit-box;
   background: var(--surface-primary);
   color: var(--text-primary);
   padding: 10px;
+  padding-right: 40px; /* espacio para el botón de 3 puntos */
   margin-top: 10px;
   border-radius: 10px;
   transition: 0.2s;
   cursor: pointer;
+  position: relative;
+  overflow: visible; /* necesario para que el botón absoluto no se corte */
 }
 
 .service-card img {
@@ -659,7 +662,7 @@ display: -webkit-box;
   color: var(--text-primary);
   border-radius: 22px;
   box-shadow: var(--shadow-float);
-  overflow: hidden;
+  overflow: visible; /* permite que el dropdown de 3 puntos no quede cortado */
 }
 
 .services-panel-header {
@@ -668,6 +671,8 @@ display: -webkit-box;
   justify-content: space-between;
   padding: 18px 18px 14px;
   border-bottom: 1px solid var(--border-soft);
+  border-radius: 22px 22px 0 0; /* mantiene esquinas redondeadas del panel */
+  background: var(--surface-primary); /* asegura el fondo */
 }
 
 .services-panel-header h3 {
@@ -699,6 +704,7 @@ display: -webkit-box;
 .services-list {
   padding: 10px 12px 14px;
   max-height: calc(min(72vh, 620px) - 78px);
+  overflow-x: visible;
   overflow-y: auto;
 }
 
@@ -1279,11 +1285,12 @@ width: 100%;
 }
 
 .service-title{
-display: -webkit-box; 
--webkit-line-clamp: 3; 
--webkit-box-orient: vertical;
-overflow: hidden; 
-width: 90%;
+  display: -webkit-box; 
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical;
+  overflow: hidden; 
+  width: calc(100% - 4px); /* ancho completo, el padding-right de .service-card ya da el espacio al botón */
+  word-break: break-word;
 }
 /* ===== Buscador Autocompletado (Estilo Coursera) ===== */
 .search-dropdown {
