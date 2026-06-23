@@ -73,6 +73,7 @@ CREATE TABLE anuncios (
     colonia VARCHAR(100) NOT NULL,
     calle VARCHAR(100) NOT NULL,
     codigo_postal VARCHAR(100) NOT NULL,
+    img VARCHAR(255),
     salario DECIMAL(10,2) NOT NULL, 
     modalidad VARCHAR(20) NOT NULL, 
     fecha_publicacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

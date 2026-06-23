@@ -13,7 +13,7 @@
       <button class="btn-profile" type="button" (click)="irAlPerfil()">
         <img *ngIf="fotoPerfil" [src]="fotoPerfil" alt="Foto de perfil" />
         <i *ngIf="!fotoPerfil" class="bi bi-person-circle fs-5"></i>
-        <span class="d-none d-md-block">Mi Perfil</span>
+        <span class="d-none d-md-block">Mi perfil</span>
       </button>
 
       <button
@@ -92,7 +92,7 @@
     <section class="favorites-grid" *ngIf="!cargando && !error && borradores.length > 0">
       <article class="favorite-card" *ngFor="let servicio of borradores">
         <div class="favorite-media">
-          <img src="assets/LogoChambee.png" alt="Borrador de servicio" />
+          <img [src]="servicio.img || 'assets/LogoChambee.png'" alt="Borrador de servicio" />
           <span class="state-pill">Borrador</span>
         </div>
 

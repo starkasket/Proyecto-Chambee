@@ -420,7 +420,7 @@ export class PerfilPostulanteComponent implements OnInit {
           candidatos: fav.vistas || 0,
           vacante: fav.titulo || 'Vacante',
           resumen: fav.descripcion || 'Consulta los detalles de esta vacante.',
-          imagen: fav.foto_empresa || 'assets/LogoChambee.png'
+          imagen: fav.img || fav.foto_empresa || 'assets/LogoChambee.png'
         }));
       },
       error: (err) => {
@@ -457,7 +457,7 @@ export class PerfilPostulanteComponent implements OnInit {
             candidatos: anuncio.vistas || 0,
             vacante: anuncio.titulo,
             resumen: anuncio.descripcion,
-            imagen: anuncio.foto_empresa || 'assets/LogoChambee.png'
+            imagen: anuncio.img || anuncio.foto_empresa || 'assets/LogoChambee.png'
           }));
         },
         error: () => {

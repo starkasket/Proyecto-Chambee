@@ -28,6 +28,7 @@ interface PublicCompanyJob {
   estado: string;
   ciudad: string;
   calle: string;
+  img?: string | null;
   salario: string | number;
   modalidad: string;
   fecha_publicacion: string | null;

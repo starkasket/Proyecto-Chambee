@@ -31,7 +31,7 @@
       <button class="profile-chip" type="button" (click)="irAlPerfil()">
         <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" />
         <i *ngIf="!fotoPostulante" class="bi bi-person-circle"></i>
-        <span class="d-none d-md-inline">Mi Perfil</span>
+        <span class="d-none d-md-inline">Mi perfil</span>
       </button>
 
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
@@ -132,7 +132,7 @@
 
       <div class="announcements-row" *ngIf="anuncios.length; else noCompanyJobs">
         <article class="announcement-card" *ngFor="let anuncio of anuncios" (click)="verVacante(anuncio.id_anuncio)" role="button" tabindex="0">
-          <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60" [alt]="anuncio.titulo" />
+          <img [src]="anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'" [alt]="anuncio.titulo" />
           <div class="announcement-copy">
             <div class="card-top">
               <strong>{{ anuncio.titulo }}</strong>

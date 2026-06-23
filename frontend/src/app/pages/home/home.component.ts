@@ -96,14 +96,14 @@ export class HomeComponent implements OnInit, OnDestroy {
             mode: anuncio.modalidad || 'Modalidad',
             urgency: anuncio.urgencia || 'Normal',
             description: anuncio.descripcion || 'Vacante publicada recientemente.',
-            img: `https://picsum.photos/900/320?random=${index + 200}`
+            img: anuncio.img || `https://picsum.photos/900/320?random=${index + 200}`
           }));
 
           this.jobs = anuncios.map((anuncio, index) => ({
             company: anuncio.nombre_empresa || 'Empresa',
             title: anuncio.titulo || 'Posición disponible',
             salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
-            img: `https://picsum.photos/300/150?random=${index + 100}`,
+            img: anuncio.img || `https://picsum.photos/300/150?random=${index + 100}`,
             urgency: anuncio.urgencia || 'Normal',
             rating: '4.5',
             applicants: Math.floor(Math.random() * 15)

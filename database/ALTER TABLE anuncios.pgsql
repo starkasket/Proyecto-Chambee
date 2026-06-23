@@ -15,6 +15,9 @@ ADD COLUMN IF NOT EXISTS educacion VARCHAR(80) DEFAULT 'Sin especificar';
 ALTER TABLE anuncios
 ALTER COLUMN descripcion TYPE VARCHAR(600);
 
+ALTER TABLE anuncios
+ADD COLUMN IF NOT EXISTS img VARCHAR(255);
+
 
 CREATE TABLE historial_cambios (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,6 +53,7 @@ CREATE TABLE IF NOT EXISTS servicios (
   codigo_postal VARCHAR(10),
   modalidad VARCHAR(50),
   urgencia VARCHAR(50),
+  img VARCHAR(255),
   es_borrador BOOLEAN DEFAULT false,
   autor_id UUID,
   fecha_creacion TIMESTAMP DEFAULT NOW(),

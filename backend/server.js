@@ -1033,6 +1033,12 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
       a.urgencia,
       a.edad,
       a.educacion,
+      (
+        SELECT i.url_imagen
+        FROM imagenes i
+        WHERE i.id_anuncio = a.id_anuncio
+        LIMIT 1
+      ) AS img,
       a.estado,
       a.ciudad,
       a.colonia,
@@ -1120,6 +1126,7 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     urgencia = "Normal",
     edad = "Sin especificar",
     educacion = "Sin especificar",
+    img,
     estado,
     ciudad,
     colonia,
@@ -1175,6 +1182,14 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     const result = await client.query(query, values);
     const anuncio = result.rows[0];
 
+    if (img) {
+      await client.query(
+        `INSERT INTO imagenes (id_anuncio, url_imagen)
+         VALUES ($1, $2)`,
+        [anuncio.id_anuncio, img]
+      );
+    }
+
     const categorias = await obtenerCategoriasPorNombre(etiquetas, client);
 
     for (const categoria of categorias) {
@@ -1191,6 +1206,7 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
       message: "Oferta laboral creada correctamente",
       anuncio: {
         ...anuncio,
+        img: img || null,
         categorias: categorias.map((categoria) => categoria.nombre)
       },
     });
@@ -1270,6 +1286,7 @@ app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
     urgencia = 'Normal',
     edad = 'Sin especificar',
     educacion = 'Sin especificar',
+    img,
     estado,
     ciudad,
     colonia,
@@ -1353,6 +1370,20 @@ app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
       return res.status(404).json({ error: "Vacante no encontrada" });
     }
 
+    if (Object.prototype.hasOwnProperty.call(req.body, "img")) {
+      await client.query(
+        "DELETE FROM imagenes WHERE id_anuncio = $1",
+        [anuncioId]
+      );
+      if (img) {
+        await client.query(
+          `INSERT INTO imagenes (id_anuncio, url_imagen)
+           VALUES ($1, $2)`,
+          [anuncioId, img]
+        );
+      }
+    }
+
     await client.query(
       "DELETE FROM categoriaAnuncio WHERE id_anuncio = $1",
       [anuncioId]
@@ -1374,6 +1405,7 @@ app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
       message: "Vacante actualizada correctamente",
       anuncio: {
         ...updateResult.rows[0],
+        img: img || null,
         categorias: categorias.map((categoria) => categoria.nombre)
       }
     });
@@ -1428,6 +1460,12 @@ app.get("/anuncios", async (_req, res) => {
   try {
     const query = `SELECT
       a.*,
+      (
+        SELECT i.url_imagen
+        FROM imagenes i
+        WHERE i.id_anuncio = a.id_anuncio
+        LIMIT 1
+      ) AS img,
       e.nombre_empresa,
       e.descripcion AS descripcion_empresa,
       e.foto_perfil AS foto_empresa,
@@ -1486,6 +1524,12 @@ app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"
         a.estado,
         a.ciudad,
         a.calle,
+        (
+          SELECT i.url_imagen
+          FROM imagenes i
+          WHERE i.id_anuncio = a.id_anuncio
+          LIMIT 1
+        ) AS img,
         a.salario,
         a.modalidad,
         a.fecha_publicacion,
@@ -1767,6 +1811,12 @@ app.get("/favoritos", verifyToken, authorizeRoles("postulante"), async (req, res
       f.id_favoritos,
       f.fecha_guardado,
       a.id_anuncio,
+      (
+        SELECT i.url_imagen
+        FROM imagenes i
+        WHERE i.id_anuncio = a.id_anuncio
+        LIMIT 1
+      ) AS img,
       a.titulo,
       a.descripcion,
       a.urgencia,
@@ -2327,7 +2377,7 @@ app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, re
   const {
     title, description, categoria, presupuesto,
     ubicacion, estado, ciudad, colonia, calle,
-    codigo_postal, cobertura, disponibilidad, esBorrador, autorId
+    codigo_postal, cobertura, disponibilidad, img, esBorrador, autorId
   } = req.body;
 
   try {
@@ -2335,12 +2385,12 @@ app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, re
       `INSERT INTO servicios 
         (title, description, categoria, presupuesto, ubicacion, estado,
          ciudad, colonia, calle, codigo_postal, modalidad, urgencia,
-         es_borrador, autor_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+         img, es_borrador, autor_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        RETURNING *`,
       [title, description, categoria, presupuesto, ubicacion,
        estado, ciudad, colonia, calle, codigo_postal,
-       cobertura, disponibilidad, esBorrador, autorId]
+       cobertura, disponibilidad, img, esBorrador, autorId]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -2399,18 +2449,18 @@ app.put("/servicios/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
     const {
       title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion,
-      estado, ciudad, colonia, calle, codigo_postal
+      estado, ciudad, colonia, calle, codigo_postal, img
     } = req.body;
     
     // Le mandamos los datos frescos a PostgreSQL
     const result = await pool.query(
       `UPDATE servicios 
        SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7,
-           estado = $8, ciudad = $9, colonia = $10, calle = $11, codigo_postal = $12
-       WHERE id_servicio = $13
+           estado = $8, ciudad = $9, colonia = $10, calle = $11, codigo_postal = $12, img = $13
+       WHERE id_servicio = $14
        RETURNING *`,
       [title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion,
-       estado, ciudad, colonia, calle, codigo_postal, id]
+       estado, ciudad, colonia, calle, codigo_postal, img, id]
     );
 
     if (result.rowCount === 0) {
@@ -2465,6 +2515,26 @@ async function ensureDatabaseSchema() {
     await pool.query(`ALTER TABLE postulante_valoracion ADD COLUMN IF NOT EXISTS id_empleador ${empDataType}`);
     await pool.query(`ALTER TABLE empleador_valoracion ADD COLUMN IF NOT EXISTS id_postulante ${postDataType}`);
     
+    // 3. Agregar restricción unique_postulante_empleador
+    await pool.query(`
+      ALTER TABLE servicios
+      ADD COLUMN IF NOT EXISTS img VARCHAR(255)
+    `);
+
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM pg_constraint
+          WHERE conname = 'unique_postulante_empleador'
+        ) THEN
+          ALTER TABLE postulante_valoracion
+          ADD CONSTRAINT unique_postulante_empleador UNIQUE (id_postulante, id_empleador);
+        END IF;
+      END;
+      $$;
+    `);
     console.log("[db] Estructura de base de datos verificada y actualizada correctamente.");
   } catch (err) {
     console.error("[db] Error al verificar/actualizar la estructura de la base de datos:", err.message);

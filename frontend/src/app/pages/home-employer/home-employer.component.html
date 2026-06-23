@@ -45,33 +45,33 @@
       <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
         style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
       <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
-      <span class="d-none d-md-block">Mi Perfil</span>
+      <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
     <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
-      <span class="theme-toggle-track"><span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span></span>
+      <span class="theme-toggle-track"><span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span></span>
     </button>
 
-    <div class="menu fs-4" (click)="toggleMenu()" role="button">☰</div>
+    <div class="menu fs-4" (click)="toggleMenu()" role="button"><i class="bi bi-list"></i></div>
 
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
-      <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis Vacantes</a>
-      <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear Vacante</a>
+      <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a>
+      <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear vacante</a>
       <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
-      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
     </div>
   </div>
 
   <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
     <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
-      <button class="mobile-close" (click)="toggleMenu()">✕</button>
+      <button class="mobile-close" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
         <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Panel de Empresa</div>
         <hr />
-        <a class="mobile-nav-link" routerLink="/mis-vacantes" (click)="toggleMenu()">Mis Vacantes</a>
-        <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear Vacante</a>
+        <a class="mobile-nav-link" routerLink="/mis-vacantes" (click)="toggleMenu()">Mis vacantes</a>
+        <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear vacante</a>
         <hr />
-        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
       </nav>
     </aside>
   </div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="featured-company-copy">
                   <h3>{{ slide.name }}</h3>
-                  <p style="color: var(--primary-color); font-weight: 600;">Postulo para: {{ slide.appliedFor }}</p>
+                  <p style="color: var(--primary-color); font-weight: 600;">Postuló para: {{ slide.appliedFor }}</p>
                 </div>
               </div>
 
@@ -106,7 +106,7 @@
 
             <div class="featured-content">
               <div class="featured-meta">
-                <span class="featured-chip">Postulacion Nueva</span>
+                <span class="featured-chip">Postulación Nueva</span>
                 <span class="featured-chip">{{ slide.timeAgo }}</span>
               </div>
               <div class="d-flex gap-2 flex-wrap">
@@ -129,7 +129,7 @@
       <h2 style="font-weight: 700; color: var(--text-color);">Todas las Postulaciones</h2>
       <div class="employer-top-actions">
         <button class="btn register" type="button" (click)="crearOferta()">+ Nueva oferta</button>
-        <button class="btn register" routerLink="/mis-vacantes">Buscar mas talento</button>
+        <button class="btn register" routerLink="/mis-vacantes">Buscar más talento</button>
       </div>
     </div>
 
@@ -169,7 +169,7 @@
     </div>
 
     <div class="jobs-more mt-4" *ngIf="visibleCount < maxVisible">
-      <button class="services-see-more" (click)="showMoreApplicants()" style="width: 100%; border-radius: 8px;">Cargar mas postulaciones</button>
+      <button class="services-see-more" (click)="showMoreApplicants()" style="width: 100%; border-radius: 8px;">Cargar más postulaciones</button>
     </div>
   </div>
 
@@ -180,7 +180,7 @@
 
     <div class="services-list services-list-desktop">
       <div *ngIf="misAnuncios.length === 0" class="text-center p-3 text-muted" style="font-size: 0.9rem;">
-        Aun no has publicado ninguna vacante.
+        Aún no has publicado ninguna vacante.
       </div>
 
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-soft); cursor: pointer; margin-bottom: 12px;">
@@ -220,7 +220,7 @@
   <div class="services-panel" *ngIf="toolsOpen" (click)="$event.stopPropagation()">
     <div class="services-panel-header">
       <div>
-        <p class="services-panel-eyebrow">Gestion de Vacantes</p>
+        <p class="services-panel-eyebrow">Gestión de Vacantes</p>
         <h3>Mis Anuncios</h3>
       </div>
       <button class="services-close" (click)="toggleTools()">×</button>
@@ -228,7 +228,7 @@
 
     <div class="services-list">
       <div *ngIf="misAnuncios.length === 0" class="text-center p-3 text-muted" style="font-size: 0.9rem;">
-        Aun no has publicado ninguna vacante.
+        Aún no has publicado ninguna vacante.
       </div>
       <div class="service-card" *ngFor="let anuncio of misAnuncios" style="display: flex; flex-direction: column; align-items: flex-start; padding: 15px; border-radius: 12px; border: 1px solid var(--border-soft); margin-bottom: 12px;">
         <div class="d-flex justify-content-between w-100 align-items-center mb-1">
@@ -264,12 +264,12 @@
       <img src="assets/LogoChambee.png" alt="Chambee" />
       <div>
         <h4>Chambee Empresas</h4>
-        <p>Encuentra al talento ideal para tu negocio mas rapido.</p>
+        <p>Encuentra al talento ideal para tu negocio más rápido.</p>
       </div>
     </div>
     <nav class="footer-links">
       <a routerLink="/precios">Planes y Precios</a>
-      <a routerLink="/terminos">Terminos de Servicio</a>
+      <a routerLink="/terminos">Términos de Servicio</a>
       <a routerLink="/soporte">Soporte a Empresas</a>
     </nav>
   </div>

@@ -9,7 +9,7 @@
 
   <!-- Buscador principal. En movil se compacta desde CSS. -->
   <div class="search-container flex-grow-1 mx-4">
-    <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
+    <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
   </div>
 
   <!-- Acciones del navbar y acceso al menu hamburguesa. -->
@@ -21,14 +21,14 @@
       [attr.aria-pressed]="isDarkMode"
       [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
       <span class="theme-toggle-track">
-        <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
       </span>
     </button>
 
-    <button *ngIf="!isMobile" class="btn login" routerLink="/login">Iniciar Sesion</button>
+    <button *ngIf="!isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
     <button *ngIf="!isMobile" class="btn register" routerLink="/register">Registrarse</button>
 
-    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menu" role="button">☰</div>
+    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
     <!-- Dropdown usado solo en desktop. -->
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
@@ -37,7 +37,7 @@
       <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
       <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
       <div class="desktop-menu-divider"></div>
-      <a routerLink="/login" class="desktop-menu-link">Iniciar Sesion</a>
+      <a routerLink="/login" class="desktop-menu-link">Iniciar Sesión</a>
       <a routerLink="/register" class="desktop-menu-link">Registrarse</a>
     </div>
   </div>
@@ -45,41 +45,32 @@
   <!-- Panel lateral de navegacion para movil. -->
   <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
     <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <button class="mobile-close" aria-label="Cerrar menu" (click)="toggleMenu()">✕</button>
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
         <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
         <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
         <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
         <hr />
-        <a class="mobile-nav-link" routerLink="/login" (click)="toggleMenu()">Iniciar Sesion</a>
+        <a class="mobile-nav-link" routerLink="/login" (click)="toggleMenu()">Iniciar Sesión</a>
         <a class="mobile-nav-link" routerLink="/register" (click)="toggleMenu()">Registrarse</a>
       </nav>
     </aside>
   </div>
 </nav>
 <!-- MODAL LOGIN REQUERIDO -->
-<div *ngIf="modalLoginVisible"
-  style="display:flex; position:fixed; inset:0; z-index:9999; 
-         align-items:center; justify-content:center; 
-         background:rgba(0,0,0,0.5);">
-  <div style="background:var(--bg-color, #fff); border-radius:16px; 
-              padding:2rem; max-width:380px; width:90%; text-align:center;
-              box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+<div *ngIf="modalLoginVisible" class="login-required-backdrop">
+  <div class="login-required-modal">
     <img src="assets/abejaAlerta.png" alt="alerta" height="140" class="mb-3" />
-    <h5 style="font-weight:700; color:var(--text-color);">¡Inicia sesión primero!</h5>
-    <p style="color:var(--text-muted, #666); margin-bottom:1.5rem;">
+    <h5>¡Inicia sesión primero!</h5>
+    <p>
       Para ver el detalle de este servicio necesitas una cuenta en Chambee.
     </p>
-    <div style="display:flex; gap:1rem; justify-content:center;">
-      <button (click)="cerrarModalLogin()"
-        style="padding:10px 24px; border-radius:50px; border:1px solid #ccc; 
-               background:transparent; cursor:pointer; font-weight:600;">
+    <div class="login-required-actions">
+      <button type="button" class="login-required-cancel" (click)="cerrarModalLogin()">
         Cancelar
       </button>
-      <button (click)="irAlLogin()"
-        style="padding:10px 24px; border-radius:50px; border:none; 
-               background:#f59e0b; color:#fff; cursor:pointer; font-weight:700;">
+      <button type="button" class="login-required-submit" (click)="irAlLogin()">
         Iniciar Sesión
       </button>
     </div>
@@ -114,7 +105,7 @@
                 <h3>{{ slide.title }}</h3>
                 <p><strong>Sueldo:</strong> {{ slide.salary }}</p>
                 <p><strong>Modalidad:</strong> {{ slide.mode }}</p>
-                <p><strong>Ubicacion:</strong> {{ slide.location }}</p>
+                <p><strong>Ubicación:</strong> {{ slide.location }}</p>
                 <p>{{ slide.description }}</p>
               </div>
             </div>
@@ -128,7 +119,7 @@
                 <span class="featured-chip">{{ slide.location }}</span>
               </div>
 
-              <button class="btn featured-btn" (click)="openFeaturedJob(); $event.stopPropagation()">Ver mas</button>
+              <button class="btn featured-btn" (click)="openFeaturedJob(); $event.stopPropagation()">Ver más</button>
             </div>
           </div>
         </div>
@@ -146,7 +137,7 @@
 
     <ng-template #noFeaturedJobs>
       <div class="empty-jobs-state">
-        Aun no hay ofertas publicadas.
+        Aún no hay ofertas publicadas.
       </div>
     </ng-template>
 
@@ -159,20 +150,20 @@
           <h4>{{ job.company }}</h4>
           <p>{{ job.title }}</p>
           <p class="salary">{{ job.salary }}</p>
-          <div class="job-footer">★ {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
+          <div class="job-footer"><i class="bi bi-star-fill"></i> {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
         </div>
       </div>
     </div>
 
     <ng-template #noJobsGrid>
       <div class="empty-jobs-state">
-        Las nuevas vacantes apareceran aqui en cuanto se publiquen.
+        Las nuevas vacantes aparecerán aquí en cuanto se publiquen.
       </div>
     </ng-template>
 
-    <!-- Boton para cargar mas empleos. -->
+    <!-- Boton para cargar más empleos. -->
     <div class="jobs-more" *ngIf="visibleCount < maxVisible">
-      <button class="services-see-more" (click)="showMoreJobs()">Ver mas empleos</button>
+      <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>
     </div>
   </div>
 
@@ -194,7 +185,7 @@
     <!-- Control para expandir o contraer servicios en desktop. -->
     <div class="services-footer">
       <button class="services-see-more" (click)="toggleServices()">
-        {{ servicesOpen ? 'Ver menos' : 'Ver mas' }}
+        {{ servicesOpen ? 'Ver menos' : 'Ver más' }}
       </button>
     </div>
   </aside>
@@ -228,7 +219,7 @@
 
   <!-- Burbuja que abre o cierra el panel de servicios en movil/tablet. -->
   <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
-    <span class="services-bubble-icon">✦</span>
+    <span class="services-bubble-icon"><i class="bi bi-stars"></i></span>
     <span class="services-bubble-text">Servicios</span>
   </button>
 </section>
@@ -257,23 +248,23 @@
           </label>
 
           <label class="support-field">
-            <span>Telefono</span>
-            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 digitos" required pattern="^[0-9]{10}$" maxlength="10"/>
+            <span>Teléfono</span>
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required pattern="^[0-9]{10}$" maxlength="10"/>
             <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es obligatorio.</small>
           </label>
 
           <label class="support-field">
-            <span>Correo electronico</span>
+            <span>Correo electrónico</span>
             <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required email />
-            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo valido.</small>
+            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo válido.</small>
           </label>
 
           <label class="support-field support-field-span-2">
             <span>Asunto</span>
             <select name="asunto" ngModel #asunto="ngModel" required>
-              <option value="">Selecciona una opcion</option>
+              <option value="">Selecciona una opción</option>
               <option value="error-cuenta">Problema con mi cuenta</option>
-              <option value="publicacion">Problema con una publicacion</option>
+              <option value="publicación">Problema con una publicación</option>
               <option value="pagos">Pagos o suscripciones</option>
               <option value="otro">Otro</option>
             </select>
@@ -307,7 +298,7 @@
     <div class="faq-header">
       <p class="faq-eyebrow">Ayuda Chambee</p>
       <h3>Preguntas Frecuentes</h3>
-      <p>Resolvemos las dudas mas comunes de nuestros usuarios.</p>
+      <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
     </div>
 
     <div class="faq-list">
@@ -356,7 +347,7 @@
   </div>
 </section>
 
-<!-- Footer general de la pagina. -->
+<!-- Footer general de la página. -->
 <footer class="home-footer">
   <div class="container footer-content">
     <!-- Bloque de marca del footer. -->
@@ -364,16 +355,16 @@
       <img src="assets/LogoChambee.png" alt="Chambee" />
       <div>
         <h4>Chambee</h4>
-        <p>Plataforma lider para encontrar empleo y servicios en un solo lugar.</p>
+        <p>Plataforma líder para encontrar empleo y servicios en un solo lugar.</p>
       </div>
     </div>
 
-    <!-- Enlaces rapidos del footer. -->
+    <!-- Enlaces rápidos del footer. -->
     <nav class="footer-links" aria-label="Enlaces del footer">
       <a routerLink="/jobs">Trabajos</a>
       <a routerLink="/services">Servicios</a>
       <a routerLink="/contact">Contacto</a>
-      <a routerLink="/login">Iniciar Sesion</a>
+      <a routerLink="/login">Iniciar Sesión</a>
     </nav>
   </div>
 
@@ -384,3 +375,4 @@
     </div>
   </div>
 </footer>
+

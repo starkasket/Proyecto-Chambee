@@ -9,6 +9,7 @@ interface ServiceDraft {
   id_servicio: string;
   title: string;
   description: string;
+  img?: string;
   categoria: string;
   presupuesto: string;
   ubicacion: string;

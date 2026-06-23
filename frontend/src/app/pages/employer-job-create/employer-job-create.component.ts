@@ -14,6 +14,7 @@ interface EmployerJobFormValue {
   edad: string;
   educacion: string;
   experiencia: string;
+  img?: string | null;
   estado: string;
   ciudad: string;
   colonia: string;
@@ -68,6 +69,12 @@ export class EmployerJobCreateComponent implements OnInit {
   cargandoPerfil = false;
   error = '';
   exito = '';
+  previewUrl: string | null = null;
+  archivoSeleccionado: File | null = null;
+  fileName = 'Ningún archivo seleccionado';
+  subiendoImagen = false;
+  urlImagenSubida = '';
+  mostrarEliminar = false;
   menuOpen = false;
   notificationsOpen = false;
   hasUnreadNotifications = true;
@@ -228,37 +235,7 @@ export class EmployerJobCreateComponent implements OnInit {
     }
 
     this.guardando = true;
-    const payload = this.ofertaForm.getRawValue() as EmployerJobFormValue;
-    payload.estado_anuncio = 'ACTIVO';
-    payload.estatus = 'Publicado';
-
-    this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
-      next: () => {
-        this.guardando = false;
-        this.ofertaForm.reset({
-          titulo: '',
-          descripcion: '',
-          tipo_anuncio: 'Empleo',
-          urgencia: 'Normal',
-          edad: 'Sin especificar',
-          educacion: 'Sin especificar',
-          experiencia: 'Sin experiencia',
-          estado: payload.estado,
-          ciudad: payload.ciudad,
-          colonia: payload.colonia,
-          calle: payload.calle,
-          codigo_postal: payload.codigo_postal,
-          salario: null,
-          modalidad: 'Presencial',
-          etiquetas: []
-        });
-        this.mostrarModalExito('Tu oferta laboral fue publicada exitosamente.');
-      },
-      error: (err) => {
-        this.guardando = false;
-        this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.');
-      }
-    });
+    this.publicarConImagen('ACTIVO', 'Publicado', false);
   }
 
   guardarBorrador() {
@@ -272,20 +249,80 @@ export class EmployerJobCreateComponent implements OnInit {
     }
 
     this.guardandoBorrador = true;
-    const payload = this.ofertaForm.getRawValue() as EmployerJobFormValue;
-    payload.estado_anuncio = 'BORRADOR';
-    payload.estatus = 'Borrador';
+    this.publicarConImagen('BORRADOR', 'Borrador', true);
+  }
 
-    this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
-      next: () => {
-        this.guardandoBorrador = false;
-        this.mostrarModalExito('El borrador de tu vacante se ha guardado de forma segura.');
-      },
-      error: (err) => {
-        this.guardandoBorrador = false;
-        this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible guardar el borrador.');
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const archivo = input.files[0];
+
+    if (archivo.size > 2 * 1024 * 1024) {
+      this.mostrarModal('La imagen no puede superar los 2 MB.');
+      return;
+    }
+
+    this.archivoSeleccionado = archivo;
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
+    this.fileName = archivo.name.length > 30 ? archivo.name.substring(0, 27) + '...' : archivo.name;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewUrl = e.target?.result as string;
+    };
+    reader.readAsDataURL(archivo);
+  }
+
+  async subirImagen(): Promise<string> {
+    if (!this.archivoSeleccionado) {
+      return this.urlImagenSubida;
+    }
+
+    this.subiendoImagen = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', this.archivoSeleccionado);
+      formData.append('upload_preset', 'chambee_upload');
+
+      const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        throw new Error('No se pudo subir la imagen.');
       }
-    });
+
+      const data = await res.json();
+      if (!data?.secure_url) {
+        throw new Error('La respuesta de la imagen no fue válida.');
+      }
+
+      this.urlImagenSubida = data.secure_url;
+      this.mostrarEliminar = true;
+      return this.urlImagenSubida;
+    } finally {
+      this.subiendoImagen = false;
+    }
+  }
+
+  async subirImagenManual(): Promise<void> {
+    try {
+      await this.subirImagen();
+    } catch (err: any) {
+      this.mostrarModal(err?.message || 'Error al subir la imagen.');
+    }
+  }
+
+  eliminarImagen(): void {
+    this.previewUrl = null;
+    this.archivoSeleccionado = null;
+    this.fileName = 'Ningún archivo seleccionado';
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
   }
 
   volverPanel() {
@@ -368,6 +405,70 @@ export class EmployerJobCreateComponent implements OnInit {
     } catch {
       this.isMobile = false;
     }
+  }
+
+  private publicarConImagen(estadoAnuncio: 'ACTIVO' | 'BORRADOR', estatus: string, esBorrador: boolean) {
+    const payloadBase = this.ofertaForm.getRawValue() as EmployerJobFormValue;
+
+    const ejecutarGuardado = (imgUrl: string | null) => {
+      const payload = {
+        ...payloadBase,
+        img: imgUrl,
+        estado_anuncio: estadoAnuncio,
+        estatus
+      };
+
+      this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
+        next: () => {
+          this.guardando = false;
+          this.guardandoBorrador = false;
+
+          this.ofertaForm.reset({
+            titulo: '',
+            descripcion: '',
+            tipo_anuncio: 'Empleo',
+            urgencia: 'Normal',
+            edad: 'Sin especificar',
+            educacion: 'Sin especificar',
+            experiencia: 'Sin experiencia',
+            estado: payloadBase.estado,
+            ciudad: payloadBase.ciudad,
+            colonia: payloadBase.colonia,
+            calle: payloadBase.calle,
+            codigo_postal: payloadBase.codigo_postal,
+            salario: null,
+            modalidad: 'Presencial',
+            etiquetas: []
+          });
+
+          this.previewUrl = null;
+          this.archivoSeleccionado = null;
+          this.fileName = 'Ningún archivo seleccionado';
+          this.urlImagenSubida = '';
+          this.mostrarEliminar = false;
+
+          this.mostrarModalExito(esBorrador ? 'El borrador de tu vacante se ha guardado de forma segura.' : 'Tu oferta laboral fue publicada exitosamente.');
+        },
+        error: (err) => {
+          this.guardando = false;
+          this.guardandoBorrador = false;
+          this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.');
+        }
+      });
+    };
+
+    if (this.archivoSeleccionado && !this.urlImagenSubida) {
+      this.subirImagen()
+        .then((imgUrl) => ejecutarGuardado(imgUrl || null))
+        .catch((err) => {
+          this.guardando = false;
+          this.guardandoBorrador = false;
+          this.mostrarModal(err?.message || 'Error al subir la imagen.');
+        });
+      return;
+    }
+
+    ejecutarGuardado(this.urlImagenSubida || null);
   }
 
   buscarCP() {

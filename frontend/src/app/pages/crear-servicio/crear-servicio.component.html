@@ -2,7 +2,7 @@
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" />
-      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, Mi Perfil de Servicios</span>
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, Mi perfil de servicios</span>
     </div>
 
     <div class="search-container flex-grow-1 mx-4">
@@ -14,7 +14,7 @@
         <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
         style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
       <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
-        <span class="d-none d-md-block">Mi Perfil</span>
+        <span class="d-none d-md-block">Mi perfil</span>
       </button>
 
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
@@ -176,6 +176,48 @@
 
             <small *ngIf="campoInvalido('calle')" class="support-error d-block mt-1" style="font-size: 0.8rem; color: #c2410c;">Calle y número requeridos.</small>
           </label>
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-copy">
+            <div class="upload-copy-text">
+              <p class="eyebrow">Imagen del servicio</p>
+              <h3>Agrega una foto para destacar tu publicación</h3>
+              <p>La imagen aparecerá en la portada y en los listados públicos de tu servicio.</p>
+            </div>
+
+            <div class="upload-actions">
+              <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+
+              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                {{ fileName }}
+              </span>
+              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                ✓ Imagen guardada
+              </span>
+
+              <div class="btn-group">
+                <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()">
+                  {{ previewUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
+                </button>
+                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+                  <span class="loading" [class.visible]="subiendoImagen"></span>
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+                </button>
+                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                  Quitar imagen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="upload-preview">
+            <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa del servicio" />
+            <div *ngIf="!previewUrl" class="upload-placeholder">
+              <i class="bi bi-image"></i>
+              <span>La vista previa aparecerá aquí</span>
+            </div>
+          </div>
         </div>
 
         <div class="preview-box mt-3">

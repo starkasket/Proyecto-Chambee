@@ -235,6 +235,45 @@
             <div *ngIf="campoInvalido('calle')" class="support-error">Calle inválida</div>
           </label>
         </div>
+
+        <div class="upload-card">
+          <div class="upload-copy">
+            <p class="eyebrow">Imagen de la vacante</p>
+            <h3>Agrega una foto para destacar tu oferta</h3>
+            <p>La imagen aparecerá en los listados públicos y ayudará a identificar mejor la vacante.</p>
+
+            <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+
+            <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+              {{ fileName }}
+            </span>
+            <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+              ✓ Imagen guardada
+            </span>
+
+            <div class="btn-group upload-actions">
+              <button type="button" class="btn-secondary" (click)="imagenInput.click()">
+                Elegir imagen
+              </button>
+              <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+                <span class="loading" [class.visible]="subiendoImagen"></span>
+                <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+              </button>
+              <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                Eliminar
+              </button>
+            </div>
+          </div>
+
+          <div class="upload-preview">
+            <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa de la vacante" />
+            <div *ngIf="!previewUrl" class="upload-placeholder">
+              <i class="bi bi-image"></i>
+              <span>La vista previa aparecerá aquí</span>
+            </div>
+          </div>
+        </div>
+
         <div class="preview-box">
           <p class="preview-label">Resumen rapido</p>
           <strong>{{ ofertaForm.value.titulo || 'Tu nueva vacante' }}</strong>

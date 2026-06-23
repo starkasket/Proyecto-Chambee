@@ -10,6 +10,7 @@
   --text-secondary: #5f6368;
   --border-soft: rgba(17, 17, 17, 0.08);
   --navbar-bg: #fcce34;
+  --navbar-text: #111111;
   --accent-surface: #f4c430;
   --accent-text: #111111;
   --accent-muted: #9a7a00;
@@ -44,6 +45,7 @@ body.dark-theme {
   --text-secondary: #b1bac7;
   --border-soft: rgba(255, 255, 255, 0.1);
   --navbar-bg: #fcce34;
+  --navbar-text: #111111;
   --accent-surface: #f0c542;
   --accent-text: #111111;
   --accent-muted: #d4a400;
@@ -80,6 +82,154 @@ body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar-chambee {
+  color: var(--navbar-text);
+}
+
+body.dark-theme .navbar-chambee,
+body.dark-theme .navbar-chambee .menu,
+body.dark-theme .navbar-chambee .notification-bell,
+body.dark-theme .navbar-chambee .fs-5 {
+  color: var(--navbar-text) !important;
+}
+
+body.dark-theme .modal-content {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-float);
+}
+
+body.dark-theme .modal-content p {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .text-danger {
+  color: #f87171 !important;
+}
+
+body.dark-theme .text-success {
+  color: #86efac !important;
+}
+
+.navbar-chambee .search-container input {
+  border: 1px solid var(--border-soft) !important;
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+.navbar-chambee .search-container input::placeholder {
+  color: rgba(17, 17, 17, 0.58) !important;
+  opacity: 1 !important;
+}
+
+body.dark-theme .navbar-chambee .search-container input {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+body.dark-theme .navbar-chambee .search-container input::placeholder {
+  color: rgba(248, 250, 252, 0.72) !important;
+}
+
+body.dark-theme .navbar-chambee .desktop-menu,
+body.dark-theme .navbar-chambee .mobile-menu-panel {
+  background: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-soft) !important;
+}
+
+body.dark-theme .navbar-chambee .desktop-menu-link,
+body.dark-theme .navbar-chambee .mobile-nav-link {
+  color: var(--text-primary) !important;
+  background: transparent;
+}
+
+body.dark-theme .navbar-chambee .desktop-menu-link:hover,
+body.dark-theme .navbar-chambee .mobile-nav-link:hover {
+  background: var(--surface-secondary) !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"],
+.navbar-chambee .btn-profile,
+.navbar-chambee .btn-profile-navbar,
+.navbar-chambee .profile-chip {
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 6px 16px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(17, 17, 17, 0.16) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: #111111 !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"] span,
+.navbar-chambee .btn-profile span,
+.navbar-chambee .btn-profile-navbar span,
+.navbar-chambee .profile-chip span,
+.navbar-chambee button[title="Ir a mi perfil"] i,
+.navbar-chambee .btn-profile i,
+.navbar-chambee .btn-profile-navbar i,
+.navbar-chambee .profile-chip i {
+  color: #111111 !important;
+}
+
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"],
+body.dark-theme .navbar-chambee .btn-profile,
+body.dark-theme .navbar-chambee .btn-profile-navbar,
+body.dark-theme .navbar-chambee .profile-chip {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.22) !important;
+}
+
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"] span,
+body.dark-theme .navbar-chambee .btn-profile span,
+body.dark-theme .navbar-chambee .btn-profile-navbar span,
+body.dark-theme .navbar-chambee .profile-chip span,
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"] i,
+body.dark-theme .navbar-chambee .btn-profile i,
+body.dark-theme .navbar-chambee .btn-profile-navbar i,
+body.dark-theme .navbar-chambee .profile-chip i {
+  color: #ffffff !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"] img,
+.navbar-chambee .btn-profile img,
+.navbar-chambee .btn-profile-navbar img,
+.navbar-chambee .profile-chip img {
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(255, 255, 255, 0.75) !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"]:hover,
+.navbar-chambee .btn-profile:hover,
+.navbar-chambee .btn-profile-navbar:hover,
+.navbar-chambee .profile-chip:hover {
+  background: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"]:hover,
+body.dark-theme .navbar-chambee .btn-profile:hover,
+body.dark-theme .navbar-chambee .btn-profile-navbar:hover,
+body.dark-theme .navbar-chambee .profile-chip:hover {
+  background: #0b1220 !important;
 }
 
 .container {

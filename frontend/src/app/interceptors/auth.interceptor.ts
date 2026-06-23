@@ -5,12 +5,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Injectable()
-export class authInterceptor implements HttpInterceptor {
+export class AuthInterceptor implements HttpInterceptor {
 
   constructor(private authApi: AuthService, private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-
     const token = this.authApi.getToken();
 
     let authReq = req;
@@ -25,7 +24,6 @@ export class authInterceptor implements HttpInterceptor {
 
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
-
         console.log('Interceptor error:', error.status);
 
         if (error.status === 401) {

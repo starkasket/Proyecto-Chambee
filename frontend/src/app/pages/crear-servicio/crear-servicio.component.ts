@@ -25,6 +25,12 @@ export class CrearServicioComponent implements OnInit {
   servicioForm: FormGroup;
   
   foto_perfil = ''; 
+  previewUrl: string | null = null;
+  archivoSeleccionado: File | null = null;
+  fileName = 'Ningún archivo seleccionado';
+  subiendoImagen = false;
+  urlImagenSubida = '';
+  mostrarEliminar = false;
 
   // Variables para la edición
   esEdicion = false;
@@ -123,6 +129,13 @@ export class CrearServicioComponent implements OnInit {
               colonia: servicioAModificar.colonia || '',
               calle: servicioAModificar.calle || ''
             });
+
+            if (servicioAModificar.img) {
+              this.previewUrl = servicioAModificar.img;
+              this.urlImagenSubida = servicioAModificar.img;
+              this.fileName = 'Imagen del servicio cargada';
+              this.mostrarEliminar = true;
+            }
           }
         }
       });
@@ -130,30 +143,43 @@ export class CrearServicioComponent implements OnInit {
   }
 
   // Ahora con alertas para saber exactamente qué pasa
-  publicar(esBorrador: boolean = false) {
-    if (this.servicioForm.valid) {
-      this.guardando = true; // Activa el spinner
-      
+  async publicar(esBorrador: boolean = false) {
+    if (!this.servicioForm.valid) {
+      Object.keys(this.servicioForm.controls).forEach(key => {
+        const control = this.servicioForm.get(key);
+        if (control) control.markAsTouched();
+      });
+      this.mostrarModalError('¡El formulario es inválido! Revisa que no te falte el título, la descripción o los datos de dirección.');
+      return;
+    }
+
+    this.guardando = true;
+
+    try {
+      if (this.archivoSeleccionado && !this.urlImagenSubida) {
+        await this.subirImagen();
+      }
+
       const form = this.servicioForm.value;
-      // Juntamos los datos para mandarlos como "ubicacion" al backend
       const ubicacionString = `${form.colonia || ''}, ${form.ciudad || ''}, ${form.estado || ''}`;
 
       const payload = {
         ...form,
         ubicacion: ubicacionString,
-        esBorrador: esBorrador
+        esBorrador: esBorrador,
+        img: this.urlImagenSubida || null
       };
 
       if (this.esEdicion) {
         this.serviciosService.actualizarServicio(this.idServicioActual, payload).subscribe({
           next: () => {
             this.guardando = false;
-            this.mostrarModalExito("El servicio se actualizó correctamente.");
+            this.mostrarModalExito('El servicio se actualizó correctamente.');
           },
           error: (err) => {
             this.guardando = false;
             console.error(err);
-            this.mostrarModalError("Error del servidor: " + err.message);
+            this.mostrarModalError('Error del servidor: ' + err.message);
           }
         });
       } else {
@@ -164,26 +190,97 @@ export class CrearServicioComponent implements OnInit {
           next: () => {
             this.guardando = false;
             if (esBorrador == true) {
-              this.mostrarModalExito("Se guardó tu borrador correctamente.");
+              this.mostrarModalExito('Se guardó tu borrador correctamente.');
             } else {
-              this.mostrarModalExito("El servicio se creó correctamente.");
+              this.mostrarModalExito('El servicio se creó correctamente.');
             }
           },
           error: (err) => {
             this.guardando = false;
             console.error(err);
-            this.mostrarModalError("Error del servidor al crear: " + err.message);
+            this.mostrarModalError('Error del servidor al crear: ' + err.message);
           }
         });
       }
-      
-    } else {
-      Object.keys(this.servicioForm.controls).forEach(key => {
-        const control = this.servicioForm.get(key);
-        if (control) control.markAsTouched();
-      });
-      this.mostrarModalError('¡El formulario es inválido! Revisa que no te falte el título, la descripción o los datos de dirección.');
+    } catch (err: any) {
+      this.guardando = false;
+      this.mostrarModalError(err?.message || 'Error al subir la imagen. Intenta de nuevo.');
     }
+  }
+
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const archivo = input.files[0];
+
+    if (archivo.size > 2 * 1024 * 1024) {
+      this.mostrarModalError('La imagen no puede superar los 2 MB.');
+      return;
+    }
+
+    this.archivoSeleccionado = archivo;
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
+    this.fileName = archivo.name.length > 30
+      ? archivo.name.substring(0, 27) + '...'
+      : archivo.name;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewUrl = e.target?.result as string;
+    };
+    reader.readAsDataURL(archivo);
+  }
+
+  async subirImagen(): Promise<string> {
+    if (!this.archivoSeleccionado) {
+      return this.urlImagenSubida;
+    }
+
+    this.subiendoImagen = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', this.archivoSeleccionado);
+      formData.append('upload_preset', 'chambee_upload');
+
+      const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        throw new Error('No se pudo subir la imagen.');
+      }
+
+      const data = await res.json();
+      if (!data?.secure_url) {
+        throw new Error('La respuesta de la imagen no fue válida.');
+      }
+
+      this.urlImagenSubida = data.secure_url;
+      this.mostrarEliminar = true;
+      return this.urlImagenSubida;
+    } finally {
+      this.subiendoImagen = false;
+    }
+  }
+
+  async subirImagenManual(): Promise<void> {
+    try {
+      await this.subirImagen();
+    } catch (err: any) {
+      this.mostrarModalError(err?.message || 'Error al subir la imagen. Intenta de nuevo.');
+    }
+  }
+
+  eliminarImagen(): void {
+    this.previewUrl = null;
+    this.archivoSeleccionado = null;
+    this.fileName = 'Ningún archivo seleccionado';
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
   }
 
   // --- FUNCIONES EXTRA QUE PIDE EL HTML --- //

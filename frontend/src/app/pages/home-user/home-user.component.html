@@ -111,17 +111,17 @@
       <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
         style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
       <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
-      <span class="d-none d-md-block">Mi Perfil</span>
+      <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
     <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
       [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
       <span class="theme-toggle-track">
-        <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
       </span>
     </button>
 
-    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menu" role="button">☰</div>
+    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
 
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
@@ -138,7 +138,7 @@
 
   <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
     <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <button class="mobile-close" aria-label="Cerrar menu" (click)="toggleMenu()">✕</button>
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
         <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
         </div>
@@ -247,7 +247,7 @@
 
     <ng-template #noFeaturedJobs>
       <div class="empty-jobs-state">
-        Aun no hay ofertas publicadas.
+        Aún no hay ofertas publicadas.
       </div>
     </ng-template>
 
@@ -280,7 +280,7 @@
 
     <ng-template #noJobsGrid>
       <div class="empty-jobs-state">
-        Las nuevas vacantes apareceran aqui en cuanto se publiquen.
+        Las nuevas vacantes aparecerán aquí en cuanto se publiquen.
       </div>
     </ng-template>
 
@@ -402,7 +402,7 @@
     <div class="services-list">
       <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)"
         role="button" tabindex="0" style="position: relative;">
-        <img [src]="service.img" [alt]="service.title" />
+        <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div style="flex: 1;">
           <h5 class="service-title">{{ service.title }}</h5>
           <p class="service-desc">{{ service.description }}</p>
@@ -444,27 +444,27 @@
                   </label>
 
                   <label class="support-field">
-                    <span>Telefono</span>
-                    <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 digitos" required
+                    <span>Teléfono</span>
+                    <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required
                       pattern="^[0-9]{10}$" maxlength="10" />
                     <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es
                       obligatorio.</small>
                   </label>
 
                   <label class="support-field">
-                    <span>Correo electronico</span>
+                    <span>Correo electrónico</span>
                     <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required
                       email />
                     <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo
-                      valido.</small>
+                      válido.</small>
                   </label>
 
                   <label class="support-field support-field-span-2">
                     <span>Asunto</span>
                     <select name="asunto" ngModel #asunto="ngModel" required>
-                      <option value="">Selecciona una opcion</option>
+                      <option value="">Selecciona una opción</option>
                       <option value="error-cuenta">Problema con mi cuenta</option>
-                      <option value="publicacion">Problema con una publicacion</option>
+                      <option value="publicación">Problema con una publicación</option>
                       <option value="pagos">Pagos o suscripciones</option>
                       <option value="otro">Otro</option>
                     </select>
@@ -495,7 +495,7 @@
             <div class="faq-header">
               <p class="faq-eyebrow">Ayuda Chambee</p>
               <h3>Preguntas Frecuentes</h3>
-              <p>Resolvemos las dudas mas comunes de nuestros usuarios.</p>
+              <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
             </div>
 
             <div class="faq-list">
@@ -522,7 +522,7 @@
                   <h4>Publicar un empleo tiene costo?</h4>
                   <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
                 </div>
-                <p *ngIf="faqOpen === 2" class="faq-answer">Depende del tipo de publicacion. Ofrecemos opciones
+                <p *ngIf="faqOpen === 2" class="faq-answer">Depende del tipo de publicación. Ofrecemos opciones
                   gratuitas y premium.</p>
               </div>
 
@@ -532,7 +532,7 @@
                   <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
                 </div>
                 <p *ngIf="faqOpen === 3" class="faq-answer">Puedes usar el formulario de soporte que se encuentra arriba
-                  en esta pagina.</p>
+                  en esta página.</p>
               </div>
             </div>
           </div>

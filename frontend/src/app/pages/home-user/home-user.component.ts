@@ -45,6 +45,16 @@ interface NotificationItem {
   read: boolean;
 }
 
+interface SearchResult {
+  id?: string | number;
+  id_servicio?: string | number;
+  title?: string;
+  company?: string;
+  categoria?: string;
+  tipo: 'empleo' | 'servicio';
+  [key: string]: any;
+}
+
 @Component({
   selector: 'app-home-user',
   standalone: true,
@@ -193,7 +203,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           mode: anuncio.modalidad,
           urgency: anuncio.urgencia || 'Normal',
           description: anuncio.descripcion,
-          img: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=60',
+          img: anuncio.img || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=60',
           tags: anuncio.categorias || [],
           matchScore: anuncio.__score
         }));
@@ -205,7 +215,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           company: anuncio.nombre_empresa || 'Empresa Confidencial',
           title: anuncio.titulo,
           salary: this.formatearSalario(anuncio.salario),
-          img: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
+          img: anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
           urgency: anuncio.urgencia || 'Normal',
           rating: anuncio.modalidad || 'Empleo',
           applicants: anuncio.vistas || 0,
@@ -560,13 +570,12 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- LÓGICA DEL BUSCADOR ESTILO COURSERA (PRO) ---
-  
+  // --- LOGICA DEL BUSCADOR ESTILO COURSERA (PRO) ---
   onSearchInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.searchTerm = value;
-    this.showSearchDropdown = true; // Mostrar siempre, ya sea historial o resultados
-    
+    this.showSearchDropdown = true;
+
     if (value.trim().length > 0) {
       this.searchSubject.next(value);
     } else {
@@ -575,17 +584,18 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   ejecutarBusqueda(query: string) {
-    const lowerQuery = query.toLowerCase();
-    
+    const lowerQuery = this.normalizarTexto(query);
+
     const jobsResults = this.jobs.filter(job =>
-      job.title.toLowerCase().includes(lowerQuery) ||
-      job.company.toLowerCase().includes(lowerQuery) ||
-      job.tags.some(t => t.toLowerCase().includes(lowerQuery))
+      this.normalizarTexto(job.title).includes(lowerQuery) ||
+      this.normalizarTexto(job.company).includes(lowerQuery) ||
+      job.tags.some(t => this.normalizarTexto(t).includes(lowerQuery))
     ).map(j => ({ ...j, tipo: 'empleo' }));
 
     const servicesResults = this.services.filter(service =>
-      service.title.toLowerCase().includes(lowerQuery) ||
-      (service.description && service.description.toLowerCase().includes(lowerQuery))
+      this.normalizarTexto(service.title).includes(lowerQuery) ||
+      this.normalizarTexto(service.description).includes(lowerQuery) ||
+      this.normalizarTexto(service.categoria).includes(lowerQuery)
     ).map(s => ({ ...s, tipo: 'servicio' }));
 
     this.searchResults = [...jobsResults, ...servicesResults].slice(0, 6);
@@ -598,37 +608,38 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   irAResultado(resultado: any) {
-    this.guardarBusquedaReciente(this.searchTerm || resultado.title);
+    this.guardarBusquedaReciente(this.searchTerm || resultado.title || resultado.categoria || '');
     this.showSearchDropdown = false;
-    this.searchTerm = ''; 
-    
+    this.searchTerm = '';
+
     if (resultado.tipo === 'empleo') {
       this.openJob(resultado.id);
     } else {
       const idx = this.services.findIndex(s => (s.id_servicio || s.id) === (resultado.id_servicio || resultado.id));
-      if(idx !== -1) this.openService(idx);
+      if (idx !== -1) this.openService(idx);
     }
   }
-
-  // --- NUEVAS FUNCIONES PRO ---
 
   cargarBusquedasRecientes() {
     const stored = localStorage.getItem('chambee_busquedas_recientes');
     if (stored) {
-      try { this.recentSearches = JSON.parse(stored); } catch(e) {}
+      try {
+        this.recentSearches = JSON.parse(stored);
+      } catch {
+        this.recentSearches = [];
+      }
     }
   }
 
   guardarBusquedaReciente(term: string) {
-    if(!term || term.trim() === '') return;
+    if (!term || term.trim() === '') return;
+
     let searches = [...this.recentSearches];
-    // Evitar duplicados
-    searches = searches.filter(t => t.toLowerCase() !== term.toLowerCase());
-    // Agregar al inicio
+    searches = searches.filter(t => this.normalizarTexto(t) !== this.normalizarTexto(term));
     searches.unshift(term);
-    // Guardar solo las últimas 4
-    if(searches.length > 4) searches = searches.slice(0, 4);
-    
+
+    if (searches.length > 4) searches = searches.slice(0, 4);
+
     this.recentSearches = searches;
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
@@ -641,15 +652,19 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   verTodosResultados() {
     this.guardarBusquedaReciente(this.searchTerm);
     this.showSearchDropdown = false;
-    // Te redirige a la vista general de trabajos pasando el término en la URL
     this.router.navigate(['/jobs'], { queryParams: { q: this.searchTerm } });
   }
 
-  highlightText(text: string, query: string): string {
-    if (!query || !text) return text;
-    // Escapa caracteres especiales y envuelve la coincidencia en un span
+  highlightText(text: string | null | undefined, query: string): string {
+    if (!text) return '';
+    if (!query) return text;
+
     const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     const regex = new RegExp(`(${safeQuery})`, 'gi');
     return text.replace(regex, '<span class="text-highlight">$1</span>');
+  }
+
+  private normalizarTexto(value: unknown): string {
+    return String(value ?? '').toLowerCase().trim();
   }
 }

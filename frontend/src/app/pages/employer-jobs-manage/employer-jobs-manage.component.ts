@@ -10,6 +10,7 @@ interface JobManageItem {
   id: string;
   titulo: string;
   descripcion: string;
+  img?: string | null;
   ubicacion: string;
   fecha: string;
   candidatos: number;
@@ -62,6 +63,12 @@ export class EmployerJobsManageComponent implements OnInit {
   sepomex: any[] = [];
   originalFormValue: ReturnType<EmployerJobsManageComponent['form']['getRawValue']> | null = null;
   modalMensajePendiente: string = '';
+  previewUrl: string | null = null;
+  archivoSeleccionado: File | null = null;
+  fileName = 'Ningun archivo seleccionado';
+  subiendoImagen = false;
+  urlImagenSubida = '';
+  mostrarEliminarImagen = false;
 
   notifications: NotificationItem[] = [
     { id: 1, title: 'Tip de publicación', message: 'Mantén tus vacantes actualizadas para recibir mejores candidatos.', time: 'Hace 12 min', read: false },
@@ -152,6 +159,7 @@ export class EmployerJobsManageComponent implements OnInit {
           id: anuncio.id_anuncio,
           titulo: anuncio.titulo,
           descripcion: anuncio.descripcion,
+          img: anuncio.img || null,
           ubicacion: `${anuncio.ciudad}, ${anuncio.estado}`,
           fecha: this.formatearFecha(anuncio.fecha_publicacion),
           candidatos: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
@@ -175,6 +183,7 @@ export class EmployerJobsManageComponent implements OnInit {
           this.seleccionarVacante(id);
         } else {
           this.vacanteSeleccionadaId = '';
+          this.resetImageState(null);
           this.form.reset({
             titulo: '',
             descripcion: '',
@@ -244,11 +253,89 @@ export class EmployerJobsManageComponent implements OnInit {
     });
     this.originalFormValue = this.form.getRawValue();
     this.form.markAsPristine();
+    this.resetImageState(vacante);
 
     this.buscarCP(false);
   }
 
-  guardarCambios() {
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const archivo = input.files[0];
+
+    if (archivo.size > 2 * 1024 * 1024) {
+      this.mostrarModal('La imagen no puede superar los 2 MB.');
+      return;
+    }
+
+    this.archivoSeleccionado = archivo;
+    this.urlImagenSubida = '';
+    this.mostrarEliminarImagen = false;
+    this.fileName = archivo.name.length > 30 ? archivo.name.substring(0, 27) + '...' : archivo.name;
+    this.form.markAsDirty();
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewUrl = e.target?.result as string;
+    };
+    reader.readAsDataURL(archivo);
+  }
+
+  async subirImagen(): Promise<string> {
+    if (!this.archivoSeleccionado) {
+      return this.urlImagenSubida;
+    }
+
+    this.subiendoImagen = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', this.archivoSeleccionado);
+      formData.append('upload_preset', 'chambee_upload');
+
+      const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        throw new Error('No se pudo subir la imagen.');
+      }
+
+      const data = await res.json();
+      if (!data?.secure_url) {
+        throw new Error('La respuesta de la imagen no fue valida.');
+      }
+
+      this.urlImagenSubida = data.secure_url;
+      this.archivoSeleccionado = null;
+      this.fileName = 'Imagen guardada';
+      this.mostrarEliminarImagen = true;
+      return this.urlImagenSubida;
+    } finally {
+      this.subiendoImagen = false;
+    }
+  }
+
+  async subirImagenManual(): Promise<void> {
+    try {
+      await this.subirImagen();
+    } catch (err: any) {
+      this.mostrarModal(err?.message || 'Error al subir la imagen.');
+    }
+  }
+
+  eliminarImagen(): void {
+    this.previewUrl = null;
+    this.archivoSeleccionado = null;
+    this.fileName = 'Ningun archivo seleccionado';
+    this.urlImagenSubida = '';
+    this.mostrarEliminarImagen = false;
+    this.form.markAsDirty();
+  }
+
+  async guardarCambios() {
     if (!this.vacanteSeleccionadaId) {
       return;
     }
@@ -265,7 +352,23 @@ export class EmployerJobsManageComponent implements OnInit {
     this.cerrarModal();
     this.modalMensajePendiente = 'La vacante se actualizó correctamente.';
 
-    this.api.actualizarAnuncioEmpleador(this.employerId, this.vacanteSeleccionadaId, this.form.getRawValue()).subscribe({
+    if (this.archivoSeleccionado && !this.urlImagenSubida) {
+      try {
+        await this.subirImagen();
+      } catch (err: any) {
+        this.guardando = false;
+        this.modalMensajePendiente = '';
+        this.mostrarModal(err?.message || 'Error al subir la imagen.');
+        return;
+      }
+    }
+
+    const payload = {
+      ...this.form.getRawValue(),
+      img: this.urlImagenSubida || null
+    };
+
+    this.api.actualizarAnuncioEmpleador(this.employerId, this.vacanteSeleccionadaId, payload).subscribe({
       next: () => {
         this.guardando = false;
         this.cargarVacantes();
@@ -343,6 +446,7 @@ export class EmployerJobsManageComponent implements OnInit {
 
     this.form.reset(this.originalFormValue);
     this.form.markAsPristine();
+    this.resetImageState(this.vacanteSeleccionada);
     this.buscarCP(false);
   }
 
@@ -496,6 +600,14 @@ export class EmployerJobsManageComponent implements OnInit {
 
 
 
+
+  private resetImageState(vacante: JobManageItem | null) {
+    this.previewUrl = vacante?.img || null;
+    this.archivoSeleccionado = null;
+    this.urlImagenSubida = vacante?.img || '';
+    this.fileName = vacante?.img ? 'Imagen de la vacante cargada' : 'Ningun archivo seleccionado';
+    this.mostrarEliminarImagen = Boolean(vacante?.img);
+  }
 
   mostrarModalExito(mensaje: string) {
     this.modalMensaje = mensaje;

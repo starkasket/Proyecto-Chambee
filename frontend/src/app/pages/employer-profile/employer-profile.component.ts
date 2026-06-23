@@ -207,7 +207,7 @@ export class EmployerProfileComponent implements OnInit {
           candidatos: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
           vacante: anuncio.titulo,
           resumen: anuncio.descripcion,
-          imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
+          imagen: anuncio.img || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
         }));
       },
       error: () => {
