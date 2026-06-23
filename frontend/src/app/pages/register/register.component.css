@@ -124,23 +124,75 @@
   cursor: pointer;
 }
 
-.modal{ 
-display:none;
- background:rgba(0,0,0,0.5);
-  position:fixed; inset:0; 
-  z-index:9998; 
-  align-items:center; 
-  justify-content:center;
-
+/* ── MODALES ANGULAR ── */
+.rg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 
-.modalSaludo{
-  display:none;
- background:rgba(0,0,0,0.5);
-  position:fixed; inset:0; 
-  z-index:9998; 
-  align-items:center; 
-  justify-content:center;
+.rg-modal-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.rg-modal-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+}
+
+.rg-modal-overlay.visible .rg-modal-card {
+  transform: scale(1);
+}
+
+.rg-modal-img {
+  height: 150px;
+  margin-bottom: 16px;
+}
+
+.rg-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+.rg-modal-title.success { color: #2e7d32; }
+.rg-modal-title.error   { color: #c62828; }
+
+.rg-modal-msg {
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.rg-modal-btn {
+  background: #FCCE34;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 36px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.rg-modal-btn:hover {
+  background: #e5b92d;
 }
 
 .support-error {

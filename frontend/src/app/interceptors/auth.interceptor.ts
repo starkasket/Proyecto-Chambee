@@ -27,8 +27,15 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log('Interceptor error:', error.status);
 
         if (error.status === 401) {
-          this.authApi.logout();
-          this.router.navigateByUrl('/login', { replaceUrl: true });
+          // (registro, onboarding de preferencias)
+          const rutasExcluidas = ['/register', '/job-preferences', '/employer-register'];
+          const rutaActual = this.router.url;
+          const enRutaExcluida = rutasExcluidas.some(r => rutaActual.startsWith(r));
+
+          if (!enRutaExcluida) {
+            this.authApi.logout();
+            this.router.navigateByUrl('/login', { replaceUrl: true });
+          }
         }
 
         return throwError(() => error);

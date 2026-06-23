@@ -58,6 +58,8 @@ export class RegisterComponent implements OnInit {
 
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
+  modalErrorVisible = false;
+  modalExitoVisible = false;
 
   constructor(private api: ApiService, private router: Router) { }
 
@@ -69,37 +71,22 @@ export class RegisterComponent implements OnInit {
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
-    const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-    }
+    this.modalErrorVisible = true;
   }
 
   cerrarModal() {
-    const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
+    this.modalErrorVisible = false;
+    this.modalMensaje = '';
   }
 
   // --- MODAL DE ÉXITO ---
   mostrarModalExito(mensaje: string) {
     this.modalMensaje = mensaje;
-    const modal = document.getElementById('modalSaludo');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-    }
+    this.modalExitoVisible = true;
   }
 
   cerrarModalExito() {
-    const modal = document.getElementById('modalSaludo');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
+    this.modalExitoVisible = false;
     this.router.navigate(['/job-preferences']);
   }
 

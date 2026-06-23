@@ -2,6 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+
+interface Categoria {
+  nombre: string;
+  icono: string;
+  descripcion: string;
+}
 
 @Component({
   selector: 'app-job-preferences',
@@ -11,23 +18,65 @@ import { ApiService } from '../../services/api.service';
   styleUrl: './job-preferences.component.css'
 })
 export class JobPreferencesComponent implements OnInit {
-  tags: string[] = [];
-  modalMensaje = '';
+  categorias: Categoria[] = [];
   selectedTags: string[] = [];
   guardando = false;
+  cargando = true;
+
+  // Modal state
+  modalVisible = false;
+  modalMensaje = '';
+
+  // Mapa de iconos por categoría
+  private iconosMap: Record<string, string> = {
+    'Tecnología / TI': '💻',
+    'Administración / Oficina': '🗂️',
+    'Ventas': '📈',
+    'Atención al cliente': '🎧',
+    'Marketing / Publicidad': '📣',
+    'Diseño': '🎨',
+    'Educación / Docencia': '📚',
+    'Salud / Medicina': '🏥',
+    'Ingeniería': '⚙️',
+    'Construcción / Obra': '🏗️',
+    'Manufactura / Producción': '🏭',
+    'Logística / Transporte': '🚚',
+    'Restaurantes / Gastronomía': '🍽️',
+    'Turismo / Hotelería': '🏨',
+    'Servicios de limpieza': '🧹',
+    'Seguridad / Vigilancia': '🔒',
+    'Recursos Humanos': '👥',
+    'Finanzas / Contabilidad': '💰',
+    'Legal / Derecho': '⚖️',
+    'Agricultura / Ganadería': '🌾',
+    'Servicios técnicos / Mantenimiento': '🔧',
+  };
 
   constructor(
     private router: Router,
-    private api: ApiService
+    private api: ApiService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    // Si no hay token válido, redirigir al login
+    if (!this.authService.getToken()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.api.obtenerCategorias().subscribe({
-      next: (categorias) => {
-        this.tags = categorias.map((categoria) => categoria.nombre);
+      next: (cats) => {
+        this.categorias = cats.map((c: any) => ({
+          nombre: c.nombre,
+          icono: this.iconosMap[c.nombre] ?? '🔹',
+          descripcion: c.descripcion ?? ''
+        }));
+        this.cargando = false;
       },
       error: () => {
-        this.tags = [];
+        this.categorias = [];
+        this.cargando = false;
       }
     });
 
@@ -43,33 +92,36 @@ export class JobPreferencesComponent implements OnInit {
 
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
-    const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-    }
+    this.modalVisible = true;
   }
 
   cerrarModal() {
-    const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
+    this.modalVisible = false;
+    this.modalMensaje = '';
   }
 
-  toggleTag(tag: string) {
-    const index = this.selectedTags.indexOf(tag);
+  toggleTag(nombre: string) {
+    const index = this.selectedTags.indexOf(nombre);
     if (index > -1) {
       this.selectedTags.splice(index, 1);
     } else {
-      this.selectedTags.push(tag);
+      this.selectedTags.push(nombre);
     }
+  }
+
+  isSelected(nombre: string): boolean {
+    return this.selectedTags.includes(nombre);
   }
 
   saveAndContinue() {
     if (this.selectedTags.length === 0) {
-      this.mostrarModal('Elige al menos una etiqueta para personalizar tus recomendaciones.');
+      this.mostrarModal('Elige al menos una categoría para personalizar tus recomendaciones.');
+      return;
+    }
+
+    const token = this.authService.getToken();
+    if (!token) {
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -79,9 +131,14 @@ export class JobPreferencesComponent implements OnInit {
         this.guardando = false;
         this.router.navigate(['/home-user']);
       },
-      error: () => {
+      error: (err: any) => {
         this.guardando = false;
-        this.mostrarModal('No fue posible guardar tus intereses. Intenta nuevamente.');
+        if (err?.status === 401 || err?.status === 403) {
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        } else {
+          this.mostrarModal('No fue posible guardar tus intereses. Intenta nuevamente.');
+        }
       }
     });
   }

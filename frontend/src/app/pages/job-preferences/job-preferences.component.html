@@ -1,57 +1,102 @@
-<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
-  <div class="d-flex align-items-center gap-2">
-    <img src="assets/LogoChambee.png" alt="Chambee" height="60">
+<!-- NAVBAR -->
+<nav class="jp-navbar">
+  <div class="jp-navbar-brand">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="52">
+  </div>
+  <div class="jp-navbar-steps">
+    <span class="step done">✓ Registro</span>
+    <span class="step-divider"></span>
+    <span class="step active">Intereses</span>
+    <span class="step-divider"></span>
+    <span class="step">Inicio</span>
   </div>
 </nav>
 
-<div class="page-bg">
-  <div class="fondo-registro-card">
-    <div class="registro-card" style="max-width: 600px; padding: 40px;">
-
-      <!-- MODAL DE ERROR -->
-<div id="modalAlerta" class="modal" tabindex="-1"
->  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaMigajera.png" alt="alerta" height="200px" class="mb-3"/>
-        <h5 class="text-danger fw-bold">¡Atención!</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
-      </div>
-    </div>
+<!-- MODAL OVERLAY -->
+<div class="jp-modal-overlay" [class.visible]="modalVisible" (click)="cerrarModal()">
+  <div class="jp-modal-card" (click)="$event.stopPropagation()">
+    <img src="assets/abejaMigajera.png" alt="alerta" class="jp-modal-img">
+    <h5 class="jp-modal-title">¡Atención!</h5>
+    <p class="jp-modal-msg">{{ modalMensaje }}</p>
+    <button class="jp-btn-primary" (click)="cerrarModal()">Aceptar</button>
   </div>
 </div>
-      
-      <div class="text-center mb-4 mt-2">
-        <h3 class="fw-bold" style="color: #2c3e50;">¿En qué áreas te gustaría trabajar?</h3>
-        <p class="text-muted mt-2">Selecciona tus intereses para mostrarte las mejores opciones.</p>
+
+<!-- FONDO PRINCIPAL -->
+<div class="jp-page">
+
+  <!-- HERO HEADER -->
+  <div class="jp-hero">
+    <h1 class="jp-hero-title">¿En qué áreas te gustaría trabajar?</h1>
+    <p class="jp-hero-subtitle">
+      Selecciona las categorías que más te interesan y te mostraremos las mejores oportunidades.
+    </p>
+
+    @if (selectedTags.length > 0) {
+      <div class="jp-selection-count">
+        <span class="jp-count-badge">{{ selectedTags.length }}</span>
+        {{ selectedTags.length === 1 ? 'categoría seleccionada' : 'categorías seleccionadas' }}
       </div>
+    }
+  </div>
 
-      <div class="d-flex flex-wrap justify-content-center gap-3 mb-5 mt-4">
-        <button 
-          *ngFor="let tag of tags" 
-          class="btn rounded-pill px-4 py-2 custom-tag d-flex align-items-center gap-2"
-          [class.active-tag]="selectedTags.includes(tag)"
-          (click)="toggleTag(tag)">
-          <span>{{ tag }}</span>
-          <span class="simbolo-amarillo fw-bold fs-5">+</span>
-        </button>
+  <!-- CONTENEDOR DE CATEGORÍAS -->
+  <div class="jp-content">
+
+    <!-- LOADING -->
+    @if (cargando) {
+      <div class="jp-loading">
+        <div class="jp-spinner"></div>
+        <p>Cargando categorías...</p>
       </div>
+    }
 
-      <div class="d-flex flex-column align-items-center mt-2 gap-2">
-        
-        <button class="btn-crear w-100" type="button" (click)="saveAndContinue()">
-          {{ guardando ? 'Guardando...' : 'Hecho' }}
+    <!-- GRID DE CATEGORÍAS -->
+    @if (!cargando) {
+      <div class="jp-grid">
+        @for (cat of categorias; track cat.nombre) {
+          <button
+            class="jp-card"
+            [class.jp-card--selected]="isSelected(cat.nombre)"
+            (click)="toggleTag(cat.nombre)"
+            type="button"
+          >
+            <div class="jp-card-check" [class.visible]="isSelected(cat.nombre)">✓</div>
+            <span class="jp-card-icon">{{ cat.icono }}</span>
+            <span class="jp-card-name">{{ cat.nombre }}</span>
+            @if (cat.descripcion) {
+              <span class="jp-card-desc">{{ cat.descripcion }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
+
+    <!-- ACCIONES -->
+    @if (!cargando) {
+      <div class="jp-actions">
+        <button
+          class="jp-btn-primary jp-btn-done"
+          type="button"
+          [disabled]="guardando"
+          (click)="saveAndContinue()"
+        >
+          @if (guardando) {
+            <span class="jp-spinner-sm"></span> Guardando...
+          } @else {
+            Empezemos
+          }
         </button>
 
-        <button class="btn btn-link text-secondary text-decoration-none mt-2" (click)="skipPreferences()">
+        <button
+          class="jp-btn-skip"
+          type="button"
+          (click)="skipPreferences()"
+        >
           Omitir por ahora
         </button>
-        
       </div>
+    }
 
-    </div>
   </div>
 </div>

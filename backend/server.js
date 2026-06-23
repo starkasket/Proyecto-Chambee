@@ -125,7 +125,10 @@ const verifyToken = async (req, res, next) => {
 
     const currentVersion = result.rows[0].token_version;
 
-    if (decoded.tokenVersion !== currentVersion) {
+    // Si el token no trae tokenVersion (tokens legacy sin el campo),
+    // solo se rechaza si la versión en BD no es 0 (es decir, hubo logout forzado)
+    const tokenVersion = decoded.tokenVersion !== undefined ? decoded.tokenVersion : 0;
+    if (tokenVersion !== currentVersion) {
       return res.status(401).json({ error: "Sesión expirada" })
     } 
 
@@ -298,7 +301,8 @@ app.post("/postulantes/registro", async (req, res) => {
       {
         id: user.id,
         correo: user.correo,
-        rol: user.rol
+        rol: user.rol,
+        tokenVersion: user.token_version
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -354,7 +358,8 @@ app.post("/empleadores/registro", async (req, res) => {
       {
         id: user.id,
         correo: user.correo,
-        rol: user.rol
+        rol: user.rol,
+        tokenVersion: user.token_version
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
