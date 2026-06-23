@@ -2525,11 +2525,11 @@ async function ensureDatabaseSchema() {
       DO $$
       BEGIN
         IF NOT EXISTS (
-          SELECT 1
-          FROM pg_constraint
+          SELECT 1 
+          FROM pg_constraint 
           WHERE conname = 'unique_postulante_empleador'
         ) THEN
-          ALTER TABLE postulante_valoracion
+          ALTER TABLE postulante_valoracion 
           ADD CONSTRAINT unique_postulante_empleador UNIQUE (id_postulante, id_empleador);
         END IF;
       END;
