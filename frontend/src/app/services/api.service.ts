@@ -214,4 +214,7 @@ export class ApiService {
     };
     return this.http.delete<any>(`${this.apiUrl}/comentarios/${idComentario}`, options);
   }
+  aceptarPostulante(idPostulante: string) {
+    return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {});
+  }
 }

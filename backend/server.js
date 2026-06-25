@@ -2502,7 +2502,39 @@ app.patch("/servicios/:id/publicar", verifyToken, authorizeRoles("postulante"), 
 });
 
 
+/* ===== ACEPTAR POSTULANTE (SEGUIMIENTO) ===== */
+app.patch("/empleadores/postulantes/:idPostulante/aceptar", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { idPostulante } = req.params;
+  const idEmpleador = req.user.id;
 
+  try {
+    // 1. Actualizar el estado en la base de datos a "Aceptado"
+    // Buscamos las postulaciones de este candidato que pertenezcan a los anuncios de este empleador
+    await pool.query(`
+      UPDATE postulacion
+      SET estado = 'Aceptado'
+      WHERE id_postulante = $1 AND id_anuncio IN (
+        SELECT id_anuncio FROM anuncios WHERE id_empleador = $2
+      )
+    `, [idPostulante, idEmpleador]);
+
+    // 2. Obtener el nombre de la empresa para la notificación
+    const empresaQuery = await pool.query("SELECT nombre_empresa FROM empleador WHERE id_empleador = $1", [idEmpleador]);
+    const nombreEmpresa = empresaQuery.rows[0]?.nombre_empresa || 'Una empresa';
+
+    // 3. Emitir la alerta por WebSockets directamente a la sala del postulante
+    const io = req.app.get('io');
+    io.to(idPostulante).emit('application_accepted', {
+      titulo: '¡Felicidades!',
+      mensaje: `La empresa ${nombreEmpresa} ha aceptado tu perfil y quiere darle seguimiento a tu postulación.`
+    });
+
+    res.json({ message: "Postulante aceptado y notificado" });
+  } catch (err) {
+    console.error("Error al aceptar postulante:", err);
+    res.status(500).json({ error: "Error interno al aceptar al postulante" });
+  }
+});
 
 /* ===== MIGRACIÓN DE BASE DE DATOS DINÁMICA ===== */
 async function ensureDatabaseSchema() {

@@ -1,13 +1,14 @@
 import { Subject, forkJoin, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; // <-- Importamos ChangeDetectorRef
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SocketService } from '../../services/socket.service';
 
 interface Slide {
   id?: string | number;
@@ -69,7 +70,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   servicesOpen = false;
   menuOpen = false;
   notificationsOpen = false;
-  hasUnreadNotifications = true;
+  
+  hasUnreadNotifications = false; 
+  
   currentSlide = 0;
   visibleCount = 8;
   maxVisible = 8;
@@ -81,7 +84,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   savingFavoriteId: string | null = null;
   usuarioActualId: string | null = null;
 
-  // Variables para el buscador estilo Coursera
   searchTerm = '';
   searchSubject = new Subject<string>();
   searchResults: any[] = [];
@@ -90,11 +92,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
-  notifications: NotificationItem[] = [
-    { id: 1, title: 'Nueva postulación', message: 'Tu perfil hace match con una vacante compatible con tus intereses.', time: 'Hace 5 min', read: false },
-    { id: 2, title: 'Mensaje de RRHH', message: 'Lucky Ghost ha revisado tu CV.', time: 'Hace 2 horas', read: false },
-    { id: 3, title: 'Bienvenido a Chambee', message: 'Completa tu perfil para destacar más.', time: 'Hace 1 día', read: true }
-  ];
+  notifications: NotificationItem[] = [];
 
   slides: Slide[] = [];
   jobs: Job[] = [];
@@ -107,6 +105,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     private readonly http: HttpClient,
     private readonly api: ApiService,
     private readonly authApi: AuthService,
+    private readonly socketService: SocketService,
+    private cdr: ChangeDetectorRef // <-- Inyectamos ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -117,12 +117,17 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.checkMobile();
     this.cargarOfertasPublicas();
     this.cargarFavoritosGuardados();
-    this.cargarBusquedasRecientes(); // Cargamos el historial del buscador
+    this.cargarBusquedasRecientes(); 
 
     const usuario = this.api.getUsuario();
     if (usuario?.id) {
 
-      // Cargar perfil
+      this.socketService.conectarEmpleador(usuario.id); 
+      
+      this.socketService.escucharRespuestasPostulante().subscribe((datosAlerta) => {
+        this.agregarNotificacion(datosAlerta);
+      });
+
       this.api.getMiPerfil().subscribe({
         next: (perfil: any) => {
           this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
@@ -132,10 +137,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           this.nombre_postulante = usuario?.nombre || 'Usuario';
         }
       });
-
     }
-
-    // Cargar servicios públicos de TODOS los postulantes
+    
     this.api.obtenerServiciosPublicos().subscribe({
       next: (servicios) => {
         this.services = servicios || [];
@@ -145,10 +148,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Guardar el ID del usuario actual para identificar sus propios servicios
     this.usuarioActualId = usuario?.id ? String(usuario.id) : null;
 
-    // Escuchar lo que el usuario escribe, esperando 300ms antes de buscar
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
@@ -161,6 +162,28 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     if (this.slideIntervalId) {
       clearInterval(this.slideIntervalId);
     }
+  }
+
+  agregarNotificacion(datos: any) {
+    const nuevaNotificacion: NotificationItem = {
+      id: Date.now(),
+      title: datos.titulo,
+      message: datos.mensaje,
+      time: 'Hace un momento',
+      read: false
+    };
+
+    this.notifications.unshift(nuevaNotificacion);
+    this.hasUnreadNotifications = true;
+    this.cdr.detectChanges(); // <-- Obligamos a Angular a actualizar la campanita
+  }
+
+  // Prevención de error por si le dan clic a la notificación en este componente
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    notif.read = true;
+    this.notificationsOpen = false;
+    this.cdr.detectChanges();
   }
 
   private cargarOfertasPublicas() {
@@ -249,7 +272,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     if (!categorias.length || !etiquetasInteres.length) {
       return 0;
     }
-
     const intereses = new Set(etiquetasInteres.map((item) => item.toLowerCase()));
     return categorias.filter((categoria) => intereses.has(String(categoria).toLowerCase())).length;
   }
@@ -259,7 +281,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     if (Number.isNaN(numero) || numero === 0) {
       return 'Salario a convenir';
     }
-
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN',
@@ -269,12 +290,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   private cargarFavoritosGuardados() {
     const usuario = this.api.getUsuario();
-
     if (usuario?.rol !== 'postulante') {
       this.favoriteJobIds.clear();
       return;
     }
-
     this.api.obtenerFavoritos().subscribe({
       next: (favoritos: any[]) => {
         this.favoriteJobIds = new Set((favoritos || []).map((fav) => String(fav.id_anuncio)));
@@ -285,7 +304,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- HISTORIAL DE VISTOS ---
   private cargarVistosRecientemente() {
     const stored = localStorage.getItem('chambee_vistos_recientemente');
     if (stored && this.jobs.length > 0) {
@@ -311,21 +329,13 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         historial = [];
       }
     }
-    
-    // Remover si ya existe para pasarlo al inicio
     historial = historial.filter(itemId => itemId !== strId);
-    
-    // Agregar al inicio
     historial.unshift(strId);
-    
-    // Mantener un máximo de 10 elementos
     if (historial.length > 10) {
       historial = historial.slice(0, 10);
     }
-    
     localStorage.setItem('chambee_vistos_recientemente', JSON.stringify(historial));
   }
-  // ---------------------------
 
   irAlPerfil() {
     this.menuOpen = false;
@@ -356,11 +366,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   toggleFavorite(job: Job, event: Event) {
     event.stopPropagation();
-
     if (!job.id || this.savingFavoriteId) {
       return;
     }
-
     const id = String(job.id);
     this.savingFavoriteId = id;
     const accion$ = this.isFavorite(id)
@@ -389,7 +397,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       event.stopPropagation();
     }
     this.notificationsOpen = !this.notificationsOpen;
-
     if (this.notificationsOpen) {
       this.hasUnreadNotifications = false;
       this.notifications.forEach((n) => n.read = true);
@@ -483,17 +490,11 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       form?.control?.markAllAsTouched();
       return;
     }
-
     this.http.post('http://localhost:3000/api/support', form.value)
       .subscribe({
         next: () => {
           form.resetForm({
-            nombreCompleto: '',
-            empresa: '',
-            telefono: '',
-            correo: '',
-            asunto: '',
-            detalles: ''
+            nombreCompleto: '', empresa: '', telefono: '', correo: '', asunto: '', detalles: ''
           });
           this.mostrarModalExito('Tu mensaje fue recibido. Te contactaremos a la brevedad.');
         },
@@ -543,7 +544,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   editarServicio(index: number) {
     const servicioSeleccionado = this.visibleServices[index];
     const id = servicioSeleccionado.id_servicio || servicioSeleccionado.id;
-    
     if (id) {
       this.router.navigate(['/editar-servicio', id]);
     }
@@ -552,12 +552,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   eliminarServicio(index: number) {
     const servicioSeleccionado = this.visibleServices[index];
     const id = servicioSeleccionado.id_servicio || servicioSeleccionado.id;
-    
     if (!id) {
-      console.error('No se encontró el ID del servicio:', servicioSeleccionado);
       return;
     }
-
     const token = localStorage.getItem('token');
     const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -574,12 +571,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- LOGICA DEL BUSCADOR ESTILO COURSERA (PRO) ---
   onSearchInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.searchTerm = value;
     this.showSearchDropdown = true;
-
     if (value.trim().length > 0) {
       this.searchSubject.next(value);
     } else {
@@ -589,7 +584,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   ejecutarBusqueda(query: string) {
     const lowerQuery = this.normalizarTexto(query);
-
     const jobsResults = this.jobs.filter(job =>
       this.normalizarTexto(job.title).includes(lowerQuery) ||
       this.normalizarTexto(job.company).includes(lowerQuery) ||
@@ -637,13 +631,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   guardarBusquedaReciente(term: string) {
     if (!term || term.trim() === '') return;
-
     let searches = [...this.recentSearches];
     searches = searches.filter(t => this.normalizarTexto(t) !== this.normalizarTexto(term));
     searches.unshift(term);
-
     if (searches.length > 4) searches = searches.slice(0, 4);
-
     this.recentSearches = searches;
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
@@ -662,7 +653,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   highlightText(text: string | null | undefined, query: string): string {
     if (!text) return '';
     if (!query) return text;
-
     const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     const regex = new RegExp(`(${safeQuery})`, 'gi');
     return text.replace(regex, '<span class="text-highlight">$1</span>');

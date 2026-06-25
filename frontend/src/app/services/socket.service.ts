@@ -27,4 +27,12 @@ export class SocketService {
       });
     });
   }
-}
+  
+  escucharRespuestasPostulante(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('application_accepted', (data: any) => {
+        observer.next(data);
+      });
+    });
+  }
+} 

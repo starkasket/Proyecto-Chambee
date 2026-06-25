@@ -86,6 +86,7 @@ export class PerfilPostulanteComponent implements OnInit {
   cvPublico = true;
   
   modalMensaje = '';
+  
 
   
 
@@ -119,16 +120,24 @@ export class PerfilPostulanteComponent implements OnInit {
   notifications: NotificationItem[] = [
     { id: 1, title: '¡Bienvenido!', message: 'Tu perfil está listo.', time: 'Hace 1 min', read: false }
   ];
-
+mostrarBannerSeguimiento: boolean = false
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authApi: AuthService,
     private readonly api: ApiService,
     private readonly themeService: ThemeService
+    
   ) { }
 
   ngOnInit(): void {
+
+    this.route.queryParams.subscribe(params => {
+      if (params['seguimiento'] === 'true') {
+        this.mostrarBannerSeguimiento = true;
+      }
+      
+    });
     const usuario = this.api.getUsuario();
     const perfilRouteId = this.route.snapshot.paramMap.get('id')?.trim();
 
@@ -208,8 +217,35 @@ export class PerfilPostulanteComponent implements OnInit {
     this.cargarFavoritos();
     this.cargarHistorial();
     this.checkMobile();
+
+    
   }
 
+  aceptarSeguimiento() {
+    this.mostrarBannerSeguimiento = false; // Ocultamos el banner
+    
+    // Extraemos el ID del postulante desde la URL
+    const idPostulante = this.route.snapshot.paramMap.get('id');
+
+    if (idPostulante) {
+      // Llamamos a la API
+      this.api.aceptarPostulante(idPostulante).subscribe({
+        next: (res) => {
+          console.log('¡Postulante notificado con éxito!');
+          // Opcional: Aquí podrías mostrar un Toast o Alert de éxito
+        },
+        error: (err) => {
+          console.error('Hubo un error al aceptar', err);
+        }
+      });
+    }
+  }
+
+  rechazarSeguimiento() {
+    this.mostrarBannerSeguimiento = false;
+    // Aquí puedes llamar a tu API para rechazarlo
+    console.log('Postulante Rechazado');
+  }
   get direccionCompleta(): string {
     if (!this.perfil) return '';
     return `${this.perfil.calle || ''}, ${this.perfil.colonia || ''}, ${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}, ${this.perfil.pais || ''}`.replace(/^, | ,|, $/g, '').trim();
@@ -407,6 +443,7 @@ export class PerfilPostulanteComponent implements OnInit {
       }
     });
   }
+  
 
   private cargarFavoritos() {
     this.api.obtenerFavoritos().subscribe({

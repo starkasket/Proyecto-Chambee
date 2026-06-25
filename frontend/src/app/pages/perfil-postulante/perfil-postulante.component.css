@@ -1406,3 +1406,54 @@ width: 90%;
 .review-dropdown-item:hover {
   background: var(--surface-secondary);
 }
+.seguimiento-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--surface-primary, #ffffff);
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.1); /* Sombra hacia arriba */
+  z-index: 1050; /* Para que quede por encima de todo */
+  padding: 16px 0;
+  border-top: 1px solid var(--border-soft, #e0e0e0);
+  animation: slideUp 0.4s ease-out; /* Animación de entrada */
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.banner-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color, #333);
+}
+
+.banner-actions {
+  display: flex;
+  gap: 12px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Responsivo para celulares */
+@media (max-width: 768px) {
+  .banner-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .banner-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  .banner-actions button {
+    flex: 1;
+  }
+}

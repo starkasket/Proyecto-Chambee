@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; // <-- Importamos ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -43,7 +43,7 @@ interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
-  applicantId?: string; // <-- Agregado para saber a qué perfil ir
+  applicantId?: string; 
 }
 
 @Component({
@@ -70,7 +70,6 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
-  // Arreglo inicializado totalmente vacío para que solo muestre las reales
   notifications: NotificationItem[] = [];
 
   recentApplicants: RecentApplicant[] = [];
@@ -82,7 +81,8 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly api: ApiService,
     private readonly authApi: AuthService,
-    private readonly socketService: SocketService 
+    private readonly socketService: SocketService,
+    private cdr: ChangeDetectorRef // <-- Inyectamos ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -130,23 +130,25 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
       message: datos.mensaje,
       time: 'Hace un momento',
       read: false,
-      applicantId: datos.id_postulante // <-- Capturamos el ID que manda Node
+      applicantId: datos.id_postulante
     };
 
     this.notifications.unshift(nuevaNotificacion);
     this.hasUnreadNotifications = true;
+    this.cdr.detectChanges(); // <-- Obligamos a Angular a actualizar la campanita
   }
 
-  // --- NUEVA FUNCIÓN PARA NAVEGAR AL PERFIL DESDE LA NOTIFICACIÓN ---
   onNotificationClick(notif: NotificationItem, event: Event) {
-    event.stopPropagation(); // Evita que se cierre la campana de golpe sin procesar
+    event.stopPropagation();
     notif.read = true;
     this.notificationsOpen = false;
 
-    // Si la notificación trae el ID del postulante, nos manda a su perfil público
     if (notif.applicantId) {
-      this.router.navigate(['/perfil-postulante', notif.applicantId]);
+      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
+        queryParams: { seguimiento: 'true' } 
+      });
     }
+    this.cdr.detectChanges(); // <-- Actualizamos el menú de notificaciones
   }
 
   toggleNotifications(event?: Event) {

@@ -470,3 +470,12 @@
     <span class="fab-text">Buscar Empleos</span>
   </button>
 </div>
+<div class="seguimiento-banner" *ngIf="mostrarBannerSeguimiento">
+  <div class="container banner-content">
+    <span class="banner-text">¿Te gustaría darle seguimiento a este postulante?</span>
+    <div class="banner-actions">
+      <button class="btn btn-outline-danger" (click)="rechazarSeguimiento()">Rechazar</button>
+      <button class="btn btn-primary" style="background-color: var(--primary-color); border: none;" (click)="aceptarSeguimiento()">Aceptar</button>
+    </div>
+  </div>
+</div>
