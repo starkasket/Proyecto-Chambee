@@ -152,7 +152,7 @@ mostrarBannerSeguimiento: boolean = false
     if (perfilRouteId) {
       this.selectedPerfilId = perfilRouteId;
       this.isEmployerView = usuario.rol === 'empleador';
-
+ 
       if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId) {
         this.error = 'No estás autorizado para ver este perfil.';
         this.cargando = false;

@@ -361,11 +361,23 @@
                     <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
                   </div>
                 </div>
+                <div class="d-flex align-items-center gap-2">
                 <div class="review-stars-display d-flex gap-1">
                   <i *ngFor="let s of [1,2,3,4,5]" 
                      [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
                   ></i>
                 </div>
+                  <div *ngIf="isEmployerView"  class="review-menu-wrapper">
+                    <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
+                      <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
+                      <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
+                        <i class="bi bi-trash3"></i> Eliminar
+                      </button>
+                    </div>
+                  </div> 
+                  </div>
               </div>
               <div *ngIf="rev.comentario" class="review-comment mt-2">
                 <p class="mb-0">{{ rev.comentario }}</p>
@@ -497,7 +509,7 @@
     <span class="banner-text">¿Te gustaría darle seguimiento a este postulante?</span>
     <div class="banner-actions">
       <button class="btn btn-outline-danger" (click)="rechazarSeguimiento()">Rechazar</button>
-      <button class="btn btn-primary" style="background-color: var(--primary-color); border: none;" (click)="aceptarSeguimiento()">Aceptar</button>
+      <button class="btn btn-outline-success"  (click)="aceptarSeguimiento()">Aceptar</button>
     </div>
   </div>
 </div>
