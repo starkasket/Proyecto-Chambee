@@ -331,3 +331,22 @@ ALTER TABLE empleador_valoracion
   ALTER TABLE valoracion DROP CONSTRAINT valoracion_puntuacion_check;
 ALTER TABLE valoracion ALTER COLUMN puntuacion DROP NOT NULL;
 ALTER TABLE valoracion ADD CONSTRAINT valoracion_puntuacion_check CHECK (puntuacion IS NULL OR puntuacion BETWEEN 1 AND 5);
+
+CREATE TABLE public.administrador (
+    id_administrador uuid DEFAULT gen_random_uuid() NOT NULL,
+    nombre character varying(50) NOT NULL,
+    contrasena character varying(255) NOT NULL,
+    correo_electronico character varying(100) NOT NULL,
+    foto_perfil character varying(255),
+    token_version integer DEFAULT 0,
+    
+    CONSTRAINT administrador_pkey PRIMARY KEY (id_administrador),
+    CONSTRAINT administrador_correo_electronico_key UNIQUE (correo_electronico)
+);
+
+INSERT INTO public.administrador (nombre, correo_electronico, contrasena) VALUES 
+('Oscar', 'oscaradmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
+('Anshelo', 'ansheloadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
+('Abraham', 'abrahamadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
+('Karina', 'karinaadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
+('Cuanary', 'cuanaryadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu');
