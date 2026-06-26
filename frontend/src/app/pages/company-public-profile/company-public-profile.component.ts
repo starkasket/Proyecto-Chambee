@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -56,7 +56,9 @@ export class CompanyPublicProfileComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
   mostrarDescripcionCompleta = false;
+  modalMensaje = '';
 
+  selectedPerfilId = '';
   ratingSeleccionado = 0;
   ratingHover = 0;
   nuevoComentario = '';
@@ -83,6 +85,8 @@ export class CompanyPublicProfileComponent implements OnInit {
     this.cargarPostulante();
 
     const usuario = this.api.getUsuario();
+
+
     if (!usuario) {
       this.router.navigate(['/login']);
       return;
@@ -101,6 +105,8 @@ export class CompanyPublicProfileComponent implements OnInit {
         this.cargando = false;
         return;
       }
+
+      this.selectedPerfilId = id;
 
       this.cargarPerfilEmpresa(id);
     });
@@ -130,6 +136,34 @@ export class CompanyPublicProfileComponent implements OnInit {
     const anuncioConCalle = this.anuncios.find((anuncio) => anuncio.calle?.trim());
     return anuncioConCalle?.calle?.trim() || '';
   }
+
+  reportarPerfil(form: NgForm){
+      if (form.invalid) {
+        return;
+      }
+      
+  
+      const reporte = {
+      motivo: form.value.motivo,
+      descripcion: form.value.descripcion,
+      id_empleador_reportado: this.selectedPerfilId
+      };
+  
+  
+      console.log(reporte);
+  
+      this.api.crearReporteEmpleador(reporte).subscribe({
+        next: (resp) => {
+        console.log('Reporte enviado', resp);
+        this.cerrarModal();
+      },
+      error: (err) => {
+        console.error(err);
+      }
+      });
+      
+  
+    }
 
   cargarPerfilEmpresa(id: string): void {
     this.cargando = true;
@@ -282,6 +316,10 @@ export class CompanyPublicProfileComponent implements OnInit {
     this.ratingHover = puntuacion;
   }
 
+   abrirModal(){
+      this.mostrarModal("¿Estás seguro de querer reportar este perfil?")        
+  }
+ 
   getStarsArray(promedio: number): string[] {
     const stars: string[] = [];
     for (let i = 1; i <= 5; i++) {
@@ -349,5 +387,37 @@ export class CompanyPublicProfileComponent implements OnInit {
         console.error('Error al eliminar valoración:', err);
       }
     });
+  }
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+  mostrarModalAceptar(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+  cerrarModalAceptar() {
+    const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
 }

@@ -3,9 +3,55 @@
     <img src="assets/LogoChambee.png" alt="Chambee" height="48">
     <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ nombre_postulante }}</span>
   </div>
+  
+  <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Buscar categoría, puesto, ciudad y más..." 
+           [value]="searchTerm"
+           (input)="onSearchInput($event)"
+           (blur)="cerrarBuscador()"
+           (focus)="showSearchDropdown = true" />
+    
+    <div *ngIf="showSearchDropdown" class="search-dropdown">
+      
+      <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+        <div class="search-dropdown-header">Búsquedas recientes</div>
+        <div *ngFor="let term of recentSearches" class="search-item" (click)="seleccionarBusquedaReciente(term)">
+          <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title fw-normal">{{ term }}</div>
+          </div>
+        </div>
+      </div>
 
-  <div class="search-container flex-grow-1 mx-4">
-    <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
+      <div *ngIf="searchTerm.length > 0">
+        
+        <div *ngIf="searchResults.length === 0" class="search-empty">
+          No se encontraron resultados para "{{ searchTerm }}"
+        </div>
+
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="irAResultado(result)">
+          <div class="search-item-icon">
+            <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title" [innerHTML]="highlightText(result.title, searchTerm)"></div>
+            <div class="search-item-subtitle">
+              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
+              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? result.company : (result.categoria || 'Servicio General'), searchTerm)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-see-all" (click)="verTodosResultados()">
+          Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+        </div>
+
+      </div>
+    </div>
   </div>
  
   <div class="nav-buttons d-flex align-items-center gap-3">

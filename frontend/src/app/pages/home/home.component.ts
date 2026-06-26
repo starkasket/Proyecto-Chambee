@@ -6,8 +6,11 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface Slide {
+  id?: string | number;
   company: string;
   companyDescription: string;
   title: string;
@@ -20,6 +23,7 @@ interface Slide {
 }
 
 interface Job {
+  id?: string | number;
   company: string;
   title: string;
   salary: string;
@@ -54,6 +58,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   isMobile = false;
   modalLoginVisible = false;
 
+  // Variables para el buscador estilo Coursera (Pro)
+  searchTerm = '';
+  searchSubject = new Subject<string>();
+  searchResults: any[] = [];
+  showSearchDropdown = false;
+  recentSearches: string[] = [];
+
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
   slides: Slide[] = [];
@@ -63,6 +74,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.slideIntervalId = setInterval(() => this.nextSlide(), 9000);
     this.checkMobile();
+    this.cargarBusquedasRecientes();
 
     // Cargar servicios públicos desde la BD
     this.api.obtenerServiciosPublicos().subscribe({
@@ -88,6 +100,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       next: (anuncios: any[]) => {
         if (anuncios && anuncios.length > 0) {
           this.slides = anuncios.slice(0, Math.min(5, anuncios.length)).map((anuncio, index) => ({
+            id: anuncio.id_anuncio,
             company: anuncio.nombre_empresa || 'Empresa',
             companyDescription: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
             title: anuncio.titulo || 'Posición disponible',
@@ -100,6 +113,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           }));
 
           this.jobs = anuncios.map((anuncio, index) => ({
+            id: anuncio.id_anuncio,
             company: anuncio.nombre_empresa || 'Empresa',
             title: anuncio.titulo || 'Posición disponible',
             salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
@@ -122,6 +136,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.visibleCount = 8;
       }
     });
+
+    // Escuchar el buscador con RxJS
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.ejecutarBusqueda(query);
+    });
   }
 
   ngOnDestroy() {
@@ -137,7 +159,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleTheme() { this.themeService.toggleTheme(); }
   get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
 
-  // Abre modal si no hay sesión
   openService(_i: number) {
     const token = this.authApi.getToken();
     if (token) {
@@ -156,21 +177,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-  openJob() {
-    const token = this.authApi.getToken();
-    if (token) {
-      this.router.navigate(['/jobs']);
+  openJob(id?: string | number) {
+    if (id) {
+      this.router.navigate(['/job', id]);
     } else {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/jobs']);
     }
   }
 
-  openFeaturedJob() {
-    const token = this.authApi.getToken();
-    if (token) {
-      this.router.navigate(['/jobs']);
+  openFeaturedJob(id?: string | number) {
+    if (id) {
+      this.router.navigate(['/job', id]);
     } else {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/jobs']);
     }
   }
 
@@ -218,5 +237,92 @@ export class HomeComponent implements OnInit, OnDestroy {
         },
         error: () => alert("Error al enviar")
       });
+  }
+
+  // --- LÓGICA DEL BUSCADOR ESTILO COURSERA (PRO) ---
+
+  onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm = value;
+    this.showSearchDropdown = true;
+
+    if (value.trim().length > 0) {
+      this.searchSubject.next(value);
+    } else {
+      this.searchResults = [];
+    }
+  }
+
+  ejecutarBusqueda(query: string) {
+    const lowerQuery = query.toLowerCase();
+
+    const jobsResults = this.jobs.filter(job =>
+      job.title.toLowerCase().includes(lowerQuery) ||
+      job.company.toLowerCase().includes(lowerQuery)
+    ).map(j => ({ ...j, tipo: 'empleo' }));
+
+    const servicesResults = this.services.filter(service =>
+      service.title.toLowerCase().includes(lowerQuery) ||
+      (service.description && service.description.toLowerCase().includes(lowerQuery))
+    ).map(s => ({ ...s, tipo: 'servicio' }));
+
+    this.searchResults = [...jobsResults, ...servicesResults].slice(0, 6);
+  }
+
+  cerrarBuscador() {
+    setTimeout(() => {
+      this.showSearchDropdown = false;
+    }, 200);
+  }
+
+  irAResultado(resultado: any) {
+    alert(resultado)
+    console.log(resultado);
+    
+    this.guardarBusquedaReciente(this.searchTerm || resultado.title);
+    this.showSearchDropdown = false;
+    this.searchTerm = '';
+
+    if (resultado.tipo === 'empleo') {
+      this.router.navigate(['/job', resultado.id]);
+    } else {
+      this.router.navigate(['/services']);
+    }
+  }
+
+  cargarBusquedasRecientes() {
+    const stored = localStorage.getItem('chambee_busquedas_recientes');
+    if (stored) {
+      try { this.recentSearches = JSON.parse(stored); } catch(e) {}
+    }
+  }
+
+  guardarBusquedaReciente(term: string) {
+    if (!term || term.trim() === '') return;
+    let searches = [...this.recentSearches];
+    searches = searches.filter(t => t.toLowerCase() !== term.toLowerCase());
+    searches.unshift(term);
+    if (searches.length > 4) searches = searches.slice(0, 4);
+
+    this.recentSearches = searches;
+    localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
+  }
+
+  seleccionarBusquedaReciente(term: string) {
+    this.searchTerm = term;
+    this.searchSubject.next(term);
+  }
+
+  verTodosResultados() {
+    this.guardarBusquedaReciente(this.searchTerm);
+    this.showSearchDropdown = false;
+    this.router.navigate(['/jobs'], { queryParams: { q: this.searchTerm } });
+  }
+
+  highlightText(text: string, query: string): string {
+    if (!query || !text) return text;
+    const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    const regex = new RegExp(`(${safeQuery})`, 'gi');
+    return text.replace(regex, '<span class="text-highlight">$1</span>');
   }
 }

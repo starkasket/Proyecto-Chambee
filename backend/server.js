@@ -10,6 +10,7 @@ const crypto = require("crypto");
 
 const nodemailer = require("nodemailer");
 const { decode } = require("punycode");
+const { log } = require("console");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -2457,7 +2458,7 @@ app.put("/servicios/:id", verifyToken, async (req, res) => {
       estado, ciudad, colonia, calle, codigo_postal, img
     } = req.body;
     
-    // Le mandamos los datos frescos a PostgreSQL
+    // Le mandamos los datos a PostgreSQL
     const result = await pool.query(
       `UPDATE servicios 
        SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7,
@@ -2534,6 +2535,159 @@ app.patch("/empleadores/postulantes/:idPostulante/aceptar", verifyToken, authori
     console.error("Error al aceptar postulante:", err);
     res.status(500).json({ error: "Error interno al aceptar al postulante" });
   }
+});
+app.post('/reportes', verifyToken, async (req, res) => {
+
+  const {
+    motivo,
+    descripcion,
+    id_postulante_reportado
+  } = req.body;
+
+  id_empleador = req.user.id;
+  try {
+
+        await pool.query('BEGIN');
+
+    const reporteResult = await pool.query(
+      `
+      INSERT INTO reporte (motivo, descripcion, estado, id_empleador) 
+      VALUES ($1, $2,'Pendiente',$3)
+      RETURNING id_reporte
+      `,
+      [motivo, descripcion, id_empleador]
+    );
+
+    const idReporte = reporteResult.rows[0].id_reporte;
+
+    if (req.user.rol !== 'empleador') {
+    return res.status(403).json({
+        error: 'Solo los empleadores pueden reportar postulantes.'
+    });
+}
+
+
+    await pool.query(
+      `
+      INSERT INTO reporte_a_postulante (
+        id_reporte,
+        id_postulante_reportado
+      )
+      VALUES ($1, $2)
+      `,
+      [
+        idReporte,
+        id_postulante_reportado
+      ]
+    );
+
+    await pool.query('COMMIT');
+
+    res.status(201).json({
+      mensaje: 'Reporte creado correctamente',
+      id_reporte: idReporte
+    });
+
+  } catch (error) {
+
+    await pool.query('ROLLBACK');
+
+    console.error(error);
+
+    res.status(500).json({
+      error: 'Error al crear reporte'
+    });
+  }
+});
+
+
+app.post('/reportes/empleador', verifyToken, async (req, res) => {
+
+    const {
+        motivo,
+        descripcion,
+        id_empleador_reportado
+    } = req.body;
+
+    const id_postulante = req.user.id;
+
+    console.log(id_empleador_reportado);
+    
+
+    try {
+
+        await pool.query('BEGIN');
+
+        const reporteResult = await pool.query(
+            `
+            INSERT INTO reporte
+            (
+                motivo,
+                descripcion,
+                estado,
+                id_postulante
+            )
+            VALUES
+            (
+                $1,
+                $2,
+                'Pendiente',
+                $3
+            )
+            RETURNING id_reporte
+            `,
+            [
+                motivo,
+                descripcion,
+                id_postulante
+            ]
+        );
+
+        console.log(req.user.rol);
+        
+        const idReporte = reporteResult.rows[0].id_reporte;
+        
+       if (req.user.rol !== 'postulante') {
+         return res.status(403).json({
+           error: 'Solo los postulantes pueden reportar empleadores.'
+          });
+    }
+        await pool.query(
+            `
+            INSERT INTO reporte_a_empleador
+            (
+                id_reporte,
+                id_empleador_reportado
+            )
+            VALUES
+            (
+                $1,
+                $2
+            )
+            `,
+            [
+                idReporte,
+                id_empleador_reportado
+            ]
+        );
+
+        await pool.query('COMMIT');
+
+        res.status(201).json({
+            mensaje: 'Reporte creado correctamente'
+        });
+
+    } catch (err) {
+
+        await pool.query('ROLLBACK');
+        console.error(err);
+
+        res.status(500).json({
+            error: 'Error al crear reporte'
+        });
+
+    }
+
 });
 
 /* ===== MIGRACIÓN DE BASE DE DATOS DINÁMICA ===== */

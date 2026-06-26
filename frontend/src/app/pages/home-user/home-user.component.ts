@@ -82,6 +82,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   menuServicioAbierto: number | null = null;
   favoriteJobIds = new Set<string>();
   savingFavoriteId: string | null = null;
+
+  
   usuarioActualId: string | null = null;
 
   searchTerm = '';
@@ -606,6 +608,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   irAResultado(resultado: any) {
+    console.log('Resultado seleccionado:', resultado);
     this.guardarBusquedaReciente(this.searchTerm || resultado.title || resultado.categoria || '');
     this.showSearchDropdown = false;
     this.searchTerm = '';

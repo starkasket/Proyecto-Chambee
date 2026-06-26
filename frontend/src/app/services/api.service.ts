@@ -217,4 +217,12 @@ export class ApiService {
   aceptarPostulante(idPostulante: string) {
     return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {});
   }
+
+  crearReporte(reporte: any){
+     return this.http.post(`${this.apiUrl}/reportes`, reporte, this.getHeaders());
+  }
+
+  crearReporteEmpleador(reporte: any) {
+  return this.http.post(`${this.apiUrl}/reportes/empleador`,reporte, this.getHeaders());
+}
 }

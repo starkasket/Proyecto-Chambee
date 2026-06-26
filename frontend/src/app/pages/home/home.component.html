@@ -1,18 +1,58 @@
-<!-- NAVBAR FIJA:
-  Contiene logo, buscador, acciones de autenticacion y menu responsive.
--->
 <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
-  <!-- Logo principal de la plataforma. -->
   <div class="d-flex align-items-center gap-2">
     <img src="assets/LogoChambee.png" alt="Chambee" height="48">
   </div>
 
-  <!-- Buscador principal. En movil se compacta desde CSS. -->
-  <div class="search-container flex-grow-1 mx-4">
-    <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
+  <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Buscar categoría, puesto, ciudad y más..." 
+           [value]="searchTerm"
+           (input)="onSearchInput($event)"
+           (blur)="cerrarBuscador()"
+           (focus)="showSearchDropdown = true" />
+    
+    <div *ngIf="showSearchDropdown" class="search-dropdown">
+      
+      <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+        <div class="search-dropdown-header">Búsquedas recientes</div>
+        <div *ngFor="let term of recentSearches" class="search-item" (click)="seleccionarBusquedaReciente(term)">
+          <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title fw-normal">{{ term }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="searchTerm.length > 0">
+        
+        <div *ngIf="searchResults.length === 0" class="search-empty">
+          No se encontraron resultados para "{{ searchTerm }}"
+        </div>
+
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="irAResultado(result)">
+          <div class="search-item-icon">
+            <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title" [innerHTML]="highlightText(result.title, searchTerm)"></div>
+            <div class="search-item-subtitle">
+              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
+              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? result.company : (result.categoria || 'Servicio General'), searchTerm)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-see-all" (click)="verTodosResultados()">
+          Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+        </div>
+
+      </div>
+    </div>
   </div>
 
-  <!-- Acciones del navbar y acceso al menu hamburguesa. -->
   <div class="nav-buttons d-flex align-items-center gap-3">
     <button
       class="theme-toggle"
@@ -30,7 +70,6 @@
 
     <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
-    <!-- Dropdown usado solo en desktop. -->
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
       <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
       <a routerLink="/services" class="desktop-menu-link">Servicios</a>
@@ -42,7 +81,6 @@
     </div>
   </div>
 
-  <!-- Panel lateral de navegacion para movil. -->
   <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
     <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
       <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
@@ -58,13 +96,13 @@
     </aside>
   </div>
 </nav>
-<!-- MODAL LOGIN REQUERIDO -->
+
 <div *ngIf="modalLoginVisible" class="login-required-backdrop">
   <div class="login-required-modal">
     <img src="assets/abejaAlerta.png" alt="alerta" height="140" class="mb-3" />
     <h5>¡Inicia sesión primero!</h5>
     <p>
-      Para ver el detalle de este servicio necesitas una cuenta en Chambee.
+      Para interactuar con la plataforma necesitas una cuenta en Chambee.
     </p>
     <div class="login-required-actions">
       <button type="button" class="login-required-cancel" (click)="cerrarModalLogin()">
@@ -77,24 +115,17 @@
   </div>
 </div>
 
-<!-- MAIN LAYOUT:
-  - izquierda: carrusel + grid de empleos
-  - derecha: servicios fijos en pantallas grandes, panel flotante en pantallas pequenas
--->
 <div class="container main-layout">
   <div class="left">
-    <!-- Carrusel principal de anuncios destacados. -->
     <div class="carousel" *ngIf="slides.length; else noFeaturedJobs">
       <div class="carousel-container">
         <div class="carousel-slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
-          <!-- Tarjeta destacada clickeable. -->
-          <div class="featured-card featured-clickable" (click)="openFeaturedJob()" role="button" tabindex="0">
+          <div class="featured-card featured-clickable" (click)="openFeaturedJob(slide.id)" role="button" tabindex="0">
             <div class="featured-upper">
               <div class="featured-company">
                 <div class="featured-media">
                   <img class="featured-image" [src]="slide.img" [alt]="slide.title" />
                 </div>
-
                 <div class="featured-company-copy">
                   <h3>{{ slide.company }}</h3>
                   <p>{{ slide.companyDescription }}</p>
@@ -110,7 +141,6 @@
               </div>
             </div>
 
-            <!-- Parte inferior con la informacion del empleo destacado. -->
             <div class="featured-content">
               <div class="featured-meta">
                 <span class="featured-chip urgency-chip" *ngIf="slide.urgency">{{ slide.urgency }}</span>
@@ -118,18 +148,15 @@
                 <span class="featured-chip">{{ slide.mode }}</span>
                 <span class="featured-chip">{{ slide.location }}</span>
               </div>
-
-              <button class="btn featured-btn" (click)="openFeaturedJob(); $event.stopPropagation()">Ver más</button>
+              <button class="btn featured-btn" (click)="openFeaturedJob(slide.id); $event.stopPropagation()">Ver más</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Controles manuales del carrusel. -->
       <button class="prev" (click)="prevSlide()" aria-label="Anterior"></button>
       <button class="next" (click)="nextSlide()" aria-label="Siguiente"></button>
 
-      <!-- Indicadores de posicion del carrusel. -->
       <div class="dots">
         <span *ngFor="let slide of slides; let i = index" (click)="goToSlide(i)" [class.active]="i === currentSlide"></span>
       </div>
@@ -141,9 +168,8 @@
       </div>
     </ng-template>
 
-    <!-- Grid principal de empleos. -->
     <div class="jobs-grid" *ngIf="jobs.length; else noJobsGrid">
-      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob()" role="button" tabindex="0">
+      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button" tabindex="0">
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
@@ -161,28 +187,22 @@
       </div>
     </ng-template>
 
-    <!-- Boton para cargar más empleos. -->
     <div class="jobs-more" *ngIf="visibleCount < maxVisible">
       <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>
     </div>
   </div>
 
-  <!-- Columna fija de servicios para desktop. -->
   <aside class="right services-desktop">
     <h3 class="services-title">Servicios y más</h3>
-
-    <!-- Usa visibleServices para mostrar 4 o todos, segun servicesOpen. -->
     <div class="services-list services-list-desktop">
       <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
-<img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+        <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div>
           <h5 class="service-title">{{ service.title }}</h5>
           <p class="service-desc">{{ service.description }}</p>
         </div>
       </div>
     </div>
-
-    <!-- Control para expandir o contraer servicios en desktop. -->
     <div class="services-footer">
       <button class="services-see-more" (click)="toggleServices()">
         {{ servicesOpen ? 'Ver menos' : 'Ver más' }}
@@ -191,12 +211,9 @@
   </aside>
 </div>
 
-<!-- Overlay que aparece detras del panel flotante en tablet/movil. -->
 <div *ngIf="servicesOpen" class="services-overlay" (click)="toggleServices()"></div>
 
-<!-- Version flotante de servicios tipo messenger para pantallas pequenas. -->
 <section class="services-floating services-mobile">
-  <!-- Panel desplegable con todos los servicios. -->
   <div class="services-panel" *ngIf="servicesOpen" (click)="$event.stopPropagation()">
     <div class="services-panel-header">
       <div>
@@ -208,7 +225,7 @@
 
     <div class="services-list">
       <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
-<img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+        <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
         <div>
           <h5 class="service-title">{{ service.title }}</h5>
           <p class="service-desc">{{ service.description }}</p>
@@ -217,14 +234,12 @@
     </div>
   </div>
 
-  <!-- Burbuja que abre o cierra el panel de servicios en movil/tablet. -->
   <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
     <span class="services-bubble-icon"><i class="bi bi-stars"></i></span>
     <span class="services-bubble-text">Servicios</span>
   </button>
 </section>
 
-<!-- SECCION DE SOPORTE CON FORMULARIO DE CONTACTO -->
 <section class="support-section">
   <div class="container">
     <div class="support-card">
@@ -292,7 +307,6 @@
   </div>
 </section>
 
-<!-- SECCION FAQ (Preguntas Frecuentes) -->
 <section class="faq-section">
   <div class="container">
     <div class="faq-header">
@@ -347,10 +361,8 @@
   </div>
 </section>
 
-<!-- Footer general de la página. -->
 <footer class="home-footer">
   <div class="container footer-content">
-    <!-- Bloque de marca del footer. -->
     <div class="footer-brand">
       <img src="assets/LogoChambee.png" alt="Chambee" />
       <div>
@@ -359,7 +371,6 @@
       </div>
     </div>
 
-    <!-- Enlaces rápidos del footer. -->
     <nav class="footer-links" aria-label="Enlaces del footer">
       <a routerLink="/jobs">Trabajos</a>
       <a routerLink="/services">Servicios</a>
@@ -368,11 +379,9 @@
     </nav>
   </div>
 
-  <!-- Franja inferior de copyright. -->
   <div class="footer-bottom">
     <div class="container">
       <p>© 2026 Chambee. Todos los derechos reservados.</p>
     </div>
   </div>
 </footer>
-

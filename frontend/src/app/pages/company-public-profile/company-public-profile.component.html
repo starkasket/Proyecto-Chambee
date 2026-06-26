@@ -5,6 +5,57 @@
       <span class="fs-5 fw-semibold d-none d-md-block">Chambee, {{ nombrePostulante }}</span>
     </div>
 
+<div id="modalAlerta" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+
+      <div>
+        <form class="support-form"  #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+                <div class="support-grid">
+                
+                  <label class="support-field support-field-span-2">
+                    <span>Motivo</span>
+                    <select name="motivo" ngModel #motivo="ngModel" required>
+                      <option value="" disabled>Selecciona un motivo</option>
+                      <option value="perfil_falso">Perfil falso o suplantación</option>
+                      <option value="fraude">Posible fraude o estafa</option>
+                      <option value="contenido_inapropiado">Contenido inapropiado</option>
+                      <option value="acoso">Acoso o comportamiento ofensivo</option>
+                      <option value="spam">Spam</option>
+                      <option value="oferta_engañosa">Oferta de empleo engañosa</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es
+                      obligatorio.</small>
+                  </label>
+
+                  <label class="support-field support-field-full">
+                    <span>Descripción del reporte.</span>
+                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
+                      placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."
+                      required></textarea>
+                    <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es
+                      obligatorio.</small>
+                  </label>
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                  <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                  <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
+                </div>
+                </form>
+      </div>
+    
+    </div>
+  </div>
+</div>
+
+
     <div class="search-container flex-grow-1 mx-4">
       <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
     </div>
@@ -90,7 +141,7 @@
               
             </div>
           </div>
-          <button class="report-btn" type="button" >Reportar cuenta</button> <!-- (click)="" -->
+          <button class="report-btn" type="button"  (click)="abrirModal()" >Reportar cuenta</button> <!-- (click)="" -->
 
           <div class="company-stat">
             <strong>{{ perfil.vacantes_activas || anuncios.length }}</strong>

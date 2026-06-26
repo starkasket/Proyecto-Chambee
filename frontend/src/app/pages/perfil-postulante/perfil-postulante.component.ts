@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
@@ -384,8 +384,32 @@ mostrarBannerSeguimiento: boolean = false
     this.router.navigate(['/perfil-postulante/editar']);
   }
 
-  reportarPerfil(){
-  
+  reportarPerfil(form: NgForm){
+    if (form.invalid) {
+      return;
+    }
+
+    console.log(this.postulanteId);
+    const reporte = {
+    motivo: form.value.motivo,
+    descripcion: form.value.descripcion,
+    id_postulante_reportado: this.selectedPerfilId
+    };
+
+
+    console.log(reporte);
+
+    this.api.crearReporte(reporte).subscribe({
+      next: (resp) => {
+      console.log('Reporte enviado', resp);
+      this.cerrarModal();
+    },
+    error: (err) => {
+      console.error(err);
+    }
+    });
+    
+
   }
 
   eliminarCuenta(){
