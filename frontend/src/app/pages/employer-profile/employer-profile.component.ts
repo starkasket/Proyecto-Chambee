@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
@@ -50,6 +50,7 @@ interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
+  applicantId?: string; // Para redirigir al postulante
 }
 
 type ProfileSectionTab = 'anuncios' | 'postulaciones';
@@ -69,84 +70,30 @@ export class EmployerProfileComponent implements OnInit {
   mostrarDescripcionCompleta = false;
   menuOpen = false;
   notificationsOpen = false;
-  hasUnreadNotifications = true;
+  hasUnreadNotifications = false;
   isMobile = false;
   activeTab: ProfileSectionTab = 'anuncios';
   modalMensaje = '';
 
-  // Estos datos sirven como respaldo visual si la tabla `anuncios` aun no tiene registros.
-  anuncios: EmployerAnnouncement[] = [
-    {
-      id: 'demo-1',
-      empresa: 'AT&T S.M.A',
-      estado: 'Activa',
-      ubicacion: 'San Miguel de Allende',
-      fecha: 'Hace 2 dias',
-      candidatos: 19,
-      vacante: 'Ejecutivo(a) de Ventas',
-      resumen: 'Atencion a clientes y cierre de ventas en piso.',
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 'demo-2',
-      empresa: 'AT&T S.M.A',
-      estado: 'Activa',
-      ubicacion: 'Centro',
-      fecha: 'Hace 5 dias',
-      candidatos: 11,
-      vacante: 'Ejecutivo(a) de Ventas',
-      resumen: 'Base mensual, comisiones y capacitacion continua.',
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 'demo-3',
-      empresa: 'AT&T S.M.A',
-      estado: 'Borrador',
-      ubicacion: 'Dolores Hidalgo',
-      fecha: 'Hace 1 semana',
-      candidatos: 8,
-      vacante: 'Ejecutivo(a) de Ventas',
-      resumen: 'Seguimiento de prospectos, CRM y objetivos mensuales.',
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 'demo-4',
-      empresa: 'AT&T S.M.A',
-      estado: 'Oculta',
-      ubicacion: 'San Luis de la Paz',
-      fecha: 'Hace 2 semanas',
-      candidatos: 26,
-      vacante: 'Ejecutivo(a) de Ventas',
-      resumen: 'Vacante cerrada por cobertura completa del perfil.',
-      imagen: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
-    }
-  ];
-
+  anuncios: EmployerAnnouncement[] = [];
   resenas: any[] = [];
-
-  postulacionesRecibidas: ReceivedApplication[] = [
-    { id: 1, candidato: 'Fernanda Lopez', vacante: 'Ejecutivo(a) de Ventas', experiencia: '3 anos', estado: 'Nueva' },
-    { id: 2, candidato: 'Rafael Diaz', vacante: 'Ejecutivo(a) de Ventas', experiencia: '2 anos', estado: 'En revision' },
-    { id: 3, candidato: 'Sofia Martinez', vacante: 'Ejecutivo(a) de Ventas', experiencia: '4 anos', estado: 'Entrevista' },
-    { id: 4, candidato: 'Luis Chavez', vacante: 'Ejecutivo(a) de Ventas', experiencia: '1 ano', estado: 'Descartada' }
-  ];
-
-  notifications: NotificationItem[] = [
-    { id: 1, title: 'Nuevo postulante', message: 'Acabas de recibir una nueva postulacion.', time: 'Hace 8 min', read: false },
-    { id: 2, title: 'Recordatorio', message: 'Completa la descripcion de empresa para destacar mas.', time: 'Hace 1 hora', read: false },
-    { id: 3, title: 'Chambee', message: 'Tu perfil esta visible para candidatos.', time: 'Hace 1 dia', read: true }
-  ];
+  postulacionesRecibidas: ReceivedApplication[] = [];
+  notifications: NotificationItem[] = []; // Inicia vacío para DB
 
   constructor(
     private api: ApiService,
     private router: Router,
     private readonly themeService: ThemeService,
-    private readonly authApi: AuthService
+    private readonly authApi: AuthService,
+    private cdr: ChangeDetectorRef // Agregado para refresco de interfaz
   ) {}
 
   ngOnInit(): void {
+    // 1. Cargar notificaciones
+    this.cargarNotificaciones();
+
     const usuario = this.api.getUsuario();
-    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');;
+    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
 
     if (!usuario) {
       this.error = 'No hay sesion activa. Inicia sesion para ver tu perfil.';
@@ -161,7 +108,6 @@ export class EmployerProfileComponent implements OnInit {
     }
 
     if (perfilLocalRaw) {
-      // Muestra datos al instante mientras se refresca contra backend.
       this.perfil = JSON.parse(perfilLocalRaw);
     }
 
@@ -191,6 +137,56 @@ export class EmployerProfileComponent implements OnInit {
     this.checkMobile();
   };
 
+  // MÉTODO NUEVO: Cargar Notificaciones desde PostgreSQL
+  cargarNotificaciones() {
+    this.api.obtenerNotificaciones().subscribe({
+      next: (notifs) => {
+        this.notifications = notifs.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
+          read: n.read,
+          applicantId: n.applicantId 
+        }));
+        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
+      },
+      error: (err) => console.error('Error al obtener notificaciones', err)
+    });
+  }
+
+  // MÉTODO NUEVO: Clic en Notificación
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    notif.read = true;
+    this.notificationsOpen = false;
+
+    if (notif.applicantId) {
+      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
+        queryParams: { seguimiento: 'true' } 
+      });
+    }
+    this.cdr.detectChanges(); 
+  }
+
+  toggleNotifications(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+
+    if (this.notificationsOpen && this.hasUnreadNotifications) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach(n => n.read = true);
+
+      // Llamar a la API para marcarlas como leídas en PostgreSQL
+      this.api.marcarNotificacionesLeidas().subscribe({
+        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
+      });
+    }
+    this.menuOpen = false;
+  }
+
   cargarAnuncios(idEmpleador: string) {
     this.api.obtenerAnunciosEmpleador(idEmpleador).subscribe({
       next: (anunciosDb) => {
@@ -210,13 +206,10 @@ export class EmployerProfileComponent implements OnInit {
           imagen: anuncio.img || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&auto=format&fit=crop&q=60'
         }));
       },
-      error: () => {
-        // Se conserva el respaldo visual local para no vaciar la interfaz.
-      }
+      error: () => {}
     });
   }
 
-  // Direccion formateada para mantener limpia la plantilla HTML.
   get direccionCompleta(): string {
     if (!this.perfil) {
       return '';
@@ -233,8 +226,6 @@ export class EmployerProfileComponent implements OnInit {
       return this.perfil.descripcion;
     }
 
-
-  
     return `${this.perfil.descripcion.slice(0, limite)}...`;
   }
 
@@ -242,12 +233,10 @@ export class EmployerProfileComponent implements OnInit {
     this.mostrarDescripcionCompleta = !this.mostrarDescripcionCompleta;
   }
 
-  // Cambia la seccion activa dentro de la ceja de pestañas.
   setActiveTab(tab: ProfileSectionTab) {
     this.activeTab = tab;
   }
 
-  // Clases visuales para badges de estado.
   getAnnouncementStateClass(estado: EmployerAnnouncement['estado']): string {
     if (estado === 'Activa') return 'state-active';
     if (estado === 'Borrador') return 'state-paused';
@@ -295,18 +284,6 @@ export class EmployerProfileComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
-  toggleNotifications(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-    }
-    this.menuOpen = false;
-  }
-
   toggleMenu(event?: Event) {
     if (event) {
       event.stopPropagation();
@@ -314,8 +291,6 @@ export class EmployerProfileComponent implements OnInit {
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
-
-  
 
   logout() {
     this.authApi.logout();
@@ -370,7 +345,6 @@ export class EmployerProfileComponent implements OnInit {
     });
   }
 
-  
    eliminarCuenta(){
      this.api.eliminarEmpleador().subscribe({
     next: () => {
@@ -385,13 +359,10 @@ export class EmployerProfileComponent implements OnInit {
   });
   }
 
-
   abrirModalEliminar(){
     this.mostrarModalEliminar("¿Estás seguro de querer eliminar tu cuenta?")
   }
 
-  
-  
   mostrarModalAceptar(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalAceptar');

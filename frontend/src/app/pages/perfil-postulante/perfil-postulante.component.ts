@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -64,6 +64,7 @@ interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
+  applicantId?: string; // Agregado para que los empleadores puedan hacer clic
 }
 
 type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'historial';
@@ -122,7 +123,8 @@ export class PerfilPostulanteComponent implements OnInit {
     private route: ActivatedRoute,
     private authApi: AuthService,
     private readonly api: ApiService,
-    private readonly themeService: ThemeService
+    private readonly themeService: ThemeService,
+    private cdr: ChangeDetectorRef 
   ) { }
 
   ngOnInit(): void {
@@ -219,12 +221,31 @@ export class PerfilPostulanteComponent implements OnInit {
           title: n.title,
           message: n.message,
           time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
-          read: n.read
+          read: n.read,
+          applicantId: n.applicantId 
         }));
         this.hasUnreadNotifications = this.notifications.some(n => !n.read);
       },
       error: (err) => console.error('Error al obtener notificaciones', err)
     });
+  }
+
+  // NUEVO: MÉTODO DE CLIC EN NOTIFICACIÓN
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    notif.read = true;
+    this.notificationsOpen = false;
+
+    // Si la notificación pertenece a un postulante (y el usuario actual es un empleador), navegamos
+    if (notif.applicantId) {
+      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
+        queryParams: { seguimiento: 'true' } 
+      }).then(() => {
+        // Recargar el componente forzadamente ya que estamos en la misma ruta
+        window.location.reload();
+      });
+    }
+    this.cdr.detectChanges(); 
   }
 
   toggleNotifications(event?: Event) {

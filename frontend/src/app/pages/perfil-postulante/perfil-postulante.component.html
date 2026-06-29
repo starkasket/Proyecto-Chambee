@@ -8,8 +8,6 @@
       <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
     </div>
 
-  
-
 <div id="modalAlerta" class="modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -91,7 +89,6 @@
   </div>
 </div>
 
-
     <div class="nav-buttons d-flex align-items-center gap-3">
       <div class="notification-wrapper">
         <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
@@ -102,11 +99,25 @@
         <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
           <div class="notifications-title">Notificaciones</div>
           <div class="notifications-list">
-            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
-              <span class="notif-header">{{ notif.title }}</span>
-              <span class="notif-message">{{ notif.message }}</span>
-              <span class="notif-time">{{ notif.time }}</span>
-            </div>
+            
+            <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
+              <div *ngFor="let notif of notifications" 
+                   class="notification-item" 
+                   [class.unread]="!notif.read" 
+                   (click)="onNotificationClick(notif, $event)"
+                   style="cursor: pointer;">
+                <span class="notif-header">{{ notif.title }}</span>
+                <span class="notif-message">{{ notif.message }}</span>
+                <span class="notif-time">{{ notif.time }}</span>
+              </div>
+            </ng-container>
+
+            <ng-template #sinNotificaciones>
+              <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
+                <small>No tienes notificaciones nuevas.</small>
+              </div>
+            </ng-template>
+
           </div>
         </div>
       </div>
