@@ -54,7 +54,7 @@ export class ApiService {
   }
 
    eliminarEmpleador(){
-    return this.http.delete(`${this.apiUrl}/empleadores/eliminar-cuenta`);
+    return this.http.delete(`${this.apiUrl}/empleadores/eliminar-cuenta`, this.getHeaders());
   }
 
   obtenerAnunciosEmpleador(idEmpleador: number | string): Observable<any[]> {
@@ -134,7 +134,7 @@ export class ApiService {
   }
 
   eliminarPostulante(){
-    return this.http.delete(`${this.apiUrl}/postulantes/eliminar-cuenta`);
+    return this.http.delete(`${this.apiUrl}/postulantes/eliminar-cuenta`, this.getHeaders());
   }
 
   calificarPostulante(idPostulante: string, puntuacion: number, comentario?: string): Observable<any> {
@@ -185,8 +185,6 @@ export class ApiService {
       this.getHeaders()
     );
   }
-
-  // ── Comentarios ─────────────────────────────────────────────
   
   obtenerComentariosAnuncio(idAnuncio: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/comentarios/${idAnuncio}`);
@@ -214,8 +212,10 @@ export class ApiService {
     };
     return this.http.delete<any>(`${this.apiUrl}/comentarios/${idComentario}`, options);
   }
+  
   aceptarPostulante(idPostulante: string) {
-    return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {});
+    // También agregué getHeaders() aquí, ya que faltaba y es una ruta protegida
+    return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {}, this.getHeaders());
   }
 
   crearReporte(reporte: any){
@@ -223,6 +223,15 @@ export class ApiService {
   }
 
   crearReporteEmpleador(reporte: any) {
-  return this.http.post(`${this.apiUrl}/reportes/empleador`,reporte, this.getHeaders());
-}
+    return this.http.post(`${this.apiUrl}/reportes/empleador`,reporte, this.getHeaders());
+  }
+
+  // ===== NOTIFICACIONES =====
+  obtenerNotificaciones(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notificaciones`, this.getHeaders());
+  }
+
+  marcarNotificacionesLeidas(): Observable<any> {
+    return this.http.put(`${this.apiUrl}/notificaciones/marcar-leidas`, {}, this.getHeaders());
+  }
 }

@@ -86,11 +86,8 @@ export class PerfilPostulanteComponent implements OnInit {
   cvPublico = true;
   
   modalMensaje = '';
-  
 
-  
-
-// VARIABLE PARA LAS ETIQUETAS
+  // VARIABLE PARA LAS ETIQUETAS
   misEtiquetas: string[] = [];
 
   private readonly CLOUDINARY_CLOUD_NAME = 'dqq9oeo4e';
@@ -98,7 +95,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   menuOpen = false;
   notificationsOpen = false;
-  hasUnreadNotifications = true;
+  hasUnreadNotifications = false;
   isMobile = false;
   activeTab: ProfileSectionTab = 'postulaciones';
   isEmployerView = false;
@@ -117,27 +114,27 @@ export class PerfilPostulanteComponent implements OnInit {
   ratingSeleccionado = 0;
   ratingHover = 0;
 
-  notifications: NotificationItem[] = [
-    { id: 1, title: '¡Bienvenido!', message: 'Tu perfil está listo.', time: 'Hace 1 min', read: false }
-  ];
-mostrarBannerSeguimiento: boolean = false
+  notifications: NotificationItem[] = [];
+  mostrarBannerSeguimiento: boolean = false;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authApi: AuthService,
     private readonly api: ApiService,
     private readonly themeService: ThemeService
-    
   ) { }
 
   ngOnInit(): void {
+    // Cargar notificaciones desde la BD al iniciar
+    this.cargarNotificaciones();
 
     this.route.queryParams.subscribe(params => {
       if (params['seguimiento'] === 'true') {
         this.mostrarBannerSeguimiento = true;
       }
-      
     });
+
     const usuario = this.api.getUsuario();
     const perfilRouteId = this.route.snapshot.paramMap.get('id')?.trim();
 
@@ -179,7 +176,6 @@ mostrarBannerSeguimiento: boolean = false
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
         this.cvPublico = perfilDb.visible_empresas ?? true; 
-
         this.error = '';
 
         if (localStorage.getItem('token')) {
@@ -192,7 +188,6 @@ mostrarBannerSeguimiento: boolean = false
       },
       error: (err) => {
         this.cargando = false;
-
         if (err.status === 401) {
           this.error = "Tu sesión ha expirado o no tienes autorización. Por favor, vuelve a iniciar sesión.";
         } else {
@@ -200,7 +195,6 @@ mostrarBannerSeguimiento: boolean = false
             this.error = "No fue posible cargar tu perfil en este momento. Revisa tu conexión al servidor.";
           }
         }
-        console.error("Error al obtener perfil:", err);
       }
     });
 
@@ -208,44 +202,64 @@ mostrarBannerSeguimiento: boolean = false
       next: (response: any) => {
         this.misEtiquetas = Array.isArray(response?.etiquetas) ? response.etiquetas : [];
       },
-      error: (err) => {
-        console.error('No se pudieron obtener las etiquetas', err);
-        this.misEtiquetas = [];
-      }
+      error: () => this.misEtiquetas = []
     });
 
     this.cargarFavoritos();
     this.cargarHistorial();
     this.checkMobile();
+  }
 
-    
+  // MÉTODO PARA CARGAR NOTIFICACIONES DESDE EL BACKEND
+  cargarNotificaciones() {
+    this.api.obtenerNotificaciones().subscribe({
+      next: (notifs) => {
+        this.notifications = notifs.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
+          read: n.read
+        }));
+        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
+      },
+      error: (err) => console.error('Error al obtener notificaciones', err)
+    });
+  }
+
+  toggleNotifications(event?: Event) {
+    if (event) event.stopPropagation();
+    this.notificationsOpen = !this.notificationsOpen;
+
+    if (this.notificationsOpen && this.hasUnreadNotifications) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach(n => n.read = true);
+      
+      // Llamar a la API para marcarlas como leídas en PostgreSQL
+      this.api.marcarNotificacionesLeidas().subscribe({
+        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
+      });
+    }
+    this.menuOpen = false;
   }
 
   aceptarSeguimiento() {
-    this.mostrarBannerSeguimiento = false; // Ocultamos el banner
-    
-    // Extraemos el ID del postulante desde la URL
+    this.mostrarBannerSeguimiento = false;
     const idPostulante = this.route.snapshot.paramMap.get('id');
 
     if (idPostulante) {
-      // Llamamos a la API
       this.api.aceptarPostulante(idPostulante).subscribe({
-        next: (res) => {
-          console.log('¡Postulante notificado con éxito!');
-          // Opcional: Aquí podrías mostrar un Toast o Alert de éxito
-        },
-        error: (err) => {
-          console.error('Hubo un error al aceptar', err);
-        }
+        next: () => console.log('¡Postulante notificado con éxito!'),
+        error: (err) => console.error('Hubo un error al aceptar', err)
       });
     }
   }
 
   rechazarSeguimiento() {
     this.mostrarBannerSeguimiento = false;
-    // Aquí puedes llamar a tu API para rechazarlo
     console.log('Postulante Rechazado');
   }
+
   get direccionCompleta(): string {
     if (!this.perfil) return '';
     return `${this.perfil.calle || ''}, ${this.perfil.colonia || ''}, ${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}, ${this.perfil.pais || ''}`.replace(/^, | ,|, $/g, '').trim();
@@ -273,17 +287,6 @@ mostrarBannerSeguimiento: boolean = false
     if (estado === 'Activa') return 'state-active';
     if (estado === 'Pausada') return 'state-paused';
     return 'state-closed';
-  }
-
-  toggleNotifications(event?: Event) {
-    if (event) event.stopPropagation();
-    this.notificationsOpen = !this.notificationsOpen;
-
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-    }
-    this.menuOpen = false;
   }
 
   toggleMenu(event?: Event) {
@@ -324,6 +327,7 @@ mostrarBannerSeguimiento: boolean = false
       modal.style.display = 'flex';
     }
   }
+  
   mostrarModalAceptar(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalAceptar');
@@ -340,6 +344,7 @@ mostrarBannerSeguimiento: boolean = false
       modal.style.display = 'none';
     }
   }
+  
   cerrarModalAceptar() {
     const modal = document.getElementById('modalAceptar');
     if (modal) {
@@ -348,7 +353,7 @@ mostrarBannerSeguimiento: boolean = false
     }
   }
 
-    mostrarModalEliminar(mensaje: string) {
+  mostrarModalEliminar(mensaje: string) {
     const modal = document.getElementById('modalSaludo');
     this.modalMensaje = mensaje;
     if (modal) {
@@ -378,59 +383,42 @@ mostrarBannerSeguimiento: boolean = false
   }
 
   editarPerfil() {
-    if (this.isEmployerView) {
-      return;
-    }
+    if (this.isEmployerView) return;
     this.router.navigate(['/perfil-postulante/editar']);
   }
 
   reportarPerfil(form: NgForm){
-    if (form.invalid) {
-      return;
-    }
+    if (form.invalid) return;
 
-    console.log(this.postulanteId);
     const reporte = {
-    motivo: form.value.motivo,
-    descripcion: form.value.descripcion,
-    id_postulante_reportado: this.selectedPerfilId
+      motivo: form.value.motivo,
+      descripcion: form.value.descripcion,
+      id_postulante_reportado: this.selectedPerfilId
     };
 
-
-    console.log(reporte);
-
     this.api.crearReporte(reporte).subscribe({
-      next: (resp) => {
-      console.log('Reporte enviado', resp);
-      this.cerrarModal();
-    },
-    error: (err) => {
-      console.error(err);
-    }
+      next: () => this.cerrarModal(),
+      error: (err) => console.error(err)
     });
-    
-
   }
 
   eliminarCuenta(){
      this.api.eliminarPostulante().subscribe({
-    next: () => {
-      localStorage.removeItem('token');
-      this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.")
-      this.router.navigate(['/login']);
-    },
-    error: (err) => {
-      console.error(err);
-      alert('Ocurrió un error');
-    }
-  });
+       next: () => {
+         localStorage.removeItem('token');
+         this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.");
+         this.router.navigate(['/login']);
+       },
+       error: () => alert('Ocurrió un error')
+    });
   }
 
   abrirModal(){
-      this.mostrarModal("¿Estás seguro de querer reportar este perfil?")        
+      this.mostrarModal("¿Estás seguro de querer reportar este perfil?");
   }
+  
   abrirModalEliminar(){
-    this.mostrarModalEliminar("¿Estás seguro de querer eliminar tu cuenta?")
+    this.mostrarModalEliminar("¿Estás seguro de querer eliminar tu cuenta?");
   }
 
   buscarEmpleos() {
@@ -448,7 +436,6 @@ mostrarBannerSeguimiento: boolean = false
         if (perfilDb && perfilDb.valoracion_propia) {
           this.ratingSeleccionado = perfilDb.valoracion_propia;
         }
-
         this.error = '';
         this.cargando = false;
       },
@@ -463,11 +450,9 @@ mostrarBannerSeguimiento: boolean = false
           return;
         }
         this.error = 'No fue posible cargar el perfil en este momento.';
-        console.error('Error al obtener perfil del postulante:', err);
       }
     });
   }
-  
 
   private cargarFavoritos() {
     this.api.obtenerFavoritos().subscribe({
@@ -484,10 +469,7 @@ mostrarBannerSeguimiento: boolean = false
           imagen: fav.img || fav.foto_empresa || 'assets/LogoChambee.png'
         }));
       },
-      error: (err) => {
-        console.error('No se pudieron obtener favoritos', err);
-        this.favoritos = [];
-      }
+      error: () => this.favoritos = []
     });
   }
 
@@ -505,7 +487,6 @@ mostrarBannerSeguimiento: boolean = false
       this.api.obtenerAnunciosPublicos().subscribe({
         next: (anuncios: any[]) => {
           if (!anuncios) return;
-          
           const historyJobs = ids.map(id => anuncios.find(a => String(a.id_anuncio) === String(id)))
                                  .filter(a => a !== undefined);
 
@@ -521,12 +502,9 @@ mostrarBannerSeguimiento: boolean = false
             imagen: anuncio.img || anuncio.foto_empresa || 'assets/LogoChambee.png'
           }));
         },
-        error: () => {
-          this.vistosRecientemente = [];
-        }
+        error: () => this.vistosRecientemente = []
       });
     } catch (e) {
-      console.error("Error leyendo historial", e);
       this.vistosRecientemente = [];
     }
   }
@@ -561,7 +539,6 @@ mostrarBannerSeguimiento: boolean = false
     this.cvError = false;
 
     try {
-      // 1. Subir a Cloudinary
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', 'Chambee-cv');
@@ -577,22 +554,19 @@ mostrarBannerSeguimiento: boolean = false
       const cloudData = await cloudRes.json();
       const pdfUrl: string = cloudData.secure_url;
 
-      // 2. Guardar la URL en la base de datos
       this.api.actualizarMiPerfil({ archivo_cv: pdfUrl }).subscribe({
         next: () => {
           if (this.perfil) this.perfil.archivo_cv = pdfUrl;
           this.cvMensaje = 'C.V. actualizado correctamente.';
           this.cvError = false;
         },
-        error: (err: any) => {
-          console.error('Error al guardar URL en BD:', err);
+        error: () => {
           this.cvError = true;
           this.cvMensaje = 'Error al vincular el CV con tu perfil.';
         }
       });
 
     } catch (err: any) {
-      console.error('Error en subida de CV:', err);
       this.cvError = true;
       this.cvMensaje = err.message || 'Error al subir el CV.';
     } finally {
@@ -602,19 +576,17 @@ mostrarBannerSeguimiento: boolean = false
 
   toggleCvVisibilidad(): void {
     const nuevoEstado = !this.cvPublico;
-this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
+    this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
         next: () => {
         this.cvPublico = nuevoEstado;
         this.cvMensaje = `Tu C.V. ahora es ${nuevoEstado ? 'público' : 'privado'}.`;
         this.cvError = false;
       },
-      error: (err: any) => {
-        console.error('Error al cambiar visibilidad:', err);
-      this.cvError = true;
-      this.cvMensaje = 'No se pudo cambiar la visibilidad del C.V.';
+      error: () => {
+        this.cvError = true;
+        this.cvMensaje = 'No se pudo cambiar la visibilidad del C.V.';
       }
-    })
-
+    });
   }
 
   setRating(puntuacion: number): void {
@@ -643,7 +615,7 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
 
   enviarCalificacion(): void {
     if (!this.ratingSeleccionado) {
-      this.ratingError = 'Por favor, selecciona una calificación (estrellas) antes de enviar.';
+      this.ratingError = 'Por favor, selecciona una calificación antes de enviar.';
       return;
     }
 
@@ -667,7 +639,6 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
       error: (err: any) => {
         this.ratingEnviando = false;
         this.ratingError = err.error?.error || 'Error al enviar la calificación.';
-        console.error('Error al calificar postulante:', err);
       }
     });
   }
@@ -688,11 +659,7 @@ this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
         } else {
           this.ngOnInit();
         }
-      },
-      error: (err) => {
-        console.error('Error al eliminar valoración:', err);
       }
     });
   }
-
 }

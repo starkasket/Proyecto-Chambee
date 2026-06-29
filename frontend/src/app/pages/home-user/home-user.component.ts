@@ -1,7 +1,7 @@
 import { Subject, forkJoin, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; // <-- Importamos ChangeDetectorRef
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; 
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -83,7 +83,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   favoriteJobIds = new Set<string>();
   savingFavoriteId: string | null = null;
 
-  
   usuarioActualId: string | null = null;
 
   searchTerm = '';
@@ -108,10 +107,12 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly socketService: SocketService,
-    private cdr: ChangeDetectorRef // <-- Inyectamos ChangeDetectorRef
+    private cdr: ChangeDetectorRef 
   ) {}
 
   ngOnInit() {
+    this.cargarNotificaciones(); // <-- Cargar notificaciones al iniciar
+
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
@@ -166,6 +167,41 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }
   }
 
+  // MÉTODO NUEVO: CARGAR NOTIFICACIONES DESDE EL BACKEND
+  cargarNotificaciones() {
+    this.api.obtenerNotificaciones().subscribe({
+      next: (notifs) => {
+        this.notifications = notifs.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
+          read: n.read
+        }));
+        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
+      },
+      error: (err) => console.error('Error al obtener notificaciones', err)
+    });
+  }
+
+  // MÉTODO ACTUALIZADO: MARCAR COMO LEIDAS
+  toggleNotifications(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    
+    if (this.notificationsOpen && this.hasUnreadNotifications) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach((n) => n.read = true);
+      
+      this.api.marcarNotificacionesLeidas().subscribe({
+        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
+      });
+    }
+    this.menuOpen = false;
+  }
+
   agregarNotificacion(datos: any) {
     const nuevaNotificacion: NotificationItem = {
       id: Date.now(),
@@ -177,10 +213,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
     this.notifications.unshift(nuevaNotificacion);
     this.hasUnreadNotifications = true;
-    this.cdr.detectChanges(); // <-- Obligamos a Angular a actualizar la campanita
+    this.cdr.detectChanges(); 
   }
 
-  // Prevención de error por si le dan clic a la notificación en este componente
   onNotificationClick(notif: NotificationItem, event: Event) {
     event.stopPropagation();
     notif.read = true;
@@ -392,18 +427,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         this.savingFavoriteId = null;
       }
     });
-  }
-
-  toggleNotifications(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach((n) => n.read = true);
-    }
-    this.menuOpen = false;
   }
 
   @HostListener('document:click', ['$event'])

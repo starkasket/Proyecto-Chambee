@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; // <-- Importamos ChangeDetectorRef
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -82,10 +82,12 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly socketService: SocketService,
-    private cdr: ChangeDetectorRef // <-- Inyectamos ChangeDetectorRef
+    private cdr: ChangeDetectorRef 
   ) { }
 
   ngOnInit() {
+    this.cargarNotificaciones(); // <-- Cargar notificaciones al iniciar el componente
+
     const usuario = this.api.getUsuario();
 
     if (usuario?.id) {
@@ -123,6 +125,23 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  cargarNotificaciones() {
+    this.api.obtenerNotificaciones().subscribe({
+      next: (notifs) => {
+        this.notifications = notifs.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
+          read: n.read,
+          applicantId: n.applicantId // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
+        }));
+        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
+      },
+      error: (err) => console.error('Error al obtener notificaciones', err)
+    });
+  }
   agregarNotificacion(datos: any) {
     const nuevaNotificacion: NotificationItem = {
       id: Date.now(), 
@@ -135,7 +154,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
 
     this.notifications.unshift(nuevaNotificacion);
     this.hasUnreadNotifications = true;
-    this.cdr.detectChanges(); // <-- Obligamos a Angular a actualizar la campanita
+    this.cdr.detectChanges(); 
   }
 
   onNotificationClick(notif: NotificationItem, event: Event) {
@@ -148,18 +167,24 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
         queryParams: { seguimiento: 'true' } 
       });
     }
-    this.cdr.detectChanges(); // <-- Actualizamos el menú de notificaciones
+    this.cdr.detectChanges(); 
   }
 
+  // MÉTODO ACTUALIZADO: MARCAR COMO LEIDAS EN LA BASE DE DATOS
   toggleNotifications(event?: Event) {
     if (event) {
       event.stopPropagation();
     }
     this.notificationsOpen = !this.notificationsOpen;
 
-    if (this.notificationsOpen) {
+    if (this.notificationsOpen && this.hasUnreadNotifications) {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
+
+      // Llamar a la API para marcarlas como leídas en PostgreSQL
+      this.api.marcarNotificacionesLeidas().subscribe({
+        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
+      });
     }
     this.menuOpen = false;
   }
