@@ -98,8 +98,11 @@ Esto construirá las imágenes del backend y frontend, levantará PostgreSQL, y 
 |
 
  **Frontend (Angular)**  http://localhost:4200  4200 
+ 
  **Backend (API REST)**  http://localhost:3000  3000 
+ 
  **Base de datos (PostgreSQL)**  localhost:5432  5432 
+ 
 
 ### Detener el proyecto
 
