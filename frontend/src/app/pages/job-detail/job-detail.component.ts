@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -10,6 +10,15 @@ import * as L from 'leaflet';
 import { JobCardComponent } from '../../components/job-card/job-card.component';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
+
+interface NotificationItem {
+  id: number;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  applicantId?: string;
+}
 
 @Component({
   selector: 'app-job-detail',
@@ -27,12 +36,18 @@ export class JobDetailComponent implements OnInit {
   esFavorito = false;
   guardandoFavorito = false;
 
+  // NOTIFICACIONES Y MENÚ
+  menuOpen = false;
+  notificationsOpen = false;
+  hasUnreadNotifications = false;
+  notifications: NotificationItem[] = [];
+
   // VARIABLES PARA COMENTARIOS
   usuarioActual: any = null;
   comentarios: any[] = [];
   nuevoComentario: string = '';
   enviandoComentario = false;
-  dropdownOpenIndex: number | null = null; // Controla qué menú de 3 puntos está abierto
+  dropdownOpenIndex: number | null = null; 
 
   private map: L.Map | null = null;
   private route = inject(ActivatedRoute);
@@ -42,10 +57,16 @@ export class JobDetailComponent implements OnInit {
   private themeService = inject(ThemeService);
   private api = inject(ApiService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     // Obtenemos el usuario para validar su rol
     this.usuarioActual = this.api.getUsuario();
+
+    // Cargar notificaciones al iniciar
+    if (this.usuarioActual) {
+      this.cargarNotificaciones();
+    }
 
     this.route.paramMap.subscribe((params) => {
       this.jobId = params.get('id');
@@ -57,6 +78,67 @@ export class JobDetailComponent implements OnInit {
 
     this.cargarFotoPerfil();
   }
+
+  // ================= NOTIFICACIONES =================
+  cargarNotificaciones() {
+    this.api.obtenerNotificaciones().subscribe({
+      next: (notifs) => {
+        this.notifications = notifs.map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
+          read: n.read,
+          applicantId: n.applicantId 
+        }));
+        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
+      },
+      error: (err) => console.error('Error al obtener notificaciones', err)
+    });
+  }
+
+  toggleNotifications(event?: Event) {
+    if (event) event.stopPropagation();
+    this.notificationsOpen = !this.notificationsOpen;
+
+    if (this.notificationsOpen && this.hasUnreadNotifications) {
+      this.hasUnreadNotifications = false;
+      this.notifications.forEach(n => n.read = true);
+      
+      this.api.marcarNotificacionesLeidas().subscribe({
+        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
+      });
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    notif.read = true;
+    this.notificationsOpen = false;
+
+    if (notif.applicantId) {
+      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
+        queryParams: { seguimiento: 'true' } 
+      });
+    }
+    this.cdr.detectChanges(); 
+  }
+
+  toggleMenu(event?: Event) {
+    if (event) event.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+    this.notificationsOpen = false;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.notificationsOpen) this.notificationsOpen = false;
+    if (this.menuOpen) this.menuOpen = false;
+    if (this.dropdownOpenIndex !== null) this.dropdownOpenIndex = null;
+  }
+
+  // ==================================================
 
   // Cargar comentarios
   cargarComentarios(id: string | null) {

@@ -41,13 +41,43 @@
     </div>
 
     <div class="nav-buttons">
-        <div style="position: relative; cursor: pointer; margin-right: 10px;">
-            <i class="bi bi-bell-fill fs-5"></i>
-            <span
-                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-                style="width: 10px; height: 10px; margin-top: 5px;">
-                <span class="visually-hidden">Nuevas notificaciones</span>
-            </span>
+        <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL -->
+        <div class="notification-wrapper" style="position: relative; margin-right: 10px;">
+            <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+                <i class="bi bi-bell-fill fs-5"></i>
+                <span *ngIf="hasUnreadNotifications"
+                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                    style="width: 10px; height: 10px; margin-top: 5px;">
+                    <span class="visually-hidden">Nuevas notificaciones</span>
+                </span>
+            </div>
+
+            <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+                </div>
+                <div style="max-height: 350px; overflow-y: auto;">
+                    <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
+                        <div *ngFor="let notif of notifications" 
+                             class="notification-item" 
+                             [class.unread]="!notif.read" 
+                             (click)="onNotificationClick(notif, $event)"
+                             style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+                             [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+                             onmouseover="this.style.backgroundColor='var(--hover-bg, rgba(0,0,0,0.05))'"
+                             onmouseout="this.style.backgroundColor=this.getAttribute('data-bg') || 'transparent'">
+                            <span class="notif-header" style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+                            <span class="notif-message" style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+                            <span class="notif-time" style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+                        </div>
+                    </ng-container>
+                    <ng-template #sinNotificaciones>
+                        <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
+                            <small>No tienes notificaciones nuevas.</small>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
         </div>
 
         <button class="btn-profile" (click)="irAlPerfil()">
@@ -64,7 +94,7 @@
             </span>
         </button>
 
-        <i class="bi bi-list fs-3 burger-menu" style="cursor: pointer; margin-left: 5px;"></i>
+        <i class="bi bi-list fs-3 burger-menu" style="cursor: pointer; margin-left: 5px;" (click)="toggleMenu($event)"></i>
     </div>
 </nav>
 
