@@ -16,7 +16,7 @@ Plataforma web bidireccional de empleo que conecta a personas en búsqueda de tr
 ##  Tecnologías Utilizadas
 
 
-**Vista (Frontend)**  Angular 21 + Bootstrap 5  Interfaz de usuario, enrutamiento, consumo de API REST 
+**Vista (Frontend)**  Angular 17 + Bootstrap 5  Interfaz de usuario, enrutamiento, consumo de API REST 
 
 **Controlador (Backend)** Node.js 20 + Express  Lógica de negocio, validaciones, endpoints REST, autenticación JWT 
 
