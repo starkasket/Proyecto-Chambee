@@ -17,10 +17,15 @@ Plataforma web bidireccional de empleo que conecta a personas en búsqueda de tr
 
 
 **Vista (Frontend)**  Angular 17 + Bootstrap 5  Interfaz de usuario, enrutamiento, consumo de API REST 
+
 **Controlador (Backend)** Node.js 20 + Express  Lógica de negocio, validaciones, endpoints REST, autenticación JWT 
-**Modelo (Base de datos)**  PostgreSQL 16  Persistencia de datos, relaciones, integridad referencial 
+
+**Modelo (Base de datos)**  PostgreSQL 16  Persistencia de datos, relaciones, integridad referencial
+
 **Almacenamiento de archivos**  Cloudinary  CVs en PDF e imágenes de perfil 
+
 **Contenedores**  Docker / Docker Compose  Orquestación del entorno de desarrollo local 
+
 
 Arquitectura: **Modelo-Vista-Controlador (MVC)** en tres capas independientes comunicadas vía API REST.
 
