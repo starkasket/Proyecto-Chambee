@@ -120,7 +120,3 @@ docker compose down
 
 
 
-
-## 🤝 Soporte
-
-Si encuentras algún problema o tienes sugerencias, abre un issue en el repositorio del proyecto.
