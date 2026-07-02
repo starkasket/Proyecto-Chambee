@@ -111,6 +111,8 @@ export class LoginComponent {
 
           this.redirectAfterLogin = user.rol === 'empleador'
             ? '/home-employer'
+            : user.rol === 'administrador'
+            ? '/admin'
             : '/home-user';
 
           console.log('Respuesta del servidor:', res);

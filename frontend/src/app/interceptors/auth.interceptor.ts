@@ -33,8 +33,9 @@ export class AuthInterceptor implements HttpInterceptor {
           const enRutaExcluida = rutasExcluidas.some(r => rutaActual.startsWith(r));
 
           if (!enRutaExcluida) {
-            this.authApi.logout();
-            this.router.navigateByUrl('/login', { replaceUrl: true });
+            const esRutaAdmin = rutaActual.startsWith('/admin') || rutaActual.startsWith('/login-admin');
+            this.authApi.clearSession();
+            this.router.navigateByUrl(esRutaAdmin ? '/login-admin' : '/login', { replaceUrl: true });
           }
         }
 

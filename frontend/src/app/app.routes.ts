@@ -21,6 +21,7 @@ import { BorradorServicioComponent } from './pages/borrador-servicio/borrador-se
 import { CompanyPublicProfileComponent } from './pages/company-public-profile/company-public-profile.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { LoginAdminComponent } from './pages/login-admin/login-admin.component';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -46,7 +47,7 @@ export const routes: Routes = [
   { path: 'empresa/:id', component: CompanyPublicProfileComponent },
   { path: 'mis-favoritos', component: MisFavoritosComponent },
   { path: 'borrador-servicio', component: BorradorServicioComponent },
-  { path: 'admin', component: AdminDashboardComponent },
+  { path: 'admin', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'login-admin', component: LoginAdminComponent },
   { path: '**', redirectTo: '' }
 ];
