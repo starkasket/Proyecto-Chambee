@@ -1,0 +1,186 @@
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4" style="background-color: #ffc107; border-bottom: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+  <div class="d-flex align-items-center gap-3">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="48" style="cursor: pointer;" routerLink="/">
+    <span class="fs-5 fw-bold text-dark d-none d-md-block" style="color: #111 !important;">Bienvenido, {{ nombre_postulante }}</span>
+  </div>
+  
+  <div class="search-container flex-grow-1 mx-4" style="max-width: 500px;">
+    <input type="text" 
+           class="form-control" 
+           style="border-radius: 50px; padding: 10px 20px; border: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); color: #111; background: #fff;"
+           placeholder="Buscar categoría, puesto, ciudad y más..." 
+           [value]="query"
+           (keydown.enter)="nuevaBusqueda($event)" />
+  </div>
+ 
+  <div class="nav-buttons d-flex align-items-center gap-3">
+    <div class="notification-wrapper" style="position: relative;">
+      <div class="notification-bell" style="cursor: pointer; color: #111;" (click)="toggleNotifications($event)">
+        <i class="bi bi-bell-fill fs-5"></i>
+        <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
+      </div>
+
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+        style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--surface-primary, #ffffff); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; display: flex; flex-direction: column;">
+        <div style="padding: 16px; border-bottom: 1px solid var(--border-soft);"><span style="font-weight: 700;">Notificaciones</span></div>
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications" style="padding: 16px; border-bottom: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 4px;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+            <span style="font-size: 0.95rem; font-weight: 700;">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+          </div>
+          <div *ngIf="notifications.length === 0" style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">No tienes notificaciones nuevas</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn d-flex align-items-center gap-2"
+      style="border-radius: 50px; background-color: #fff; color: #111; border: none; padding: 6px 16px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"
+      (click)="irAlPerfil()">
+      <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
+      <span class="d-none d-md-block">Mi perfil</span>
+    </button>
+
+    <button class="theme-toggle" (click)="toggleTheme()" style="background: rgba(255,255,255,0.5); border-radius: 50px; padding: 4px 12px; border: none; cursor: pointer;">
+      <i class="bi text-dark" [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+    </button>
+
+    <div class="menu fs-4 text-dark" style="cursor: pointer;" (click)="toggleMenu($event)"><i class="bi bi-list"></i></div>
+
+    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+      <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
+      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+      <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis Borradores</a>
+      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+    </div>
+  </div>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+      <button class="mobile-close" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+      <nav class="mobile-nav">
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}</div>
+        <hr />
+        <a class="mobile-nav-link" (click)="irAlPerfil()">Mi perfil</a>
+        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+        <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <hr />
+        <a class="mobile-nav-link text-danger" (click)="logout()">Cerrar Sesión</a>
+      </nav>
+    </aside>
+  </div>
+</nav>
+
+<!-- CONTENIDO DE BÚSQUEDA -->
+<div class="container main-layout mb-5" style="min-height: 80vh;">
+  
+  <div class="left" style="grid-column: 1 / -1;">
+    <div class="d-flex align-items-center mb-5 gap-3">
+      <button class="btn return-btn" routerLink="/">
+        <i class="bi bi-arrow-left"></i> Volver al Inicio
+      </button>
+      <h2 class="search-title m-0" *ngIf="query">Resultados para: "<span class="text-highlight">{{ query }}</span>"</h2>
+      <h2 class="search-title m-0" *ngIf="!query">Explorar todo</h2>
+    </div>
+
+    <div *ngIf="cargando" class="text-center my-5 py-5">
+      <div class="spinner-border" style="color: var(--primary-color, #f39c12);" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+
+    <div *ngIf="!cargando && todosLosResultados.length === 0" class="empty-state">
+      <img src="assets/abejaAlerta.png" alt="Sin resultados" height="140" class="mb-4 opacity-75">
+      <h4 class="fw-bold">No encontramos nada para "{{ query }}"</h4>
+      <p class="text-muted">Intenta usar otras palabras clave o revisa la ortografía.</p>
+    </div>
+
+    <ng-container *ngIf="!cargando && todosLosResultados.length > 0">
+      
+      <!-- SECCIÓN DESTACADOS -->
+      <section class="destacados-section mb-5" *ngIf="destacados.length > 0">
+        <h3 class="section-subtitle mb-4">Los mejores resultados para empezar</h3>
+        
+        <div class="jobs-grid">
+          <!-- AÑADIMOS EVENTO (click) AQUÍ -->
+          <div class="job-card featured-result-card" *ngFor="let item of destacados" tabindex="0" (click)="irAlDetalle(item)">
+            
+            <div class="job-card-img-wrapper">
+              <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
+              <span class="type-badge" [ngClass]="item.tipo === 'empleo' ? 'badge-empleo' : 'badge-servicio'">
+                <i class="bi" [ngClass]="item.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i> {{ item.tipo | titlecase }}
+              </span>
+            </div>
+            
+            <div class="job-content">
+              <h4 class="job-company">{{ item.nombre_empresa || item.company || 'Servicio Independiente' }}</h4>
+              <p class="job-title">{{ item.titulo || item.title }}</p>
+              
+              <p class="salary" *ngIf="item.salario || item.salary">{{ item.salario || item.salary }}</p>
+              <p class="salary" *ngIf="!(item.salario || item.salary)">A convenir</p>
+              
+              <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
+                <span class="featured-chip" *ngIf="item.modalidad || item.mode">
+                  <i class="bi bi-geo-alt-fill me-1 opacity-50"></i>{{ item.modalidad || item.mode }}
+                </span>
+                <span class="featured-chip" *ngIf="item.ciudad">
+                  <i class="bi bi-pin-map-fill me-1 opacity-50"></i>{{ item.ciudad }}
+                </span>
+                <span class="featured-chip" *ngIf="item.categoria || (item.categorias && item.categorias[0])">
+                  <i class="bi bi-tag-fill me-1 opacity-50"></i>{{ item.categoria || item.categorias[0] }}
+                </span>
+              </div>
+            </div>
+            <div class="card-bottom-strip"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN TODOS LOS RESULTADOS -->
+      <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
+        <h3 class="section-subtitle mb-4">Todos los resultados</h3>
+
+        <div class="filtros-bar d-flex gap-2 mb-4 overflow-auto pb-2">
+          <button class="chambee-filter-btn active"><i class="bi bi-sliders me-1"></i> Filtrar y ordenar</button>
+          <button class="chambee-filter-btn">Tipo de oferta <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+          <button class="chambee-filter-btn">Modalidad <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+          <button class="chambee-filter-btn">Ubicación <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+        </div>
+
+        <div class="jobs-grid mt-4">
+          <!-- AÑADIMOS EVENTO (click) AQUÍ TAMBIÉN -->
+          <div class="job-card" *ngFor="let item of todosLosResultados" tabindex="0" (click)="irAlDetalle(item)">
+            <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
+            <div class="job-content">
+              
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h4 class="job-company m-0">{{ item.nombre_empresa || item.company || 'Independiente' }}</h4>
+                <span class="job-urgency-badge m-0" [ngClass]="item.tipo === 'empleo' ? 'bg-empleo-soft text-empleo' : 'bg-servicio-soft text-servicio'">
+                  {{ item.tipo | titlecase }}
+                </span>
+              </div>
+
+              <p class="job-title m-0 mb-3">{{ item.titulo || item.title }}</p>
+              
+              <div class="mt-auto">
+                <p class="salary mb-2">{{ item.salario || item.salary || 'A convenir' }}</p>
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="featured-chip" *ngIf="item.modalidad">{{ item.modalidad }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </ng-container>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
+import { SearchResultsComponent } from './pages/search-results/search-results.component';
 import { EmployerRegisterComponent } from './pages/employerRegister/employerRegister.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { LoginComponent } from './pages/login/login.component';
@@ -49,5 +50,6 @@ export const routes: Routes = [
   { path: 'borrador-servicio', component: BorradorServicioComponent },
   { path: 'admin', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'login-admin', component: LoginAdminComponent },
+  { path: 'search', component: SearchResultsComponent },
   { path: '**', redirectTo: '' }
 ];

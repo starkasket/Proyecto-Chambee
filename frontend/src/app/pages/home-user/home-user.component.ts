@@ -671,9 +671,11 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   verTodosResultados() {
-    this.guardarBusquedaReciente(this.searchTerm);
-    this.showSearchDropdown = false;
-    this.router.navigate(['/jobs'], { queryParams: { q: this.searchTerm } });
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      this.guardarBusquedaReciente(this.searchTerm);
+      this.showSearchDropdown = false;
+      this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
+    }
   }
 
   highlightText(text: string | null | undefined, query: string): string {

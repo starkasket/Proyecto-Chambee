@@ -10,6 +10,7 @@
            placeholder="Buscar categoría, puesto, ciudad y más..." 
            [value]="searchTerm"
            (input)="onSearchInput($event)"
+           (keydown.enter)="verTodosResultados()"
            (blur)="cerrarBuscador()"
            (focus)="showSearchDropdown = true" />
     
@@ -122,7 +123,6 @@
     </button>
 
     <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
-
 
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
       <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
