@@ -131,21 +131,26 @@
       <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
 
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
-        <ng-container *ngIf="isEmployerView; else postulanteDesktopMenu">
+        <ng-container *ngIf="isAdminView">
+          <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+        </ng-container>
+        <ng-container *ngIf="!isAdminView && isEmployerView">
           <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
           <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
           <a routerLink="/post-job" class="desktop-menu-link">Crear oferta</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
-        <ng-template #postulanteDesktopMenu>
+        <ng-container *ngIf="!isAdminView && !isEmployerView">
           <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
           <a routerLink="/perfil-postulante" class="desktop-menu-link">Mi perfil</a>
           <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
           <a routerLink="/postulaciones" class="desktop-menu-link">Mis postulaciones</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
-        </ng-template>
+        </ng-container>
       </div>
     </div>
 
@@ -153,19 +158,23 @@
       <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
         <button class="mobile-close" (click)="toggleMenu()">✕</button>
         <nav class="mobile-nav">
-          <ng-container *ngIf="isEmployerView; else postulanteMobileMenu">
+          <ng-container *ngIf="isAdminView">
+            <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+          </ng-container>
+          <ng-container *ngIf="!isAdminView && isEmployerView">
             <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
             <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
             <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
-          <ng-template #postulanteMobileMenu>
+          <ng-container *ngIf="!isAdminView && !isEmployerView">
             <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
             <a class="mobile-nav-link" routerLink="/perfil-postulante" (click)="toggleMenu()">Mi perfil</a>
             <a class="mobile-nav-link" routerLink="/mis-favoritos" (click)="toggleMenu()">Mis favoritos</a>
             <a class="mobile-nav-link" routerLink="/postulaciones" (click)="toggleMenu()">Mis postulaciones</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
-          </ng-template>
+          </ng-container>
         </nav>
       </aside>
     </div>
@@ -205,7 +214,7 @@
             </div>
           </div>
           <button *ngIf="isEmployerView" class="report-btn" type="button" (click)="abrirModal()">Reportar cuenta</button>
-          <button *ngIf="!isEmployerView" class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
+          <button *ngIf="isOwnProfile" class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
         </div>
 
         <div class="company-details-grid">
@@ -227,7 +236,7 @@
       <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
     </div>
 
-    <ng-container *ngIf="!isEmployerView">
+    <ng-container *ngIf="isOwnProfile">
       <input type="file" #cvInput accept="application/pdf" style="display: none"
         (change)="onCvSelected($event)" />
       <button class="inline-create-btn mb-3"
@@ -240,7 +249,7 @@
       </div>
     </ng-container>
 
-    <div *ngIf="!isEmployerView" class="cv-visibility-row">
+    <div *ngIf="isOwnProfile" class="cv-visibility-row">
       <span class="cv-visibility-label">C.V. Público</span>
 
       <label class="cv-switch" 
@@ -271,7 +280,7 @@
     <p><strong>País:</strong> {{ perfil.pais }}</p>
     <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
     <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
-    <button *ngIf="!isEmployerView" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
+    <button *ngIf="isOwnProfile" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
 
   </div>
 </div>
@@ -378,7 +387,7 @@
                      [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
                   ></i>
                 </div>
-                  <div *ngIf="isEmployerView"  class="review-menu-wrapper">
+                  <div *ngIf="!isEmployerView || (isEmployerView && usuarioActual?.id === rev.id_empleador)" class="review-menu-wrapper">
                     <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
                       <i class="bi bi-three-dots-vertical"></i>
                     </button>
@@ -399,7 +408,7 @@
       </article>
     </section>
 
-    <section *ngIf="!cargando && perfil && !isEmployerView" class="announcements-shell">
+    <section *ngIf="!cargando && perfil && isOwnProfile" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
           <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
@@ -509,7 +518,7 @@
       </div>
     </section>
   </main>
-  <button *ngIf="!isEmployerView" class="fab-create" type="button" (click)="buscarEmpleos()"
+  <button *ngIf="isOwnProfile" class="fab-create" type="button" (click)="buscarEmpleos()"
     aria-label="Buscar empleos">
     <span class="fab-plus"><i class="bi bi-search"></i></span>
     <span class="fab-text">Buscar Empleos</span>

@@ -83,6 +83,11 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   favoriteJobIds = new Set<string>();
   savingFavoriteId: string | null = null;
 
+  // Estado del modal de detalle de servicio
+  servicioDetalle: any = null;
+  servicioDetalleOpen = false;
+  servicioDetalleCargando = false;
+
   usuarioActualId: string | null = null;
 
   searchTerm = '';
@@ -471,7 +476,38 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   openService(index: number) {
-    console.log('Abriendo servicio:', index);
+    const servicio = this.services[index];
+    if (!servicio) return;
+    const id = servicio.id_servicio || servicio.id;
+    if (!id) return;
+
+    this.servicioDetalleCargando = true;
+    this.servicioDetalleOpen = true;
+
+    this.api.obtenerServicioDetalle(String(id)).subscribe({
+      next: (detalle) => {
+        this.servicioDetalle = detalle;
+        this.servicioDetalleCargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar detalle del servicio:', err);
+        // Usar los datos locales como fallback
+        this.servicioDetalle = servicio;
+        this.servicioDetalleCargando = false;
+      }
+    });
+  }
+
+  cerrarDetalleServicio() {
+    this.servicioDetalleOpen = false;
+    this.servicioDetalle = null;
+  }
+
+  verPerfilAutor(autorId: string) {
+    if (autorId) {
+      this.cerrarDetalleServicio();
+      this.router.navigate(['/perfil-postulante', autorId]);
+    }
   }
 
   @HostListener('window:resize')

@@ -91,26 +91,26 @@ const verifyToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-       let table = "";
+    let table = "";
     let idField = "";
+    let selectFields = "token_version, estado_cuenta";
 
     if (decoded.rol === "postulante") {
       table = "postulante";
-      idField = "id_postulante"
-    }
-
-    if (decoded.rol === "empleador") {
+      idField = "id_postulante";
+    } else if (decoded.rol === "empleador") {
       table = "empleador";
-      idField = "id_empleador"
-    }
-
-    if (decoded.rol === "administrador") {
+      idField = "id_empleador";
+    } else if (decoded.rol === "administrador") {
       table = "administrador";
-      idField = "id_administrador"
+      idField = "id_administrador";
+      selectFields = "token_version, NULL AS estado_cuenta";
+    } else {
+      return res.status(401).json({ error: "Rol no válido" });
     }
 
     const result = await pool.query(
-      `SELECT token_version, estado_cuenta FROM ${table} WHERE ${idField} = $1`, [decoded.id]
+      `SELECT ${selectFields} FROM ${table} WHERE ${idField} = $1`, [decoded.id]
     );
 
     if (!result.rows.length) {
@@ -518,7 +518,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       const reviewsRes = await pool.query(`
         SELECT
           v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion,
-          p.nombre_postulante, p.foto_perfil AS foto_postulante
+          p.nombre_postulante, p.foto_perfil AS foto_postulante, ev.id_postulante
         FROM empleador_valoracion ev
         JOIN valoracion v ON ev.id_valoracion = v.id_valoracion
         JOIN postulante p ON ev.id_postulante = p.id_postulante
@@ -548,7 +548,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       const reviewsRes = await pool.query(`
         SELECT 
           v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion,
-          e.nombre_empresa, e.foto_perfil AS foto_empresa
+          e.nombre_empresa, e.foto_perfil AS foto_empresa, pv.id_empleador
         FROM postulante_valoracion pv
         JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
         JOIN empleador e ON pv.id_empleador = e.id_empleador
@@ -571,7 +571,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
   }
 });
 
-app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante"), async (req, res) => {
+app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante", "administrador"), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -579,7 +579,7 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
       return res.status(403).json({ error: "No autorizado para ver este perfil" });
     }
 
-    const esPropioPostulante = req.user.rol === "postulante" && req.user.id === id;
+    const esPropioOAdmin = (req.user.rol === "postulante" && req.user.id === id) || req.user.rol === "administrador";
 
     const query = `SELECT 
       p.id_postulante, p.nombre_postulante, p.apellido_paterno_postulante, p.apellido_materno_postulante, 
@@ -594,7 +594,7 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
     WHERE p.id_postulante = $1 AND p.estado_cuenta = 'ACTIVA'`;
 
-    const result = await pool.query(query, [id, esPropioPostulante]);
+    const result = await pool.query(query, [id, esPropioOAdmin]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Postulante no encontrado" });
@@ -613,7 +613,7 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
     const reviewsRes = await pool.query(`
       SELECT 
         v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion,
-        e.nombre_empresa, e.foto_perfil AS foto_empresa
+        e.nombre_empresa, e.foto_perfil AS foto_empresa, pv.id_empleador
       FROM postulante_valoracion pv
       JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
       JOIN empleador e ON pv.id_empleador = e.id_empleador
@@ -691,7 +691,7 @@ app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador")
     `, [id]);
 
     const updatedReviewsRes = await pool.query(`
-      SELECT v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion, e.nombre_empresa, e.foto_perfil AS foto_empresa
+      SELECT v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion, e.nombre_empresa, e.foto_perfil AS foto_empresa, pv.id_empleador
       FROM postulante_valoracion pv
       JOIN valoracion v ON pv.id_valoracion = v.id_valoracion
       JOIN empleador e ON pv.id_empleador = e.id_empleador
@@ -714,15 +714,21 @@ app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador")
   }
 });
 
-app.get("/postulantes", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+app.get("/postulantes", verifyToken, authorizeRoles("empleador", "administrador"), async (req, res) => {
   try {
+    const esAdmin = req.user.rol === "administrador";
     const result = await pool.query(`SELECT
       p.id_postulante, p.nombre_postulante, p.apellido_paterno_postulante, p.apellido_materno_postulante,
       p.correo_electronico, p.telefono, p.foto_perfil, p.descripcion,
-      CASE WHEN c.visible_empresas = true THEN c.archivo_cv ELSE NULL END AS archivo_cv
+      CASE 
+        WHEN $1 = true THEN c.archivo_cv
+        WHEN c.visible_empresas = true THEN c.archivo_cv
+        ELSE NULL 
+      END AS archivo_cv
     FROM postulante p
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
-    ORDER BY p.fecha_registro DESC`);
+    WHERE p.estado_cuenta = 'ACTIVA'
+    ORDER BY p.fecha_registro DESC`, [esAdmin]);
 
     const postulantes = result.rows.map((p) => ({
       ...p,
@@ -1062,8 +1068,8 @@ app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"
       GROUP BY a.id_anuncio ORDER BY a.fecha_publicacion DESC NULLS LAST`, [id]);
 
     const ratingsRes = await pool.query(`SELECT COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion, COUNT(v.id_valoracion)::int AS total_valoraciones FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion JOIN postulante p ON p.id_postulante = ev.id_postulante WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'`, [id]);
-    const reviewsRes = await pool.query(`SELECT v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion, p.nombre_postulante, p.foto_perfil AS foto_postulante FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion JOIN postulante p ON ev.id_postulante = p.id_postulante WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA' ORDER BY v.fecha_valoracion DESC`, [id]);
-    
+    const reviewsRes = await pool.query(`SELECT v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion, p.nombre_postulante, p.foto_perfil AS foto_postulante, ev.id_postulante AS autor_id FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion JOIN postulante p ON ev.id_postulante = p.id_postulante WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA' ORDER BY v.fecha_valoracion DESC`, [id]);
+
     let valoracion_propia = null;
     const ownRatingRes = await pool.query(`SELECT v.puntuacion FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion WHERE ev.id_empleador = $1 AND ev.id_postulante = $2`, [id, req.user.id]);
     if (ownRatingRes.rows.length > 0) valoracion_propia = ownRatingRes.rows[0].puntuacion;
@@ -1102,7 +1108,7 @@ app.post("/empleadores/:id/valoracion", verifyToken, authorizeRoles("postulante"
     await client.query("COMMIT");
 
     const updatedStatsRes = await pool.query(`SELECT COALESCE(AVG(v.puntuacion), 0)::numeric(3,1) AS promedio_valoracion, COUNT(v.id_valoracion)::int AS total_valoraciones FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion JOIN postulante p ON p.id_postulante = ev.id_postulante WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'`, [id]);
-    const updatedReviewsRes = await pool.query(`SELECT v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion, p.nombre_postulante, p.foto_perfil AS foto_postulante FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion JOIN postulante p ON ev.id_postulante = p.id_postulante WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA' ORDER BY v.fecha_valoracion DESC`, [id]);
+    const updatedReviewsRes = await pool.query(`SELECT v.id_valoracion, v.puntuacion, v.comentario, v.fecha_valoracion, p.nombre_postulante, p.foto_perfil AS foto_postulante, ev.id_postulante AS autor_id FROM empleador_valoracion ev JOIN valoracion v ON ev.id_valoracion = v.id_valoracion JOIN postulante p ON ev.id_postulante = p.id_postulante WHERE ev.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA' ORDER BY v.fecha_valoracion DESC`, [id]);
     res.json({ message: "Valoración guardada", promedio_valoracion: parseFloat(updatedStatsRes.rows[0]?.promedio_valoracion || 0), total_valoraciones: updatedStatsRes.rows[0]?.total_valoraciones || 0, valoraciones_recibidas: updatedReviewsRes.rows });
   } catch (err) {
     await client.query("ROLLBACK");
@@ -1462,6 +1468,23 @@ app.get("/servicios/:autorId", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`SELECT *, modalidad AS cobertura, urgencia AS disponibilidad FROM servicios WHERE autor_id = $1 ORDER BY fecha_creacion DESC`, [req.params.autorId]);
     res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET: Obtiene un servicio específico por ID con info del autor
+app.get("/servicio-detalle/:id", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT s.*, p.nombre_postulante, p.apellido_paterno_postulante, p.foto_perfil AS foto_autor
+       FROM servicios s
+       INNER JOIN postulante p ON p.id_postulante = s.autor_id
+       WHERE s.id_servicio = $1`,
+      [req.params.id]
+    );
+    if (result.rowCount === 0) return res.status(404).json({ error: "Servicio no encontrado" });
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

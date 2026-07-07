@@ -166,6 +166,10 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/servicios-publicos`);
   }
 
+  obtenerServicioDetalle(idServicio: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/servicio-detalle/${idServicio}`);
+  }
+
   eliminarServicio(idServicio: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/servicios/${idServicio}`, this.getHeaders());
   }

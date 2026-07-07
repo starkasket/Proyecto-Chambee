@@ -100,6 +100,8 @@ export class PerfilPostulanteComponent implements OnInit {
   isMobile = false;
   activeTab: ProfileSectionTab = 'postulaciones';
   isEmployerView = false;
+  isOwnProfile = false;
+  isAdminView = false;
   selectedPerfilId = '';
   usuarioActual: any = null;
 
@@ -147,10 +149,12 @@ export class PerfilPostulanteComponent implements OnInit {
     }
 
     this.usuarioActual = usuario;
+    this.isAdminView = usuario.rol === 'administrador' || usuario.rol === 'admin';
 
     if (perfilRouteId) {
       this.selectedPerfilId = perfilRouteId;
       this.isEmployerView = usuario.rol === 'empleador';
+      this.isOwnProfile = usuario.rol === 'postulante' && usuario.id === perfilRouteId;
  
       if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId) {
         this.error = 'No estás autorizado para ver este perfil.';
@@ -168,6 +172,8 @@ export class PerfilPostulanteComponent implements OnInit {
       this.cargando = false;
       return;
     }
+
+    this.isOwnProfile = true;
 
     const perfilLocalRaw = localStorage.getItem('perfilPostulante') || sessionStorage.getItem('perfilPostulante');
     if (perfilLocalRaw) {
@@ -396,6 +402,10 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   volverPanel() {
+    if (this.isAdminView) {
+      this.router.navigate(['/admin']);
+      return;
+    }
     if (this.isEmployerView) {
       this.router.navigate(['/home-employer']);
       return;

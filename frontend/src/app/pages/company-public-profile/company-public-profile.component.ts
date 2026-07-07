@@ -59,6 +59,7 @@ export class CompanyPublicProfileComponent implements OnInit {
   modalMensaje = '';
 
   selectedPerfilId = '';
+  usuarioActual: any = null;
   ratingSeleccionado = 0;
   ratingHover = 0;
   nuevoComentario = '';
@@ -85,6 +86,7 @@ export class CompanyPublicProfileComponent implements OnInit {
     this.cargarPostulante();
 
     const usuario = this.api.getUsuario();
+    this.usuarioActual = usuario;
 
 
     if (!usuario) {

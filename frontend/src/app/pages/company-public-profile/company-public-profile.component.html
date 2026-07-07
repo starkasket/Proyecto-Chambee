@@ -173,55 +173,44 @@
       </article>
     </section>
 
-    <section *ngIf="!cargando && perfil" class="announcements-shell">
-      <div class="section-head">
-        <div>
-          <p class="section-eyebrow">Oportunidades disponibles</p>
-          <h2>Vacantes para postularte</h2>
-        </div>
-      </div>
-
-      <div class="announcements-row" *ngIf="anuncios.length; else noCompanyJobs">
-        <article class="announcement-card" *ngFor="let anuncio of anuncios" (click)="verVacante(anuncio.id_anuncio)" role="button" tabindex="0">
-          <img [src]="anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'" [alt]="anuncio.titulo" />
-          <div class="announcement-copy">
-            <div class="card-top">
-              <strong>{{ anuncio.titulo }}</strong>
-              <span class="state-pill">{{ anuncio.urgencia || 'Normal' }}</span>
-            </div>
-            <p class="vacancy-meta">{{ anuncio.calle || anuncio.ciudad }}, {{ anuncio.ciudad }}, {{ anuncio.estado }} | {{ formatearFecha(anuncio.fecha_publicacion) }}</p>
-            <p class="vacancy-description">{{ anuncio.descripcion }}</p>
-            <p class="salary">{{ formatearSalario(anuncio.salario) }}</p>
-            <div class="job-tags" *ngIf="anuncio.categorias?.length">
-              <span class="job-tag" *ngFor="let tag of anuncio.categorias | slice:0:3">{{ tag }}</span>
-            </div>
-            <button class="see-job-btn" type="button" (click)="verVacante(anuncio.id_anuncio); $event.stopPropagation()">Ver vacante</button>
+    <section *ngIf="!cargando && perfil" class="yellow-shell announcements-section-wrapper">
+      <div class="announcements-shell">
+        <div class="section-head">
+          <div>
+            <p class="section-eyebrow">Oportunidades disponibles</p>
+            <h2>Vacantes para postularte</h2>
           </div>
-        </article>
-      </div>
-
-      <ng-template #noCompanyJobs>
-        <div class="empty-state">Esta empresa no tiene vacantes activas por ahora.</div>
-      </ng-template>
-    </section>
-
-    <!-- Resumen de calificación en perfil -->
-    <section *ngIf="!cargando && perfil && (perfil.total_valoraciones ?? 0) > 0" class="rating-summary-shell">
-      <div class="profile-rating-summary d-flex align-items-center gap-2">
-        <div class="stars-display d-flex">
-          <ng-container *ngFor="let starState of getStarsArray(perfil.promedio_valoracion ?? 0)">
-            <i *ngIf="starState === 'full'" class="bi bi-star-fill yellow-star"></i>
-            <i *ngIf="starState === 'half'" class="bi bi-star-half yellow-star"></i>
-            <i *ngIf="starState === 'empty'" class="bi bi-star empty-star"></i>
-          </ng-container>
         </div>
-        <span class="rating-number fw-bold">{{ perfil.promedio_valoracion | number:'1.1-1' }}</span>
-        <span class="text-muted">({{ perfil.total_valoraciones }} {{ perfil.total_valoraciones === 1 ? 'calificación' : 'calificaciones' }})</span>
+
+        <div class="announcements-row" *ngIf="anuncios.length; else noCompanyJobs">
+          <article class="announcement-card" *ngFor="let anuncio of anuncios" (click)="verVacante(anuncio.id_anuncio)" role="button" tabindex="0">
+            <img [src]="anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'" [alt]="anuncio.titulo" />
+            <div class="announcement-copy">
+              <div class="card-top">
+                <strong>{{ anuncio.titulo }}</strong>
+                <span class="state-pill">{{ anuncio.urgencia || 'Normal' }}</span>
+              </div>
+              <p class="vacancy-meta">{{ anuncio.calle || anuncio.ciudad }}, {{ anuncio.ciudad }}, {{ anuncio.estado }} | {{ formatearFecha(anuncio.fecha_publicacion) }}</p>
+              <p class="vacancy-description">{{ anuncio.descripcion }}</p>
+              <p class="salary">{{ formatearSalario(anuncio.salario) }}</p>
+              <div class="job-tags" *ngIf="anuncio.categorias?.length">
+                <span class="job-tag" *ngFor="let tag of anuncio.categorias | slice:0:3">{{ tag }}</span>
+              </div>
+              <button class="see-job-btn" type="button" (click)="verVacante(anuncio.id_anuncio); $event.stopPropagation()">Ver vacante</button>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #noCompanyJobs>
+          <div class="empty-state">Esta empresa no tiene vacantes activas por ahora.</div>
+        </ng-template>
       </div>
     </section>
+
 
     <!-- Sección para calificar al empleador (solo postulantes) -->
     <section *ngIf="!cargando && perfil" class="rating-section-shell">
+      <div class="yellow-shell">
       <article class="rating-feedback-card">
         <div class="card-header-premium">
           <h3>Calificar a esta Empresa</h3>
@@ -273,9 +262,11 @@
           </div>
         </div>
       </article>
+      </div>
 
       <!-- Opiniones de postulantes -->
-      <article class="reviews-list-card mt-4">
+      <div class="yellow-shell mt-4">
+      <article class="reviews-list-card">
         <div class="card-header-premium">
           <h3>Opiniones de Postulantes</h3>
           <p class="subtitle-premium">Calificaciones y comentarios de candidatos que interactuaron con esta empresa.</p>
@@ -298,31 +289,35 @@
                     <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
                   </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="review-stars-display d-flex gap-1">
-                    <i *ngFor="let s of [1,2,3,4,5]"
-                       [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
-                    ></i>
-                  </div>
-                  <div class="review-menu-wrapper">
-                    <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
-                      <i class="bi bi-three-dots-vertical"></i>
+                <!-- Menú 3 puntos: creador del comentario o dueño del perfil -->
+                <div class="review-menu-wrapper"
+                     *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
+                  <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
+                    <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
+                      <i class="bi bi-trash3"></i> Eliminar
                     </button>
-                    <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
-                      <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
-                        <i class="bi bi-trash3"></i> Eliminar
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
-              <div *ngIf="rev.comentario" class="review-comment mt-2">
-                <p class="mb-0">{{ rev.comentario }}</p>
+              <!-- Estrellas y comentario unidos en un bloque visual -->
+              <div class="review-body mt-2">
+                <div class="review-stars-display d-flex gap-1 mb-1">
+                  <i *ngFor="let s of [1,2,3,4,5]"
+                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
+                  ></i>
+                </div>
+                <div *ngIf="rev.comentario" class="review-comment">
+                  <p class="mb-0">{{ rev.comentario }}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </article>
+      </div>
     </section>
   </main>
 </div>

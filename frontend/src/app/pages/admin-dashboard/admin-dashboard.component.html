@@ -65,6 +65,42 @@
         </div>
       </div>
 
+      <!-- Tarjeta: Postulantes Registrados -->
+      <div class="admin-card mb-4">
+        <h4 class="card-title">Postulantes Registrados</h4>
+        <div *ngIf="cargandoPostulantes" class="text-center my-3">
+          <span>Cargando postulantes...</span>
+        </div>
+        <div *ngIf="errorPostulantes" class="alert alert-danger my-3">
+          {{ errorPostulantes }}
+        </div>
+        <div *ngIf="!cargandoPostulantes && !errorPostulantes" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Nombre completo</th>
+                <th>Correo electrónico</th>
+                <th>Teléfono</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let post of postulantes">
+                <td>{{ post.nombre_postulante }} {{ post.apellido_paterno_postulante }} {{ post.apellido_materno_postulante }}</td>
+                <td>{{ post.correo_electronico }}</td>
+                <td>{{ post.telefono }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilPostulante(post.id_postulante)">Ver perfil completo</button>
+                </td>
+              </tr>
+              <tr *ngIf="postulantes.length === 0">
+                <td colspan="4" class="text-center">No hay postulantes registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Tarjeta: Anuncios Reportados -->
       <div class="admin-card mb-4">
         <h4 class="card-title">Anuncios Reportados</h4>

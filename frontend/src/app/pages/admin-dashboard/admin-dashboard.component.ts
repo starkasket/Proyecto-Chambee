@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
 
 interface UsuarioReportado {
   nombre: string;
@@ -49,9 +51,16 @@ export class AdminDashboardComponent implements OnInit {
     { mensaje: 'Nuevo reporte sobre Anuncio de Carla Panini por posible fraude' }
   ];
 
-  constructor() {}
+  postulantes: any[] = [];
+  cargandoPostulantes = true;
+  errorPostulantes = '';
 
- ngOnInit(): void {
+  constructor(
+    private readonly api: ApiService,
+    private readonly router: Router
+  ) {}
+
+  ngOnInit(): void {
     const datosUsuario = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
     if (datosUsuario) {
       const usuarioObj = JSON.parse(datosUsuario);
@@ -59,6 +68,27 @@ export class AdminDashboardComponent implements OnInit {
       // Busca el nombre en cualquier variante que pueda mandar la API
       this.nombreAdmin = usuarioObj.nombre || usuarioObj.name || usuarioObj.username || 'Administrador';
     }
+
+    this.cargarPostulantes();
+  }
+
+  cargarPostulantes() {
+    this.cargandoPostulantes = true;
+    this.api.obtenerPostulantes().subscribe({
+      next: (data) => {
+        this.postulantes = data;
+        this.cargandoPostulantes = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar postulantes:', err);
+        this.errorPostulantes = 'No se pudieron cargar los postulantes.';
+        this.cargandoPostulantes = false;
+      }
+    });
+  }
+
+  verPerfilPostulante(id: string) {
+    this.router.navigate(['/perfil-postulante', id]);
   }
 
   suspenderCuenta(usuario: UsuarioReportado) {

@@ -1,4 +1,4 @@
-﻿.profile-page {
+.profile-page {
   min-height: 100vh;
   background: var(--bg-app);
   color: var(--text-primary);
@@ -1015,13 +1015,15 @@ width: 90%;
 .review-item-premium {
   background: var(--surface-secondary);
   border: 1px solid var(--border-soft);
+  border-left: 3px solid rgba(251, 191, 36, 0.55);
   border-radius: 12px;
   transition: all 0.2s ease;
 }
 
 .review-item-premium:hover {
   transform: translateX(2px);
-  border-color: rgba(251, 191, 36, 0.3);
+  border-color: rgba(251, 191, 36, 0.4);
+  border-left-color: #fbbf24;
 }
 
 .reviewer-logo-box {

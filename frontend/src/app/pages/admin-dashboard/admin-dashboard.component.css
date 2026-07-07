@@ -168,3 +168,13 @@
   color: #666;
   font-size: 1.1rem;
 }
+
+.btn-view {
+  background-color: #f5c536;
+  color: #333;
+}
+
+.btn-view:hover {
+  background-color: #e5b526;
+  color: #000;
+}
