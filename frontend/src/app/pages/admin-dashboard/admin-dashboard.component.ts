@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { ThemeService } from '../../services/theme.service';
 
 interface UsuarioReportado {
   nombre: string;
@@ -57,6 +58,7 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private readonly api: ApiService,
+    private readonly themeService: ThemeService,
     private readonly router: Router
   ) {}
 
@@ -101,5 +103,13 @@ export class AdminDashboardComponent implements OnInit {
 
   eliminarAnuncio(anuncio: AnuncioReportado) {
     console.log('Eliminando anuncio:', anuncio.titulo);
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
   }
 }

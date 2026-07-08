@@ -123,6 +123,7 @@ export class EmployerProfileComponent implements OnInit {
         }
 
         this.cargarAnuncios(perfil.id_empleador);
+        this.cargarPostulacionesRecibidas(perfil.id_empleador);
 
         this.cargando = false;
       },
@@ -207,6 +208,24 @@ export class EmployerProfileComponent implements OnInit {
         }));
       },
       error: () => {}
+    });
+  }
+
+  private cargarPostulacionesRecibidas(idEmpleador: string) {
+    this.api.obtenerPostulacionesEmpleador(idEmpleador).subscribe({
+      next: (postulaciones: any[]) => {
+        this.postulacionesRecibidas = (postulaciones || []).map((post) => ({
+          id: post.id_postulacion,
+          candidato: `${post.nombre_postulante || ''} ${post.apellido_paterno_postulante || ''}`.trim() || 'Candidato',
+          vacante: post.vacante || post.titulo || 'Vacante',
+          experiencia: post.perfil_postulante ? post.perfil_postulante.slice(0, 90) : 'Información no disponible',
+          estado: post.estado_postulacion || 'Nueva'
+        }));
+      },
+      error: (err) => {
+        console.error('Error al cargar postulaciones recibidas:', err);
+        this.postulacionesRecibidas = [];
+      }
     });
   }
 

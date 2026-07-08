@@ -37,7 +37,7 @@ interface PostulanteProfile {
 interface PostulanteApplication {
   id: string;
   empresa: string;
-  estado: 'Nueva' | 'En revision' | 'Entrevista' | 'Descartada';
+  estado: 'Nueva' | 'En revision' | 'En revisión' | 'Entrevista' | 'Descartada';
   ubicacion: string;
   fecha: string;
   candidatos: number;
@@ -192,6 +192,10 @@ export class PerfilPostulanteComponent implements OnInit {
           sessionStorage.setItem("perfilPostulante", JSON.stringify(perfilDb));
         }
 
+        if (this.isOwnProfile && perfilDb?.id_postulante) {
+          this.cargarPostulaciones(perfilDb.id_postulante);
+        }
+
         this.cargando = false;
       },
       error: (err) => {
@@ -305,7 +309,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   getApplicationStateClass(estado: PostulanteApplication['estado']): string {
     if (estado === 'Nueva') return 'app-new';
-    if (estado === 'En revision') return 'app-review';
+    if (estado === 'En revision' || estado === 'En revisión') return 'app-review';
     if (estado === 'Entrevista') return 'app-interview';
     return 'app-discarded';
   }
@@ -464,8 +468,11 @@ export class PerfilPostulanteComponent implements OnInit {
     this.api.obtenerPerfilPostulante(id).subscribe({
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
-        if (perfilDb && perfilDb.valoracion_propia) {
+        if (perfilDb?.valoracion_propia) {
           this.ratingSeleccionado = perfilDb.valoracion_propia;
+        }
+        if (this.isOwnProfile && perfilDb?.id_postulante) {
+          this.cargarPostulaciones(perfilDb.id_postulante);
         }
         this.error = '';
         this.cargando = false;
@@ -538,6 +545,27 @@ export class PerfilPostulanteComponent implements OnInit {
     } catch (e) {
       this.vistosRecientemente = [];
     }
+  }
+
+  private cargarPostulaciones(idPostulante: string) {
+    this.api.obtenerPostulacionesPostulante(idPostulante).subscribe({
+      next: (postulaciones: any[]) => {
+        this.postulaciones = (postulaciones || []).map((post) => ({
+          id: post.id_postulacion || post.id,
+          empresa: post.nombre_empresa || 'Empresa',
+          estado: post.estado_postulacion || post.estado || 'En revisión',
+          ubicacion: [post.ciudad, post.estado].filter(Boolean).join(', '),
+          fecha: post.fecha_postulacion ? new Date(post.fecha_postulacion).toLocaleDateString('es-MX') : 'Reciente',
+          candidatos: post.postulantes_count ?? post.candidatos ?? 0,
+          vacante: post.vacante || post.titulo || 'Vacante',
+          resumen: post.resumen || post.perfil_postulante || 'Detalle no disponible',
+          imagen: post.img || post.foto_empresa || 'assets/LogoChambee.png'
+        }));
+      },
+      error: () => {
+        this.postulaciones = [];
+      }
+    });
   }
 
   logout() {

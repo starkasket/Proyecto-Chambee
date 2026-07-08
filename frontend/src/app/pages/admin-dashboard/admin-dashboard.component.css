@@ -3,17 +3,57 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f2ebe3; /* Color beige de fondo inspirado en tu imagen */
+  background-color: var(--bg-app);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Header Navbar */
 .admin-header {
-  background-color: #f5c536; /* Amarillo Chambee Admin */
-  color: #333;
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
   height: 70px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
   z-index: 10;
+}
+
+.theme-toggle {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.theme-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--theme-toggle-bg);
+  border: 1px solid var(--theme-toggle-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob);
+  color: var(--theme-toggle-icon);
+  transform: translateX(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-size: 12px;
+}
+
+:host-context(body.dark-theme) .theme-toggle-icon {
+  transform: translateX(18px);
 }
 
 /* Cuerpo Admin (Sidebar + Contenido) */
@@ -26,7 +66,7 @@
 /* Sidebar */
 .admin-sidebar {
   width: 250px;
-  background-color: #ffffff;
+  background-color: var(--surface-primary);
   box-shadow: 2px 0 5px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
@@ -44,7 +84,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 2rem;
-  color: #333;
+  color: var(--text-primary);
   text-decoration: none;
   font-size: 1.1rem;
   font-weight: 500;
@@ -56,9 +96,13 @@
 }
 
 .sidebar-link:hover, .sidebar-link.active {
-  background-color: #f8f9fa;
-  color: #000;
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
   font-weight: 600;
+}
+
+.admin-profile-icon {
+  color: var(--text-primary);
 }
 
 /* Main Content */
@@ -66,27 +110,30 @@
   flex: 1;
   padding: 2rem 3rem;
   overflow-y: auto;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
 }
 
 .page-title {
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary);
 }
 
 /* Tarjetas Blancas (Cards) */
 .admin-card {
-  background-color: #ffffff;
+  background-color: var(--surface-primary);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-soft);
 }
 
 .card-title {
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #f2ebe3;
+  border-bottom: 2px solid var(--surface-secondary);
 }
 
 /* Tablas */
@@ -97,24 +144,75 @@
 }
 
 .admin-table th {
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid var(--border-soft);
   font-weight: 600;
-  color: #444;
+  color: var(--text-secondary);
   padding: 0.75rem 0.5rem;
+  background-color: var(--surface-primary);
 }
 
 .admin-table td {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-soft);
   padding: 0.75rem 0.5rem;
-  color: #333;
+  color: var(--text-primary);
   font-size: 0.95rem;
 }
 
-/* Botones de acción */
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
+:host-context(body.dark-theme) .admin-layout {
+  background-color: var(--bg-app);
+}
+
+:host-context(body.dark-theme) .admin-sidebar {
+  background-color: #11161f;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+:host-context(body.dark-theme) .sidebar-link {
+  color: var(--text-secondary);
+}
+
+:host-context(body.dark-theme) .sidebar-link:hover,
+:host-context(body.dark-theme) .sidebar-link.active {
+  background-color: #1f2937;
+  color: var(--text-primary);
+}
+
+:host-context(body.dark-theme) .admin-card {
+  background-color: #151b24;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+  border-color: rgba(255,255,255,0.08);
+}
+
+:host-context(body.dark-theme) .admin-content {
+  background-color: var(--bg-app);
+}
+
+:host-context(body.dark-theme) .admin-table th,
+:host-context(body.dark-theme) .admin-table td {
+  border-color: rgba(255,255,255,0.08);
+}
+
+:host-context(body.dark-theme) .admin-table th {
+  background-color: #11161f;
+  color: var(--text-secondary);
+}
+
+:host-context(body.dark-theme) .admin-table td {
+  background-color: transparent;
+}
+
+:host-context(body.dark-theme) .btn-view {
+  background-color: #f5c536;
+  color: #111;
+}
+
+:host-context(body.dark-theme) .btn-view:hover {
+  background-color: #e5b526;
+}
+
+:host-context(body.dark-theme) .notification-list li {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-secondary);
 }
 
 .btn {
@@ -155,8 +253,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #eee;
-  color: #333;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-primary);
   font-size: 0.95rem;
 }
 
@@ -165,7 +263,7 @@
 }
 
 .notification-list li i {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 

@@ -75,14 +75,13 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   recentApplicants: RecentApplicant[] = [];
   misAnuncios: Anuncio[] = [];
   allApplicants: Applicant[] = [];
-  sampleApplicants: Applicant[] = [];
 
   constructor(
     private readonly router: Router,
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly socketService: SocketService,
-    private cdr: ChangeDetectorRef 
+    private readonly cdr: ChangeDetectorRef 
   ) { }
 
   ngOnInit() {
@@ -190,7 +189,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick() {
+  onDocumentClick(event: Event) {
     if (this.notificationsOpen) {
       this.notificationsOpen = false;
     }
@@ -254,22 +253,6 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }
   }
 
-  fillApplicantsToMax() {
-    const baseApplicants = [...this.allApplicants];
-    let index = 0;
-
-    while (this.allApplicants.length < this.maxVisible) {
-      const baseApp = baseApplicants[index % baseApplicants.length];
-      const imageSeed = this.allApplicants.length + 30;
-      this.allApplicants.push({
-        ...baseApp,
-        name: `${baseApp.name} (Copia)`,
-        profilePic: `https://i.pravatar.cc/150?img=${imageSeed % 70}`
-      });
-      index++;
-    }
-  }
-
   showMoreApplicants() {
     this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible);
   }
@@ -318,14 +301,16 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   private cargarPostulantes() {
     const usuario = this.api.getUsuario();
     if (!usuario?.id) {
-      this.allApplicants = [...this.sampleApplicants];
+      this.allApplicants = [];
+      this.recentApplicants = [];
       return;
     }
 
     this.api.obtenerPostulacionesEmpleador(usuario.id).subscribe({
       next: (postulaciones: any[]) => {
         if (!Array.isArray(postulaciones) || postulaciones.length === 0) {
-          this.allApplicants = [...this.sampleApplicants];
+          this.allApplicants = [];
+          this.recentApplicants = [];
           return;
         }
 
@@ -350,11 +335,14 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
             experience: 'Nuevo',
             timeAgo: 'Reciente'
           } as RecentApplicant));
+        } else {
+          this.recentApplicants = [];
         }
       },
       error: (err) => {
         console.error('Error cargando postulaciones del empleador:', err);
-        this.allApplicants = [...this.sampleApplicants];
+        this.allApplicants = [];
+        this.recentApplicants = [];
       }
     });
   }

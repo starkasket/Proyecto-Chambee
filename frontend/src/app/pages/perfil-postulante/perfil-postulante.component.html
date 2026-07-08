@@ -446,11 +446,12 @@
                 <div class="announcement-copy">
                   <div class="card-top">
                     <strong>{{ post.empresa }}</strong>
+                    <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span>
                   </div>
                   <p class="vacancy-title">{{ post.vacante }}</p>
-                  <p class="vacancy-meta">Postulado el: {{ post.fecha }}</p>
+                  <p class="vacancy-meta">Ubicación: {{ post.ubicacion }} • Postulado el: {{ post.fecha }}</p>
                   <p>{{ post.resumen }}</p>
-                  <p class="meta mt-2">{{ post.candidatos }} postulantes en total</p>
+                  <p class="meta mt-2"><strong>Postulantes:</strong> {{ post.candidatos }} en total</p>
                 </div>
               </article>
             </div>
