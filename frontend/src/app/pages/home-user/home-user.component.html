@@ -18,7 +18,8 @@
       
       <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
         <div class="search-dropdown-header">Búsquedas recientes</div>
-        <div *ngFor="let term of recentSearches" class="search-item" (click)="seleccionarBusquedaReciente(term)">
+          
+        <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
           <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
             <i class="bi bi-clock-history"></i>
           </div>
@@ -187,25 +188,20 @@
   </div>
 </div>
 
-<!-- Modal Detalle de Servicio -->
 <div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
   <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
     
-    <!-- Botón cerrar -->
     <button class="service-detail-close" (click)="cerrarDetalleServicio()" aria-label="Cerrar">
       <i class="bi bi-x-lg"></i>
     </button>
 
-    <!-- Estado de carga -->
     <div *ngIf="servicioDetalleCargando" class="service-detail-loading">
       <div class="service-detail-spinner"></div>
       <p>Cargando información del servicio...</p>
     </div>
 
-    <!-- Contenido del servicio -->
     <div *ngIf="!servicioDetalleCargando && servicioDetalle" class="service-detail-content">
       
-      <!-- Imagen del servicio -->
       <div class="service-detail-hero">
         <img [src]="servicioDetalle.img || 'assets/LogoChambee.png'" [alt]="servicioDetalle.title" />
         <div class="service-detail-hero-overlay">
@@ -215,13 +211,10 @@
         </div>
       </div>
 
-      <!-- Cuerpo de la información -->
       <div class="service-detail-body">
         
-        <!-- Título -->
         <h2 class="service-detail-title">{{ servicioDetalle.title }}</h2>
 
-        <!-- Badges informativos -->
         <div class="service-detail-badges">
           <span class="service-detail-badge badge-budget" *ngIf="servicioDetalle.presupuesto">
             <i class="bi bi-cash-stack"></i> {{ servicioDetalle.presupuesto }}
@@ -234,13 +227,11 @@
           </span>
         </div>
 
-        <!-- Descripción -->
         <div class="service-detail-section">
           <h4><i class="bi bi-file-text"></i> Descripción</h4>
           <p>{{ servicioDetalle.description || 'Sin descripción disponible.' }}</p>
         </div>
 
-        <!-- Ubicación -->
         <div class="service-detail-section" *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
           <h4><i class="bi bi-geo-alt-fill"></i> Ubicación</h4>
           <div class="service-detail-location-grid">
@@ -271,7 +262,6 @@
           </div>
         </div>
 
-        <!-- Info del autor -->
         <div class="service-detail-author" *ngIf="servicioDetalle.nombre_postulante || servicioDetalle.autor_id">
           <div class="service-detail-author-card" (click)="verPerfilAutor(servicioDetalle.autor_id)" role="button" tabindex="0">
             <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor" class="author-avatar" />
@@ -286,7 +276,6 @@
           </div>
         </div>
 
-        <!-- Fecha de publicación -->
         <div class="service-detail-date" *ngIf="servicioDetalle.fecha_creacion">
           <i class="bi bi-calendar3"></i>
           Publicado el {{ servicioDetalle.fecha_creacion | date:'d \'de\' MMMM, y':'':'es-MX' }}

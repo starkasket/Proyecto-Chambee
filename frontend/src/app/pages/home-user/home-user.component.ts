@@ -703,9 +703,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   seleccionarBusquedaReciente(term: string) {
     this.searchTerm = term;
-    this.searchSubject.next(term);
+    this.showSearchDropdown = false;
+    this.router.navigate(['/search'], { queryParams: { q: term } });
   }
-
+  
   verTodosResultados() {
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       this.guardarBusquedaReciente(this.searchTerm);
