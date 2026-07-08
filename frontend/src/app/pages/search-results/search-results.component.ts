@@ -66,7 +66,28 @@ export class SearchResultsComponent implements OnInit {
     }).subscribe({
       next: (resp: any) => {
         const empleos = (resp.empleos || []).map((e: any) => ({ ...e, tipo: 'empleo' }));
-        const servicios = (resp.servicios || []).map((s: any) => ({ ...s, tipo: 'servicio' }));
+
+        // Los servicios traen otros nombres de campo (autor, presupuesto, etc.)
+        // en vez de company/salario como los empleos. Los normalizamos aquí
+        // para que la tarjeta pueda mostrar la información real.
+        const servicios = (resp.servicios || []).map((s: any) => {
+          const nombreAutor = [s.nombre_postulante, s.apellido_paterno_postulante]
+            .filter((parte: string) => !!parte && parte.trim() !== '')
+            .join(' ');
+
+          return {
+            ...s,
+            tipo: 'servicio',
+            titulo: s.title || s.titulo,
+            nombre_empresa: nombreAutor || 'Servicio independiente',
+            salario: s.presupuesto || s.salario,
+            modalidad: s.modalidad,
+            ciudad: s.ciudad,
+            categoria: s.categoria,
+            img: s.img
+          };
+        });
+
         const combinados = [...empleos, ...servicios];
 
         if (q) {
@@ -90,11 +111,16 @@ export class SearchResultsComponent implements OnInit {
 
   // --- LÓGICA DE TARJETAS Y BÚSQUEDA ---
   irAlDetalle(item: any) {
-    const id = item.id_anuncio || item.id_servicio || item.id;
     if (item.tipo === 'empleo') {
+      const id = item.id_anuncio || item.id;
       this.router.navigate(['/job', id]);
     } else {
-      this.router.navigate(['/services']); 
+      const id = item.id_servicio || item.id;
+      // OJO: si no tienes una ruta /servicio/:id registrada en app.routes.ts,
+      // esta navegación fallará en silencio igual que pasaba con /search.
+      // Si en home-user.component usas un modal en vez de navegar, dime y
+      // replicamos esa misma lógica aquí.
+      this.router.navigate(['/servicio', id]);
     }
   }
 

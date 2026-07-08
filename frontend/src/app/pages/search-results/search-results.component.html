@@ -109,7 +109,6 @@
         <h3 class="section-subtitle mb-4">Los mejores resultados para empezar</h3>
         
         <div class="jobs-grid">
-          <!-- AÑADIMOS EVENTO (click) AQUÍ -->
           <div class="job-card featured-result-card" *ngFor="let item of destacados" tabindex="0" (click)="irAlDetalle(item)">
             
             <div class="job-card-img-wrapper">
@@ -155,7 +154,6 @@
         </div>
 
         <div class="jobs-grid mt-4">
-          <!-- AÑADIMOS EVENTO (click) AQUÍ TAMBIÉN -->
           <div class="job-card" *ngFor="let item of todosLosResultados" tabindex="0" (click)="irAlDetalle(item)">
             <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
             <div class="job-content">

@@ -116,7 +116,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.cargarNotificaciones(); // <-- Cargar notificaciones al iniciar
+    this.cargarNotificaciones(); 
 
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
@@ -172,7 +172,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }
   }
 
-  // MÉTODO NUEVO: CARGAR NOTIFICACIONES DESDE EL BACKEND
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({
       next: (notifs) => {
@@ -189,7 +188,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  // MÉTODO ACTUALIZADO: MARCAR COMO LEIDAS
   toggleNotifications(event?: Event) {
     if (event) {
       event.stopPropagation();
@@ -491,7 +489,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error al cargar detalle del servicio:', err);
-        // Usar los datos locales como fallback
         this.servicioDetalle = servicio;
         this.servicioDetalleCargando = false;
       }
@@ -632,30 +629,34 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSearchInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchTerm = value;
+  // --- SE CORRIGIÓ LA BÚSQUEDA EN TIEMPO REAL ---
+  onSearchInput(value: string) {
     this.showSearchDropdown = true;
-    if (value.trim().length > 0) {
+    if (value && value.trim().length > 0) {
       this.searchSubject.next(value);
     } else {
       this.searchResults = [];
     }
   }
 
+  // --- BUSCADOR INTELIGENTE Y COMPATIBLE CON SERVICIOS ---
   ejecutarBusqueda(query: string) {
-    const lowerQuery = this.normalizarTexto(query);
-    const jobsResults = this.jobs.filter(job =>
-      this.normalizarTexto(job.title).includes(lowerQuery) ||
-      this.normalizarTexto(job.company).includes(lowerQuery) ||
-      job.tags.some(t => this.normalizarTexto(t).includes(lowerQuery))
-    ).map(j => ({ ...j, tipo: 'empleo' }));
+    const tokens = this.normalizarTexto(query).split(/\s+/).filter(t => t.length > 0);
+    
+    // Busca en empleos
+    const jobsResults = this.jobs.filter(job => {
+      const textoCompleto = this.normalizarTexto(`${job.title} ${job.company} ${job.tags.join(' ')}`);
+      return tokens.every(token => textoCompleto.includes(token));
+    }).map(j => ({ ...j, tipo: 'empleo' }));
 
-    const servicesResults = this.services.filter(service =>
-      this.normalizarTexto(service.title).includes(lowerQuery) ||
-      this.normalizarTexto(service.description).includes(lowerQuery) ||
-      this.normalizarTexto(service.categoria).includes(lowerQuery)
-    ).map(s => ({ ...s, tipo: 'servicio' }));
+    // Busca en servicios (soportando 'titulo' además de 'title')
+    const servicesResults = this.services.filter(service => {
+      const titulo = service.title || service.titulo || '';
+      const desc = service.description || service.descripcion || '';
+      const cat = service.categoria || '';
+      const textoCompleto = this.normalizarTexto(`${titulo} ${desc} ${cat}`);
+      return tokens.every(token => textoCompleto.includes(token));
+    }).map(s => ({ ...s, tipo: 'servicio' }));
 
     this.searchResults = [...jobsResults, ...servicesResults].slice(0, 6);
   }
@@ -666,14 +667,15 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  // --- SE CORRIGIÓ EL CLIC EN UN RESULTADO ---
   irAResultado(resultado: any) {
-    console.log('Resultado seleccionado:', resultado);
-    this.guardarBusquedaReciente(this.searchTerm || resultado.title || resultado.categoria || '');
+    const titleToSave = resultado.title || resultado.titulo || resultado.categoria || '';
+    this.guardarBusquedaReciente(this.searchTerm || titleToSave);
     this.showSearchDropdown = false;
     this.searchTerm = '';
 
     if (resultado.tipo === 'empleo') {
-      this.openJob(resultado.id);
+      this.openJob(resultado.id || resultado.id_anuncio);
     } else {
       const idx = this.services.findIndex(s => (s.id_servicio || s.id) === (resultado.id_servicio || resultado.id));
       if (idx !== -1) this.openService(idx);
@@ -701,16 +703,20 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
 
+  // --- SE CORRIGIÓ EL CLIC EN EL HISTORIAL ---
   seleccionarBusquedaReciente(term: string) {
     this.searchTerm = term;
-    this.showSearchDropdown = false;
+    this.showSearchDropdown = false; // Cerramos el menú
+    // Forzamos la navegación al panel de resultados
     this.router.navigate(['/search'], { queryParams: { q: term } });
   }
   
+  // --- AL DAR ENTER O CLIC EN "VER TODOS LOS RESULTADOS" ---
   verTodosResultados() {
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       this.guardarBusquedaReciente(this.searchTerm);
-      this.showSearchDropdown = false;
+      this.showSearchDropdown = false; // Cerramos el menú
+      // Forzamos la navegación al panel de resultados
       this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
     }
   }

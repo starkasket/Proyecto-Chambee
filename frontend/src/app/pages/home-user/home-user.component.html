@@ -8,8 +8,8 @@
     <input type="text" 
            class="form-control" 
            placeholder="Buscar categoría, puesto, ciudad y más..." 
-           [value]="searchTerm"
-           (input)="onSearchInput($event)"
+           [(ngModel)]="searchTerm"
+           (ngModelChange)="onSearchInput($event)"
            (keydown.enter)="verTodosResultados()"
            (blur)="cerrarBuscador()"
            (focus)="showSearchDropdown = true" />
@@ -18,7 +18,8 @@
       
       <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
         <div class="search-dropdown-header">Búsquedas recientes</div>
-          
+
+        <!-- SE CORRIGIÓ EL CLIC DEL HISTORIAL AQUÍ -->
         <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
           <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
             <i class="bi bi-clock-history"></i>
@@ -35,20 +36,22 @@
           No se encontraron resultados para "{{ searchTerm }}"
         </div>
 
-        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="irAResultado(result)">
+        <!-- SE CORRIGIÓ EL CLIC DE RESULTADOS VIVOS AQUÍ -->
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()" (click)="irAResultado(result)">
           <div class="search-item-icon">
             <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
           </div>
           <div class="search-item-content">
-            <div class="search-item-title" [innerHTML]="highlightText(result.title, searchTerm)"></div>
+            <!-- SOPORTE PARA TITLE Y TITULO -->
+            <div class="search-item-title" [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
             <div class="search-item-subtitle">
               <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
-              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? result.company : (result.categoria || 'Servicio General'), searchTerm)"></span>
+              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
             </div>
           </div>
         </div>
 
-        <div class="search-see-all" (click)="verTodosResultados()">
+        <div class="search-see-all" (mousedown)="verTodosResultados()">
           Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
         </div>
 
@@ -86,8 +89,7 @@
           <div *ngFor="let notif of notifications"
             style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
             [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
-            onmouseover="this.style.backgroundColor='var(--hover-bg, rgba(0,0,0,0.05))'"
-            onmouseout="this.style.backgroundColor=this.getAttribute('data-bg') || 'transparent'">
+            (click)="onNotificationClick(notif, $event)">
             <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
             <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
             <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
@@ -427,59 +429,59 @@
 
 
     <div class="service-card" *ngFor="let service of visibleServices; let idx = index"
-  (click)="openService(idx)" role="button" tabindex="0"
-  style="position: relative;">
+      (click)="openService(idx)" role="button" tabindex="0"
+      style="position: relative;">
 
-  <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+      <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
 
-  <div style="flex: 1;">
-    <span *ngIf="service.es_borrador"
-      style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e;
-             padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
-      Borrador
-    </span>
-    <h5 class="service-title">{{ service.title }}</h5>
-    <p class="service-desc">{{ service.description }}</p>
-    <span *ngIf="service.autor_id && service.autor_id === usuarioActualId"
-      style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi servicio</span>
-  </div>
+      <div style="flex: 1;">
+        <span *ngIf="service.es_borrador"
+          style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e;
+                 padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
+          Borrador
+        </span>
+        <h5 class="service-title">{{ service.title }}</h5>
+        <p class="service-desc">{{ service.description }}</p>
+        <span *ngIf="service.autor_id && service.autor_id === usuarioActualId"
+          style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi servicio</span>
+      </div>
 
-  <button
-    *ngIf="service.autor_id && service.autor_id === usuarioActualId"
-    (click)="toggleMenuServicio(idx, $event)"
-    style="position: absolute; top: 8px; right: 8px; background: none; border: none;
-           cursor: pointer; font-size: 1.2rem; color: var(--text-color); padding: 4px 8px;
-           border-radius: 6px; line-height: 1;"
-    title="Opciones"
-    aria-label="Opciones del servicio">
-    &#8942;
-  </button>
+      <button
+        *ngIf="service.autor_id && service.autor_id === usuarioActualId"
+        (click)="toggleMenuServicio(idx, $event)"
+        style="position: absolute; top: 8px; right: 8px; background: none; border: none;
+               cursor: pointer; font-size: 1.2rem; color: var(--text-color); padding: 4px 8px;
+               border-radius: 6px; line-height: 1;"
+        title="Opciones"
+        aria-label="Opciones del servicio">
+        &#8942;
+      </button>
 
-  <div *ngIf="menuServicioAbierto === idx && service.autor_id === usuarioActualId"
-    (click)="$event.stopPropagation()"
-    style="position: absolute; top: 36px; right: 8px; background: var(--bg-color, #fff);
-           border: 1px solid var(--border-soft, #e0e0e0); border-radius: 10px;
-           box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 140px; overflow: hidden;">
+      <div *ngIf="menuServicioAbierto === idx && service.autor_id === usuarioActualId"
+        (click)="$event.stopPropagation()"
+        style="position: absolute; top: 36px; right: 8px; background: var(--bg-color, #fff);
+               border: 1px solid var(--border-soft, #e0e0e0); border-radius: 10px;
+               box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 140px; overflow: hidden;">
 
-    <button
-      (click)="editarServicio(idx); menuServicioAbierto = null"
-      style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
-             cursor: pointer; font-size: 0.9rem; color: var(--text-color, #333);
-             display: flex; align-items: center; gap: 8px;">
-      <i class="bi bi-pencil"></i> Editar
-    </button>
+        <button
+          (click)="editarServicio(idx); menuServicioAbierto = null"
+          style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
+                 cursor: pointer; font-size: 0.9rem; color: var(--text-color, #333);
+                 display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
 
-    <hr style="margin: 0; border-color: var(--border-soft, #eee);">
+        <hr style="margin: 0; border-color: var(--border-soft, #eee);">
 
-    <button
-      (click)="eliminarServicio(idx); menuServicioAbierto = null"
-      style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
-             cursor: pointer; font-size: 0.9rem; color: #e53e3e;
-             display: flex; align-items: center; gap: 8px;">
-      <i class="bi bi-trash"></i> Eliminar
-    </button>
-  </div>
-</div>
+        <button
+          (click)="eliminarServicio(idx); menuServicioAbierto = null"
+          style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
+                 cursor: pointer; font-size: 0.9rem; color: #e53e3e;
+                 display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-trash"></i> Eliminar
+        </button>
+      </div>
+    </div>
 
     <div class="services-footer">
       <button class="services-see-more" (click)="toggleServices()">
@@ -521,145 +523,145 @@
 </section>
 
 
-        <section class="support-section">
-          <div class="container">
-            <div class="support-card">
-              <div class="support-card-header">
-                <p class="support-eyebrow">Soporte Chambee</p>
-                <h3>Necesitas ayuda?</h3>
-                <p>Cuentanos que ocurre y te contactaremos lo antes posible.</p>
-              </div>
+<section class="support-section">
+  <div class="container">
+    <div class="support-card">
+      <div class="support-card-header">
+        <p class="support-eyebrow">Soporte Chambee</p>
+        <h3>Necesitas ayuda?</h3>
+        <p>Cuentanos que ocurre y te contactaremos lo antes posible.</p>
+      </div>
 
-              <form class="support-form" (ngSubmit)="enviarSoporte(form)" #form="ngForm">
-                <div class="support-grid">
-                  <label class="support-field">
-                    <span>Nombre completo</span>
-                    <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel"
-                      placeholder="Ingresa tu nombre" required />
-                    <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es
-                      obligatorio.</small>
-                  </label>
+      <form class="support-form" (ngSubmit)="enviarSoporte(form)" #form="ngForm">
+        <div class="support-grid">
+          <label class="support-field">
+            <span>Nombre completo</span>
+            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel"
+              placeholder="Ingresa tu nombre" required />
+            <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
 
-                  <label class="support-field">
-                    <span>Nombre de la empresa</span>
-                    <input type="text" name="empresa" ngModel placeholder="Empresa o negocio" />
-                  </label>
+          <label class="support-field">
+            <span>Nombre de la empresa</span>
+            <input type="text" name="empresa" ngModel placeholder="Empresa o negocio" />
+          </label>
 
-                  <label class="support-field">
-                    <span>Teléfono</span>
-                    <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required
-                      pattern="^[0-9]{10}$" maxlength="10" />
-                    <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es
-                      obligatorio.</small>
-                  </label>
+          <label class="support-field">
+            <span>Teléfono</span>
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required
+              pattern="^[0-9]{10}$" maxlength="10" />
+            <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
 
-                  <label class="support-field">
-                    <span>Correo electrónico</span>
-                    <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required
-                      email />
-                    <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo
-                      válido.</small>
-                  </label>
+          <label class="support-field">
+            <span>Correo electrónico</span>
+            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required
+              email />
+            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo
+              válido.</small>
+          </label>
 
-                  <label class="support-field support-field-span-2">
-                    <span>Asunto</span>
-                    <select name="asunto" ngModel #asunto="ngModel" required>
-                      <option value="">Selecciona una opción</option>
-                      <option value="error-cuenta">Problema con mi cuenta</option>
-                      <option value="publicación">Problema con una publicación</option>
-                      <option value="pagos">Pagos o suscripciones</option>
-                      <option value="otro">Otro</option>
-                    </select>
-                    <small *ngIf="asunto.invalid && asunto.touched" class="support-error">Este campo es
-                      obligatorio.</small>
-                  </label>
+          <label class="support-field support-field-span-2">
+            <span>Asunto</span>
+            <select name="asunto" ngModel #asunto="ngModel" required>
+              <option value="">Selecciona una opción</option>
+              <option value="error-cuenta">Problema con mi cuenta</option>
+              <option value="publicación">Problema con una publicación</option>
+              <option value="pagos">Pagos o suscripciones</option>
+              <option value="otro">Otro</option>
+            </select>
+            <small *ngIf="asunto.invalid && asunto.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
 
-                  <label class="support-field support-field-full">
-                    <span>Detalles del problema</span>
-                    <textarea name="detalles" ngModel #detalles="ngModel" rows="5"
-                      placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."
-                      required></textarea>
-                    <small *ngIf="detalles.invalid && detalles.touched" class="support-error">Este campo es
-                      obligatorio.</small>
-                  </label>
-                </div>
+          <label class="support-field support-field-full">
+            <span>Detalles del problema</span>
+            <textarea name="detalles" ngModel #detalles="ngModel" rows="5"
+              placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."
+              required></textarea>
+            <small *ngIf="detalles.invalid && detalles.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
+        </div>
 
-                <div class="support-actions">
-                  <button type="submit" class="support-submit" [disabled]="form.invalid">Enviar</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </section>
+        <div class="support-actions">
+          <button type="submit" class="support-submit" [disabled]="form.invalid">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
 
-        <section class="faq-section">
-          <div class="container">
-            <div class="faq-header">
-              <p class="faq-eyebrow">Ayuda Chambee</p>
-              <h3>Preguntas Frecuentes</h3>
-              <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
-            </div>
+<section class="faq-section">
+  <div class="container">
+    <div class="faq-header">
+      <p class="faq-eyebrow">Ayuda Chambee</p>
+      <h3>Preguntas Frecuentes</h3>
+      <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
+    </div>
 
-            <div class="faq-list">
-              <div class="faq-item" (click)="toggleFaq(0)">
-                <div class="faq-question">
-                  <h4>Como puedo postularme a un empleo?</h4>
-                  <span>{{ faqOpen === 0 ? '-' : '+' }}</span>
-                </div>
-                <p *ngIf="faqOpen === 0" class="faq-answer">Solo debes seleccionar el empleo que te interesa y hacer
-                  clic en "Postularme".</p>
-              </div>
+    <div class="faq-list">
+      <div class="faq-item" (click)="toggleFaq(0)">
+        <div class="faq-question">
+          <h4>Como puedo postularme a un empleo?</h4>
+          <span>{{ faqOpen === 0 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 0" class="faq-answer">Solo debes seleccionar el empleo que te interesa y hacer
+          clic en "Postularme".</p>
+      </div>
 
-              <div class="faq-item" (click)="toggleFaq(1)">
-                <div class="faq-question">
-                  <h4>Necesito crear una cuenta?</h4>
-                  <span>{{ faqOpen === 1 ? '-' : '+' }}</span>
-                </div>
-                <p *ngIf="faqOpen === 1" class="faq-answer">Si, necesitas registrarte para poder aplicar a empleos o
-                  publicar servicios.</p>
-              </div>
+      <div class="faq-item" (click)="toggleFaq(1)">
+        <div class="faq-question">
+          <h4>Necesito crear una cuenta?</h4>
+          <span>{{ faqOpen === 1 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 1" class="faq-answer">Si, necesitas registrarte para poder aplicar a empleos o
+          publicar servicios.</p>
+      </div>
 
-              <div class="faq-item" (click)="toggleFaq(2)">
-                <div class="faq-question">
-                  <h4>Publicar un empleo tiene costo?</h4>
-                  <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
-                </div>
-                <p *ngIf="faqOpen === 2" class="faq-answer">Depende del tipo de publicación. Ofrecemos opciones
-                  gratuitas y premium.</p>
-              </div>
+      <div class="faq-item" (click)="toggleFaq(2)">
+        <div class="faq-question">
+          <h4>Publicar un empleo tiene costo?</h4>
+          <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 2" class="faq-answer">Depende del tipo de publicación. Ofrecemos opciones
+          gratuitas y premium.</p>
+      </div>
 
-              <div class="faq-item" (click)="toggleFaq(3)">
-                <div class="faq-question">
-                  <h4>Como contacto soporte?</h4>
-                  <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
-                </div>
-                <p *ngIf="faqOpen === 3" class="faq-answer">Puedes usar el formulario de soporte que se encuentra arriba
-                  en esta página.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+      <div class="faq-item" (click)="toggleFaq(3)">
+        <div class="faq-question">
+          <h4>Como contacto soporte?</h4>
+          <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 3" class="faq-answer">Puedes usar el formulario de soporte que se encuentra arriba
+          en esta página.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <footer class="home-footer">
-          <div class="container footer-content">
-            <div class="footer-brand">
-              <img src="assets/LogoChambee.png" alt="Chambee" />
-              <div>
-                <h4>Chambee</h4>
-                <p>Plataforma líder para encontrar empleo y servicios en un solo lugar.</p>
-              </div>
-            </div>
+<footer class="home-footer">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <img src="assets/LogoChambee.png" alt="Chambee" />
+      <div>
+        <h4>Chambee</h4>
+        <p>Plataforma líder para encontrar empleo y servicios en un solo lugar.</p>
+      </div>
+    </div>
 
-            <nav class="footer-links" aria-label="Enlaces del footer">
-              <a routerLink="/jobs">Trabajos</a>
-              <a routerLink="/services">Servicios</a>
-              <a routerLink="/contact">Contacto</a>
-            </nav>
-          </div>
+    <nav class="footer-links" aria-label="Enlaces del footer">
+      <a routerLink="/jobs">Trabajos</a>
+      <a routerLink="/services">Servicios</a>
+      <a routerLink="/contact">Contacto</a>
+    </nav>
+  </div>
 
-          <div class="footer-bottom">
-            <div class="container">
-              <p>© 2026 Chambee. Todos los derechos reservados.</p>
-            </div>
-          </div>
-        </footer>
+  <div class="footer-bottom">
+    <div class="container">
+      <p>© 2026 Chambee. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>
