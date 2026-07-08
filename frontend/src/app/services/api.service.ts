@@ -133,6 +133,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/postulantes/${idPostulante}`, this.getHeaders());
   }
 
+  obtenerPostulacionesPostulante(idPostulante: number | string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/postulantes/${idPostulante}/postulaciones`, this.getHeaders());
+  }
+
   eliminarPostulante(){
     return this.http.delete(`${this.apiUrl}/postulantes/eliminar-cuenta`, this.getHeaders());
   }

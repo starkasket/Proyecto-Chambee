@@ -120,7 +120,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             img: anuncio.img || `https://picsum.photos/300/150?random=${index + 100}`,
             urgency: anuncio.urgencia || 'Normal',
             rating: '4.5',
-            applicants: Math.floor(Math.random() * 15)
+            applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0
           }));
         }
 

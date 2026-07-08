@@ -646,6 +646,42 @@ app.get("/postulantes/:id", verifyToken, authorizeRoles("empleador", "postulante
   }
 });
 
+app.get("/postulantes/:id/postulaciones", verifyToken, authorizeRoles("postulante", "administrador"), async (req, res) => {
+  const { id } = req.params;
+  if (req.user.rol === "postulante" && req.user.id !== id) {
+    return res.status(403).json({ error: "No autorizado para ver estas postulaciones" });
+  }
+
+  try {
+    const query = `SELECT
+      po.id_postulacion,
+      po.id_postulante,
+      po.id_anuncio,
+      po.estado AS estado_postulacion,
+      po.fecha_postulacion,
+      a.titulo AS vacante,
+      a.descripcion AS resumen,
+      a.ciudad,
+      a.estado,
+      e.nombre_empresa,
+      e.foto_perfil AS foto_empresa,
+      (SELECT COUNT(*) FROM postulacion p2 WHERE p2.id_anuncio = po.id_anuncio) AS postulantes_count,
+      CASE WHEN c.visible_empresas = true THEN c.archivo_cv ELSE NULL END AS archivo_cv
+    FROM postulacion po
+    INNER JOIN anuncios a ON a.id_anuncio = po.id_anuncio
+    INNER JOIN empleador e ON e.id_empleador = a.id_empleador
+    LEFT JOIN cv c ON c.id_postulante = po.id_postulante
+    WHERE po.id_postulante = $1
+    ORDER BY po.fecha_postulacion DESC`;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener postulaciones del postulante" });
+  }
+});
+
 app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador"), async (req, res) => {
   const { id } = req.params;
   const { puntuacion, comentario } = req.body;
@@ -862,7 +898,7 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
       a.id_anuncio, a.titulo, a.descripcion, a.tipo_anuncio, a.urgencia, a.edad, a.educacion,
       (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
       a.estado, a.ciudad, a.colonia, a.calle, a.codigo_postal, a.salario, a.modalidad, a.fecha_publicacion,
-      a.estado_anuncio, a.vistas, a.id_empleador, COUNT(po.id_postulacion) AS postulaciones_count,
+      a.estado_anuncio, a.vistas, a.id_empleador, COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
     FROM anuncios a
     LEFT JOIN postulacion po ON po.id_anuncio = a.id_anuncio
@@ -1028,9 +1064,11 @@ app.get("/anuncios", async (_req, res) => {
     const query = `SELECT
       a.*, (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
       e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
+      COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
     FROM anuncios a
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
+    LEFT JOIN postulacion po ON po.id_anuncio = a.id_anuncio
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
     WHERE a.estado_anuncio = 'ACTIVO' AND e.estado_cuenta = 'ACTIVA'

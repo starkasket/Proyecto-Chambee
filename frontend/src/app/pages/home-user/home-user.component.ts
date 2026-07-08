@@ -287,7 +287,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           img: anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
           urgency: anuncio.urgencia || 'Normal',
           rating: anuncio.modalidad || 'Empleo',
-          applicants: anuncio.vistas || 0,
+          applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
           tags: anuncio.categorias || [],
           matchScore: anuncio.__score
         }));
