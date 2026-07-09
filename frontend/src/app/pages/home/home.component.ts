@@ -159,6 +159,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleTheme() { this.themeService.toggleTheme(); }
   get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
 
+  // Abrir un servicio (desde el panel lateral) requiere sesión.
   openService(_i: number) {
     const token = this.authApi.getToken();
     if (token) {
@@ -177,6 +178,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
+  // Ver el detalle de un empleo SÍ está permitido sin sesión (solo postularse
+  // requiere login, y eso se valida dentro de job-detail.component).
   openJob(id?: string | number) {
     if (id) {
       this.router.navigate(['/job', id]);
@@ -275,18 +278,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
+  // Clic en un resultado del dropdown en vivo.
   irAResultado(resultado: any) {
-    alert(resultado)
-    console.log(resultado);
-    
     this.guardarBusquedaReciente(this.searchTerm || resultado.title);
     this.showSearchDropdown = false;
     this.searchTerm = '';
 
     if (resultado.tipo === 'empleo') {
+      // Ver el empleo NO requiere sesión.
       this.router.navigate(['/job', resultado.id]);
     } else {
-      this.router.navigate(['/services']);
+      // Interactuar con un servicio SÍ requiere sesión (misma regla que openService).
+      const token = this.authApi.getToken();
+      if (token) {
+        this.router.navigate(['/home-user']);
+      } else {
+        this.modalLoginVisible = true;
+      }
     }
   }
 
@@ -308,15 +316,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
 
+  // Clic en un ítem del historial: manda directo a la página de resultados.
   seleccionarBusquedaReciente(term: string) {
     this.searchTerm = term;
-    this.searchSubject.next(term);
+    this.showSearchDropdown = false;
+    this.router.navigate(['/search'], { queryParams: { q: term } });
   }
 
   verTodosResultados() {
-    this.guardarBusquedaReciente(this.searchTerm);
-    this.showSearchDropdown = false;
-    this.router.navigate(['/jobs'], { queryParams: { q: this.searchTerm } });
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      this.guardarBusquedaReciente(this.searchTerm);
+      this.showSearchDropdown = false;
+      this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
+    }
   }
 
   highlightText(text: string, query: string): string {
@@ -325,4 +337,5 @@ export class HomeComponent implements OnInit, OnDestroy {
     const regex = new RegExp(`(${safeQuery})`, 'gi');
     return text.replace(regex, '<span class="text-highlight">$1</span>');
   }
+  
 }

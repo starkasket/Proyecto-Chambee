@@ -28,6 +28,15 @@ export class SearchResultsComponent implements OnInit {
   hasUnreadNotifications = false;
   notifications: any[] = [];
 
+  // Si no hay sesión, mostramos el navbar público (login/registrar)
+  // en vez del navbar de usuario logueado.
+  estaLogueado = false;
+
+  // Estado del modal de detalle de servicio (igual que en home-user.component)
+  servicioDetalle: any = null;
+  servicioDetalleOpen = false;
+  servicioDetalleCargando = false;
+
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
@@ -38,18 +47,25 @@ export class SearchResultsComponent implements OnInit {
 
   ngOnInit() {
     this.checkMobile();
-    this.cargarNotificaciones();
 
     const usuario = this.api.getUsuario();
-    if (usuario) {
-      this.nombre_postulante = usuario.nombre || 'Usuario';
-      this.api.getMiPerfil().subscribe({
-        next: (perfil: any) => {
-          this.nombre_postulante = perfil?.nombre_postulante || this.nombre_postulante;
-          this.foto_perfil = perfil?.foto_perfil || '';
-        },
-        error: () => {}
-      });
+    this.estaLogueado = !!this.authApi.getToken();
+
+    // Las notificaciones y el perfil SOLO se cargan si hay sesión activa,
+    // de lo contrario el backend responde 401 y el interceptor te manda a /login.
+    if (this.estaLogueado) {
+      this.cargarNotificaciones();
+
+      if (usuario) {
+        this.nombre_postulante = usuario.nombre || 'Usuario';
+        this.api.getMiPerfil().subscribe({
+          next: (perfil: any) => {
+            this.nombre_postulante = perfil?.nombre_postulante || this.nombre_postulante;
+            this.foto_perfil = perfil?.foto_perfil || '';
+          },
+          error: () => {}
+        });
+      }
     }
 
     this.route.queryParams.subscribe(params => {
@@ -67,9 +83,6 @@ export class SearchResultsComponent implements OnInit {
       next: (resp: any) => {
         const empleos = (resp.empleos || []).map((e: any) => ({ ...e, tipo: 'empleo' }));
 
-        // Los servicios traen otros nombres de campo (autor, presupuesto, etc.)
-        // en vez de company/salario como los empleos. Los normalizamos aquí
-        // para que la tarjeta pueda mostrar la información real.
         const servicios = (resp.servicios || []).map((s: any) => {
           const nombreAutor = [s.nombre_postulante, s.apellido_paterno_postulante]
             .filter((parte: string) => !!parte && parte.trim() !== '')
@@ -113,14 +126,43 @@ export class SearchResultsComponent implements OnInit {
   irAlDetalle(item: any) {
     if (item.tipo === 'empleo') {
       const id = item.id_anuncio || item.id;
+      // Ver el detalle de un empleo NO requiere sesión.
+      // Postularse sí la requiere, pero eso se valida dentro de job-detail.
       this.router.navigate(['/job', id]);
     } else {
-      const id = item.id_servicio || item.id;
-      // OJO: si no tienes una ruta /servicio/:id registrada en app.routes.ts,
-      // esta navegación fallará en silencio igual que pasaba con /search.
-      // Si en home-user.component usas un modal en vez de navegar, dime y
-      // replicamos esa misma lógica aquí.
-      this.router.navigate(['/servicio', id]);
+      this.abrirServicio(item);
+    }
+  }
+
+  abrirServicio(item: any) {
+    const id = item.id_servicio || item.id;
+    if (!id) return;
+
+    this.servicioDetalleCargando = true;
+    this.servicioDetalleOpen = true;
+
+    this.api.obtenerServicioDetalle(String(id)).subscribe({
+      next: (detalle) => {
+        this.servicioDetalle = detalle;
+        this.servicioDetalleCargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar detalle del servicio:', err);
+        this.servicioDetalle = item;
+        this.servicioDetalleCargando = false;
+      }
+    });
+  }
+
+  cerrarDetalleServicio() {
+    this.servicioDetalleOpen = false;
+    this.servicioDetalle = null;
+  }
+
+  verPerfilAutor(autorId: string) {
+    if (autorId) {
+      this.cerrarDetalleServicio();
+      this.router.navigate(['/perfil-postulante', autorId]);
     }
   }
 
@@ -133,7 +175,11 @@ export class SearchResultsComponent implements OnInit {
 
   // --- LÓGICA DEL NAVBAR (Modo Oscuro, Menús, Notificaciones) ---
   irAlPerfil() {
-    this.router.navigate(['/perfil-postulante']);
+    if (this.estaLogueado) {
+      this.router.navigate(['/perfil-postulante']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   toggleTheme() {

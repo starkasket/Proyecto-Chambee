@@ -9,6 +9,7 @@
            placeholder="Buscar categoría, puesto, ciudad y más..." 
            [value]="searchTerm"
            (input)="onSearchInput($event)"
+           (keydown.enter)="verTodosResultados()"
            (blur)="cerrarBuscador()"
            (focus)="showSearchDropdown = true" />
     
@@ -16,7 +17,7 @@
       
       <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
         <div class="search-dropdown-header">Búsquedas recientes</div>
-        <div *ngFor="let term of recentSearches" class="search-item" (click)="seleccionarBusquedaReciente(term)">
+        <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
           <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
             <i class="bi bi-clock-history"></i>
           </div>
@@ -45,7 +46,7 @@
           </div>
         </div>
 
-        <div class="search-see-all" (click)="verTodosResultados()">
+        <div class="search-see-all" (mousedown)="verTodosResultados()">
           Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
         </div>
 

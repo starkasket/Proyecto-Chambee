@@ -20,6 +20,7 @@ import { EmployerJobsManageComponent } from './pages/employer-jobs-manage/employ
 import { MisFavoritosComponent } from './pages/mis-favoritos/mis-favoritos.component';
 import { BorradorServicioComponent } from './pages/borrador-servicio/borrador-servicio.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { SearchResultsComponent } from './pages/search-results/search-results.component';
 
 export const routes: Routes = [
   {
@@ -70,6 +71,10 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminDashboardComponent
+  },
+  {
+    path: 'search',
+    component: SearchResultsComponent
   },
   {
     path: 'perfil-postulante',
