@@ -1,8 +1,6 @@
 <div class="admin-layout">
-  <!-- Headboard -->
   <header class="navbar-chambee admin-header d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-2">
-      <!-- Asumiendo la ruta de tu logo -->
       <img src="assets/LogoChambee.png" alt="Chambee" height="48">
     </div>
 
@@ -16,7 +14,6 @@
   </header>
 
   <div class="admin-body">
-    <!-- Sidebar -->
     <aside class="admin-sidebar">
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-link active">
@@ -34,41 +31,53 @@
       </nav>
     </aside>
 
-    <!-- Main Content -->
     <main class="admin-content">
       <h2 class="page-title mb-4">Vista General</h2>
 
-      <!-- Tarjeta: Usuarios Reportados -->
       <div class="admin-card mb-4">
         <h4 class="card-title">Usuarios Reportados</h4>
-        <div class="table-responsive">
+        <div *ngIf="cargandoReportes" class="text-center my-3">
+          <span>Cargando reportes...</span>
+        </div>
+        <div *ngIf="errorReportes" class="alert alert-danger my-3">
+          {{ errorReportes }}
+        </div>
+        
+        <div *ngIf="!cargandoReportes && !errorReportes" class="table-responsive">
           <table class="table admin-table">
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th>Apellido P</th>
-                <th>Apellido M</th>
+                <th>Motivo</th>
+                <th>Descripción</th>
                 <th>Fecha</th>
                 <th class="text-end">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of usuariosReportados">
-                <td>{{ user.nombre }}</td>
-                <td>{{ user.apellidoP }}</td>
-                <td>{{ user.apellidoM }}</td>
-                <td>{{ user.fecha }}</td>
-                <td class="text-end action-buttons">
-                  <button class="btn btn-suspend" (click)="suspenderCuenta(user)">suspender cuenta</button>
-                  <button class="btn btn-delete" (click)="eliminarCuenta(user)">Eliminar cuenta</button>
+              <tr *ngFor="let reporte of perfilesReportados">
+                <td>
+                  {{ reporte.nombre_postulante || 'Desconocido' }} 
+                  {{ reporte.apellido_paterno_postulante || '' }}
                 </td>
+                <td><span class="badge bg-warning text-dark">{{ reporte.motivo }}</span></td>
+                <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ reporte.descripcion }}">
+                  {{ reporte.descripcion }}
+                </td>
+                <td>{{ reporte.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilPostulante(reporte.id_postulante_reportado)">Revisar</button>
+                  <button class="btn btn-suspend" (click)="suspenderCuenta(reporte.id_postulante_reportado)">Suspender</button>
+                </td>
+              </tr>
+              <tr *ngIf="perfilesReportados.length === 0">
+                <td colspan="5" class="text-center">No hay reportes de perfiles en este momento.</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Tarjeta: Postulantes Registrados -->
       <div class="admin-card mb-4">
         <h4 class="card-title">Postulantes Registrados</h4>
         <div *ngIf="cargandoPostulantes" class="text-center my-3">
@@ -104,7 +113,6 @@
         </div>
       </div>
 
-      <!-- Tarjeta: Anuncios Reportados -->
       <div class="admin-card mb-4">
         <h4 class="card-title">Anuncios Reportados</h4>
         <div class="table-responsive">
@@ -129,7 +137,6 @@
         </div>
       </div>
 
-      <!-- Tarjeta: Notificaciones Recientes -->
       <div class="admin-card">
         <h4 class="card-title">Notificaciones de reporte recientes</h4>
         <ul class="notification-list">

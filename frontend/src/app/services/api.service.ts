@@ -222,7 +222,6 @@ export class ApiService {
   }
   
   aceptarPostulante(idPostulante: string) {
-    // También agregué getHeaders() aquí, ya que faltaba y es una ruta protegida
     return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {}, this.getHeaders());
   }
 
@@ -232,6 +231,11 @@ export class ApiService {
 
   crearReporteEmpleador(reporte: any) {
     return this.http.post(`${this.apiUrl}/reportes/empleador`,reporte, this.getHeaders());
+  }
+
+  // ===== NUEVO: OBTENER REPORTES DE PERFILES =====
+  obtenerReportesPerfiles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/reportes/perfiles`, this.getHeaders());
   }
 
   // ===== NOTIFICACIONES =====

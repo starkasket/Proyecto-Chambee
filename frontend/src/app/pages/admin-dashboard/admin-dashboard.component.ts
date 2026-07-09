@@ -4,11 +4,15 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 
-interface UsuarioReportado {
-  nombre: string;
-  apellidoP: string;
-  apellidoM: string;
-  fecha: string;
+interface PerfilReportado {
+  id_reporte: number;
+  motivo: string;
+  descripcion: string;
+  fecha_reporte: string;
+  id_postulante_reportado: string;
+  nombre_postulante?: string;
+  apellido_paterno_postulante?: string;
+  apellido_materno_postulante?: string;
 }
 
 interface AnuncioReportado {
@@ -30,12 +34,10 @@ interface NotificacionReporte {
 export class AdminDashboardComponent implements OnInit {
   nombreAdmin = 'Administrador';
   
-  usuariosReportados: UsuarioReportado[] = [
-    { nombre: 'Juan Papu', apellidoP: 'Gonzales', apellidoM: 'Piña', fecha: '22/02/2026' },
-    { nombre: 'Isai Larto', apellidoP: 'Juarez', apellidoM: 'Juarez', fecha: '22/02/2026' },
-    { nombre: 'Anshelo', apellidoP: 'Liar', apellidoM: 'Ortega', fecha: '21/02/2026' },
-    { nombre: 'Frida', apellidoP: 'Kalo', apellidoM: 'Rivera', fecha: '20/02/2026' }
-  ];
+  // Variables para la tabla dinámica de reportes
+  perfilesReportados: PerfilReportado[] = [];
+  cargandoReportes = true;
+  errorReportes = '';
 
   anunciosReportados: AnuncioReportado[] = [
     { titulo: 'Buscamos perritos calientes', razon: 'Titulo inapropiado' },
@@ -66,12 +68,11 @@ export class AdminDashboardComponent implements OnInit {
     const datosUsuario = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
     if (datosUsuario) {
       const usuarioObj = JSON.parse(datosUsuario);
-      
-      // Busca el nombre en cualquier variante que pueda mandar la API
       this.nombreAdmin = usuarioObj.nombre || usuarioObj.name || usuarioObj.username || 'Administrador';
     }
 
     this.cargarPostulantes();
+    this.cargarReportesPerfiles();
   }
 
   cargarPostulantes() {
@@ -89,16 +90,31 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  cargarReportesPerfiles() {
+    this.cargandoReportes = true;
+    this.errorReportes = '';
+    this.api.obtenerReportesPerfiles().subscribe({
+      next: (reportes: PerfilReportado[]) => {
+        this.perfilesReportados = reportes;
+        this.cargandoReportes = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar reportes de perfiles:', err);
+        this.errorReportes = 'No se pudieron cargar los reportes de perfiles.';
+        this.cargandoReportes = false;
+      }
+    });
+  }
+
   verPerfilPostulante(id: string) {
-    this.router.navigate(['/perfil-postulante', id]);
+    if(id) {
+      this.router.navigate(['/perfil-postulante', id]);
+    }
   }
 
-  suspenderCuenta(usuario: UsuarioReportado) {
-    console.log('Suspendiendo cuenta de', usuario.nombre);
-  }
-
-  eliminarCuenta(usuario: UsuarioReportado) {
-    console.log('Eliminando cuenta de', usuario.nombre);
+  suspenderCuenta(idPostulante: string) {
+    console.log('Suspendiendo cuenta con ID:', idPostulante);
+    // this.api.suspenderPostulante(idPostulante)...
   }
 
   eliminarAnuncio(anuncio: AnuncioReportado) {

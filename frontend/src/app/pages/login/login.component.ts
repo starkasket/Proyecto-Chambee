@@ -1,9 +1,9 @@
-import { Component, inject } from '@angular/core'; // <-- Importa 'inject'
+import { Component, inject } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { ThemeService } from '../../services/theme.service'; // <-- Importa el ThemeService
+import { ThemeService } from '../../services/theme.service'; 
 
 @Component({
   selector: 'app-login',
@@ -21,7 +21,7 @@ export class LoginComponent {
   mostrarPassword = false;
 
   // Inyectamos el servicio del tema
-  private themeService = inject(ThemeService);
+  private readonly themeService = inject(ThemeService);
 
   constructor(
     private fb: FormBuilder,
@@ -109,10 +109,11 @@ export class LoginComponent {
             }));
           }
 
+          // 👇 AQUI ESTÁ LA CORRECCIÓN
           this.redirectAfterLogin = user.rol === 'empleador'
             ? '/home-employer'
             : user.rol === 'administrador'
-            ? '/admin'
+            ? '/admin-login' 
             : '/home-user';
 
           console.log('Respuesta del servidor:', res);
