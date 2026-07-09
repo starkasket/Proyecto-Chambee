@@ -3,6 +3,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { EmployerRegisterComponent } from './pages/employerRegister/employerRegister.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { LoginComponent } from './pages/login/login.component';
+import { LoginAdminComponent } from './pages/login-admin/login-admin.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { JobPreferencesComponent } from './pages/job-preferences/job-preferences.component';
@@ -18,7 +19,7 @@ import { PerfilPostulanteEditarComponent } from './pages/perfil-postulante-edita
 import { EmployerJobsManageComponent } from './pages/employer-jobs-manage/employer-jobs-manage.component';
 import { MisFavoritosComponent } from './pages/mis-favoritos/mis-favoritos.component';
 import { BorradorServicioComponent } from './pages/borrador-servicio/borrador-servicio.component';
-import { SearchResultsComponent } from './pages/search-results/search-results.component';
+import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   {
@@ -62,8 +63,13 @@ export const routes: Routes = [
     component: HomeEmployerComponent
   },
   {
-    path: 'search',
-    component: SearchResultsComponent
+  
+    path: 'login-admin',
+    component: LoginAdminComponent
+  },
+  {
+    path: 'admin',
+    component: AdminDashboardComponent
   },
   {
     path: 'perfil-postulante',
