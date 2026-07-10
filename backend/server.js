@@ -1620,6 +1620,26 @@ app.post('/reportes', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/reportes/perfiles', verifyToken, authorizeRoles('administrador'), async (req, res) => {
+  try {
+    const query = `
+      SELECT
+        r.id_reporte, r.motivo, r.descripcion, r.estado, r.fecha_reporte,
+        rap.id_postulante_reportado, p.nombre_postulante,
+        p.apellido_paterno_postulante, p.apellido_materno_postulante
+      FROM reporte r
+      INNER JOIN reporte_a_postulante rap ON r.id_reporte = rap.id_reporte
+      INNER JOIN postulante p ON rap.id_postulante_reportado = p.id_postulante
+      ORDER BY r.id_reporte DESC;
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener la lista de reportes." });
+  }
+});
+
+
 app.post('/reportes/empleador', verifyToken, async (req, res) => {
     const { motivo, descripcion, id_empleador_reportado } = req.body;
     const id_postulante = req.user.id;
