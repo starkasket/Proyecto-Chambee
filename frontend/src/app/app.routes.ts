@@ -21,6 +21,7 @@ import { MisFavoritosComponent } from './pages/mis-favoritos/mis-favoritos.compo
 import { BorradorServicioComponent } from './pages/borrador-servicio/borrador-servicio.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { SearchResultsComponent } from './pages/search-results/search-results.component';
+import { CompanyPublicProfileComponent } from './pages/company-public-profile/company-public-profile.component';
 
 export const routes: Routes = [
   {
@@ -115,6 +116,10 @@ export const routes: Routes = [
   {
     path: 'job/:id',
     component: JobDetailComponent
+  },
+  {
+    path: 'empresa/:id',
+    component: CompanyPublicProfileComponent
   },
   {
     path: 'mis-favoritos',
