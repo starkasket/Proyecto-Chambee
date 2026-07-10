@@ -49,6 +49,19 @@ export class JobDetailComponent implements OnInit {
   enviandoComentario = false;
   dropdownOpenIndex: number | null = null; 
 
+  // VARIABLES PARA REPORTE DE ANUNCIO
+  opcionesReporte: string[] = [
+    'Oferta de trabajo falsa o fraudulenta',
+    'Contenido ofensivo o discriminatorio',
+    'Solicitan dinero para postularse',
+    'Spam, publicidad engañosa o multinivel',
+    'La vacante ya no está disponible',
+    'Otro (especificar abajo)'
+  ];
+  motivoReporte: string = '';
+  detalleReporte: string = '';
+  enviandoReporte: boolean = false;
+
   private map: L.Map | null = null;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -144,7 +157,7 @@ export class JobDetailComponent implements OnInit {
   cargarComentarios(id: string | null) {
     if (!id) return;
     
-    // Simulación de datos. (La bandera "esMio" determina si aparecen los 3 puntos)
+    // Simulación de datos.
     this.comentarios = [
       { 
         autor: 'María López', 
@@ -172,7 +185,6 @@ export class JobDetailComponent implements OnInit {
     this.enviandoComentario = true;
 
     setTimeout(() => {
-      // Agregamos el comentario con "esMio" en true para que pueda editarlo/borrarlo
       this.comentarios.unshift({
         autor: 'Tú', // Aquí irá el nombre real del usuario
         texto: this.nuevoComentario,
@@ -190,43 +202,83 @@ export class JobDetailComponent implements OnInit {
 
   // ================= METODOS DE EDICIÓN Y ELIMINACIÓN =================
 
-  // Abre y cierra el menú de 3 puntos
   toggleDropdown(index: number) {
     this.dropdownOpenIndex = this.dropdownOpenIndex === index ? null : index;
   }
 
-  // Cambia a modo de edición
   editarComentario(index: number) {
     this.comentarios[index].editando = true;
     this.comentarios[index].textoEditado = this.comentarios[index].texto;
-    this.dropdownOpenIndex = null; // Cierra el menú desplegable
+    this.dropdownOpenIndex = null; 
   }
 
-  // Guarda los cambios del comentario
   guardarEdicion(index: number) {
     const textoModificado = this.comentarios[index].textoEditado.trim();
     if (textoModificado) {
       this.comentarios[index].texto = textoModificado;
       this.comentarios[index].editando = false;
       this.mostrarModalExito('Comentario actualizado correctamente.');
-      // Aquí harías la llamada a tu API: this.api.editarComentario(id, textoModificado).subscribe(...)
     }
   }
 
-  // Cancela la edición
   cancelarEdicion(index: number) {
     this.comentarios[index].editando = false;
   }
 
-  // Elimina un comentario
   eliminarComentario(index: number) {
-    this.dropdownOpenIndex = null; // Cierra el menú primero
+    this.dropdownOpenIndex = null; 
     
-    // Alerta de confirmación nativa del navegador
     if (confirm('¿Estás seguro de que deseas eliminar este comentario?')) {
       this.comentarios.splice(index, 1);
-      // Aquí harías la llamada a tu API: this.api.eliminarComentario(id).subscribe(...)
     }
+  }
+
+  // ================= METODOS DE REPORTE ==============================
+
+  abrirModalReporte(): void {
+    this.motivoReporte = '';
+    this.detalleReporte = '';
+    const modal = document.getElementById('modalReporte');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalReporte(): void {
+    const modal = document.getElementById('modalReporte');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  enviarReporte(): void {
+    if (!this.jobId || !this.motivoReporte) return;
+    
+    this.enviandoReporte = true;
+
+    // Construimos el objeto que se enviará al backend
+    const payload = {
+      id_anuncio: this.jobId,
+      id_postulante: this.usuarioActual?.id || this.usuarioActual?.id_postulante,
+      motivo: this.motivoReporte,
+      detalle: this.detalleReporte
+    };
+
+    // Llamada real al servicio
+    this.api.reportarAnuncio(payload).subscribe({
+      next: () => {
+        this.enviandoReporte = false;
+        this.cerrarModalReporte();
+        this.mostrarModalExito('El anuncio ha sido reportado exitosamente. Nuestro equipo lo revisará a la brevedad para garantizar la seguridad.');
+      },
+      error: (err) => {
+        this.enviandoReporte = false;
+        console.error('Error al enviar el reporte:', err);
+        this.mostrarModal('Hubo un error al enviar tu reporte. Por favor, inténtalo de nuevo.');
+      }
+    });
   }
 
   // ====================================================================

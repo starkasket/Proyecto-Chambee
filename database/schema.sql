@@ -350,3 +350,15 @@ INSERT INTO public.administrador (nombre, correo_electronico, contrasena) VALUES
 ('Abraham', 'abrahamadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
 ('Karina', 'karinaadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
 ('Cuanary', 'cuanaryadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu');
+
+DROP TABLE IF EXISTS public.reporte_a_anuncio;
+
+CREATE TABLE public.reporte_a_anuncio (
+    id_reporte SERIAL PRIMARY KEY,
+    id_anuncio VARCHAR(255) NOT NULL,       
+    id_postulante VARCHAR(255) NOT NULL,   
+    motivo VARCHAR(255) NOT NULL,           
+    detalle TEXT,                          
+    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    estado VARCHAR(50) DEFAULT 'Pendiente'  
+);

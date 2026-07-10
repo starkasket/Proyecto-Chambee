@@ -53,7 +53,7 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos, this.getHeaders());
   }
 
-   eliminarEmpleador(){
+  eliminarEmpleador(){
     return this.http.delete(`${this.apiUrl}/empleadores/eliminar-cuenta`, this.getHeaders());
   }
 
@@ -225,6 +225,7 @@ export class ApiService {
     return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {}, this.getHeaders());
   }
 
+  // ================= REPORTES GENERALES =================
   crearReporte(reporte: any){
      return this.http.post(`${this.apiUrl}/reportes`, reporte, this.getHeaders());
   }
@@ -233,12 +234,26 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/reportes/empleador`,reporte, this.getHeaders());
   }
 
-  // ===== NUEVO: OBTENER REPORTES DE PERFILES =====
+  // ================= REPORTES PERFILES =================
   obtenerReportesPerfiles(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/reportes/perfiles`, this.getHeaders());
   }
 
-  // ===== NOTIFICACIONES =====
+  // ================= REPORTES Y ACCIONES DE ANUNCIOS (NUEVO) =================
+  
+  reportarAnuncio(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reportes/anuncios`, datos, this.getHeaders());
+  }
+
+  obtenerReportesAnuncios(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/reportes/anuncios`, this.getHeaders());
+  }
+
+  eliminarAnuncio(idAnuncio: string | number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/anuncios/${idAnuncio}`, this.getHeaders());
+  }
+
+  // ================= NOTIFICACIONES =================
   obtenerNotificaciones(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/notificaciones`, this.getHeaders());
   }

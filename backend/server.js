@@ -1750,8 +1750,68 @@ async function ensureDatabaseSchema() {
   }
 }
 
+// =========================================================================
+// ENDPOINT PARA GUARDAR REPORTE (POST) - Vista del postulante
+// =========================================================================
+app.post('/reportes/anuncios', async (req, res) => {
+    try {
+        const { id_anuncio, id_postulante, motivo, detalle } = req.body;
+        
+        const query = `
+            INSERT INTO public.reporte_a_anuncio (id_anuncio, id_postulante, motivo, detalle)
+            VALUES ($1, $2, $3, $4) RETURNING *;
+        `;
+        const values = [id_anuncio, id_postulante, motivo, detalle];
+        
+        const result = await pool.query(query, values);
+        res.status(200).json({ mensaje: 'Reporte creado con éxito', reporte: result.rows[0] });
+    } catch (error) {
+        console.error('Error al crear reporte:', error);
+        res.status(500).json({ error: 'Error interno al guardar el reporte' });
+    }
+});
+
+// =========================================================================
+// SOLUCIÓN AL 500: Obtener reportes (GET) - Vista del administrador
+// =========================================================================
+app.get('/reportes/anuncios', async (req, res) => {
+    try {
+        // El ::text es crucial aquí para que el VARCHAR y el UUID coincidan
+        const query = `
+            SELECT 
+                r.id_reporte,
+                r.id_anuncio,
+                a.titulo,
+                r.motivo AS razon,
+                r.detalle AS descripcion,
+                r.fecha_reporte
+            FROM public.reporte_a_anuncio r
+            INNER JOIN public.anuncios a ON r.id_anuncio::text = a.id_anuncio::text
+            ORDER BY r.fecha_reporte DESC;
+        `;
+        const result = await pool.query(query);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener reportes de anuncios:', error);
+        res.status(500).json({ error: 'Error interno al obtener los reportes' });
+    }
+});
+
+// =========================================================================
+// SOLUCIÓN AL 404: Obtener reportes de perfiles (GET) - Vista del administrador
+// =========================================================================
+app.get('/reportes/perfiles', async (req, res) => {
+    try {
+        // Mientras construyes tu tabla de reportes de perfiles, mandamos un arreglo vacío
+        res.status(200).json([]);
+    } catch (error) {
+        console.error('Error al obtener reportes de perfiles:', error);
+        res.status(500).json({ error: 'Error interno al obtener los reportes de perfiles' });
+    }
+});
+
 /* ===== INICIAR SERVIDOR ===== */
 server.listen(3000, "0.0.0.0", async () => {
   console.log("Servidor corriendo en http://localhost:3000");
   await ensureDatabaseSchema();
-}); 
+});

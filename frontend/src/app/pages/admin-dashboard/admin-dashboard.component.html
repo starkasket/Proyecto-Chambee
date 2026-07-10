@@ -115,22 +115,39 @@
 
       <div class="admin-card mb-4">
         <h4 class="card-title">Anuncios Reportados</h4>
-        <div class="table-responsive">
+        <div *ngIf="cargandoReportesAnuncios" class="text-center my-3">
+          <span>Cargando reportes de anuncios...</span>
+        </div>
+        <div *ngIf="errorReportesAnuncios" class="alert alert-danger my-3">
+          {{ errorReportesAnuncios }}
+        </div>
+
+        <div *ngIf="!cargandoReportesAnuncios && !errorReportesAnuncios" class="table-responsive">
           <table class="table admin-table">
             <thead>
               <tr>
-                <th>Titulo del anuncio</th>
-                <th>Razon</th>
+                <th>Título del anuncio</th>
+                <th>Razón principal</th>
+                <th>Detalle (opcional)</th>
+                <th>Fecha de reporte</th>
                 <th class="text-end">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let anuncio of anunciosReportados">
-                <td>{{ anuncio.titulo }}</td>
-                <td>{{ anuncio.razon }}</td>
-                <td class="text-end action-buttons">
-                  <button class="btn btn-delete" (click)="eliminarAnuncio(anuncio)">Eliminar anuncio</button>
+                <td class="fw-bold">{{ anuncio.titulo }}</td>
+                <td><span class="badge bg-danger">{{ anuncio.razon }}</span></td>
+                <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ anuncio.descripcion }}">
+                  {{ anuncio.descripcion || 'Sin detalles adicionales' }}
                 </td>
+                <td>{{ anuncio.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view me-2" (click)="verAnuncio(anuncio.id_anuncio)" style="background-color: #6c757d; color: white;">Revisar</button>
+                  <button class="btn btn-delete" (click)="eliminarAnuncio(anuncio.id_anuncio)">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="anunciosReportados.length === 0">
+                <td colspan="5" class="text-center text-muted">No hay anuncios reportados actualmente.</td>
               </tr>
             </tbody>
           </table>

@@ -30,6 +30,44 @@
     </div>
 </div>
 
+<!-- MODAL DE REPORTE -->
+<div id="modalReporte" class="modal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-start rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-flag-fill me-2"></i>Reportar Anuncio
+                </h5>
+                <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalReporte()"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Ayúdanos a mantener Chambee seguro. Selecciona el motivo principal de tu reporte.</p>
+                
+                <div class="mb-3">
+                    <label class="fw-bold mb-2 d-block">Motivo del reporte:</label>
+                    <div class="form-check mb-2" *ngFor="let opcion of opcionesReporte; let i = index">
+                        <input class="form-check-input" type="radio" name="motivoReporte" [id]="'motivo' + i" [value]="opcion" [(ngModel)]="motivoReporte">
+                        <label class="form-check-label" [for]="'motivo' + i" style="cursor: pointer;">
+                            {{ opcion }}
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label for="detalleReporte" class="fw-bold mb-2">Detalles adicionales (opcional):</label>
+                    <textarea class="form-control" id="detalleReporte" rows="3" placeholder="Escribe más detalles sobre el problema para ayudar a nuestro equipo..." [(ngModel)]="detalleReporte" style="resize: none;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" (click)="cerrarModalReporte()">Cancelar</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" [disabled]="!motivoReporte || enviandoReporte" (click)="enviarReporte()">
+                    {{ enviandoReporte ? 'Enviando...' : 'Enviar Reporte' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <nav class="navbar-chambee">
     <div class="logo-wrapper" routerLink="/home-user" style="cursor: pointer; text-decoration: none;">
         <img src="assets/LogoChambee.png" alt="Chambee" />
@@ -174,7 +212,15 @@
                             <i class="bi bi-eye"></i> {{ jobData.vistas }} vistas
                         </span>
                     </div>
-                    <div class="actions">
+                    <div class="actions d-flex align-items-center gap-2">
+                        <!-- BOTÓN DE REPORTAR -->
+                        <button *ngIf="usuarioActual?.rol === 'postulante'" 
+                                class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" 
+                                (click)="abrirModalReporte()" 
+                                title="Reportar este anuncio">
+                            <i class="bi bi-flag-fill me-1"></i> Reportar
+                        </button>
+                        
                         <button class="btn-ver-mas" (click)="toggleVerMas()">
                             {{ mostrarMapa ? 'Ver menos' : 'Ver ubicación' }}
                         </button>
