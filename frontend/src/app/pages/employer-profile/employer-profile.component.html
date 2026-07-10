@@ -2,7 +2,8 @@
   <!-- Navbar unificada con la estructura de home-employer -->
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
-      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
+    <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo"
+  role="button" (click)="volverPanel()" />
       <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ perfil?.nombre_empresa || 'Empresa'
         }}</span>
     </div>

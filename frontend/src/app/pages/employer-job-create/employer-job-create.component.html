@@ -1,7 +1,8 @@
 <div class="offer-page">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
-      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
+      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" role="button"
+        (click)="volverPanel()" />
       <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ empresaNombre }}</span>
     </div>
 
@@ -139,14 +140,11 @@
 
         <div class="field">
           <span>Etiquetas de la vacante</span>
-          <p class="helper-copy">Selecciona las etiquetas que mejor describen el puesto para recomendarlo a candidatos con los mismos intereses.</p>
+          <p class="helper-copy">Selecciona las etiquetas que mejor describen el puesto para recomendarlo a candidatos
+            con los mismos intereses.</p>
           <div class="tags-grid">
-            <button
-              *ngFor="let categoria of categoriasDisponibles"
-              type="button"
-              class="tag-chip"
-              [class.active]="etiquetasSeleccionadas.includes(categoria)"
-              (click)="toggleEtiqueta(categoria)">
+            <button *ngFor="let categoria of categoriasDisponibles" type="button" class="tag-chip"
+              [class.active]="etiquetasSeleccionadas.includes(categoria)" (click)="toggleEtiqueta(categoria)">
               {{ categoria }}
             </button>
           </div>
@@ -242,7 +240,8 @@
             <h3>Agrega una foto para destacar tu oferta</h3>
             <p>La imagen aparecerá en los listados públicos y ayudará a identificar mejor la vacante.</p>
 
-            <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+            <input #imagenInput type="file" accept="image/*" style="display:none"
+              (change)="onArchivoSeleccionado($event)" />
 
             <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
               {{ fileName }}
@@ -255,7 +254,8 @@
               <button type="button" class="btn-secondary" (click)="imagenInput.click()">
                 Elegir imagen
               </button>
-              <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+              <button type="button" class="btn-primary-img" (click)="subirImagenManual()"
+                [disabled]="!archivoSeleccionado || subiendoImagen">
                 <span class="loading" [class.visible]="subiendoImagen"></span>
                 <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
               </button>
@@ -293,8 +293,9 @@
           <button type="submit" class="primary-btn" [disabled]="guardando || guardandoBorrador">
             {{ guardando ? 'Publicando...' : 'Publicar oferta' }}
           </button>
-          
-          <button type="button" class="draft-btn" [disabled]="guardando || guardandoBorrador" (click)="guardarBorrador()">
+
+          <button type="button" class="draft-btn" [disabled]="guardando || guardandoBorrador"
+            (click)="guardarBorrador()">
             {{ guardandoBorrador ? 'Guardando...' : 'Guardar como borrador' }}
           </button>
         </div>

@@ -22,6 +22,7 @@
 
 .logo {
   object-fit: contain;
+  cursor: pointer;
 }
 
 .search-container {
