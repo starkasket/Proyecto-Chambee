@@ -20,12 +20,14 @@
         <div class="modal-content text-center">
             <div class="modal-body pt-4">
                 <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
-                <h5 class="text-danger fw-bold">¡Atención!</h5>
+                <h5 class="text-danger fw-bold">¡Atención! Un gran poder conlleva una gran responsabilidad.</h5>
                 <p class="mb-0">{{ modalMensaje }}</p>
             </div>
-            <div class="modal-footer border-0 justify-content-center pb-4">
-                <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
-            </div>
+          
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                  <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                  <button type="submit" class="btn confirm-btn px-4">Confirmar</button>
+                </div>
         </div>
     </div>
 </div>
@@ -68,15 +70,170 @@
     </div>
 </div>
 
-<nav class="navbar-chambee">
-    <div class="logo-wrapper" routerLink="/home-user" style="cursor: pointer; text-decoration: none;">
-        <img src="assets/LogoChambee.png" alt="Chambee" />
-        <span>Chambee</span>
+
+<div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
+  <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    
+    <button class="service-detail-close" (click)="cerrarDetalleServicio()" aria-label="Cerrar">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <div *ngIf="servicioDetalleCargando" class="service-detail-loading">
+      <div class="service-detail-spinner"></div>
+      <p>Cargando información del servicio...</p>
     </div>
 
-    <div class="search-container">
-        <input type="text" placeholder="Buscar, categoría, puesto, ciudad y más..." />
+    <div *ngIf="!servicioDetalleCargando && servicioDetalle" class="service-detail-content">
+      
+      <div class="service-detail-hero">
+        <img [src]="servicioDetalle.img || 'assets/LogoChambee.png'" [alt]="servicioDetalle.title" />
+        <div class="service-detail-hero-overlay">
+          <span class="service-detail-category-badge" *ngIf="servicioDetalle.categoria">
+            <i class="bi bi-tag-fill"></i> {{ servicioDetalle.categoria }}
+          </span>
+        </div>
+      </div>
+
+      <div class="service-detail-body">
+        
+        <h2 class="service-detail-title">{{ servicioDetalle.title }}</h2>
+
+        <div class="service-detail-badges">
+          <span class="service-detail-badge badge-budget" *ngIf="servicioDetalle.presupuesto">
+            <i class="bi bi-cash-stack"></i> {{ servicioDetalle.presupuesto }}
+          </span>
+          <span class="service-detail-badge badge-modality" *ngIf="servicioDetalle.modalidad">
+            <i class="bi bi-globe2"></i> {{ servicioDetalle.modalidad }}
+          </span>
+          <span class="service-detail-badge badge-urgency" *ngIf="servicioDetalle.urgencia">
+            <i class="bi bi-lightning-fill"></i> {{ servicioDetalle.urgencia }}
+          </span>
+        </div>
+
+        <div class="service-detail-section">
+          <h4><i class="bi bi-file-text"></i> Descripción</h4>
+          <p>{{ servicioDetalle.description || 'Sin descripción disponible.' }}</p>
+        </div>
+
+        <div class="service-detail-section" *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
+          <h4><i class="bi bi-geo-alt-fill"></i> Ubicación</h4>
+          <div class="service-detail-location-grid">
+            <div *ngIf="servicioDetalle.calle" class="location-item">
+              <span class="location-label">Calle</span>
+              <span class="location-value">{{ servicioDetalle.calle }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.colonia" class="location-item">
+              <span class="location-label">Colonia</span>
+              <span class="location-value">{{ servicioDetalle.colonia }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.ciudad" class="location-item">
+              <span class="location-label">Ciudad</span>
+              <span class="location-value">{{ servicioDetalle.ciudad }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.estado" class="location-item">
+              <span class="location-label">Estado</span>
+              <span class="location-value">{{ servicioDetalle.estado }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.codigo_postal" class="location-item">
+              <span class="location-label">Código Postal</span>
+              <span class="location-value">{{ servicioDetalle.codigo_postal }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.ubicacion" class="location-item">
+              <span class="location-label">Ubicación</span>
+              <span class="location-value">{{ servicioDetalle.ubicacion }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-detail-author" *ngIf="servicioDetalle.nombre_postulante || servicioDetalle.autor_id">
+          <div class="service-detail-author-card" (click)="verPerfilAutor(servicioDetalle.autor_id)" role="button" tabindex="0">
+            <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor" class="author-avatar" />
+            <div class="author-info">
+              <span class="author-label">Publicado por</span>
+              <span class="author-name">
+                {{ servicioDetalle.nombre_postulante || 'Usuario' }}
+                {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : '' }}
+              </span>
+            </div>
+            <i class="bi bi-chevron-right author-arrow"></i>
+          </div>
+        </div>
+
+        <div class="service-detail-date" *ngIf="servicioDetalle.fecha_creacion">
+          <i class="bi bi-calendar3"></i>
+          Publicado el {{ servicioDetalle.fecha_creacion | date:'d \'de\' MMMM, y':'':'es-MX' }}
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div *ngIf="!isAdminView" class="d-flex align-items-center gap-3" routerLink="/home-user" style="cursor: pointer; text-decoration: none;">
+        <img src="assets/LogoChambee.png" alt="Chambee" height="48"/>
+          <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
+    </div>
+    <div *ngIf="isAdminView" class="d-flex align-items-center gap-3" routerLink="/admin" style="cursor: pointer; text-decoration: none;">
+        <img src="assets/LogoChambee.png" alt="Chambee" height="48"/>
+          <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
+    </div>
+
+
+
+     <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Buscar categoría, puesto, ciudad y más..." 
+           [(ngModel)]="searchTerm"
+           (ngModelChange)="onSearchInput($event)"
+           (keydown.enter)="verTodosResultados()"
+           (blur)="cerrarBuscador()"
+           (focus)="showSearchDropdown = true" />
+    
+    <div *ngIf="showSearchDropdown" class="search-dropdown">
+      
+      <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+        <div class="search-dropdown-header">Búsquedas recientes</div>
+
+        <!-- SE CORRIGIÓ EL CLIC DEL HISTORIAL AQUÍ -->
+        <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
+          <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title fw-normal">{{ term }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="searchTerm.length > 0">
+        
+        <div *ngIf="searchResults.length === 0" class="search-empty">
+          No se encontraron resultados para "{{ searchTerm }}"
+        </div>
+
+        <!-- SE CORRIGIÓ EL CLIC DE RESULTADOS VIVOS AQUÍ -->
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()" (click)="irAResultado(result)">
+          <div class="search-item-icon">
+            <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+          </div>
+          <div class="search-item-content">
+            <!-- SOPORTE PARA TITLE Y TITULO -->
+            <div class="search-item-title" [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
+            <div class="search-item-subtitle">
+              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
+              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-see-all" (mousedown)="verTodosResultados()">
+          Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
     <div class="nav-buttons">
         <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL -->
@@ -132,8 +289,48 @@
             </span>
         </button>
 
-        <i class="bi bi-list fs-3 burger-menu" style="cursor: pointer; margin-left: 5px;" (click)="toggleMenu($event)"></i>
+        
+ <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
+
+    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <div *ngIf="!isAdminView">
+      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+      <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
+      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+      <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
+      <a routerLink="/crear-servicio" class="desktop-menu-link"> Crear servicio</a>
+      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
+      <div *ngIf="isAdminView">
+                <a routerLink="/admin" class="desktop-menu-link">Panel principal</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
     </div>
+  </div>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+      <nav class="mobile-nav">
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
+        </div>
+        <hr />
+        <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+        <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <hr />
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+      </nav>
+    </aside>
+  </div>
+
+   
 </nav>
 
 <div class="detail-page-wrapper">
@@ -165,7 +362,7 @@
 
             <div class="divider"></div>
 
-            <div class="job-col">
+            <div  class="job-col">
                 <div class="job-header">
                     <div class="job-title-block">
                         <span class="job-urgency-badge" *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
@@ -175,7 +372,9 @@
                             <span class="job-tag" *ngFor="let tag of jobData.tags">{{ tag }}</span>
                         </div>
                     </div>
+                       <button *ngIf="isAdminView" class="eliminate-btn" type="button"  (click)="abrirModal()" >Eliminar anuncio</button>
                     <button
+                        *ngIf="!isAdminView" 
                         class="favorite-toggle"
                         type="button"
                         (click)="toggleFavorito()"
@@ -183,7 +382,7 @@
                         [class.active]="esFavorito"
                         [attr.aria-label]="esFavorito ? 'Quitar de favoritos' : 'Guardar vacante'"
                         [title]="esFavorito ? 'Quitar de favoritos' : 'Guardar vacante'">
-                        <i class="bi" [class.bi-bookmark-fill]="esFavorito" [class.bi-bookmark]="!esFavorito"></i>
+                        <i   class="bi" [class.bi-bookmark-fill]="esFavorito" [class.bi-bookmark]="!esFavorito"></i>
                     </button>
                 </div>
 
@@ -206,7 +405,7 @@
                 </div>
 
                 <div class="job-footer">
-                    <div class="stats">
+                    <div *ngIf="!isAdminView" class="stats">
                         <span class="stars text-warning fs-4">★★★★★</span>
                         <span class="views ms-3 fw-bold">
                             <i class="bi bi-eye"></i> {{ jobData.vistas }} vistas
@@ -224,7 +423,7 @@
                         <button class="btn-ver-mas" (click)="toggleVerMas()">
                             {{ mostrarMapa ? 'Ver menos' : 'Ver ubicación' }}
                         </button>
-                        <button class="btn-postular" (click)="postular()">Postular</button>
+                        <button *ngIf="!isAdminView" class="btn-postular" (click)="postular()">Postular</button>
                     </div>
                 </div>
             </div>
@@ -255,7 +454,7 @@
             </div>
 
             <!-- Aviso para quienes no son postulantes -->
-            <div class="alert alert-warning mb-4 text-center rounded-4 border-0" *ngIf="usuarioActual?.rol !== 'postulante'">
+            <div   class="alert alert-warning mb-4 text-center rounded-4 border-0" *ngIf="usuarioActual?.rol !== 'postulante' && !isAdminView ">
                 <i class="bi bi-info-circle me-2"></i> Solo los postulantes pueden dejar comentarios en esta sección.
             </div>
 
@@ -314,14 +513,14 @@
     </div>
     <!-- ======================================================== -->
 
-    <div class="container mt-4">
+    <div *ngIf="!isAdminView"  class="container mt-4">
         <div class="ad-banner">
             <h2>*Publicidad*</h2>
             <button class="btn-close-ad">×</button>
         </div>
     </div>
 
-    <div class="container related-section mt-5">
+    <div *ngIf="!isAdminView"  class="container related-section mt-5">
         <h3 class="mb-4 fw-bold">Empleos similares</h3>
         <div class="jobs-grid">
             <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)">

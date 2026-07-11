@@ -2,14 +2,15 @@ import { Component, OnInit, PLATFORM_ID, inject, ChangeDetectorRef, HostListener
 import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms'; 
 import * as L from 'leaflet';
 
 import { JobCardComponent } from '../../components/job-card/job-card.component';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 interface NotificationItem {
   id: number;
@@ -20,6 +21,35 @@ interface NotificationItem {
   applicantId?: string;
 }
 
+interface Slide {
+  id?: string | number;
+  company: string;
+  companyDescription: string;
+  title: string;
+  salary: string;
+  location: string;
+  mode: string;
+  urgency?: string;
+  description: string;
+  img: string;
+  tags: string[];
+  matchScore: number;
+}
+
+interface Job {
+  id?: string | number;
+  company: string;
+  title: string;
+  salary: string;
+  img: string;
+  urgency?: string;
+  rating: string;
+  applicants: number;
+  tags: string[];
+  matchScore: number;
+}
+
+
 @Component({
   selector: 'app-job-detail',
   standalone: true,
@@ -28,6 +58,7 @@ interface NotificationItem {
   styleUrl: './job-detail.component.css'
 })
 export class JobDetailComponent implements OnInit {
+  nombre_postulante = 'Usuario';    
   foto_perfil = '';
   jobId: string | null = null;
   jobData: any = null;
@@ -35,6 +66,16 @@ export class JobDetailComponent implements OnInit {
   mostrarMapa = false;
   esFavorito = false;
   guardandoFavorito = false;
+  isAdminView = false;
+  isMobile = false;
+   servicesOpen = false;
+
+  // SEARCH BAR
+   searchTerm = '';
+    searchSubject = new Subject<string>();
+    searchResults: any[] = [];
+    showSearchDropdown = false;
+    recentSearches: string[] = [];
 
   // NOTIFICACIONES Y MENÚ
   menuOpen = false;
@@ -62,6 +103,17 @@ export class JobDetailComponent implements OnInit {
   detalleReporte: string = '';
   enviandoReporte: boolean = false;
 
+
+  // SERVICES
+  servicioDetalle: any = null;
+  servicioDetalleOpen = false;
+  servicioDetalleCargando = false;
+
+  slides: Slide[] = [];
+  jobs: Job[] = [];
+  services: any[] = [];
+  vistosRecientemente: Job[] = [];
+
   private map: L.Map | null = null;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -69,12 +121,18 @@ export class JobDetailComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private themeService = inject(ThemeService);
   private api = inject(ApiService);
+  private authApi = inject(AuthService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     // Obtenemos el usuario para validar su rol
     this.usuarioActual = this.api.getUsuario();
+
+     this.isAdminView = this.usuarioActual?.rol === 'administrador';
+     console.log(this.isAdminView);
+     
+    
 
     // Cargar notificaciones al iniciar
     if (this.usuarioActual) {
@@ -88,8 +146,25 @@ export class JobDetailComponent implements OnInit {
       this.cargarDetalles(this.jobId);
       this.cargarComentarios(this.jobId);
     });
+    this.cargarBusquedasRecientes(); 
+
+     this.api.obtenerServiciosPublicos().subscribe({
+      next: (servicios) => {
+        this.services = servicios || [];
+      },
+      error: () => {
+        this.services = [];
+      }
+    });
 
     this.cargarFotoPerfil();
+
+     this.searchSubject.pipe(
+          debounceTime(300),
+          distinctUntilChanged()
+        ).subscribe(query => {
+          this.ejecutarBusqueda(query);
+        });
   }
 
   // ================= NOTIFICACIONES =================
@@ -330,8 +405,83 @@ export class JobDetailComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
+
+    openService(index: number) {
+    const servicio = this.services[index];
+    if (!servicio) return;
+    const id = servicio.id_servicio || servicio.id;
+    if (!id) return;
+
+    this.servicioDetalleCargando = true;
+    this.servicioDetalleOpen = true;
+
+    this.api.obtenerServicioDetalle(String(id)).subscribe({
+      next: (detalle) => {
+        this.servicioDetalle = detalle;
+        this.servicioDetalleCargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar detalle del servicio:', err);
+        this.servicioDetalle = servicio;
+        this.servicioDetalleCargando = false;
+      }
+    });
+  }
+
+  cerrarDetalleServicio() {
+    this.servicioDetalleOpen = false;
+    this.servicioDetalle = null;
+  }
+
+   verPerfilAutor(autorId: string) {    
+    if (autorId) {
+      this.cerrarDetalleServicio();
+      this.router.navigate(['/perfil-postulante', autorId]);
+    }
+  }
+
+   checkMobile() {
+    try {
+      this.isMobile = window.innerWidth <= 768;
+    } catch {
+      this.isMobile = false;
+    }
+  }
+
+  logout() {
+    this.authApi.logout();
+    this.menuOpen = false;
+    this.servicesOpen = false;
+  }
+
+    private registrarVista(id: string | number) {
+    const strId = String(id);
+    let historial: string[] = [];
+    const stored = localStorage.getItem('chambee_vistos_recientemente');
+    if (stored) {
+      try {
+        historial = JSON.parse(stored);
+      } catch (e) {
+        historial = [];
+      }
+    }
+    historial = historial.filter(itemId => itemId !== strId);
+    historial.unshift(strId);
+    if (historial.length > 10) {
+      historial = historial.slice(0, 10);
+    }
+    localStorage.setItem('chambee_vistos_recientemente', JSON.stringify(historial));
+  }
+
   irAlPerfil(): void {
     this.router.navigate(['/perfil-postulante']);
+  }
+
+   openJob(id?: string | number) {
+    if (id) {
+      this.registrarVista(id);
+      this.router.navigate(['/job', id]);
+    }
   }
 
   goBack(): void {
@@ -408,6 +558,18 @@ export class JobDetailComponent implements OnInit {
           interesMatch: this.calcularCoincidencias(categoriasActuales, intereses) > 0
         };
 
+        this.jobs = anuncios.map((anuncio: any) => ({
+          id: anuncio.id_anuncio,
+          company: anuncio.nombre_empresa || 'Empresa',
+          title: anuncio.titulo,
+          salary: this.formatearSalario(anuncio.salario),
+          img: anuncio.img || '',
+          urgency: anuncio.urgencia || 'Normal',
+          rating: anuncio.modalidad || 'Empleo',
+          applicants: anuncio.vistas || 0,
+          tags: anuncio.categorias || [],
+          matchScore: 0
+}));
         this.relatedJobs = anuncios
           .filter((item: any) => String(item.id_anuncio) !== String(id))
           .map((item: any, index: number) => ({
@@ -442,9 +604,11 @@ export class JobDetailComponent implements OnInit {
 
     this.api.getMiPerfil().subscribe({
       next: (perfil: any) => {
+         this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
         this.foto_perfil = perfil?.foto_perfil || '';
       },
       error: (err) => {
+         this.nombre_postulante = usuario?.nombre || 'Usuario';
         console.log('No se pudo cargar la foto de perfil:', err);
       }
     });
@@ -558,7 +722,7 @@ export class JobDetailComponent implements OnInit {
     const numero = Number(salario);
     if (Number.isNaN(numero) || numero === 0) return 'Salario a convenir';
     return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
+      style: 'currency', 
       currency: 'MXN',
       maximumFractionDigits: 0
     }).format(numero);
@@ -566,6 +730,10 @@ export class JobDetailComponent implements OnInit {
 
   // Modales
   modalMensaje = '';
+
+   abrirModal(){
+      this.mostrarModal("¿Estás seguro de querer eliminar esta publicación?")        
+  }
 
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -599,5 +767,110 @@ export class JobDetailComponent implements OnInit {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
+  }
+
+  onSearchInput(value: string) {
+ 
+    
+    this.showSearchDropdown = true;
+    if (value && value.trim().length > 0) {
+      this.searchSubject.next(value);
+    } else {
+      this.searchResults = [];
+    }
+  }
+
+  // --- BUSCADOR INTELIGENTE Y COMPATIBLE CON SERVICIOS ---
+  ejecutarBusqueda(query: string) {
+    const tokens = this.normalizarTexto(query).split(/\s+/).filter(t => t.length > 0);
+    
+    // Busca en empleos
+    const jobsResults = this.jobs.filter(job => {
+      const textoCompleto = this.normalizarTexto(`${job.title} ${job.company} ${job.tags.join(' ')}`);
+      return tokens.every(token => textoCompleto.includes(token));
+    }).map(j => ({ ...j, tipo: 'empleo' }));
+
+    // Busca en servicios (soportando 'titulo' además de 'title')
+    const servicesResults = this.services.filter(service => {
+      const titulo = service.title || service.titulo || '';
+      const desc = service.description || service.descripcion || '';
+      const cat = service.categoria || '';
+      const textoCompleto = this.normalizarTexto(`${titulo} ${desc} ${cat}`);
+      return tokens.every(token => textoCompleto.includes(token));
+    }).map(s => ({ ...s, tipo: 'servicio' }));
+
+    this.searchResults = [...jobsResults, ...servicesResults].slice(0, 6);
+  }
+
+  cerrarBuscador() {
+    setTimeout(() => {
+      this.showSearchDropdown = false;
+    }, 200);
+  }
+
+  // --- SE CORRIGIÓ EL CLIC EN UN RESULTADO ---
+  irAResultado(resultado: any) {
+    const titleToSave = resultado.title || resultado.titulo || resultado.categoria || '';
+    this.guardarBusquedaReciente(this.searchTerm || titleToSave);
+    this.showSearchDropdown = false;
+    this.searchTerm = '';
+
+    if (resultado.tipo === 'empleo') {
+      this.openJob(resultado.id || resultado.id_anuncio);
+    } else {
+      const idx = this.services.findIndex(s => (s.id_servicio || s.id) === (resultado.id_servicio || resultado.id));
+      if (idx !== -1) this.openService(idx);
+    }
+  }
+
+  cargarBusquedasRecientes() {
+    const stored = localStorage.getItem('chambee_busquedas_recientes');
+    if (stored) {
+      try {
+        this.recentSearches = JSON.parse(stored);
+      } catch {
+        this.recentSearches = [];
+      }
+    }
+  }
+
+  guardarBusquedaReciente(term: string) {
+    if (!term || term.trim() === '') return;
+    let searches = [...this.recentSearches];
+    searches = searches.filter(t => this.normalizarTexto(t) !== this.normalizarTexto(term));
+    searches.unshift(term);
+    if (searches.length > 4) searches = searches.slice(0, 4);
+    this.recentSearches = searches;
+    localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
+  }
+
+  // --- SE CORRIGIÓ EL CLIC EN EL HISTORIAL ---
+  seleccionarBusquedaReciente(term: string) {
+    this.searchTerm = term;
+    this.showSearchDropdown = false; // Cerramos el menú
+    // Forzamos la navegación al panel de resultados
+    this.router.navigate(['/search'], { queryParams: { q: term } });
+  }
+  
+  // --- AL DAR ENTER O CLIC EN "VER TODOS LOS RESULTADOS" ---
+  verTodosResultados() {
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      this.guardarBusquedaReciente(this.searchTerm);
+      this.showSearchDropdown = false; // Cerramos el menú
+      // Forzamos la navegación al panel de resultados
+      this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
+    }
+  }
+
+  highlightText(text: string | null | undefined, query: string): string {
+    if (!text) return '';
+    if (!query) return text;
+    const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    const regex = new RegExp(`(${safeQuery})`, 'gi');
+    return text.replace(regex, '<span class="text-highlight">$1</span>');
+  }
+
+  private normalizarTexto(value: unknown): string {
+    return String(value ?? '').toLowerCase().trim();
   }
 }

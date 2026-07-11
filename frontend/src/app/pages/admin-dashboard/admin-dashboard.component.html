@@ -4,13 +4,34 @@
       <img src="assets/LogoChambee.png" alt="Chambee" height="48">
     </div>
 
-    <div class="d-flex align-items-center gap-3">
+    <div class="header-actions d-flex align-items-center gap-3">
       <button class="theme-toggle admin-theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track"><span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span></span>
       </button>
       <span class="fs-5 fw-semibold">{{ nombreAdmin }}</span>
       <i class="bi bi-person-circle fs-2 admin-profile-icon"></i>
+   
+          <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/admin" class="desktop-menu-link">Panel principal</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
+    
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        </nav>
+      </aside>
     </div>
+     </div>
   </header>
 
   <div class="admin-body">

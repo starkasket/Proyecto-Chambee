@@ -205,7 +205,7 @@
   font-weight: 600;
 }
 
-.desktop-menu-link:hover {
+.desktop-menu-link:hover, .desktop-menu-link.active  {
   background: var(--surface-secondary);
 }
 

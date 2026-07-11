@@ -4,9 +4,10 @@
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
       <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ navbarWelcomeName }}</span>
     </div>
-    <div class="search-container flex-grow-1 mx-4">
+   
+   <!--  <div class="search-container flex-grow-1 mx-4" *ngIf="isOwnProfile">
       <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
-    </div>
+    </div> -->
 
 <div id="modalAlerta" class="modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -139,15 +140,18 @@
         <ng-container *ngIf="!isAdminView && isEmployerView">
           <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
           <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
-          <a routerLink="/post-job" class="desktop-menu-link">Crear oferta</a>
+          <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a>
+          <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear vacante</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
         <ng-container *ngIf="!isAdminView && !isEmployerView">
           <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
-          <a routerLink="/perfil-postulante" class="desktop-menu-link">Mi perfil</a>
+          <a routerLink="/perfil-postulante" class="desktop-menu-link active">Mi perfil</a>
           <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
-          <a routerLink="/postulaciones" class="desktop-menu-link">Mis postulaciones</a>
+          <a routerLink="/borrador-servicio" class="desktop-menu-link">Mis borradores</a>
+          <a routerLink="/crear-servicio" class="desktop-menu-link"> Crear servicio</a>
+          <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>

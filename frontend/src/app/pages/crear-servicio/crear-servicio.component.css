@@ -72,6 +72,7 @@
   display:flex;
   align-items:center;
   gap:18px;
+  position: relative;
 }
 
 .notification-btn{
@@ -134,7 +135,7 @@
   transform: translateX(24px);
 }
 .menu{
-  color:white;
+  color:black;
   font-size:26px;
   cursor:pointer;
 }
@@ -155,9 +156,6 @@
     max-width:220px;
   }
 
-  .nav-buttons{
-    gap:10px;
-  }
 
 }
 .offer-shell {
@@ -529,6 +527,40 @@
 .modal-body p {
   color: var(--text-secondary);
 }
+
+.desktop-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-float);
+  padding: 8px 6px;
+  z-index: 2200;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.desktop-menu-link {
+  display: block;
+  padding: 8px 10px;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.desktop-menu-link:hover,.desktop-menu-link.active  {
+  background: var(--surface-secondary);
+}
+
+.desktop-menu-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 6px 0;
+}
 /* Responsividad */
 @media (max-width: 900px) {
   .offer-layout {
@@ -555,10 +587,7 @@
     padding: 6px 10px;
     font-size: 13px;
   }
-  .nav-buttons {
-    gap: 6px;
-    overflow: hidden;
-  }
+  
   .offer-shell {
     padding: 86px 14px 28px;
   }
@@ -601,4 +630,6 @@
   .offer-hero h1 {
     font-size: clamp(1.8rem, 8vw, 2.4rem);
   }
+  
 }
+

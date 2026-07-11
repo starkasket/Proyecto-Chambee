@@ -85,7 +85,7 @@ export class PerfilPostulanteComponent implements OnInit {
   cvMensaje = '';
   cvError = false;
   cvPublico = true;
-  
+
   modalMensaje = '';
 
   // VARIABLE PARA LAS ETIQUETAS
@@ -126,7 +126,7 @@ export class PerfilPostulanteComponent implements OnInit {
     private authApi: AuthService,
     private readonly api: ApiService,
     private readonly themeService: ThemeService,
-    private cdr: ChangeDetectorRef 
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -155,12 +155,13 @@ export class PerfilPostulanteComponent implements OnInit {
       this.selectedPerfilId = perfilRouteId;
       this.isEmployerView = usuario.rol === 'empleador';
       this.isOwnProfile = usuario.rol === 'postulante' && usuario.id === perfilRouteId;
- 
+
       if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId) {
         this.error = 'No estás autorizado para ver este perfil.';
         this.cargando = false;
         return;
       }
+
 
       this.loadPerfilById(perfilRouteId);
       this.checkMobile();
@@ -183,7 +184,7 @@ export class PerfilPostulanteComponent implements OnInit {
     this.api.getMiPerfil().subscribe({
       next: (perfilDb: any) => {
         this.perfil = perfilDb;
-        this.cvPublico = perfilDb.visible_empresas ?? true; 
+        this.cvPublico = perfilDb.visible_empresas ?? true;
         this.error = '';
 
         if (localStorage.getItem('token')) {
@@ -232,7 +233,7 @@ export class PerfilPostulanteComponent implements OnInit {
           message: n.message,
           time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
           read: n.read,
-          applicantId: n.applicantId 
+          applicantId: n.applicantId
         }));
         this.hasUnreadNotifications = this.notifications.some(n => !n.read);
       },
@@ -248,14 +249,14 @@ export class PerfilPostulanteComponent implements OnInit {
 
     // Si la notificación pertenece a un postulante (y el usuario actual es un empleador), navegamos
     if (notif.applicantId) {
-      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
-        queryParams: { seguimiento: 'true' } 
+      this.router.navigate(['/perfil-postulante', notif.applicantId], {
+        queryParams: { seguimiento: 'true' }
       }).then(() => {
         // Recargar el componente forzadamente ya que estamos en la misma ruta
         window.location.reload();
       });
     }
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   toggleNotifications(event?: Event) {
@@ -265,7 +266,7 @@ export class PerfilPostulanteComponent implements OnInit {
     if (this.notificationsOpen && this.hasUnreadNotifications) {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
-      
+
       // Llamar a la API para marcarlas como leídas en PostgreSQL
       this.api.marcarNotificacionesLeidas().subscribe({
         error: (err) => console.error('Error al actualizar estado de notificaciones', err)
@@ -358,7 +359,7 @@ export class PerfilPostulanteComponent implements OnInit {
       modal.style.display = 'flex';
     }
   }
-  
+
   mostrarModalAceptar(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalAceptar');
@@ -375,7 +376,7 @@ export class PerfilPostulanteComponent implements OnInit {
       modal.style.display = 'none';
     }
   }
-  
+
   cerrarModalAceptar() {
     const modal = document.getElementById('modalAceptar');
     if (modal) {
@@ -422,7 +423,7 @@ export class PerfilPostulanteComponent implements OnInit {
     this.router.navigate(['/perfil-postulante/editar']);
   }
 
-  reportarPerfil(form: NgForm){
+  reportarPerfil(form: NgForm) {
     if (form.invalid) return;
 
     const reporte = {
@@ -437,22 +438,22 @@ export class PerfilPostulanteComponent implements OnInit {
     });
   }
 
-  eliminarCuenta(){
-     this.api.eliminarPostulante().subscribe({
-       next: () => {
-         localStorage.removeItem('token');
-         this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.");
-         this.router.navigate(['/login']);
-       },
-       error: () => alert('Ocurrió un error')
+  eliminarCuenta() {
+    this.api.eliminarPostulante().subscribe({
+      next: () => {
+        localStorage.removeItem('token');
+        this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.");
+        this.router.navigate(['/login']);
+      },
+      error: () => alert('Ocurrió un error')
     });
   }
 
-  abrirModal(){
-      this.mostrarModal("¿Estás seguro de querer reportar este perfil?");
+  abrirModal() {
+    this.mostrarModal("¿Estás seguro de querer reportar este perfil?");
   }
-  
-  abrirModalEliminar(){
+
+  abrirModalEliminar() {
     this.mostrarModalEliminar("¿Estás seguro de querer eliminar tu cuenta?");
   }
 
@@ -517,7 +518,7 @@ export class PerfilPostulanteComponent implements OnInit {
       this.vistosRecientemente = [];
       return;
     }
-    
+
     try {
       const ids = JSON.parse(stored) as string[];
       if (ids.length === 0) return;
@@ -526,7 +527,7 @@ export class PerfilPostulanteComponent implements OnInit {
         next: (anuncios: any[]) => {
           if (!anuncios) return;
           const historyJobs = ids.map(id => anuncios.find(a => String(a.id_anuncio) === String(id)))
-                                 .filter(a => a !== undefined);
+            .filter(a => a !== undefined);
 
           this.vistosRecientemente = historyJobs.map(anuncio => ({
             id: anuncio.id_anuncio,
@@ -571,8 +572,8 @@ export class PerfilPostulanteComponent implements OnInit {
   logout() {
     this.authApi.logout();
     this.menuOpen = false;
-  } 
-  
+  }
+
   async onCvSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -636,7 +637,7 @@ export class PerfilPostulanteComponent implements OnInit {
   toggleCvVisibilidad(): void {
     const nuevoEstado = !this.cvPublico;
     this.api.toggleVisibilidadCv(nuevoEstado).subscribe({
-        next: () => {
+      next: () => {
         this.cvPublico = nuevoEstado;
         this.cvMensaje = `Tu C.V. ahora es ${nuevoEstado ? 'público' : 'privado'}.`;
         this.cvError = false;
@@ -659,7 +660,7 @@ export class PerfilPostulanteComponent implements OnInit {
   getStarsArray(promedio: number = 0): string[] {
     const stars: string[] = [];
     const roundPromedio = Math.round(promedio * 2) / 2;
-    
+
     for (let i = 1; i <= 5; i++) {
       if (i <= roundPromedio) {
         stars.push('full');
@@ -686,7 +687,7 @@ export class PerfilPostulanteComponent implements OnInit {
       next: (res: any) => {
         this.ratingEnviando = false;
         this.ratingExito = '¡Calificación registrada con éxito!';
-        
+
         if (this.perfil) {
           this.perfil.promedio_valoracion = res.promedio_valoracion;
           this.perfil.total_valoraciones = res.total_valoraciones;

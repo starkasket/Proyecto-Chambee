@@ -16,6 +16,10 @@
   z-index: 10;
 }
 
+.header-actions{
+    position: relative;
+}
+
 .theme-toggle {
   border: none;
   background: transparent;
@@ -275,4 +279,44 @@
 .btn-view:hover {
   background-color: #e5b526;
   color: #000;
+}
+
+.menu{
+  color:black;
+  font-size:26px;
+  cursor:pointer;
+}
+
+.desktop-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-float);
+  padding: 8px 6px;
+  z-index: 2200;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.desktop-menu-link {
+  display: block;
+  padding: 8px 10px;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.desktop-menu-link:hover,.desktop-menu-link.active  {
+  background: var(--surface-secondary);
+}
+
+.desktop-menu-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 6px 0;
 }

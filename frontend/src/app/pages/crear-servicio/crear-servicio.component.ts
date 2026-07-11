@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ThemeService } from '../../services/theme.service';
 import { ServiciosService } from '../../services/servicios.service';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-crear-servicio',
@@ -21,9 +22,11 @@ export class CrearServicioComponent implements OnInit {
   private fb = inject(FormBuilder);
   private serviciosService = inject(ServiciosService);
   private api = inject(ApiService);
+  private authApi = inject(AuthService);
+  
 
   servicioForm: FormGroup;
-  
+  nombre_postulante = 'Usuario';
   foto_perfil = ''; 
   previewUrl: string | null = null;
   archivoSeleccionado: File | null = null;
@@ -31,6 +34,10 @@ export class CrearServicioComponent implements OnInit {
   subiendoImagen = false;
   urlImagenSubida = '';
   mostrarEliminar = false;
+  menuOpen = false;
+  notificationsOpen = false;
+   isMobile = false;
+    servicesOpen = false;
 
   // Variables para la edición
   esEdicion = false;
@@ -89,12 +96,22 @@ export class CrearServicioComponent implements OnInit {
       // Cargar perfil
       this.api.getMiPerfil().subscribe({
         next: (perfil: any) => {
+          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
           this.foto_perfil = perfil?.foto_perfil || '';
         },
         error: () => {
+           this.nombre_postulante = usuario?.nombre || 'Usuario';
           console.log("Ocurrió un error");
         }
       });
+    }
+  }
+
+  checkMobile() {
+    try {
+      this.isMobile = window.innerWidth <= 768;
+    } catch {
+      this.isMobile = false;
     }
   }
 
@@ -318,6 +335,12 @@ export class CrearServicioComponent implements OnInit {
     this.router.navigate(['/home-user']);
   }
 
+   logout() {
+    this.authApi.logout();
+    this.menuOpen = false;
+    this.servicesOpen = false;
+  }
+
   cerrarModal() {
     const modal = document.getElementById('modalAlerta');
     if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; }
@@ -351,5 +374,10 @@ export class CrearServicioComponent implements OnInit {
 
   irAlPerfil() {
     this.router.navigate(['/perfil-postulante']);
+  }
+  toggleMenu(event?: Event) {
+    if (event) event.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+    this.notificationsOpen = false;
   }
 }

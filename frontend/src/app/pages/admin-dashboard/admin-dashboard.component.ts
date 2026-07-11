@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
+import { AuthService } from '../../services/auth.service';
 
 interface PerfilReportado {
   id_reporte: number;
@@ -38,6 +39,11 @@ interface NotificacionReporte {
 })
 export class AdminDashboardComponent implements OnInit {
   nombreAdmin = 'Administrador';
+  isMobile = false;
+   servicesOpen = false;
+
+   menuOpen = false;
+  notificationsOpen = false;
   
   // Variables para reportes de perfiles
   perfilesReportados: PerfilReportado[] = [];
@@ -65,7 +71,8 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private readonly api: ApiService,
     private readonly themeService: ThemeService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly authApi: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -154,6 +161,20 @@ export class AdminDashboardComponent implements OnInit {
       console.log('Suspendiendo cuenta con ID:', idPostulante);
       // this.api.suspenderPostulante(idPostulante).subscribe(...)
     }
+  }
+
+  toggleMenu(event?: Event) {
+    if (event) event.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+    this.notificationsOpen = false;
+  }
+
+
+  
+  logout() {
+    this.authApi.logout();
+    this.menuOpen = false;
+    this.servicesOpen = false;
   }
 
   verAnuncio(idAnuncio: string) {
