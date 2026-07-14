@@ -1777,15 +1777,28 @@ app.post('/reportes/anuncios', async (req, res) => {
     try {
         const { id_anuncio, id_postulante, motivo, detalle } = req.body;
         
-        const query = `
-            INSERT INTO public.reporte_a_anuncio (id_anuncio, id_postulante, motivo, detalle)
-            VALUES ($1, $2, $3, $4) RETURNING *;
+        await pool.query('BEGIN');
+
+        const reporteQuery = `
+            INSERT INTO public.reporte (motivo, descripcion, estado, id_postulante)
+            VALUES ($1, $2, 'Pendiente', $3) RETURNING *;
         `;
-        const values = [id_anuncio, id_postulante, motivo, detalle];
-        
-        const result = await pool.query(query, values);
-        res.status(200).json({ mensaje: 'Reporte creado con éxito', reporte: result.rows[0] });
+        const reporteValues = [motivo, detalle, id_postulante];
+        const reporteResult = await pool.query(reporteQuery, reporteValues);
+        const nuevoReporte = reporteResult.rows[0];
+
+        const anuncioQuery = `
+            INSERT INTO public.reporte_a_anuncio (id_reporte, id_anuncio)
+            VALUES ($1, $2);
+        `;
+        await pool.query(anuncioQuery, [nuevoReporte.id_reporte, id_anuncio]);
+
+        await pool.query('COMMIT');
+
+        nuevoReporte.id_anuncio = id_anuncio;
+        res.status(200).json({ mensaje: 'Reporte creado con éxito', reporte: nuevoReporte });
     } catch (error) {
+        await pool.query('ROLLBACK');
         console.error('Error al crear reporte:', error);
         res.status(500).json({ error: 'Error interno al guardar el reporte' });
     }

@@ -348,7 +348,7 @@ INSERT INTO public.administrador (nombre, correo_electronico, contrasena) VALUES
 ('Oscar', 'oscaradmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
 ('Anshelo', 'ansheloadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
 ('Abraham', 'abrahamadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
-('Karina', 'karinaadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu'),
+('Karina', 'karinaadmin@chambee.com', '$2b$12$ExhvNGgqnxODxPCu/aZBYOTzda2Dsmma.6EgLEuwBoa42su1DiE7y'),
 ('Cuanary', 'cuanaryadmin@chambee.com', '$2a$12$yDgb6WV7b1RZocxhx0zepOiTceDaXluOhSO.jZip/yWNKCBy9PVNu');
 
 DROP TABLE IF EXISTS public.reporte_a_anuncio;

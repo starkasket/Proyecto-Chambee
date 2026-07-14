@@ -279,6 +279,28 @@
       </article>
 
       <article class="form-card">
+        <div class="card-head" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <p class="eyebrow">Preferencias</p>
+            <h2>Categorías de Interés</h2>
+            <p class="intro" style="font-size: 0.9rem; margin-top: 4px;">
+              Estas son las categorías de empleos que sigues para tus recomendaciones.
+            </p>
+          </div>
+          <button type="button" class="ghost-btn" style="border: 1px solid var(--border-soft);" (click)="editarCategorias()">Modificar Categorías</button>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
+          <span *ngFor="let cat of categoriasUsuario" style="background: var(--surface-hover, #f0f0f0); color: var(--text-primary, #333); padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; border: 1px solid var(--border-soft, #ccc);">
+            {{ cat }}
+          </span>
+          <span *ngIf="categoriasUsuario.length === 0" style="color: var(--text-secondary, #666); font-size: 0.9rem; font-style: italic;">
+            No tienes categorías seleccionadas.
+          </span>
+        </div>
+      </article>
+
+      <article class="form-card">
         <div class="card-head">
           <div>
             <p class="eyebrow">Presentación</p>

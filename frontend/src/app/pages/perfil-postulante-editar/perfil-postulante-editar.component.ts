@@ -80,6 +80,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
   subiendoImagen = false;
   urlImagenSubida = '';
   mostrarEliminar = false;
+  categoriasUsuario: string[] = [];
 
   notifications: NotificationItem[] = [
     { id: 1, title: 'Perfil personal', message: 'Recuerda guardar tus cambios antes de salir.', time: 'Ahora', read: false }
@@ -136,6 +137,16 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     this.api.getSepomex().subscribe(data => {
       this.sepomex = data;
       this.cargarPerfil();
+    });
+
+    // Cargar categorias/etiquetas
+    this.api.obtenerMisEtiquetas().subscribe({
+      next: (response) => {
+        this.categoriasUsuario = Array.isArray(response?.etiquetas) ? response.etiquetas : [];
+      },
+      error: () => {
+        this.categoriasUsuario = [];
+      }
     });
   }
 
@@ -302,6 +313,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
 
   volverPerfil() { this.router.navigate(['/perfil-postulante']); }
   buscarEmpleos() { this.router.navigate(['/buscar-empleos']); }
+  editarCategorias() { this.router.navigate(['/job-preferences']); }
   toggleTheme() { this.themeService.toggleTheme(); }
 
   get isDarkMode(): boolean {
