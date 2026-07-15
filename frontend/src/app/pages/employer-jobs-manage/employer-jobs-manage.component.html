@@ -1,0 +1,348 @@
+<!-- MODAL DE ÉXITO -->
+<div id="modalSaludo" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+        <h4 class="text-success fw-bold">¡Operación exitosa!</h4>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ERROR -->
+<div id="modalAlerta" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="manage-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+     <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo"
+  role="button" (click)="volverPanel()" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Mis vacantes, {{ empresaNombre }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Administra tus vacantes, estados y etiquetas..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+              <span class="notif-header">{{ notif.title }}</span>
+              <span class="notif-message">{{ notif.message }}</span>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button"><i class="bi bi-list"></i></div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
+        <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a>
+        <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear vacante</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar sesión</a>
+      </div>
+    </div>
+  </nav>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+      <button class="mobile-close" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+      <nav class="mobile-nav">
+        <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+        <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+        <a class="mobile-nav-link" routerLink="/mis-vacantes" (click)="toggleMenu()">Mis vacantes</a>
+        <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar sesión</a>
+      </nav>
+    </aside>
+  </div>
+
+  <main class="manage-shell">
+    <header class="manage-hero">
+      <div>
+        <button class="back-button" type="button" (click)="volverPanel()">←</button>
+        <p class="eyebrow">Gestión de vacantes</p>
+        <h1>Editar, guardar como borrador u ocultar vacantes</h1>
+      </div>
+
+      <button class="primary-btn" type="button" (click)="crearNueva()">+ Nueva vacante</button>
+    </header>
+
+    <section *ngIf="cargando" class="status-card">Cargando vacantes...</section>
+    <section *ngIf="!cargando && error" class="status-card error">{{ error }}</section>
+
+    <section class="manage-layout" *ngIf="!cargando && !error">
+      <aside class="jobs-panel">
+        <div class="panel-head">
+          <h2>Tus vacantes</h2>
+          <span class="jobs-count">{{ vacantes.length }}</span>
+        </div>
+
+        <div class="empty-state" *ngIf="!vacantes.length">
+          Aún no tienes vacantes creadas.
+        </div>
+
+        <button *ngFor="let vacante of vacantes" type="button" class="job-list-item"
+          [class.active]="vacante.id === vacanteSeleccionadaId" (click)="seleccionarVacante(vacante.id)">
+          <img class="job-list-image" [src]="vacante.img || 'assets/LogoChambee.png'" [alt]="vacante.titulo" />
+          <div class="job-list-top">
+            <strong class="job-title">{{ vacante.titulo }}</strong>
+            <span class="state-pill" [ngClass]="getEstadoClase(vacante.estado)">{{ vacante.estado }}</span>
+          </div>
+          <p>{{ vacante.ubicacion }} • {{ vacante.fecha }}</p>
+          <div class="job-tags" *ngIf="vacante.categorias.length">
+            <span class="job-tag" *ngFor="let categoria of vacante.categorias | slice:0:2">{{ categoria }}</span>
+          </div>
+        </button>
+      </aside>
+
+      <section class="editor-panel" *ngIf="vacanteSeleccionada; else noSelection">
+        <div class="editor-head">
+          <div>
+            <p class="eyebrow">Vacante seleccionada</p>
+            <h2>{{ vacanteSeleccionada.titulo }}</h2>
+            <p class="hero-copy">{{ vacanteSeleccionada.candidatos }} postulaciones • {{ vacanteSeleccionada.modalidad
+              }}</p>
+            <div class="editor-status-row">
+              <span class="state-pill" [ngClass]="getEstadoClase(vacanteSeleccionada.estado)">{{
+                vacanteSeleccionada.estado }}</span>
+              <span class="pending-pill" *ngIf="hayCambiosPendientes">Tienes cambios sin guardar</span>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button class="ghost-btn draft-btn" type="button" (click)="guardarComoBorrador()" [disabled]="actualizandoEstado">
+              Guardar como borrador
+            </button>
+            <button class="ghost-btn warn-btn" type="button" (click)="ocultarVacante()"
+              [disabled]="actualizandoEstado">
+              Ocultar vacante
+            </button>
+            <button class="ghost-btn" type="button" (click)="publicarVacante()" [disabled]="actualizandoEstado">
+              Publicar
+            </button>
+             <button class="ghost-btn danger-btn" type="button" (click)="eliminarVacante()"
+              [disabled]="actualizandoEstado">
+              Eliminar vacante
+            </button>
+          </div>
+        </div>
+
+        <form class="editor-form" [formGroup]="form" (ngSubmit)="guardarCambios()">
+          <section class="editor-section">
+            <div class="section-title-row">
+              <h3>Información principal</h3>
+              <p>Actualiza los datos que verán tus candidatos.</p>
+            </div>
+
+            <div class="field full">
+              <span>Título</span>
+              <input type="text" formControlName="titulo" placeholder="Ej. Ejecutivo(a) de ventas" />
+              <small *ngIf="campoInvalido('titulo')">Ingresa un título válido.</small>
+            </div>
+
+            <div class="field full">
+              <span>Descripción</span>
+              <textarea rows="6" formControlName="descripcion"
+                placeholder="Describe responsabilidades, perfil y beneficios."></textarea>
+              <small *ngIf="campoInvalido('descripcion')">La descripción es obligatoria.</small>
+            </div>
+
+            <div class="grid">
+              <label class="field">
+                <span>Tipo de anuncio</span>
+                <select formControlName="tipo_anuncio">
+                  <option value="Empleo">Empleo</option>
+                  <option value="Práctica">Práctica</option>
+                  <option value="Estadía">Estadía</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Urgencia</span>
+                <select formControlName="urgencia">
+                  <option value="Normal">Normal</option>
+                  <option value="Urgente">Urgente</option>
+                  <option value="Muy urgente">Muy urgente</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Edad</span>
+                <select formControlName="edad">
+                  <option *ngFor="let opcion of opcionesEdad" [value]="opcion">{{ opcion }}</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Educación</span>
+                <select formControlName="educacion">
+                  <option *ngFor="let opcion of opcionesEducacion" [value]="opcion">{{ opcion }}</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Modalidad</span>
+                <select formControlName="modalidad">
+                  <option value="Presencial">Presencial</option>
+                  <option value="Remoto">Remoto</option>
+                  <option value="Hibrido">Híbrido</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Salario</span>
+                <input type="number" formControlName="salario" placeholder="12000" />
+              </label>
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <div class="section-title-row">
+              <h3>Imagen de la vacante</h3>
+              <p>Cambia o quita la imagen que verán los postulantes.</p>
+            </div>
+
+            <div class="edit-image-card">
+              <div class="edit-image-preview">
+                <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa de la vacante" />
+                <div *ngIf="!previewUrl" class="image-placeholder">
+                  <i class="bi bi-image"></i>
+                  <span>Sin imagen</span>
+                </div>
+              </div>
+
+              <div class="edit-image-actions">
+                <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+
+                <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                  {{ fileName }}
+                </span>
+                <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                  Imagen guardada
+                </span>
+
+                <div class="image-buttons">
+                  <button type="button" class="ghost-btn" (click)="imagenInput.click()">
+                    {{ previewUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
+                  </button>
+                  <button type="button" class="ghost-btn" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+                    {{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}
+                  </button>
+                  <button type="button" class="ghost-btn danger-btn" *ngIf="previewUrl || mostrarEliminarImagen" (click)="eliminarImagen()">
+                    Quitar imagen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <div class="section-title-row">
+              <h3>Etiquetas</h3>
+              <p>Estas etiquetas ayudan a recomendar la vacante a perfiles afines.</p>
+            </div>
+
+            <div class="field full">
+              <div class="tags-grid">
+                <button *ngFor="let categoria of categoriasDisponibles" type="button" class="tag-chip"
+                  [class.active]="etiquetasSeleccionadas.includes(categoria)" (click)="toggleEtiqueta(categoria)">
+                  {{ categoria }}
+                </button>
+              </div>
+              <small *ngIf="campoInvalido('etiquetas')">Selecciona al menos una etiqueta.</small>
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <div class="section-title-row">
+              <h3>Ubicación</h3>
+              <p>Puedes actualizar la dirección de la vacante sin crearla de nuevo.</p>
+            </div>
+
+            <div class="field full">
+              <span>Código postal</span>
+              <input type="text" formControlName="codigo_postal" maxlength="5" (blur)="buscarCP()" />
+            </div>
+
+            <div class="grid">
+              <label class="field">
+                <span>Estado</span>
+                <input type="text" formControlName="estado" readonly />
+              </label>
+
+              <label class="field">
+                <span>Ciudad</span>
+                <input type="text" formControlName="ciudad" readonly />
+              </label>
+
+              <label class="field">
+                <span>Colonia</span>
+                <select formControlName="colonia">
+                  <option value="" disabled>Selecciona una colonia</option>
+                  <option *ngFor="let colonia of colonias" [value]="colonia">{{ colonia }}</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Calle</span>
+                <input type="text" formControlName="calle" />
+              </label>
+            </div>
+          </section>
+
+          <div class="form-actions sticky-actions">
+            <button class="ghost-btn" type="button" (click)="descartarCambios()" [disabled]="!hayCambiosPendientes">
+              Descartar cambios
+            </button>
+            <button class="primary-btn" type="submit" [disabled]="guardando">
+              {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <ng-template #noSelection>
+        <section class="editor-panel empty-state">
+          Selecciona una vacante para comenzar a editarla.
+        </section>
+      </ng-template>
+    </section>
+  </main>
+</div>

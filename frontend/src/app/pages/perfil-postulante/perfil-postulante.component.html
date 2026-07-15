@@ -1,0 +1,547 @@
+<div class="profile-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ navbarWelcomeName }}</span>
+    </div>
+   
+   <!--  <div class="search-container flex-grow-1 mx-4" *ngIf="isOwnProfile">
+      <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
+    </div> -->
+
+<div id="modalAlerta" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+
+      <div>
+        <form class="support-form"  #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+                <div class="support-grid">
+                
+                  <label class="support-field support-field-span-2">
+                    <span>Motivo</span>
+                    <select name="motivo" ngModel #motivo="ngModel" required>
+                      <option value="" disabled>Selecciona un motivo</option>
+                      <option value="perfil_falso">Perfil falso o suplantación</option>
+                      <option value="fraude">Posible fraude o estafa</option>
+                      <option value="contenido_inapropiado">Contenido inapropiado</option>
+                      <option value="acoso">Acoso o comportamiento ofensivo</option>
+                      <option value="spam">Spam</option>
+                      <option value="informacion_falsa">Información falsa en el perfil</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es
+                      obligatorio.</small>
+                  </label>
+
+                  <label class="support-field support-field-full">
+                    <span>Descripción del reporte.</span>
+                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
+                      placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."
+                      required></textarea>
+                    <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es
+                      obligatorio.</small>
+                  </label>
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                  <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                  <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
+                </div>
+                </form>
+      </div>
+    
+    </div>
+  </div>
+</div>
+
+<div id="modalSaludo" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalAceptar" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Adiós</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            
+            <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
+              <div *ngFor="let notif of notifications" 
+                   class="notification-item" 
+                   [class.unread]="!notif.read" 
+                   (click)="onNotificationClick(notif, $event)"
+                   style="cursor: pointer;">
+                <span class="notif-header">{{ notif.title }}</span>
+                <span class="notif-message">{{ notif.message }}</span>
+                <span class="notif-time">{{ notif.time }}</span>
+              </div>
+            </ng-container>
+
+            <ng-template #sinNotificaciones>
+              <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
+                <small>No tienes notificaciones nuevas.</small>
+              </div>
+            </ng-template>
+
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <ng-container *ngIf="isAdminView">
+          <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+        </ng-container>
+        <ng-container *ngIf="!isAdminView && isEmployerView">
+          <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
+          <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
+          <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a>
+          <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear vacante</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+        </ng-container>
+        <ng-container *ngIf="!isAdminView && !isEmployerView">
+          <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
+          <a routerLink="/perfil-postulante" class="desktop-menu-link active">Mi perfil</a>
+          <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+          <a routerLink="/borrador-servicio" class="desktop-menu-link">Mis borradores</a>
+          <a routerLink="/crear-servicio" class="desktop-menu-link"> Crear servicio</a>
+          <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+        </ng-container>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <ng-container *ngIf="isAdminView">
+            <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+          </ng-container>
+          <ng-container *ngIf="!isAdminView && isEmployerView">
+            <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+            <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+            <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+          </ng-container>
+          <ng-container *ngIf="!isAdminView && !isEmployerView">
+            <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
+            <a class="mobile-nav-link" routerLink="/perfil-postulante" (click)="toggleMenu()">Mi perfil</a>
+            <a class="mobile-nav-link" routerLink="/mis-favoritos" (click)="toggleMenu()">Mis favoritos</a>
+            <a class="mobile-nav-link" routerLink="/postulaciones" (click)="toggleMenu()">Mis postulaciones</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+          </ng-container>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <main class="profile-main">
+    <button class="back-button" type="button" (click)="volverPanel()">←</button>
+
+    <div *ngIf="cargando" class="status">Cargando perfil...</div>
+    <div *ngIf="!cargando && error" class="status error">{{ error }}</div>
+
+    <section *ngIf="!cargando && perfil" class="company-shell">
+      <article class="company-card">
+        <div class="company-main">
+          <div class="company-brand">
+            <div class="company-logo-box" style="border-radius: 50%; overflow: hidden; background: transparent;">
+              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+            </div>
+            <div class="company-info">
+              <h2>{{ perfil.nombre_postulante }} {{ perfil.apellido_paterno_postulante }}</h2>
+              <p class="subtitle">Candidato en Chambee</p>
+              <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
+              
+              <!-- Promedio de Calificación con estrellas -->
+              <div class="profile-rating-summary mt-2 d-flex align-items-center gap-2">
+                <div class="stars-display d-flex align-items-center">
+                  <ng-container *ngFor="let starState of getStarsArray(perfil.promedio_valoracion)">
+                    <i *ngIf="starState === 'full'" class="bi bi-star-fill star-icon yellow-star"></i>
+                    <i *ngIf="starState === 'half'" class="bi bi-star-half star-icon yellow-star"></i>
+                    <i *ngIf="starState === 'empty'" class="bi bi-star star-icon empty-star"></i>
+                  </ng-container>
+                </div>
+                <span class="rating-number fw-semibold">{{ perfil.promedio_valoracion || 0 | number:'1.1-1' }}</span>
+                <span class="rating-count text-muted">({{ perfil.total_valoraciones || 0 }} {{ (perfil.total_valoraciones === 1) ? 'calificación' : 'calificaciones' }})</span>
+              </div>
+            </div>
+          </div>
+          <button *ngIf="isEmployerView" class="report-btn" type="button" (click)="abrirModal()">Reportar cuenta</button>
+          <button *ngIf="isOwnProfile" class="edit-btn" type="button" (click)="editarPerfil()">Editar perfil</button>
+        </div>
+
+        <div class="company-details-grid">
+  <div class="detail-col">
+    <h3>Datos de contacto</h3>
+    <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
+    <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
+    <p *ngIf="!isEmployerView"><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
+  </div>
+
+  <div class="detail-col">
+    <h3>Gestión de C.V</h3>
+
+    <div *ngIf="perfil?.archivo_cv; else noCvMessage" class="mt-2 cv-section">
+      <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
+        <span>Ver C.V. del postulante</span>
+        <i class="bi bi-file-earmark-text"></i>
+      </a>
+      <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
+    </div>
+
+    <ng-template #noCvMessage>
+      <div class="mt-2 mb-3 cv-empty-section d-flex align-items-center gap-2 text-muted">
+        <i class="bi bi-file-earmark-x fs-5"></i>
+        <span style="font-size: 0.95rem; font-style: italic;">No hay ningún C.V. cargado</span>
+      </div>
+    </ng-template>
+
+    <ng-container *ngIf="isOwnProfile">
+      <input type="file" #cvInput accept="application/pdf" style="display: none"
+        (change)="onCvSelected($event)" />
+      <button class="inline-create-btn mb-3"
+        style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);"
+        type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
+        {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
+      </button>
+      <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
+        {{ cvMensaje }}
+      </div>
+    </ng-container>
+
+    <div *ngIf="isOwnProfile" class="cv-visibility-row">
+      <span class="cv-visibility-label">C.V. Público</span>
+
+      <label class="cv-switch" 
+             [class.cv-switch--on]="cvPublico" 
+             [attr.aria-label]="cvPublico ? 'CV público, click para hacer privado' : 'CV privado, click para hacer público'"
+             (click)="$event.preventDefault(); toggleCvVisibilidad()">
+        <input type="checkbox"
+               [checked]="cvPublico"
+               class="cv-switch__input"
+               readonly>
+        <span class="cv-switch__track">
+          <span class="cv-switch__thumb">
+            <svg *ngIf="cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg *ngIf="!cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+        </span>
+      </label>
+
+      <span class="cv-visibility-status" [class.cv-visibility-status--on]="cvPublico">
+        {{ cvPublico ? 'Activado' : 'Desactivado' }}
+      </span>
+    </div>
+
+  </div>
+
+  <div class="detail-col">
+    <h3>Información general</h3>
+    <p><strong>País:</strong> {{ perfil.pais }}</p>
+    <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
+    <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
+    <button *ngIf="isOwnProfile" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
+
+  </div>
+</div>
+
+<div *ngIf="perfil.descripcion" class="profile-description"
+  style="border-top: 1px solid var(--border-soft); padding: 18px 24px;">
+  <h3 style="margin: 0 0 8px; font-size: 1.1rem; color: var(--text-primary);">Sobre mí</h3>
+  <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">
+    {{ perfil.descripcion }}</p>
+</div>
+
+<div *ngIf="misEtiquetas && misEtiquetas.length > 0" class="profile-tags">
+  <h3>Intereses y Habilidades</h3>
+  <div class="tags-container">
+    <span class="tag-chip" *ngFor="let tag of misEtiquetas">{{ tag }}</span>
+  </div>
+</div>
+
+      </article>
+
+      <!-- Sección para calificar al postulante (solo para empleadores) -->
+      <article *ngIf="isEmployerView" class="rating-feedback-card mt-4">
+        <div class="card-header-premium">
+          <h3>Calificar a este Candidato</h3>
+          <p class="subtitle-premium">Comparte tu valoración y experiencia sobre este postulante con otras empresas.</p>
+        </div>
+        <div class="card-body-premium">
+          <!-- Estrellas Interactivas -->
+          <div class="interactive-stars-row">
+            <span class="rating-label">Tu Calificación:</span>
+            <div class="stars-interactive d-flex gap-2">
+              <button 
+                *ngFor="let starIndex of [1, 2, 3, 4, 5]" 
+                type="button" 
+                class="star-btn" 
+                (click)="setRating(starIndex)"
+                (mouseenter)="setHover(starIndex)"
+                (mouseleave)="setHover(0)"
+                [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'"
+              >
+                <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
+              </button>
+            </div>
+            <span *ngIf="ratingSeleccionado > 0" class="rating-text fw-semibold ms-2">
+              {{ ratingSeleccionado }} {{ ratingSeleccionado === 1 ? 'estrella' : 'estrellas' }}
+            </span>
+          </div>
+
+          <!-- Comentario Opcional -->
+          <div class="comment-field mt-3">
+            <label for="comentario-empleador" class="form-label fw-medium">Escribe una opinión (opcional):</label>
+            <textarea 
+              id="comentario-empleador" 
+              class="form-control premium-textarea" 
+              rows="3" 
+              placeholder="Ej. Excelente comunicación, actitud proactiva y muy profesional en la entrevista..." 
+              [(ngModel)]="nuevoComentario"
+            ></textarea>
+          </div>
+
+          <!-- Acciones -->
+          <div class="actions-row mt-3 d-flex align-items-center gap-3">
+            <button 
+              type="button" 
+              class="btn btn-premium-submit" 
+              [disabled]="ratingEnviando || ratingSeleccionado === 0"
+              (click)="enviarCalificacion()"
+            >
+              {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
+            </button>
+            <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
+            <span *ngIf="ratingError" class="text-danger small">{{ ratingError }}</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sección de opiniones (visible para todos) -->
+      <article class="reviews-list-card mt-4">
+        <div class="card-header-premium">
+          <h3>Opiniones de Empresas</h3>
+          <p class="subtitle-premium">Historial de calificaciones y comentarios recibidos por este candidato.</p>
+        </div>
+        <div class="card-body-premium">
+          <div *ngIf="!perfil.valoraciones_recibidas || perfil.valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
+            <i class="bi bi-chat-left-heart display-6 text-muted"></i>
+            <p class="mt-2 text-muted">Este postulante aún no ha recibido calificaciones ni comentarios de empresas.</p>
+          </div>
+
+          <div *ngIf="perfil.valoraciones_recibidas && perfil.valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
+            <div *ngFor="let rev of perfil.valoraciones_recibidas" class="review-item-premium p-3">
+              <div class="review-header d-flex justify-content-between align-items-start">
+                <div class="reviewer-info d-flex align-items-center gap-2">
+                  <div class="reviewer-logo-box">
+                    <img [src]="rev.foto_empresa || 'assets/LogoChambee.png'" alt="Logo Empresa" class="reviewer-logo" />
+                  </div>
+                  <div>
+                    <h4 class="reviewer-name mb-0">{{ rev.nombre_empresa }}</h4>
+                    <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                <div class="review-stars-display d-flex gap-1">
+                  <i *ngFor="let s of [1,2,3,4,5]" 
+                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
+                  ></i>
+                </div>
+                  <div *ngIf="!isEmployerView || (isEmployerView && usuarioActual?.id === rev.id_empleador)" class="review-menu-wrapper">
+                    <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
+                      <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
+                      <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
+                        <i class="bi bi-trash3"></i> Eliminar
+                      </button>
+                    </div>
+                  </div> 
+                  </div>
+              </div>
+              <div *ngIf="rev.comentario" class="review-comment mt-2">
+                <p class="mb-0">{{ rev.comentario }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section *ngIf="!cargando && perfil && isOwnProfile" class="announcements-shell">
+      <div class="tabs-ceja">
+        <div class="tabs-bar">
+          <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
+            (click)="setActiveTab('postulaciones')">
+            Mis postulaciones <span class="tab-count">{{ postulaciones.length || 0 }}</span>
+          </button>
+          <button class="tab" type="button" [class.active]="activeTab === 'favoritos'"
+            (click)="setActiveTab('favoritos')">
+            Mis favoritos <span class="tab-count">{{ favoritos.length || 0 }}</span>
+          </button>
+          <button class="tab" type="button" [class.active]="activeTab === 'historial'"
+            (click)="setActiveTab('historial')">
+            Historial <span class="tab-count">{{ vistosRecientemente.length || 0 }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="announcements-content">
+        <ng-container [ngSwitch]="activeTab">
+
+          <ng-container *ngSwitchCase="'postulaciones'">
+            <div class="section-head">
+              <h3>Postulaciones activas</h3>
+              <button class="inline-create-btn" type="button" (click)="buscarEmpleos()">Buscar más empleos</button>
+            </div>
+
+            <div *ngIf="!postulaciones || postulaciones.length === 0" class="alert alert-info"
+              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+              Aún no tienes postulaciones realizadas. ¡Empieza a buscar empleo!
+            </div>
+
+            <div class="announcements-row" *ngIf="postulaciones.length > 0">
+              <article class="announcement-card" *ngFor="let post of postulaciones">
+                <img [src]="post.imagen" alt="Empresa" />
+                <div class="announcement-copy">
+                  <div class="card-top">
+                    <strong>{{ post.empresa }}</strong>
+                    <span class="state-pill" [ngClass]="getApplicationStateClass(post.estado)">{{ post.estado }}</span>
+                  </div>
+                  <p class="vacancy-title">{{ post.vacante }}</p>
+                  <p class="vacancy-meta">Ubicación: {{ post.ubicacion }} • Postulado el: {{ post.fecha }}</p>
+                  <p>{{ post.resumen }}</p>
+                  <p class="meta mt-2"><strong>Postulantes:</strong> {{ post.candidatos }} en total</p>
+                </div>
+              </article>
+            </div>
+            <div class="section-footer" *ngIf="postulaciones.length > 0">
+              <button class="see-more" type="button">Ver todas mis postulaciones</button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'favoritos'">
+            <div class="section-head">
+              <h3>Vacantes guardadas</h3>
+            </div>
+
+            <div *ngIf="!favoritos || favoritos.length === 0" class="alert alert-info"
+              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+              No tienes vacantes guardadas en favoritos.
+            </div>
+
+            <div class="announcements-row" *ngIf="favoritos.length > 0">
+              <article class="announcement-card" *ngFor="let fav of favoritos" (click)="verVacante(fav.id)"
+                role="button" tabindex="0">
+                <img [src]="fav.imagen" alt="Cover" />
+                <div class="announcement-copy">
+                  <div class="card-top">
+                    <strong class="vacancy-entreprise">{{ fav.empresa }}</strong>
+                  </div>
+                  <p class="vacancy-title">{{ fav.vacante }}</p>
+                  <p class="vacancy-meta">{{ fav.ubicacion }} • {{ fav.fecha }}</p>
+                  <p class="vacancy-description">{{ fav.resumen }}</p>
+                </div>
+              </article>
+            </div>
+            <div class="section-footer" *ngIf="favoritos.length > 0">
+              <button class="see-more" type="button">Ver más favoritos</button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'historial'">
+            <div class="section-head">
+              <h3>Historial de vacantes vistas</h3>
+            </div>
+
+            <div *ngIf="vistosRecientemente.length === 0" class="alert alert-info"
+              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+              Aún no tienes un historial de vacantes vistas recientemente.
+            </div>
+
+            <div class="announcements-row" *ngIf="vistosRecientemente.length > 0">
+              <article class="announcement-card" *ngFor="let job of vistosRecientemente" (click)="verVacante(job.id)"
+                role="button" tabindex="0">
+                <img [src]="job.imagen" alt="Cover" />
+                <div class="announcement-copy">
+                  <div class="card-top">
+                    <strong class="vacancy-entreprise">{{ job.empresa }}</strong>
+                  </div>
+                  <p class="vacancy-title">{{ job.vacante }}</p>
+                  <p class="vacancy-meta">{{ job.ubicacion }}</p>
+                  <p class="vacancy-description">{{ job.resumen }}</p>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+
+        </ng-container>
+      </div>
+    </section>
+  </main>
+  <button *ngIf="isOwnProfile" class="fab-create" type="button" (click)="buscarEmpleos()"
+    aria-label="Buscar empleos">
+    <span class="fab-plus"><i class="bi bi-search"></i></span>
+    <span class="fab-text">Buscar Empleos</span>
+  </button>
+</div>
+<div class="seguimiento-banner" *ngIf="mostrarBannerSeguimiento">
+  <div class="container banner-content">
+    <span class="banner-text">¿Te gustaría darle seguimiento a este postulante?</span>
+    <div class="banner-actions">
+      <button class="btn btn-outline-danger" (click)="rechazarSeguimiento()">Rechazar</button>
+      <button class="btn btn-outline-success"  (click)="aceptarSeguimiento()">Aceptar</button>
+    </div>
+  </div>
+</div>

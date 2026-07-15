@@ -1,0 +1,337 @@
+<div class="edit-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Postulante, {{ postulanteNombre }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar empleos, empresas, vacantes..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+              <span class="notif-header">{{ notif.title }}</span>
+              <span class="notif-message">{{ notif.message }}</span>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/inicio-postulante" class="desktop-menu-link">Panel principal</a>
+        <a routerLink="/perfil-postulante" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/buscar-empleos" class="desktop-menu-link">Buscar empleos</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/inicio-postulante" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil-postulante" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/buscar-empleos" (click)="toggleMenu()">Buscar empleos</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="edit-shell">
+    <header class="edit-header">
+      <div>
+        <p class="eyebrow">Perfil de usuario</p>
+        <h1>Editar perfil personal</h1>
+        <p class="intro">Mantén tu información actualizada para destacar entre los reclutadores y conseguir tu trabajo
+          ideal.</p>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="ghost-btn" (click)="volverPerfil()">Volver al perfil</button>
+      </div>
+    </header>
+
+    <section class="status-card" *ngIf="cargando">
+      Cargando información del perfil...
+    </section>
+
+    <section class="status-card error" *ngIf="!cargando && error">
+      {{ error }}
+    </section>
+
+    <section class="status-card success" *ngIf="!cargando && exito">
+      {{ exito }}
+    </section>
+
+    <form class="edit-form" *ngIf="!cargando" [formGroup]="perfilForm" (ngSubmit)="guardarCambios()">
+
+      <article class="form-card">
+        <div class="card-head">
+          <div class="logo-row">
+            <div class="logo-preview-wrapper">
+              <div class="logo-preview" style="border-radius: 50%;"> <img *ngIf="previewUrl" [src]="previewUrl"
+                  alt="Foto de perfil" />
+                <svg *ngIf="!previewUrl" width="32" height="32" fill="none" stroke="#b8960a" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="upload-content">
+              <p class="eyebrow">Foto de Perfil</p>
+              <h6 class="upload-hint">JPG, PNG · Máx. 2 MB · Se verá circular</h6>
+
+              <input #imagenInput type="file" accept="image/*" style="display:none"
+                (change)="onArchivoSeleccionado($event)" />
+
+              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                {{ fileName }}
+              </span>
+              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                ✓ Foto guardada
+              </span>
+              <div class="btn-group">
+                <button type="button" class="btn-secondary" (click)="imagenInput.click()">
+                  Elegir archivo
+                </button>
+                <button type="button" class="btn-primary-img" (click)="subirImagen()"
+                  [disabled]="!archivoSeleccionado || subiendoImagen">
+                  <span class="loading" [class.visible]="subiendoImagen"></span>
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+                </button>
+                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                  Eliminar
+                </button>
+              </div>
+
+              <div class="result" *ngIf="urlImagenSubida">
+                ✓ Imagen subida correctamente
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Información básica</p>
+            <h2>Datos Personales</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Nombre(s)</span>
+            <input type="text" formControlName="nombre_postulante" placeholder="Ej. Josue" />
+            <small *ngIf="campoInvalido('nombre_postulante')">Ingresa tu nombre.</small>
+          </label>
+
+          <label class="field">
+            <span>Apellido Paterno</span>
+            <input type="text" formControlName="apellido_paterno_postulante" placeholder="Apellido paterno" />
+            <small *ngIf="campoInvalido('apellido_paterno_postulante')">Ingresa tu apellido paterno.</small>
+          </label>
+
+          <label class="field">
+            <span>Apellido Materno</span>
+            <input type="text" formControlName="apellido_materno_postulante" placeholder="Apellido materno" />
+            <small *ngIf="campoInvalido('apellido_materno_postulante')">Ingresa tu apellido materno.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>Fecha de nacimiento</span>
+            <input readonly type="date" formControlName="fecha_nacimiento" />
+            <small *ngIf="campoInvalido('fecha_nacimiento')">Selecciona tu fecha de nacimiento.</small>
+          </label>
+
+          <label class="field">
+            <span>Sexo</span>
+            <select formControlName="sexo" class="form-control"
+              style="border-radius: 16px; border: 1px solid var(--border-soft); background: var(--input-bg); color: var(--text-primary); padding: 14px 16px;">
+              <option value="">Selecciona una opción</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro / Prefiero no decir</option>
+            </select>
+            <small *ngIf="campoInvalido('sexo')">Selecciona tu sexo.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Comunicación</p>
+            <h2>Datos de Contacto</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Correo electrónico</span>
+            <input type="email" formControlName="correo_electronico" placeholder="usuario@correo.com" />
+            <small *ngIf="campoInvalido('correo_electronico')">Escribe un correo válido.</small>
+          </label>
+
+          <label class="field">
+            <span>Teléfono</span>
+            <input type="text" formControlName="telefono" placeholder="Ej. 4151234567" pattern="^[0-9]{10}$"
+              maxlength="10" />
+            <small *ngIf="campoInvalido('telefono')">Ingresa un teléfono de contacto.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Ubicación</p>
+            <h2>Domicilio de residencia</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field field-locked">
+            <span>País</span>
+            <input type="text" formControlName="pais" placeholder="Ej. México" readonly />
+            <small *ngIf="campoInvalido('pais')">Ingresa tu país.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>Estado</span>
+            <input type="text" formControlName="estado" placeholder="Estado" readonly />
+            <small *ngIf="campoInvalido('estado')">Ingresa tu estado.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" placeholder="Ej. San Miguel de Allende" readonly />
+            <small *ngIf="campoInvalido('ciudad')">Ingresa tu ciudad.</small>
+          </label>
+
+          <label class="field">
+            <span>Colonia</span>
+            <select formControlName="colonia"
+              style="border-radius: 16px; border: 1px solid var(--border-soft); background: var(--input-bg); color: var(--text-primary); padding: 14px 16px; width: 100%;">
+              <option value="">Selecciona una colonia</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+            <small *ngIf="campoInvalido('colonia')">Selecciona tu colonia.</small>
+          </label>
+
+          <label class="field field-wide">
+            <span>Calle y número</span>
+            <input type="text" formControlName="calle" placeholder="Ej. Calle Hidalgo #123" />
+            <small *ngIf="campoInvalido('calle')">Ingresa tu calle.</small>
+          </label>
+
+          <label class="field">
+            <span>Código postal</span>
+            <input type="text" formControlName="codigo_postal" placeholder="C.P." (blur)="buscarCP()" maxlength="5" />
+            <small *ngIf="campoInvalido('codigo_postal')">Ingresa tu código postal.</small>
+          </label>
+        </div>
+      </article>
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Identidad</p>
+            <h2>Documentos Oficiales</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field field-locked">
+            <span>CURP</span>
+            <input type="text" formControlName="curp" placeholder="Tu CURP" readonly aria-readonly="true" />
+            <small class="locked-help">El CURP no se puede modificar una vez registrado.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>RFC</span>
+            <input type="text" formControlName="rfc" placeholder="Tu RFC" readonly aria-readonly="true" />
+            <small class="locked-help">El RFC no se puede modificar una vez registrado.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <p class="eyebrow">Preferencias</p>
+            <h2>Categorías de Interés</h2>
+            <p class="intro" style="font-size: 0.9rem; margin-top: 4px;">
+              Estas son las categorías de empleos que sigues para tus recomendaciones.
+            </p>
+          </div>
+          <button type="button" class="ghost-btn" style="border: 1px solid var(--border-soft);" (click)="editarCategorias()">Modificar Categorías</button>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
+          <span *ngFor="let cat of categoriasUsuario" style="background: var(--surface-hover, #f0f0f0); color: var(--text-primary, #333); padding: 6px 12px; border-radius: 16px; font-size: 0.9rem; border: 1px solid var(--border-soft, #ccc);">
+            {{ cat }}
+          </span>
+          <span *ngIf="categoriasUsuario.length === 0" style="color: var(--text-secondary, #666); font-size: 0.9rem; font-style: italic;">
+            No tienes categorías seleccionadas.
+          </span>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Presentación</p>
+            <h2>Sobre mí</h2>
+          </div>
+          <p class="intro" style="font-size: 0.9rem; margin-top: 4px;">
+            Escribe un breve resumen profesional. Piensa en esto como tu tarjeta de presentación.
+          </p>
+        </div>
+
+        <label class="field">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px;">
+            <span>Descripción profesional</span>
+            <span class="char-counter" [class.limit-reached]="(perfilForm.get('descripcion')?.value?.length || 0) >= 500">
+              {{ perfilForm.get('descripcion')?.value?.length || 0 }} / 500
+            </span>
+          </div>
+          
+          <textarea rows="6" 
+                    formControlName="descripcion"
+                    maxlength="500"
+                    placeholder="Cuéntale a los reclutadores sobre tu experiencia, habilidades principales y qué tipo de oportunidades buscas..."></textarea>
+          <small *ngIf="campoInvalido('descripcion')">La descripción no puede superar los 500 caracteres.</small>
+        </label>
+      </article>
+      <div class="form-actions">
+        <button type="button" class="ghost-btn" (click)="volverPerfil()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,1 +1,482 @@
 /* You can add global styles to this file, and also import other style files */
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  color-scheme: light;
+  --bg-app: #f5f5f5;
+  --surface-primary: #ffffff;
+  --surface-secondary: #f3f4f6;
+  --text-primary: #111111;
+  --text-secondary: #5f6368;
+  --border-soft: rgba(17, 17, 17, 0.08);
+  --navbar-bg: #fcce34;
+  --navbar-text: #111111;
+  --accent-surface: #f4c430;
+  --accent-text: #111111;
+  --accent-muted: #9a7a00;
+  --input-bg: #ffffff;
+  --button-primary-bg: #111111;
+  --button-primary-text: #ffffff;
+  --theme-toggle-bg: rgba(255, 255, 255, 0.55);
+  --theme-toggle-border: rgba(17, 17, 17, 0.16);
+  --theme-toggle-knob: #ffffff;
+  --theme-toggle-icon: #111111;
+  --dot-idle: rgba(17, 17, 17, 0.25);
+  --dot-active: #111111;
+  --overlay-bg: rgba(17, 17, 17, 0.2);
+  --overlay-bg-strong: rgba(0, 0, 0, 0.32);
+  --bubble-bg: linear-gradient(135deg, #111111 0%, #2b2b2b 100%);
+  --footer-bg: #111111;
+  --footer-text: #ffffff;
+  --footer-muted: rgba(255, 255, 255, 0.72);
+  --footer-border: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 10px 24px rgba(17, 17, 17, 0.06);
+  --shadow-hover: 0 12px 28px rgba(17, 17, 17, 0.14);
+  --shadow-float: 0 24px 60px rgba(17, 17, 17, 0.18);
+}
+
+body.dark-theme {
+  color-scheme: dark;
+  --bg-app: #0f1115;
+  --surface-primary: #181c22;
+  --surface-secondary: #232933;
+  --text-primary: #f4f7fb;
+  --text-secondary: #b1bac7;
+  --border-soft: rgba(255, 255, 255, 0.1);
+  --navbar-bg: #fcce34;
+  --navbar-text: #111111;
+  --accent-surface: #f0c542;
+  --accent-text: #111111;
+  --accent-muted: #d4a400;
+  --input-bg: #10141a;
+  --button-primary-bg: #f0c542;
+  --button-primary-text: #111111;
+  --theme-toggle-bg: rgba(255, 255, 255, 0.08);
+  --theme-toggle-border: rgba(255, 255, 255, 0.14);
+  --theme-toggle-knob: #f0c542;
+  --theme-toggle-icon: #111111;
+  --dot-idle: rgba(255, 255, 255, 0.26);
+  --dot-active: #f0c542;
+  --overlay-bg: rgba(4, 6, 10, 0.58);
+  --overlay-bg-strong: rgba(4, 6, 10, 0.72);
+  --bubble-bg: linear-gradient(135deg, #f0c542 0%, #d29d11 100%);
+  --footer-bg: #090b0f;
+  --footer-text: #f4f7fb;
+  --footer-muted: rgba(244, 247, 251, 0.74);
+  --footer-border: rgba(255, 255, 255, 0.08);
+  --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.32);
+  --shadow-card: 0 12px 28px rgba(0, 0, 0, 0.22);
+  --shadow-hover: 0 16px 30px rgba(0, 0, 0, 0.28);
+  --shadow-float: 0 28px 70px rgba(0, 0, 0, 0.35);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  margin: 0;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar-chambee {
+  color: var(--navbar-text);
+}
+
+body.dark-theme .navbar-chambee,
+body.dark-theme .navbar-chambee .menu,
+body.dark-theme .navbar-chambee .notification-bell,
+body.dark-theme .navbar-chambee .fs-5 {
+  color: var(--navbar-text) !important;
+}
+
+body.dark-theme .modal-content {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-float);
+}
+
+body.dark-theme .modal-content p {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .text-danger {
+  color: #f87171 !important;
+}
+
+body.dark-theme .text-success {
+  color: #86efac !important;
+}
+
+.navbar-chambee .search-container input {
+  border: 1px solid var(--border-soft) !important;
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+.navbar-chambee .search-container input::placeholder {
+  color: rgba(17, 17, 17, 0.58) !important;
+  opacity: 1 !important;
+}
+
+body.dark-theme .navbar-chambee .search-container input {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+body.dark-theme .navbar-chambee .search-container input::placeholder {
+  color: rgba(248, 250, 252, 0.72) !important;
+}
+
+body.dark-theme .navbar-chambee .desktop-menu,
+body.dark-theme .navbar-chambee .mobile-menu-panel {
+  background: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-soft) !important;
+}
+
+body.dark-theme .navbar-chambee .desktop-menu-link,
+body.dark-theme .navbar-chambee .mobile-nav-link {
+  color: var(--text-primary) !important;
+  background: transparent;
+}
+
+body.dark-theme .navbar-chambee .desktop-menu-link:hover,
+body.dark-theme .navbar-chambee .mobile-nav-link:hover {
+  background: var(--surface-secondary) !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"],
+.navbar-chambee .btn-profile,
+.navbar-chambee .btn-profile-navbar,
+.navbar-chambee .profile-chip {
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 6px 16px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(17, 17, 17, 0.16) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: #111111 !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"] span,
+.navbar-chambee .btn-profile span,
+.navbar-chambee .btn-profile-navbar span,
+.navbar-chambee .profile-chip span,
+.navbar-chambee button[title="Ir a mi perfil"] i,
+.navbar-chambee .btn-profile i,
+.navbar-chambee .btn-profile-navbar i,
+.navbar-chambee .profile-chip i {
+  color: #111111 !important;
+}
+
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"],
+body.dark-theme .navbar-chambee .btn-profile,
+body.dark-theme .navbar-chambee .btn-profile-navbar,
+body.dark-theme .navbar-chambee .profile-chip {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.22) !important;
+}
+
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"] span,
+body.dark-theme .navbar-chambee .btn-profile span,
+body.dark-theme .navbar-chambee .btn-profile-navbar span,
+body.dark-theme .navbar-chambee .profile-chip span,
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"] i,
+body.dark-theme .navbar-chambee .btn-profile i,
+body.dark-theme .navbar-chambee .btn-profile-navbar i,
+body.dark-theme .navbar-chambee .profile-chip i {
+  color: #ffffff !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"] img,
+.navbar-chambee .btn-profile img,
+.navbar-chambee .btn-profile-navbar img,
+.navbar-chambee .profile-chip img {
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  border: 2px solid rgba(255, 255, 255, 0.75) !important;
+}
+
+.navbar-chambee button[title="Ir a mi perfil"]:hover,
+.navbar-chambee .btn-profile:hover,
+.navbar-chambee .btn-profile-navbar:hover,
+.navbar-chambee .profile-chip:hover {
+  background: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+body.dark-theme .navbar-chambee button[title="Ir a mi perfil"]:hover,
+body.dark-theme .navbar-chambee .btn-profile:hover,
+body.dark-theme .navbar-chambee .btn-profile-navbar:hover,
+body.dark-theme .navbar-chambee .profile-chip:hover {
+  background: #0b1220 !important;
+}
+
+.container {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Formulario de soporte */
+.support-section {
+  margin-top: 56px;
+}
+
+.support-card {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+}
+
+.support-card-header {
+  margin-bottom: 22px;
+}
+
+.support-card-header h3,
+.support-card-header p,
+.support-field span {
+  margin: 0;
+}
+
+.support-card-header h3 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.support-card-header p {
+  color: var(--text-secondary);
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.support-eyebrow {
+  display: inline-block;
+  margin-bottom: 8px !important;
+  color: var(--accent-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.support-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.support-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.support-field span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.support-field input,
+.support-field select,
+.support-field textarea {
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font: inherit;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.support-field textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.support-field input:focus,
+.support-field select:focus,
+.support-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.18);
+}
+
+.support-field-full {
+  width: 100%;
+}
+
+.support-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.support-submit {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 28px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.support-submit:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .support-section {
+    margin-top: 44px;
+  }
+
+  .support-card {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .support-card-header h3 {
+    font-size: 24px;
+  }
+
+  .support-actions {
+    justify-content: stretch;
+  }
+
+  .support-submit {
+    width: 100%;
+  }
+}
+
+.home-footer {
+  margin-top: 56px;
+  background: var(--footer-bg);
+  color: var(--footer-text);
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 0;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 460px;
+}
+
+.footer-brand img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.footer-brand h4,
+.footer-brand p,
+.footer-bottom p {
+  margin: 0;
+}
+
+.footer-brand h4 {
+  margin-bottom: 6px;
+  font-size: 20px;
+}
+
+.footer-brand p {
+  color: var(--footer-muted);
+  line-height: 1.5;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.footer-links a {
+  color: var(--footer-text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--footer-border);
+  padding: 14px 0;
+}
+
+.footer-bottom p {
+  color: var(--footer-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-footer {
+    margin-top: 44px;
+  }
+
+  .footer-content {
+    padding: 24px 0;
+  }
+
+  .footer-brand {
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    gap: 14px;
+  }
+
+}

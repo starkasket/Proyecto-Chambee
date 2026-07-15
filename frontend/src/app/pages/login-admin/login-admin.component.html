@@ -1,0 +1,79 @@
+<div class="login-page">
+  <header class="top-nav">
+    <div class="logo-container">
+      <img src="assets/LogoChambee.png" alt="Logo" class="nav-logo" routerLink="/" style="cursor: pointer;">
+    </div>
+    <div class="theme-toggle-container" style="margin-left: auto;">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" style="border: none; background: transparent; padding: 0;">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <div id="modalSaludoAdmin" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3"/>
+          <h4 class="text-success fw-bold">¡Bienvenido Admin!</h4>
+          <p class="mb-0">Acceso concedido al panel de control.</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Entrar al Panel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalAlertaAdmin" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+          <h5 class="text-danger fw-bold">¡Atención!</h5>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="login-container">
+    <div class="login-card">
+      <button class="close-btn" type="button" routerLink="/">×</button>
+      
+      <div class="logo-section mb-2">
+        <img src="assets/Chambee_login.png" alt="Chambee" class="bee-img">
+        <h4 class="text-warning fw-bold mt-2">Acceso Administrativo</h4>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <div class="input-group">
+          <input type="email" formControlName="correo_electronico" placeholder="Correo corporativo">
+        </div>
+
+        <div class="input-group" style="position: relative;">
+          <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="contrasena" placeholder="Contraseña admin">
+          <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword = !mostrarPassword"></i>
+        </div>
+
+        <div class="options">
+          <label class="remember-me">
+            <input type="checkbox" formControlName="remember"> 
+            <span>Recordar Sesión</span>
+          </label>
+        </div>
+
+        <div class="button-group mt-3">
+          <button type="submit" class="btn-login-main w-100" style="background-color: #f5c536; color: #333;">Entrar al Panel</button>
+        </div>
+      </form>
+    </div>
+
+    <button class="admin-btn" type="button" routerLink="/login">Soy usuario normal</button>
+  </main>
+</div>

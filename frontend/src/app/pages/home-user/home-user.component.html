@@ -1,0 +1,668 @@
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+  <div class="d-flex align-items-center gap-3">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="48">
+    <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ nombre_postulante }}</span>
+  </div>
+  
+  <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Buscar categoría, puesto, ciudad y más..." 
+           [(ngModel)]="searchTerm"
+           (ngModelChange)="onSearchInput($event)"
+           (keydown.enter)="verTodosResultados()"
+           (blur)="cerrarBuscador()"
+           (focus)="showSearchDropdown = true" />
+    
+    <div *ngIf="showSearchDropdown" class="search-dropdown">
+      
+      <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+        <div class="search-dropdown-header">Búsquedas recientes</div>
+
+        <!-- SE CORRIGIÓ EL CLIC DEL HISTORIAL AQUÍ -->
+        <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
+          <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title fw-normal">{{ term }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="searchTerm.length > 0">
+        
+        <div *ngIf="searchResults.length === 0" class="search-empty">
+          No se encontraron resultados para "{{ searchTerm }}"
+        </div>
+
+        <!-- SE CORRIGIÓ EL CLIC DE RESULTADOS VIVOS AQUÍ -->
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()" (click)="irAResultado(result)">
+          <div class="search-item-icon">
+            <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+          </div>
+          <div class="search-item-content">
+            <!-- SOPORTE PARA TITLE Y TITULO -->
+            <div class="search-item-title" [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
+            <div class="search-item-subtitle">
+              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
+              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-see-all" (mousedown)="verTodosResultados()">
+          Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+ 
+  <div class="nav-buttons d-flex align-items-center gap-3">
+
+    <div class="notification-wrapper" style="position: relative;">
+
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
+        (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
+          viewBox="0 0 16 16" style="color: var(--text-color);">
+          <path
+            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+        </svg>
+        <span *ngIf="hasUnreadNotifications"
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+          style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+          <span class="visually-hidden">Nuevas alertas</span>
+        </span>
+      </div>
+
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+        style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+
+        <div
+          style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+        </div>
+
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications"
+            style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+            [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+            (click)="onNotificationClick(notif, $event)">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+          </div>
+
+          <div *ngIf="notifications.length === 0"
+            style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+            No tienes notificaciones nuevas
+          </div>
+        </div>
+
+        <div
+          style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas las
+            notificaciones</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn d-flex align-items-center gap-2"
+      style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
+      (click)="irAlPerfil()" title="Ir a mi perfil">
+      <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
+      <span class="d-none d-md-block">Mi perfil</span>
+    </button>
+
+    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
+      [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+      <span class="theme-toggle-track">
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+      </span>
+    </button>
+
+    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
+
+    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+      <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
+      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+      <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
+      <a routerLink="/crear-servicio" class="desktop-menu-link"> Crear servicio</a>
+      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+    </div>
+  </div>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+      <nav class="mobile-nav">
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
+        </div>
+        <hr />
+        <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+        <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <hr />
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+      </nav>
+    </aside>
+  </div>
+</nav>
+
+<div id="modalSaludo" class="modal" tabindex="-1"
+  style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+        <h4 class="text-success fw-bold">¡Eliminación exitosa!</h4>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalAlerta" class="modal" tabindex="-1"
+  style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
+  <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    
+    <button class="service-detail-close" (click)="cerrarDetalleServicio()" aria-label="Cerrar">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <div *ngIf="servicioDetalleCargando" class="service-detail-loading">
+      <div class="service-detail-spinner"></div>
+      <p>Cargando información del servicio...</p>
+    </div>
+
+    <div *ngIf="!servicioDetalleCargando && servicioDetalle" class="service-detail-content">
+      
+      <div class="service-detail-hero">
+        <img [src]="servicioDetalle.img || 'assets/LogoChambee.png'" [alt]="servicioDetalle.title" />
+        <div class="service-detail-hero-overlay">
+          <span class="service-detail-category-badge" *ngIf="servicioDetalle.categoria">
+            <i class="bi bi-tag-fill"></i> {{ servicioDetalle.categoria }}
+          </span>
+        </div>
+      </div>
+
+      <div class="service-detail-body">
+        
+        <h2 class="service-detail-title">{{ servicioDetalle.title }}</h2>
+
+        <div class="service-detail-badges">
+          <span class="service-detail-badge badge-budget" *ngIf="servicioDetalle.presupuesto">
+            <i class="bi bi-cash-stack"></i> {{ servicioDetalle.presupuesto }}
+          </span>
+          <span class="service-detail-badge badge-modality" *ngIf="servicioDetalle.modalidad">
+            <i class="bi bi-globe2"></i> {{ servicioDetalle.modalidad }}
+          </span>
+          <span class="service-detail-badge badge-urgency" *ngIf="servicioDetalle.urgencia">
+            <i class="bi bi-lightning-fill"></i> {{ servicioDetalle.urgencia }}
+          </span>
+        </div>
+
+        <div class="service-detail-section">
+          <h4><i class="bi bi-file-text"></i> Descripción</h4>
+          <p>{{ servicioDetalle.description || 'Sin descripción disponible.' }}</p>
+        </div>
+
+        <div class="service-detail-section" *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
+          <h4><i class="bi bi-geo-alt-fill"></i> Ubicación</h4>
+          <div class="service-detail-location-grid">
+            <div *ngIf="servicioDetalle.calle" class="location-item">
+              <span class="location-label">Calle</span>
+              <span class="location-value">{{ servicioDetalle.calle }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.colonia" class="location-item">
+              <span class="location-label">Colonia</span>
+              <span class="location-value">{{ servicioDetalle.colonia }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.ciudad" class="location-item">
+              <span class="location-label">Ciudad</span>
+              <span class="location-value">{{ servicioDetalle.ciudad }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.estado" class="location-item">
+              <span class="location-label">Estado</span>
+              <span class="location-value">{{ servicioDetalle.estado }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.codigo_postal" class="location-item">
+              <span class="location-label">Código Postal</span>
+              <span class="location-value">{{ servicioDetalle.codigo_postal }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.ubicacion" class="location-item">
+              <span class="location-label">Ubicación</span>
+              <span class="location-value">{{ servicioDetalle.ubicacion }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="service-detail-author" *ngIf="servicioDetalle.nombre_postulante || servicioDetalle.autor_id">
+          <div class="service-detail-author-card" (click)="verPerfilAutor(servicioDetalle.autor_id)" role="button" tabindex="0">
+            <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor" class="author-avatar" />
+            <div class="author-info">
+              <span class="author-label">Publicado por</span>
+              <span class="author-name">
+                {{ servicioDetalle.nombre_postulante || 'Usuario' }}
+                {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : '' }}
+              </span>
+            </div>
+            <i class="bi bi-chevron-right author-arrow"></i>
+          </div>
+        </div>
+
+        <div class="service-detail-date" *ngIf="servicioDetalle.fecha_creacion">
+          <i class="bi bi-calendar3"></i>
+          Publicado el {{ servicioDetalle.fecha_creacion | date:'d \'de\' MMMM, y':'':'es-MX' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container main-layout">
+  <div class="left">
+
+    <h2 class="mb-4" style="font-weight: 700; color: var(--text-color);">Recomendado para ti</h2>
+    <div class="d-flex flex-wrap gap-2 mb-4" *ngIf="etiquetasInteres.length">
+      <span class="featured-chip" *ngFor="let etiqueta of etiquetasInteres">Interés: {{ etiqueta }}</span>
+    </div>
+
+    <div class="carousel" *ngIf="slides.length; else noFeaturedJobs">
+      <div class="carousel-container">
+        <div class="carousel-slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
+          <div class="featured-card featured-clickable" (click)="openFeaturedJob(slide.id)" role="button" tabindex="0">
+            <div class="featured-upper">
+              <div class="featured-company">
+                <div class="featured-media">
+                  <img class="featured-image" [src]="slide.img" [alt]="slide.title" />
+                </div>
+
+                <div class="featured-company-copy">
+                  <h3>{{ slide.company }}</h3>
+                  <p>{{ slide.companyDescription }}</p>
+                </div>
+              </div>
+
+              <div class="featured-job">
+                <h3>{{ slide.title }}</h3>
+                <p><strong>Sueldo:</strong> {{ slide.salary }}</p>
+                <p><strong>Modalidad:</strong> {{ slide.mode }}</p>
+                <p><strong>Ubicación:</strong> {{ slide.location }}</p>
+                <p>{{ slide.description }}</p>
+              </div>
+            </div>
+
+            <div class="featured-content">
+              <div class="featured-meta">
+                <span class="featured-chip urgency-chip" *ngIf="slide.urgency">{{ slide.urgency }}</span>
+                <span class="featured-chip">{{ slide.company }}</span>
+                <span class="featured-chip">{{ slide.mode }}</span>
+                <span class="featured-chip">{{ slide.location }}</span>
+                <span class="featured-chip" *ngFor="let tag of slide.tags | slice:0:3">{{ tag }}</span>
+              </div>
+
+              <button class="btn featured-btn" (click)="openFeaturedJob(slide.id); $event.stopPropagation()">Ver
+                más</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="prev" (click)="prevSlide()" aria-label="Anterior"></button>
+      <button class="next" (click)="nextSlide()" aria-label="Siguiente"></button>
+
+      <div class="dots">
+        <span *ngFor="let slide of slides; let i = index" (click)="goToSlide(i)"
+          [class.active]="i === currentSlide"></span>
+      </div>
+    </div>
+
+    <ng-template #noFeaturedJobs>
+      <div class="empty-jobs-state">
+        Aún no hay ofertas publicadas.
+      </div>
+    </ng-template>
+
+    <div class="jobs-grid mt-5" *ngIf="jobs.length; else noJobsGrid">
+      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button"
+        tabindex="0">
+        <button
+          class="job-favorite-btn"
+          type="button"
+          [class.active]="isFavorite(job.id)"
+          [disabled]="isSavingFavorite(job.id)"
+          (click)="toggleFavorite(job, $event)"
+          [attr.title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
+          [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
+          <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
+        </button>
+        <img [src]="job.img" [alt]="job.company" />
+        <div class="job-content">
+          <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
+          <h4 class="job-company">{{ job.company }}</h4>
+          <p>{{ job.title }}</p>
+          <p class="salary">{{ job.salary }}</p>
+          <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
+            <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
+          </div>
+          <div class="job-footer">★ {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noJobsGrid>
+      <div class="empty-jobs-state">
+        Las nuevas vacantes aparecerán aquí en cuanto se publiquen.
+      </div>
+    </ng-template>
+
+    <div class="recently-viewed-section mt-5" *ngIf="vistosRecientemente.length > 0">
+      <h3 class="mb-4" style="font-weight: 700; color: var(--text-color);">Vistos recientemente</h3>
+      <div class="jobs-horizontal-scroll">
+        <div class="job-card" *ngFor="let job of vistosRecientemente" (click)="openJob(job.id)" role="button" tabindex="0">
+          <button
+            class="job-favorite-btn"
+            type="button"
+            [class.active]="isFavorite(job.id)"
+            [disabled]="isSavingFavorite(job.id)"
+            (click)="toggleFavorite(job, $event)"
+            [attr.title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
+            [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
+            <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
+          </button>
+          <img [src]="job.img" [alt]="job.company" />
+          <div class="job-content">
+            <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
+            <h4 class="job-company">{{ job.company }}</h4>
+            <p>{{ job.title }}</p>
+            <p class="salary">{{ job.salary }}</p>
+            <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
+              <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
+            </div>
+            <div class="job-footer">★ {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jobs-more" *ngIf="visibleCount < maxVisible">
+      <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>
+    </div>
+  </div>
+
+  <aside class="right services-desktop">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+      <h3 class="services-title" style="margin: 0;">Servicios y más</h3>
+
+      <button (click)="irACrearServicio()" title="Crear un nuevo servicio"
+        style="width: 45px; height: 45px; border-radius: 12px; border: none; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">
+        <span style="font-size: 32px; font-weight: 400; color: #333; line-height: 1; margin-top: -2px;">+</span>
+      </button>
+    </div>
+
+
+    <div class="service-card" *ngFor="let service of visibleServices; let idx = index"
+      (click)="openService(idx)" role="button" tabindex="0"
+      style="position: relative;">
+
+      <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+
+      <div style="flex: 1;">
+        <span *ngIf="service.es_borrador"
+          style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e;
+                 padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
+          Borrador
+        </span>
+        <h5 class="service-title">{{ service.title }}</h5>
+        <p class="service-desc">{{ service.description }}</p>
+        <span *ngIf="service.autor_id && service.autor_id === usuarioActualId"
+          style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi servicio</span>
+      </div>
+
+      <button
+        *ngIf="service.autor_id && service.autor_id === usuarioActualId"
+        (click)="toggleMenuServicio(idx, $event)"
+        style="position: absolute; top: 8px; right: 8px; background: none; border: none;
+               cursor: pointer; font-size: 1.2rem; color: var(--text-color); padding: 4px 8px;
+               border-radius: 6px; line-height: 1;"
+        title="Opciones"
+        aria-label="Opciones del servicio">
+        &#8942;
+      </button>
+
+      <div *ngIf="menuServicioAbierto === idx && service.autor_id === usuarioActualId"
+        (click)="$event.stopPropagation()"
+        style="position: absolute; top: 36px; right: 8px; background: var(--bg-color, #fff);
+               border: 1px solid var(--border-soft, #e0e0e0); border-radius: 10px;
+               box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 140px; overflow: hidden;">
+
+        <button
+          (click)="editarServicio(idx); menuServicioAbierto = null"
+          style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
+                 cursor: pointer; font-size: 0.9rem; color: var(--text-color, #333);
+                 display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+
+        <hr style="margin: 0; border-color: var(--border-soft, #eee);">
+
+        <button
+          (click)="eliminarServicio(idx); menuServicioAbierto = null"
+          style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
+                 cursor: pointer; font-size: 0.9rem; color: #e53e3e;
+                 display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-trash"></i> Eliminar
+        </button>
+      </div>
+    </div>
+
+    <div class="services-footer">
+      <button class="services-see-more" (click)="toggleServices()">
+        {{ servicesOpen ? 'Ver menos' : 'Ver más' }}
+      </button>
+    </div>
+  </aside>
+</div>
+<div *ngIf="servicesOpen" class="services-overlay" (click)="toggleServices()"></div>
+
+<section class="services-floating services-mobile">
+  <div class="services-panel" *ngIf="servicesOpen" (click)="$event.stopPropagation()">
+    <div class="services-panel-header">
+      <div>
+        <p class="services-panel-eyebrow">Chambee</p>
+        <h3>Servicios y más</h3>
+      </div>
+      <button class="services-close" (click)="toggleServices()" aria-label="Cerrar servicios">×</button>
+    </div>
+
+    <div class="services-list">
+      <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)"
+        role="button" tabindex="0" style="position: relative;">
+        <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+        <div style="flex: 1;">
+          <h5 class="service-title">{{ service.title }}</h5>
+          <p class="service-desc">{{ service.description }}</p>
+          <span *ngIf="service.autor_id && service.autor_id === usuarioActualId"
+            style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi servicio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
+    <span class="services-bubble-icon">✦</span>
+    <span class="services-bubble-text">Servicios</span>
+  </button>
+</section>
+
+
+<section class="support-section">
+  <div class="container">
+    <div class="support-card">
+      <div class="support-card-header">
+        <p class="support-eyebrow">Soporte Chambee</p>
+        <h3>Necesitas ayuda?</h3>
+        <p>Cuentanos que ocurre y te contactaremos lo antes posible.</p>
+      </div>
+
+      <form class="support-form" (ngSubmit)="enviarSoporte(form)" #form="ngForm">
+        <div class="support-grid">
+          <label class="support-field">
+            <span>Nombre completo</span>
+            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel"
+              placeholder="Ingresa tu nombre" required />
+            <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
+
+          <label class="support-field">
+            <span>Nombre de la empresa</span>
+            <input type="text" name="empresa" ngModel placeholder="Empresa o negocio" />
+          </label>
+
+          <label class="support-field">
+            <span>Teléfono</span>
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required
+              pattern="^[0-9]{10}$" maxlength="10" />
+            <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
+
+          <label class="support-field">
+            <span>Correo electrónico</span>
+            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required
+              email />
+            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo
+              válido.</small>
+          </label>
+
+          <label class="support-field support-field-span-2">
+            <span>Asunto</span>
+            <select name="asunto" ngModel #asunto="ngModel" required>
+              <option value="">Selecciona una opción</option>
+              <option value="error-cuenta">Problema con mi cuenta</option>
+              <option value="publicación">Problema con una publicación</option>
+              <option value="pagos">Pagos o suscripciones</option>
+              <option value="otro">Otro</option>
+            </select>
+            <small *ngIf="asunto.invalid && asunto.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
+
+          <label class="support-field support-field-full">
+            <span>Detalles del problema</span>
+            <textarea name="detalles" ngModel #detalles="ngModel" rows="5"
+              placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."
+              required></textarea>
+            <small *ngIf="detalles.invalid && detalles.touched" class="support-error">Este campo es
+              obligatorio.</small>
+          </label>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="support-submit" [disabled]="form.invalid">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section">
+  <div class="container">
+    <div class="faq-header">
+      <p class="faq-eyebrow">Ayuda Chambee</p>
+      <h3>Preguntas Frecuentes</h3>
+      <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item" (click)="toggleFaq(0)">
+        <div class="faq-question">
+          <h4>Como puedo postularme a un empleo?</h4>
+          <span>{{ faqOpen === 0 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 0" class="faq-answer">Solo debes seleccionar el empleo que te interesa y hacer
+          clic en "Postularme".</p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(1)">
+        <div class="faq-question">
+          <h4>Necesito crear una cuenta?</h4>
+          <span>{{ faqOpen === 1 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 1" class="faq-answer">Si, necesitas registrarte para poder aplicar a empleos o
+          publicar servicios.</p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(2)">
+        <div class="faq-question">
+          <h4>Publicar un empleo tiene costo?</h4>
+          <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 2" class="faq-answer">Depende del tipo de publicación. Ofrecemos opciones
+          gratuitas y premium.</p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(3)">
+        <div class="faq-question">
+          <h4>Como contacto soporte?</h4>
+          <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 3" class="faq-answer">Puedes usar el formulario de soporte que se encuentra arriba
+          en esta página.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="home-footer">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <img src="assets/LogoChambee.png" alt="Chambee" />
+      <div>
+        <h4>Chambee</h4>
+        <p>Plataforma líder para encontrar empleo y servicios en un solo lugar.</p>
+      </div>
+    </div>
+
+    <nav class="footer-links" aria-label="Enlaces del footer">
+      <a routerLink="/jobs">Trabajos</a>
+      <a routerLink="/services">Servicios</a>
+      <a routerLink="/contact">Contacto</a>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container">
+      <p>© 2026 Chambee. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>

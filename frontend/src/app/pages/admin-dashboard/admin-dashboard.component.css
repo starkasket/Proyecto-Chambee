@@ -1,0 +1,322 @@
+/* Layout Principal */
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--bg-app);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Navbar */
+.admin-header {
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+  height: 70px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  z-index: 10;
+}
+
+.header-actions{
+    position: relative;
+}
+
+.theme-toggle {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.theme-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--theme-toggle-bg);
+  border: 1px solid var(--theme-toggle-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob);
+  color: var(--theme-toggle-icon);
+  transform: translateX(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-size: 12px;
+}
+
+:host-context(body.dark-theme) .theme-toggle-icon {
+  transform: translateX(18px);
+}
+
+/* Cuerpo Admin (Sidebar + Contenido) */
+.admin-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: 250px;
+  background-color: var(--surface-primary);
+  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  padding-top: 2rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 2rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.sidebar-link i {
+  font-size: 1.5rem;
+}
+
+.sidebar-link:hover, .sidebar-link.active {
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.admin-profile-icon {
+  color: var(--text-primary);
+}
+
+/* Main Content */
+.admin-content {
+  flex: 1;
+  padding: 2rem 3rem;
+  overflow-y: auto;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+
+.page-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Tarjetas Blancas (Cards) */
+.admin-card {
+  background-color: var(--surface-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-soft);
+}
+
+.card-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--surface-secondary);
+}
+
+/* Tablas */
+.admin-table {
+  width: 100%;
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  border-bottom: 2px solid var(--border-soft);
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0.75rem 0.5rem;
+  background-color: var(--surface-primary);
+}
+
+.admin-table td {
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0.75rem 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+:host-context(body.dark-theme) .admin-layout {
+  background-color: var(--bg-app);
+}
+
+:host-context(body.dark-theme) .admin-sidebar {
+  background-color: #11161f;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+:host-context(body.dark-theme) .sidebar-link {
+  color: var(--text-secondary);
+}
+
+:host-context(body.dark-theme) .sidebar-link:hover,
+:host-context(body.dark-theme) .sidebar-link.active {
+  background-color: #1f2937;
+  color: var(--text-primary);
+}
+
+:host-context(body.dark-theme) .admin-card {
+  background-color: #151b24;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+  border-color: rgba(255,255,255,0.08);
+}
+
+:host-context(body.dark-theme) .admin-content {
+  background-color: var(--bg-app);
+}
+
+:host-context(body.dark-theme) .admin-table th,
+:host-context(body.dark-theme) .admin-table td {
+  border-color: rgba(255,255,255,0.08);
+}
+
+:host-context(body.dark-theme) .admin-table th {
+  background-color: #11161f;
+  color: var(--text-secondary);
+}
+
+:host-context(body.dark-theme) .admin-table td {
+  background-color: transparent;
+}
+
+:host-context(body.dark-theme) .btn-view {
+  background-color: #f5c536;
+  color: #111;
+}
+
+:host-context(body.dark-theme) .btn-view:hover {
+  background-color: #e5b526;
+}
+
+:host-context(body.dark-theme) .notification-list li {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+}
+
+.btn {
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+.btn-suspend {
+  background-color: #a0a0a0;
+}
+
+.btn-suspend:hover {
+  background-color: #888888;
+}
+
+.btn-delete {
+  background-color: #cc4444;
+}
+
+.btn-delete:hover {
+  background-color: #aa3333;
+}
+
+/* Lista de notificaciones */
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.notification-list li:last-child {
+  border-bottom: none;
+}
+
+.notification-list li i {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.btn-view {
+  background-color: #f5c536;
+  color: #333;
+}
+
+.btn-view:hover {
+  background-color: #e5b526;
+  color: #000;
+}
+
+.menu{
+  color:black;
+  font-size:26px;
+  cursor:pointer;
+}
+
+.desktop-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-float);
+  padding: 8px 6px;
+  z-index: 2200;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.desktop-menu-link {
+  display: block;
+  padding: 8px 10px;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.desktop-menu-link:hover,.desktop-menu-link.active  {
+  background: var(--surface-secondary);
+}
+
+.desktop-menu-divider {
+  height: 1px;
+  background: var(--border-soft);
+  margin: 6px 0;
+}

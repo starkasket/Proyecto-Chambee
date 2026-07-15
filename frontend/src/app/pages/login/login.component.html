@@ -1,0 +1,82 @@
+<div class="login-page">
+  <header class="top-nav">
+    <div class="logo-container">
+      <img src="assets/LogoChambee.png" alt="Logo" class="nav-logo" routerLink="/" style="cursor: pointer;">
+    </div>
+    <div class="theme-toggle-container" style="margin-left: auto;">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" style="border: none; background: transparent; padding: 0;">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
+        </span>
+      </button>
+    </div>
+  </header>
+
+   <div id="modalSaludo" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3"/>
+        <h4 class="text-success fw-bold">¡Inició sesión con éxito!</h4>
+        <p class="mb-0">¡Bienvenido de nuevo a Chambee!</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalAlerta" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <main class="login-container">
+    <div class="login-card">
+      <button class="close-btn" type="button" routerLink="/">×</button>
+      
+      <div class="logo-section">
+        <img src="assets/Chambee_login.png" alt="Chambee" class="bee-img">
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <div class="input-group">
+          <input type="email" formControlName="correo_electronico" placeholder="Correo">
+        </div>
+
+        <div class="input-group" style="position: relative;">
+          <input [type]="mostrarPassword ? 'text' : 'password'" formControlName="contrasena" placeholder="Contraseña">
+          <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword = !mostrarPassword"></i>
+        </div>
+
+        <div class="options">
+          <label class="remember-me">
+            <input type="checkbox" formControlName="remember"> 
+            <span>Recordar Sesión</span>
+          </label>
+        </div>
+
+        <div class="forgot-password">
+          <a routerLink="/forgot-password">¿Olvidé mi contraseña?</a>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn-login-main">Iniciar Sesión</button>
+          <button type="button" class="btn-register-main" routerLink="/register">Registrar</button>
+        </div>
+      </form>
+    </div>
+
+<button class="admin-btn" type="button" routerLink="/login-admin">Administrador</button>  </main>
+</div>

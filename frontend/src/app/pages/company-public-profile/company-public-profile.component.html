@@ -1,0 +1,323 @@
+<div class="company-public-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3" routerLink="/home-user" style="cursor: pointer;">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span> <!-- , {{ nombrePostulante }} -->
+    </div>
+
+<div id="modalAlerta" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ modalMensaje }}</p>
+      </div>
+
+      <div>
+        <form class="support-form"  #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+                <div class="support-grid">
+                
+                  <label class="support-field support-field-span-2">
+                    <span>Motivo</span>
+                    <select name="motivo" ngModel #motivo="ngModel" required>
+                      <option value="" disabled>Selecciona un motivo</option>
+                      <option value="perfil_falso">Perfil falso o suplantación</option>
+                      <option value="fraude">Posible fraude o estafa</option>
+                      <option value="contenido_inapropiado">Contenido inapropiado</option>
+                      <option value="acoso">Acoso o comportamiento ofensivo</option>
+                      <option value="spam">Spam</option>
+                      <option value="oferta_engañosa">Oferta de empleo engañosa</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es
+                      obligatorio.</small>
+                  </label>
+
+                  <label class="support-field support-field-full">
+                    <span>Descripción del reporte.</span>
+                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
+                      placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."
+                      required></textarea>
+                    <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es
+                      obligatorio.</small>
+                  </label>
+                </div>
+
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                  <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                  <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
+                </div>
+                </form>
+      </div>
+    
+    </div>
+  </div>
+</div>
+
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notification of notifications" class="notification-item" [class.unread]="!notification.read">
+              <span class="notif-header">{{ notification.title }}</span>
+              <span class="notif-message">{{ notification.message }}</span>
+              <span class="notif-time">{{ notification.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="profile-chip" type="button" (click)="irAlPerfil()">
+        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" />
+        <i *ngIf="!fotoPostulante" class="bi bi-person-circle"></i>
+        <span class="d-none d-md-inline">Mi perfil</span>
+      </button>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menu" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
+        <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+        <a (click)="irAFavoritos()" class="desktop-menu-link" style="cursor: pointer;">Mis favoritos</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <button class="mobile-close" aria-label="Cerrar menu" (click)="toggleMenu()">x</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
+          <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+          <a class="mobile-nav-link" (click)="irAFavoritos()" style="cursor: pointer;">Mis favoritos</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <main class="company-public-main">
+    <button class="back-button" type="button" (click)="goBack()" aria-label="Regresar">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <div *ngIf="cargando" class="status">Cargando perfil de empresa...</div>
+    <div *ngIf="!cargando && error" class="status error">{{ error }}</div>
+
+    <section *ngIf="!cargando && perfil" class="company-shell">
+      <article class="company-card">
+        <div class="company-main">
+          <div class="company-brand">
+            <div class="company-logo-box">
+              <img [src]="perfil.foto_perfil || 'assets/LogoChambee.png'" alt="Logo de empresa" />
+            </div>
+            <div class="company-info">
+              <p class="eyebrow">Perfil de empresa</p>
+              <h1>{{ perfil.nombre_empresa }}</h1>
+              <p class="subtitle">Empresa registrada en Chambee</p>
+              <p class="location">
+                <i class="bi bi-geo-alt"></i>
+                {{ ubicacionGeneral || 'Ubicacion no disponible' }}
+              </p>
+              
+            </div>
+          </div>
+          <button *ngIf="usuarioActual?.rol === 'postulante'" class="report-btn" type="button"  (click)="abrirModal()" >Reportar cuenta</button> <!-- (click)="" -->
+
+          <div class="company-stat">
+            <strong>{{ perfil.vacantes_activas || anuncios.length }}</strong>
+            <span>vacantes activas</span>
+          </div>
+        </div>
+
+        <div class="company-details-grid">
+          <div class="detail-col">
+            <h3>Acerca de la empresa</h3>
+            <p>{{ descripcionVisible }}</p>
+            <button type="button" class="link-btn" *ngIf="(perfil.descripcion || '').length > 220" (click)="toggleDescripcion()">
+              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver mas' }}
+            </button>
+          </div>
+
+          <div class="detail-col">
+            <h3>Direccion</h3>
+            <p><strong>Direccion:</strong><br />{{ direccionVisible || 'Sin especificar' }}</p>
+            <p><strong>Ciudad:</strong> {{ perfil.ciudad || 'Sin especificar' }}</p>
+            <p><strong>Estado:</strong> {{ perfil.estado || 'Sin especificar' }}</p>
+          </div>
+
+          <div class="detail-col">
+            <h3>Informacion visible</h3>
+            <p>Este perfil muestra solo datos publicos de la empresa y sus vacantes activas.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section *ngIf="!cargando && perfil" class="yellow-shell announcements-section-wrapper">
+      <div class="announcements-shell">
+        <div class="section-head">
+          <div>
+            <p class="section-eyebrow">Oportunidades disponibles</p>
+            <h2>Vacantes para postularte</h2>
+          </div>
+        </div>
+
+        <div class="announcements-row" *ngIf="anuncios.length; else noCompanyJobs">
+          <article class="announcement-card" *ngFor="let anuncio of anuncios" (click)="verVacante(anuncio.id_anuncio)" role="button" tabindex="0">
+            <img [src]="anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'" [alt]="anuncio.titulo" />
+            <div class="announcement-copy">
+              <div class="card-top">
+                <strong>{{ anuncio.titulo }}</strong>
+                <span class="state-pill">{{ anuncio.urgencia || 'Normal' }}</span>
+              </div>
+              <p class="vacancy-meta">{{ anuncio.calle || anuncio.ciudad }}, {{ anuncio.ciudad }}, {{ anuncio.estado }} | {{ formatearFecha(anuncio.fecha_publicacion) }}</p>
+              <p class="vacancy-description">{{ anuncio.descripcion }}</p>
+              <p class="salary">{{ formatearSalario(anuncio.salario) }}</p>
+              <div class="job-tags" *ngIf="anuncio.categorias?.length">
+                <span class="job-tag" *ngFor="let tag of anuncio.categorias | slice:0:3">{{ tag }}</span>
+              </div>
+              <button class="see-job-btn" type="button" (click)="verVacante(anuncio.id_anuncio); $event.stopPropagation()">Ver vacante</button>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #noCompanyJobs>
+          <div class="empty-state">Esta empresa no tiene vacantes activas por ahora.</div>
+        </ng-template>
+      </div>
+    </section>
+
+
+    <!-- Sección para calificar al empleador (solo postulantes) -->
+    <section *ngIf="!cargando && perfil && usuarioActual?.rol === 'postulante'" class="rating-section-shell">
+      <div class="yellow-shell">
+      <article class="rating-feedback-card">
+        <div class="card-header-premium">
+          <h3>Calificar a esta Empresa</h3>
+          <p class="subtitle-premium">Comparte tu experiencia con esta empresa para ayudar a otros postulantes.</p>
+        </div>
+        <div class="card-body-premium">
+          <div class="interactive-stars-row">
+            <span class="rating-label">Tu Calificación:</span>
+            <div class="stars-interactive d-flex gap-2">
+              <button
+                *ngFor="let starIndex of [1, 2, 3, 4, 5]"
+                type="button"
+                class="star-btn"
+                (click)="setRating(starIndex)"
+                (mouseenter)="setHover(starIndex)"
+                (mouseleave)="setHover(0)"
+                [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'"
+              >
+                <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
+              </button>
+            </div>
+            <span *ngIf="ratingSeleccionado > 0" class="rating-text fw-semibold ms-2">
+              {{ ratingSeleccionado }} {{ ratingSeleccionado === 1 ? 'estrella' : 'estrellas' }}
+            </span>
+          </div>
+
+          <div class="comment-field mt-3">
+            <label for="comentario-postulante" class="form-label fw-medium">Escribe una opinión (opcional):</label>
+            <textarea
+              id="comentario-postulante"
+              class="form-control premium-textarea"
+              rows="3"
+              placeholder="Ej. Proceso de selección transparente, buen ambiente de trabajo, comunicación profesional..."
+              [(ngModel)]="nuevoComentario"
+            ></textarea>
+          </div>
+
+          <div class="actions-row mt-3 d-flex align-items-center gap-3">
+            <button
+              type="button"
+              class="btn btn-premium-submit"
+              [disabled]="ratingEnviando || (ratingSeleccionado === 0 && !nuevoComentario.trim())"
+              (click)="enviarCalificacion()"
+            >
+              {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
+            </button>
+            <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
+            <span *ngIf="ratingError" class="text-danger small">{{ ratingError }}</span>
+          </div>
+        </div>
+      </article>
+      </div>
+
+      <!-- Opiniones de postulantes -->
+      <div class="yellow-shell mt-4">
+      <article class="reviews-list-card">
+        <div class="card-header-premium">
+          <h3>Opiniones de Postulantes</h3>
+          <p class="subtitle-premium">Calificaciones y comentarios de candidatos que interactuaron con esta empresa.</p>
+        </div>
+        <div class="card-body-premium">
+          <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
+            <i class="bi bi-chat-left-heart display-6 text-muted"></i>
+            <p class="mt-2 text-muted">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
+          </div>
+
+          <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
+            <div *ngFor="let rev of valoraciones_recibidas" class="review-item-premium p-3">
+              <div class="review-header d-flex justify-content-between align-items-start">
+                <div class="reviewer-info d-flex align-items-center gap-2">
+                  <div class="reviewer-logo-box">
+                    <img [src]="rev.foto_postulante || 'assets/LogoChambee.png'" alt="Foto Postulante" class="reviewer-logo" />
+                  </div>
+                  <div>
+                    <h4 class="reviewer-name mb-0">{{ rev.nombre_postulante }}</h4>
+                    <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
+                  </div>
+                </div>
+                <!-- Menú 3 puntos: creador del comentario o dueño del perfil -->
+                <div class="review-menu-wrapper"
+                     *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
+                  <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
+                    <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
+                      <i class="bi bi-trash3"></i> Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Estrellas y comentario unidos en un bloque visual -->
+              <div class="review-body mt-2">
+                <div class="review-stars-display d-flex gap-1 mb-1">
+                  <i *ngFor="let s of [1,2,3,4,5]"
+                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
+                  ></i>
+                </div>
+                <div *ngIf="rev.comentario" class="review-comment">
+                  <p class="mb-0">{{ rev.comentario }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+      </div>
+    </section>
+  </main>
+</div>

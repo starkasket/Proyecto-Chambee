@@ -1,0 +1,33 @@
+{
+  "name": "proyecto-chambee",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "docker compose up --build",
+    "frontend": "npm start --prefix frontend",
+    "backend": "npm run dev --prefix backend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "leaflet": "^1.9.4",
+    "nodemailer": "^8.0.2",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/jasmine": "^6.0.0",
+    "@types/leaflet": "^1.9.21",
+    "eslint": "^10.5.0",
+    "globals": "^17.7.0",
+    "jasmine-core": "^6.3.0",
+    "nodemon": "^3.1.14",
+    "typescript-eslint": "^8.62.0"
+  }
+}

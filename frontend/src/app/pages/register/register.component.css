@@ -1,0 +1,218 @@
+/* NAVBAR */
+.navbar-chambee {
+  background-color: var(--navbar-bg) !important;
+  width: 100% !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+}
+
+/* FONDO GENERAL */
+.page-bg {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/assets/FondoFormularios.png'); 
+  background-size: cover;
+  background-position: center;
+}
+
+/* DECORACIÓN DE LA CARD */
+.fondo-registro-card {
+  padding: 40px;
+  border-radius: 25px;
+  background-color: color-mix(in srgb, var(--accent-surface) 28%, var(--surface-primary));
+}
+
+.registro-card {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 35px;
+  width: 100%;
+  max-width: 650px;
+  position: relative;
+  box-shadow: var(--shadow-card);
+}
+
+/* TABS (BOTONES SUPERIORES) */
+.tipo-tabs {
+  display: flex;
+  border: 2px solid var(--button-primary-bg);
+  border-radius: 30px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.tab-postulante {
+  background: var(--button-primary-bg) !important;
+  color: var(--button-primary-text) !important;
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+}
+
+.tab-empleador {
+ background: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+}
+
+/* INPUTS PERSONALIZADOS */
+.form-control-custom {
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  padding: 10px 18px;
+  width: 100%;
+  margin-bottom: 12px;
+  font-size: 14px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.section-label, .dir-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* BOTÓN CREAR CUENTA */
+.btn-crear {
+  background-color: var(--accent-surface) !important;
+  color: var(--accent-text) !important;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 60px;
+  font-weight: 700;
+  display: block;
+  margin: 30px auto 0;
+  cursor: pointer;
+}
+
+.btn-close-custom {
+  position: absolute;
+  top: 11px;
+  right: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+.btn-crear:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input-with-icon { position: relative; }
+.eye-icon {
+  position: absolute;
+  right: 18px;
+  top: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* ── MODALES ANGULAR ── */
+.rg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.rg-modal-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.rg-modal-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+}
+
+.rg-modal-overlay.visible .rg-modal-card {
+  transform: scale(1);
+}
+
+.rg-modal-img {
+  height: 150px;
+  margin-bottom: 16px;
+}
+
+.rg-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+.rg-modal-title.success { color: #2e7d32; }
+.rg-modal-title.error   { color: #c62828; }
+
+.rg-modal-msg {
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.rg-modal-btn {
+  background: #FCCE34;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 36px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.rg-modal-btn:hover {
+  background: #e5b92d;
+}
+
+.support-error {
+  margin-left: 10px;
+  color: #d93025;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* --- ADAPTACIONES PARA EL MODO OSCURO --- */
+
+
+:host-context(body.dark-theme) .page-bg {
+  background-image: url('/assets/login_fondo_Negro.png');
+}
+
+
+:host-context(body.dark-theme) .fondo-registro-card {
+ 
+  background-color: transparent;
+  padding: 0; 
+  
+}

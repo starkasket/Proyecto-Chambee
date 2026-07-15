@@ -1,0 +1,270 @@
+<div class="edit-page">
+
+  <!-- MODAL DE ERROR (Código postal no encontrado) -->
+  <div id="modalAlerta" class="modal" tabindex="-1" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaAlerta.png" alt="alerta" height="180" class="mb-3" />
+          <h5 class="text-danger fw-bold">¡Atención!</h5>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ empresaNombre }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+          <div class="notifications-title">Notificaciones</div>
+          <div class="notifications-list">
+            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+              <span class="notif-header">{{ notif.title }}</span>
+              <span class="notif-message">{{ notif.message }}</span>
+              <span class="notif-time">{{ notif.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
+        <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/post-job" class="desktop-menu-link">Crear oferta</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="edit-shell">
+    <header class="edit-header">
+      <div>
+        <p class="eyebrow">Perfil de empleador</p>
+        <h1>Editar perfil de empresa</h1>
+        <p class="intro">Actualiza la informacion de tu empresa para que tu perfil y tu panel se mantengan al dia.</p>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="ghost-btn" (click)="volverPerfil()">Volver al perfil</button>
+      </div>
+    </header>
+
+    <section class="status-card" *ngIf="cargando">
+      Cargando informacion del perfil...
+    </section>
+
+    <section class="status-card error" *ngIf="!cargando && error">
+      {{ error }}
+    </section>
+
+    <section class="status-card success" *ngIf="!cargando && exito">
+      {{ exito }}
+    </section>
+
+    <form class="edit-form" *ngIf="!cargando" [formGroup]="perfilForm" (ngSubmit)="guardarCambios()">
+      <article class="form-card">
+        <div class="card-head">
+          <div class="logo-row">
+
+            <div class="logo-preview-wrapper">
+              <div class="logo-preview">
+                <img *ngIf="previewUrl" [src]="previewUrl" alt="Logo de la empresa" />
+                <svg *ngIf="!previewUrl" width="32" height="32" fill="none" stroke="#b8960a" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+
+            </div>
+
+            <div class="upload-content">
+              <p class="eyebrow">Logo de la Empresa</p>
+              <h6 class="upload-hint">JPG, PNG o SVG · Máx. 2 MB · Recomendado 200×200 px</h6>
+
+              <input #imagenInput type="file" accept="image/*" style="display:none"
+                (change)="onArchivoSeleccionado($event)" />
+
+              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                {{ fileName }}
+              </span>
+              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                ✓ Logo guardado
+              </span>
+              <div class="btn-group">
+                <button type="button" class="btn-secondary" (click)="imagenInput.click()">
+                  Elegir archivo
+                </button>
+                <button type="button" class="btn-primary-img" (click)="subirImagen()"
+                  [disabled]="!archivoSeleccionado || subiendoImagen">
+                  <span class="loading" [class.visible]="subiendoImagen"></span>
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+                </button>
+                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                  Eliminar
+                </button>
+              </div>
+
+              <div class="result" *ngIf="urlImagenSubida">
+                ✓ Imagen subida correctamente
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Datos principales</p>
+            <h2>Identidad de la empresa</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Nombre de la empresa</span>
+            <input type="text" formControlName="nombre_empresa" placeholder="Ej. Chambee Mexico" />
+            <small *ngIf="campoInvalido('nombre_empresa')">Ingresa el nombre de la empresa.</small>
+          </label>
+
+          <label class="field">
+            <span>Correo electronico</span>
+            <input type="email" formControlName="correo_electronico" placeholder="empresa@correo.com" />
+            <small *ngIf="campoInvalido('correo_electronico')">Escribe un correo valido.</small>
+          </label>
+
+          <label class="field">
+            <span>Telefono</span>
+            <input type="text" formControlName="telefono" placeholder="4151234567" pattern="^[0-9]{10}$"
+              maxlength="10" />
+            <small *ngIf="campoInvalido('telefono')">Ingresa un telefono de contacto.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>RFC</span>
+            <input type="text" formControlName="rfc" placeholder="RFC de la empresa" readonly aria-readonly="true" />
+            <small class="locked-help">El RFC no se puede modificar una vez registrado.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Ubicación</p>
+            <h2>Domicilio de residencia</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field field-locked">
+            <span>País</span>
+            <input type="text" formControlName="pais" placeholder="Ej. México" readonly />
+            <small *ngIf="campoInvalido('pais')">Ingresa tu país.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>Estado</span>
+            <input type="text" formControlName="estado" placeholder="Estado" readonly />
+            <small *ngIf="campoInvalido('estado')">Ingresa tu estado.</small>
+          </label>
+
+          <label class="field field-locked">
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" placeholder="Ej. San Miguel de Allende" readonly />
+            <small *ngIf="campoInvalido('ciudad')">Ingresa tu ciudad.</small>
+          </label>
+
+          <label class="field">
+            <span>Colonia</span>
+            <select formControlName="colonia"
+              style="border-radius: 16px; border: 1px solid var(--border-soft); background: var(--input-bg); color: var(--text-primary); padding: 14px 16px; width: 100%;">
+              <option value="">Selecciona una colonia</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+            <small *ngIf="campoInvalido('colonia')">Selecciona tu colonia.</small>
+          </label>
+
+          <label class="field field-wide">
+            <span>Calle y número</span>
+            <input type="text" formControlName="calle" placeholder="Ej. Calle Hidalgo #123" />
+            <small *ngIf="campoInvalido('calle')">Ingresa tu calle.</small>
+          </label>
+
+          <label class="field">
+            <span>Código postal</span>
+            <input type="text" formControlName="codigo_postal" placeholder="C.P." (blur)="buscarCP()" maxlength="5" />
+            <small *ngIf="campoInvalido('codigo_postal')">Ingresa tu código postal.</small>
+          </label>
+        </div>
+      </article>
+
+      <article class="form-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Presentacion</p>
+            <h2>Descripcion de empresa</h2>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Descripcion</span>
+          <textarea rows="6" formControlName="descripcion"
+            placeholder="Cuenta a los candidatos quien eres, que hace tu empresa y por que deberian postularse."></textarea>
+          <small *ngIf="campoInvalido('descripcion')">La descripcion es demasiado larga.</small>
+        </label>
+      </article>
+
+      <div class="form-actions">
+        <button type="button" class="ghost-btn" (click)="volverPerfil()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <button class="fab-create" type="button" (click)="crearOferta()" aria-label="Crear oferta laboral">
+    <span class="fab-plus">+</span>
+    <span class="fab-text">Crear oferta</span>
+  </button>
+</div>

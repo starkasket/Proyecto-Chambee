@@ -1,0 +1,388 @@
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+  <div class="d-flex align-items-center gap-2">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="48">
+  </div>
+
+  <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Buscar categoría, puesto, ciudad y más..." 
+           [value]="searchTerm"
+           (input)="onSearchInput($event)"
+           (keydown.enter)="verTodosResultados()"
+           (blur)="cerrarBuscador()"
+           (focus)="showSearchDropdown = true" />
+    
+    <div *ngIf="showSearchDropdown" class="search-dropdown">
+      
+      <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+        <div class="search-dropdown-header">Búsquedas recientes</div>
+        <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
+          <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title fw-normal">{{ term }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="searchTerm.length > 0">
+        
+        <div *ngIf="searchResults.length === 0" class="search-empty">
+          No se encontraron resultados para "{{ searchTerm }}"
+        </div>
+
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="irAResultado(result)">
+          <div class="search-item-icon">
+            <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+          </div>
+          <div class="search-item-content">
+            <div class="search-item-title" [innerHTML]="highlightText(result.title, searchTerm)"></div>
+            <div class="search-item-subtitle">
+              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
+              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? result.company : (result.categoria || 'Servicio General'), searchTerm)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-see-all" (mousedown)="verTodosResultados()">
+          Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons d-flex align-items-center gap-3">
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="toggleTheme()"
+      [attr.aria-pressed]="isDarkMode"
+      [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+      <span class="theme-toggle-track">
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+      </span>
+    </button>
+
+    <button *ngIf="!isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
+    <button *ngIf="!isMobile" class="btn register" routerLink="/register">Registrarse</button>
+
+    <div class="menu fs-4" (click)="toggleMenu()" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
+
+    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+      <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
+      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+      <a routerLink="/post-job" class="desktop-menu-link">Publicar empleo</a>
+      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <div class="desktop-menu-divider"></div>
+      <a routerLink="/login" class="desktop-menu-link">Iniciar Sesión</a>
+      <a routerLink="/register" class="desktop-menu-link">Registrarse</a>
+    </div>
+  </div>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+      <nav class="mobile-nav">
+        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+        <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
+        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <hr />
+        <a class="mobile-nav-link" routerLink="/login" (click)="toggleMenu()">Iniciar Sesión</a>
+        <a class="mobile-nav-link" routerLink="/register" (click)="toggleMenu()">Registrarse</a>
+      </nav>
+    </aside>
+  </div>
+</nav>
+
+<div *ngIf="modalLoginVisible" class="login-required-backdrop">
+  <div class="login-required-modal">
+    <img src="assets/abejaAlerta.png" alt="alerta" height="140" class="mb-3" />
+    <h5>¡Inicia sesión primero!</h5>
+    <p>
+      Para interactuar con la plataforma necesitas una cuenta en Chambee.
+    </p>
+    <div class="login-required-actions">
+      <button type="button" class="login-required-cancel" (click)="cerrarModalLogin()">
+        Cancelar
+      </button>
+      <button type="button" class="login-required-submit" (click)="irAlLogin()">
+        Iniciar Sesión
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container main-layout">
+  <div class="left">
+    <div class="carousel" *ngIf="slides.length; else noFeaturedJobs">
+      <div class="carousel-container">
+        <div class="carousel-slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
+          <div class="featured-card featured-clickable" (click)="openFeaturedJob(slide.id)" role="button" tabindex="0">
+            <div class="featured-upper">
+              <div class="featured-company">
+                <div class="featured-media">
+                  <img class="featured-image" [src]="slide.img" [alt]="slide.title" />
+                </div>
+                <div class="featured-company-copy">
+                  <h3>{{ slide.company }}</h3>
+                  <p>{{ slide.companyDescription }}</p>
+                </div>
+              </div>
+
+              <div class="featured-job">
+                <h3>{{ slide.title }}</h3>
+                <p><strong>Sueldo:</strong> {{ slide.salary }}</p>
+                <p><strong>Modalidad:</strong> {{ slide.mode }}</p>
+                <p><strong>Ubicación:</strong> {{ slide.location }}</p>
+                <p>{{ slide.description }}</p>
+              </div>
+            </div>
+
+            <div class="featured-content">
+              <div class="featured-meta">
+                <span class="featured-chip urgency-chip" *ngIf="slide.urgency">{{ slide.urgency }}</span>
+                <span class="featured-chip">{{ slide.company }}</span>
+                <span class="featured-chip">{{ slide.mode }}</span>
+                <span class="featured-chip">{{ slide.location }}</span>
+              </div>
+              <button class="btn featured-btn" (click)="openFeaturedJob(slide.id); $event.stopPropagation()">Ver más</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="prev" (click)="prevSlide()" aria-label="Anterior"></button>
+      <button class="next" (click)="nextSlide()" aria-label="Siguiente"></button>
+
+      <div class="dots">
+        <span *ngFor="let slide of slides; let i = index" (click)="goToSlide(i)" [class.active]="i === currentSlide"></span>
+      </div>
+    </div>
+
+    <ng-template #noFeaturedJobs>
+      <div class="empty-jobs-state">
+        Aún no hay ofertas publicadas.
+      </div>
+    </ng-template>
+
+    <div class="jobs-grid" *ngIf="jobs.length; else noJobsGrid">
+      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button" tabindex="0">
+        <img [src]="job.img" [alt]="job.company" />
+        <div class="job-content">
+          <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
+          <h4>{{ job.company }}</h4>
+          <p>{{ job.title }}</p>
+          <p class="salary">{{ job.salary }}</p>
+          <div class="job-footer"><i class="bi bi-star-fill"></i> {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noJobsGrid>
+      <div class="empty-jobs-state">
+        Las nuevas vacantes aparecerán aquí en cuanto se publiquen.
+      </div>
+    </ng-template>
+
+    <div class="jobs-more" *ngIf="visibleCount < maxVisible">
+      <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>
+    </div>
+  </div>
+
+  <aside class="right services-desktop">
+    <h3 class="services-title">Servicios y más</h3>
+    <div class="services-list services-list-desktop">
+      <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
+        <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+        <div>
+          <h5 class="service-title">{{ service.title }}</h5>
+          <p class="service-desc">{{ service.description }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="services-footer">
+      <button class="services-see-more" (click)="toggleServices()">
+        {{ servicesOpen ? 'Ver menos' : 'Ver más' }}
+      </button>
+    </div>
+  </aside>
+</div>
+
+<div *ngIf="servicesOpen" class="services-overlay" (click)="toggleServices()"></div>
+
+<section class="services-floating services-mobile">
+  <div class="services-panel" *ngIf="servicesOpen" (click)="$event.stopPropagation()">
+    <div class="services-panel-header">
+      <div>
+        <p class="services-panel-eyebrow">Chambee</p>
+        <h3>Servicios y más</h3>
+      </div>
+      <button class="services-close" (click)="toggleServices()" aria-label="Cerrar servicios">×</button>
+    </div>
+
+    <div class="services-list">
+      <div class="service-card" *ngFor="let service of services; let idx = index" (click)="openService(idx)" role="button" tabindex="0">
+        <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
+        <div>
+          <h5 class="service-title">{{ service.title }}</h5>
+          <p class="service-desc">{{ service.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
+    <span class="services-bubble-icon"><i class="bi bi-stars"></i></span>
+    <span class="services-bubble-text">Servicios</span>
+  </button>
+</section>
+
+<section class="support-section">
+  <div class="container">
+    <div class="support-card">
+      <div class="support-card-header">
+        <p class="support-eyebrow">Soporte Chambee</p>
+        <h3>¿Necesitas ayuda?</h3>
+        <p>Cuéntanos qué ocurre y te contactaremos lo antes posible.</p>
+      </div>
+
+      <form class="support-form" (ngSubmit)="enviarSoporte(form)" #form="ngForm">
+        <div class="support-grid">
+          <label class="support-field">
+            <span>Nombre completo</span>
+            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel" placeholder="Ingresa tu nombre" required />
+            <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+
+          <label class="support-field">
+            <span>Empresa</span>
+            <input type="text" name="empresa" ngModel placeholder="Empresa o negocio" />
+          </label>
+
+          <label class="support-field">
+            <span>Teléfono</span>
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required pattern="^[0-9]{10}$" maxlength="10"/>
+            <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+
+          <label class="support-field">
+            <span>Correo electrónico</span>
+            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required email />
+            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo válido.</small>
+          </label>
+
+          <label class="support-field support-field-span-2">
+            <span>Asunto</span>
+            <select name="asunto" ngModel #asunto="ngModel" required>
+              <option value="">Selecciona una opción</option>
+              <option value="error-cuenta">Problema con mi cuenta</option>
+              <option value="publicación">Problema con una publicación</option>
+              <option value="pagos">Pagos o suscripciones</option>
+              <option value="otro">Otro</option>
+            </select>
+            <small *ngIf="asunto.invalid && asunto.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+
+          <label class="support-field support-field-full">
+            <span>Detalles del problema</span>
+            <textarea
+              name="detalles"
+              ngModel
+              #detalles="ngModel"
+              rows="5"
+              placeholder="Describe lo que ocurre, cuando sucede y cualquier dato util para revisarlo."
+              required></textarea>
+            <small *ngIf="detalles.invalid && detalles.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="support-submit" [disabled]="form.invalid">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section">
+  <div class="container">
+    <div class="faq-header">
+      <p class="faq-eyebrow">Ayuda Chambee</p>
+      <h3>Preguntas Frecuentes</h3>
+      <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item" (click)="toggleFaq(0)">
+        <div class="faq-question">
+          <h4>¿Cómo puedo postularme a un empleo?</h4>
+          <span>{{ faqOpen === 0 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 0" class="faq-answer">
+          Solo debes seleccionar el empleo que te interesa y hacer clic en "Postularme".
+        </p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(1)">
+        <div class="faq-question">
+          <h4>¿Necesito crear una cuenta?</h4>
+          <span>{{ faqOpen === 1 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 1" class="faq-answer">
+          Sí, necesitas registrarte para poder aplicar a empleos o publicar servicios.
+        </p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(2)">
+        <div class="faq-question">
+          <h4>¿Publicar un empleo tiene costo?</h4>
+          <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 2" class="faq-answer">
+          Depende del tipo de publicación. Ofrecemos opciones gratuitas y premium.
+        </p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(3)">
+        <div class="faq-question">
+          <h4>¿Cómo contacto soporte?</h4>
+          <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 3" class="faq-answer">
+          Puedes usar el formulario de soporte que se encuentra arriba en esta página.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="home-footer">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <img src="assets/LogoChambee.png" alt="Chambee" />
+      <div>
+        <h4>Chambee</h4>
+        <p>Plataforma líder para encontrar empleo y servicios en un solo lugar.</p>
+      </div>
+    </div>
+
+    <nav class="footer-links" aria-label="Enlaces del footer">
+      <a routerLink="/jobs">Trabajos</a>
+      <a routerLink="/services">Servicios</a>
+      <a routerLink="/contact">Contacto</a>
+      <a routerLink="/login">Iniciar Sesión</a>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container">
+      <p>© 2026 Chambee. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>

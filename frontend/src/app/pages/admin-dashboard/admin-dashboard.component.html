@@ -1,0 +1,236 @@
+<div class="admin-layout">
+  <header class="navbar-chambee admin-header d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-2">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48">
+    </div>
+
+    <div class="header-actions d-flex align-items-center gap-3">
+      <button class="theme-toggle admin-theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+        <span class="theme-toggle-track"><span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span></span>
+      </button>
+      <span class="fs-5 fw-semibold">{{ nombreAdmin }}</span>
+      <i class="bi bi-person-circle fs-2 admin-profile-icon"></i>
+   
+          <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/admin" class="desktop-menu-link">Panel principal</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
+    
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        </nav>
+      </aside>
+    </div>
+     </div>
+  </header>
+
+  <div class="admin-body">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active">
+          <i class="bi bi-people-fill"></i> Usuarios
+        </a>
+        <a href="#" class="sidebar-link">
+          <i class="bi bi-briefcase"></i> Empleos
+        </a>
+        <a href="#" class="sidebar-link">
+          <i class="bi bi-file-earmark-text"></i> Reportes
+        </a>
+        <a href="#" class="sidebar-link">
+          <i class="bi bi-gear"></i> Configuracion
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <h2 class="page-title mb-4">Vista General</h2>
+
+      <div class="admin-card mb-4">
+        <h4 class="card-title">Usuarios Reportados</h4>
+        <div *ngIf="cargandoReportes" class="text-center my-3">
+          <span>Cargando reportes...</span>
+        </div>
+        <div *ngIf="errorReportes" class="alert alert-danger my-3">
+          {{ errorReportes }}
+        </div>
+        
+        <div *ngIf="!cargandoReportes && !errorReportes" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Motivo</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let reporte of perfilesReportados">
+                <td>
+                  {{ reporte.nombre_postulante || 'Desconocido' }} 
+                  {{ reporte.apellido_paterno_postulante || '' }}
+                </td>
+                <td><span class="badge bg-warning text-dark">{{ reporte.motivo }}</span></td>
+                <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ reporte.descripcion }}">
+                  {{ reporte.descripcion }}
+                </td>
+                <td>{{ reporte.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilPostulante(reporte.id_postulante_reportado)">Revisar</button>
+                  <button class="btn btn-suspend" (click)="suspenderCuenta(reporte.id_postulante_reportado)">Suspender</button>
+                </td>
+              </tr>
+              <tr *ngIf="perfilesReportados.length === 0">
+                <td colspan="5" class="text-center">No hay reportes de perfiles en este momento.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card mb-4">
+        <h4 class="card-title">Postulantes Registrados</h4>
+        <div *ngIf="cargandoPostulantes" class="text-center my-3">
+          <span>Cargando postulantes...</span>
+        </div>
+        <div *ngIf="errorPostulantes" class="alert alert-danger my-3">
+          {{ errorPostulantes }}
+        </div>
+        <div *ngIf="!cargandoPostulantes && !errorPostulantes" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Nombre completo</th>
+                <th>Correo electrónico</th>
+                <th>Teléfono</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let post of postulantes">
+                <td>{{ post.nombre_postulante }} {{ post.apellido_paterno_postulante }} {{ post.apellido_materno_postulante }}</td>
+                <td>{{ post.correo_electronico }}</td>
+                <td>{{ post.telefono }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilPostulante(post.id_postulante)">Ver perfil completo</button>
+                </td>
+              </tr>
+              <tr *ngIf="postulantes.length === 0">
+                <td colspan="4" class="text-center">No hay postulantes registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card mb-4">
+        <h4 class="card-title">Empresas Registradas</h4>
+        <div *ngIf="cargandoEmpresas" class="text-center my-3">
+          <span>Cargando empresas...</span>
+        </div>
+        <div *ngIf="errorEmpresas" class="alert alert-danger my-3">
+          {{ errorEmpresas }}
+        </div>
+        <div *ngIf="!cargandoEmpresas && !errorEmpresas" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Nombre de la empresa</th>
+                <th>RFC</th>
+                <th>Correo electrónico</th>
+                <th>Teléfono</th>
+                <th>Ubicación</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of empresas">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img *ngIf="emp.foto_perfil" [src]="emp.foto_perfil" alt="Logo" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                    <i *ngIf="!emp.foto_perfil" class="bi bi-building fs-5 text-muted"></i>
+                    <span>{{ emp.nombre_empresa }}</span>
+                  </div>
+                </td>
+                <td>{{ emp.rfc }}</td>
+                <td>{{ emp.correo_electronico }}</td>
+                <td>{{ emp.telefono }}</td>
+                <td>{{ emp.ciudad }}, {{ emp.estado }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilEmpresa(emp.id_empleador)">Ver perfil completo</button>
+                </td>
+              </tr>
+              <tr *ngIf="empresas.length === 0">
+                <td colspan="6" class="text-center">No hay empresas registradas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <div class="admin-card mb-4">
+        <h4 class="card-title">Anuncios Reportados</h4>
+        <div *ngIf="cargandoReportesAnuncios" class="text-center my-3">
+          <span>Cargando reportes de anuncios...</span>
+        </div>
+        <div *ngIf="errorReportesAnuncios" class="alert alert-danger my-3">
+          {{ errorReportesAnuncios }}
+        </div>
+
+        <div *ngIf="!cargandoReportesAnuncios && !errorReportesAnuncios" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Título del anuncio</th>
+                <th>Razón principal</th>
+                <th>Detalle (opcional)</th>
+                <th>Fecha de reporte</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let anuncio of anunciosReportados">
+                <td class="fw-bold">{{ anuncio.titulo }}</td>
+                <td><span class="badge bg-danger">{{ anuncio.razon }}</span></td>
+                <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ anuncio.descripcion }}">
+                  {{ anuncio.descripcion || 'Sin detalles adicionales' }}
+                </td>
+                <td>{{ anuncio.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view me-2" (click)="verAnuncio(anuncio.id_anuncio)" style="background-color: #6c757d; color: white;">Revisar</button>
+                  <button class="btn btn-delete" (click)="eliminarAnuncio(anuncio.id_anuncio)">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="anunciosReportados.length === 0">
+                <td colspan="5" class="text-center text-muted">No hay anuncios reportados actualmente.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h4 class="card-title">Notificaciones de reporte recientes</h4>
+        <ul class="notification-list">
+          <li *ngFor="let notif of notificaciones">
+            <i class="bi bi-bell"></i>
+            <span>{{ notif.mensaje }}</span>
+          </li>
+        </ul>
+      </div>
+
+    </main>
+  </div>
+</div>

@@ -1,0 +1,288 @@
+<div class="offer-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, Mi perfil de servicios</span>
+    </div>
+
+    <!-- <div class="search-container flex-grow-1 mx-4">
+      <input type="text" class="form-control" placeholder="Buscar servicios, oficios, herramientas..." />
+    </div>
+ -->
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" (click)="irAlPerfil()">
+        <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
+        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">Mi perfil</span>
+      </button>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+        </span>
+      </button>
+
+      
+ <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
+
+    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+      <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
+      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+      <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
+      <a routerLink="/crear-servicio" class="desktop-menu-link active"> Crear servicio</a>
+      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+    </div>
+  </div>
+
+  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+      <nav class="mobile-nav">
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
+        </div>
+        <hr />
+        <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+        <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <hr />
+        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+      </nav>
+    </aside>
+  </div>
+  </nav>
+
+  <!-- MODAL DE ÉXITO -->
+  <div id="modalSaludo" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+          <h4 class="text-success fw-bold">¡Operación exitosa!</h4>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ERROR -->
+  <div id="modalAlerta" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+          <h5 class="text-danger fw-bold">¡Atención!</h5>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="offer-shell">
+    <header class="offer-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Panel de candidato</p>
+        <h1> {{ titulo }} </h1>
+        <p>Publica un oficio o servicio técnico para que la comunidad y empresas puedan contactarte directamente.</p>
+      </div>
+
+      <div class="hero-actions">
+        <button type="button" class="ghost-btn" (click)="volverPanel()">Volver al inicio</button>
+      </div>
+    </header>
+
+    <form class="offer-layout" [formGroup]="servicioForm">
+      <!-- PANEL IZQUIERDO: INFORMACIÓN PRINCIPAL -->
+      <article class="offer-card offer-main">
+        <div class="card-head">
+          <p class="eyebrow">Detalles</p>
+          <h2>Información principal</h2>
+        </div>
+
+        <label class="field">
+          <span>Nombre del servicio que ofreces</span>
+          <input type="text" formControlName="title" placeholder="Ej. Instalaciones eléctricas y mantenimiento" />
+          <small *ngIf="campoInvalido('title')">Escribe un título descriptivo y claro para tu servicio.</small>
+        </label>
+
+        <label class="field">
+          <span>Descripción detallada de tu servicio</span>
+          <textarea rows="8" formControlName="description"
+            placeholder="Explica detalladamente en qué consiste tu servicio, qué incluye, herramientas que usas y tu experiencia laboral..."></textarea>
+          <small *ngIf="campoInvalido('description')">Por favor, detalla tu experiencia o lo que incluye tu servicio.</small>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Categoría de oficio</span>
+            <select formControlName="categoria">
+              <option value="Plomería">Plomería</option>
+              <option value="Electricidad">Electricidad</option>
+              <option value="Carpintería">Carpintería</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Pintura">Pintura</option>
+              <option value="Jardinería">Jardinería</option>
+              <option value="Cerrajería">Cerrajería</option>
+              <option value="Mudanzas">Mudanzas</option>
+            </select>
+          </label>
+          
+          <!--  <label class="field">
+            <span>Horario</span>
+            <select formControlName="modalidad">
+              <option value="Mañanas">Mañanas</option>
+              <option value="Tardes">Tardes / Remoto</option>
+              <option value="Noches">Noches</option>
+              <option value="24 horas">24 horas</option>
+            </select>
+          </label>  -->
+
+
+          <label class="field">
+            <span>Cobertura</span>
+            <select formControlName="cobertura">
+              <option value="Colonia">Solo mi colonia y cercanías</option>
+              <option value="Ciudad">Toda la ciudad</option>
+              <option value="Municipios cercanos">Municipios cercanos</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Estatus de disponibilidad</span>
+            <select formControlName="disponibilidad">
+              <option value="Entre semana">Disponible entre semana</option>
+              <option value="Fines de semana">Disponible solo fines de semana</option>
+              <option value="Toda la semana">Disponible durante la semana </option>
+              <option value="Cita previa">Disponible con cita previa </option>
+              <option value="Horario flexible">Horario flexible </option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Tarifa / Presupuesto base estimado (MXN)</span>
+            <input type="number" formControlName="presupuesto" placeholder="Ej. 350" />
+            <small *ngIf="campoInvalido('presupuesto')">Ingresa un presupuesto base mayor a 0.</small>
+          </label>
+        </div>
+      </article>
+
+      <!-- PANEL DERECHO: UBICACIÓN Y VISTA PREVIA -->
+      <article class="offer-card offer-side">
+        <div class="card-head">
+          <p class="eyebrow">Zona de trabajo</p>
+          <h2>Dirección del servicio</h2>
+        </div>
+
+        <div class="form-grid single-col">
+          <label class="field">
+            <p class="dir-label">Dirección Completa (Guanajuato)</p>
+
+            <input type="text" class="form-control-custom" placeholder="Código Postal (C.P.)" formControlName="codigo_postal"
+              (blur)="buscarCP()" maxlength="5" />
+
+            <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Ciudad / Municipio" formControlName="ciudad" readonly />
+
+            <select class="form-control-custom" formControlName="colonia">
+              <option value="" disabled selected>Colonia / Localidad</option>
+              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
+            </select>
+
+            <input type="text" class="form-control-custom" placeholder="Calle y número" formControlName="calle" />
+
+            <small *ngIf="campoInvalido('calle')" class="support-error d-block mt-1" style="font-size: 0.8rem; color: #c2410c;">Calle y número requeridos.</small>
+          </label>
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-copy">
+            <div class="upload-copy-text">
+              <p class="eyebrow">Imagen del servicio</p>
+              <h3>Agrega una foto para destacar tu publicación</h3>
+              <p>La imagen aparecerá en la portada y en los listados públicos de tu servicio.</p>
+            </div>
+
+            <div class="upload-actions">
+              <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+
+              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                {{ fileName }}
+              </span>
+              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                ✓ Imagen guardada
+              </span>
+
+              <div class="btn-group">
+                <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()">
+                  {{ previewUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
+                </button>
+                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+                  <span class="loading" [class.visible]="subiendoImagen"></span>
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+                </button>
+                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                  Quitar imagen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="upload-preview">
+            <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa del servicio" />
+            <div *ngIf="!previewUrl" class="upload-placeholder">
+              <i class="bi bi-image"></i>
+              <span>La vista previa aparecerá aquí</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-box mt-3">
+          <p class="preview-label">Resumen rápido de tu servicio</p>
+          <strong>{{ servicioForm.value.title || 'Título de tu servicio' }}</strong>
+          <p class="mb-1 text-muted-custom">
+            <i class="bi bi-tag-fill me-1"></i>Categoría: {{ servicioForm.value.categoria || 'Sin definir' }}
+          </p>
+          <p class="mb-1 text-muted-custom">
+            <i class="bi bi-briefcase-fill me-1"></i>Modalidad: {{ servicioForm.value.modalidad || 'Presencial' }}
+          </p>
+          <p class="mb-1 text-muted-custom">
+            <i class="bi bi-geo-alt-fill me-1"></i>Ubicación: 
+            {{ (servicioForm.value.colonia ? servicioForm.value.colonia + ', ' : '') + (servicioForm.value.ciudad || 'Municipio') }}
+          </p>
+          <p class="mb-2 text-muted-custom">
+            <i class="bi bi-lightning-charge-fill me-1"></i>Urgencia: {{ servicioForm.value.urgencia || 'Normal' }}
+          </p>
+          <p class="salary-preview m-0" *ngIf="servicioForm.value.presupuesto">
+            Est. Base: MXN ${{ servicioForm.value.presupuesto | number:'1.0-0' }}
+          </p>
+        </div>
+
+        <!-- ACCIONES DE FORMULARIO -->
+        <div class="actions-wrapper d-flex flex-column gap-2 mt-3">
+          <button type="button" class="ghost-btn w-100 py-3" [disabled]="guardando" (click)="publicar(true)" *ngIf="!esEdicion">
+            Guardar como Borrador
+          </button>
+          
+          <button type="button" class="primary-btn w-100 py-3" [disabled]="guardando" (click)="publicar(false)">
+            {{ ending }}
+          </button>
+        </div>
+      </article>
+    </form>
+  </div>
+</div>
