@@ -1099,6 +1099,172 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
+
+
+app.get("/busqueda", async (req, res) => {
+  try {
+    const { 
+      q = "",
+      tipo = "",
+      categoriaEmpleo = "",
+      categoriaServicio = "",
+      modalidad = "",
+      cobertura = "",
+      ciudad = "",
+      ordenar = "fecha"
+     } = req.query;
+
+    const texto = `%${q.toLowerCase()}%`;
+
+    const valoresEmpleos = [];
+    const valoresServicios = [];
+
+    let whereEmpleos = `a.estado_anuncio='ACTIVO' AND e.estado_cuenta='ACTIVA'`;
+
+    let whereServicios = `s.es_borrador=false AND p.estado_cuenta='ACTIVA'`
+    
+
+    if (q) {
+      valoresEmpleos.push(texto);
+      whereEmpleos += `AND (
+        LOWER(a.titulo) LIKE $${valoresEmpleos.length}
+        OR LOWER(a.descripcion) LIKE $${valoresEmpleos.length}
+        OR LOWER(e.nombre_empresa) LIKE $${valoresEmpleos.length}
+        ) `;
+      valoresServicios.push(texto);
+      whereServicios += `AND (
+        LOWER(s.title) LIKE $${valoresServicios.length}
+        OR LOWER(s.description) LIKE $${valoresServicios.length}
+        OR LOWER(s.categoria) LIKE $${valoresServicios.length}
+        OR LOWER(p.nombre_postulante) LIKE $${valoresServicios.length}
+        OR LOWER(p.apellido_paterno_postulante) LIKE $${valoresServicios.length}
+        ) `;
+      }
+  if (modalidad) {
+    valoresEmpleos.push(modalidad);
+    whereEmpleos += ` AND a.modalidad=$${valoresEmpleos.length} `;
+   
+  }
+
+  if (cobertura) {
+    valoresServicios.push(cobertura);
+    whereServicios += ` AND s.modalidad=$${valoresServicios.length} `;
+  }
+
+  if (ciudad) { 
+    valoresEmpleos.push(ciudad);
+    whereEmpleos += ` AND a.ciudad=$${valoresEmpleos.length} `;
+    valoresServicios.push(ciudad);
+    whereServicios += ` AND s.ciudad=$${valoresServicios.length} `;
+  }
+
+  if (categoriaEmpleo) {
+    valoresEmpleos.push(categoriaEmpleo);
+    whereEmpleos += ` AND EXISTS (
+    SELECT 1 FROM categoriaAnuncio ca2 
+    INNER JOIN categorias c2 ON c2.id_categoria = ca2.id_categoria
+    WHERE ca2.id_anuncio = a.id_anuncio AND c2.nombre = $${valoresEmpleos.length}) `;
+  }
+
+  if (categoriaServicio) {
+    valoresServicios.push(categoriaServicio);
+    whereServicios += ` AND s.categoria=$${valoresServicios.length}`;
+  }
+
+  let empleos = { rows: [] };
+
+  let servicios = { rows: [] };
+    
+  if (tipo === "" || tipo === "empleo") {        
+     empleos = await pool.query(
+      `SELECT a.*, (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio=a.id_anuncio LIMIT 1) AS img,
+        e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
+        COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
+        COALESCE(
+          ARRAY_AGG(DISTINCT c.nombre)
+          FILTER(WHERE c.nombre IS NOT NULL),
+          ARRAY[]::VARCHAR[]
+        ) AS categorias
+      FROM anuncios a
+      INNER JOIN empleador e ON e.id_empleador=a.id_empleador
+      LEFT JOIN postulacion po ON po.id_anuncio=a.id_anuncio
+      LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio=a.id_anuncio
+      LEFT JOIN categorias c ON c.id_categoria=ca.id_categoria
+      WHERE
+      ${whereEmpleos}
+      GROUP BY 
+      a.id_anuncio,
+      e.nombre_empresa,
+      e.descripcion,
+      e.foto_perfil`,valoresEmpleos);
+    }
+
+    if (tipo === "" || tipo === "servicio"){
+     servicios = await pool.query(
+      `SELECT s.*, p.nombre_postulante,
+        p.apellido_paterno_postulante,
+        p.apellido_materno_postulante,
+        p.foto_perfil
+        FROM servicios s
+        INNER JOIN postulante p
+        ON p.id_postulante=s.autor_id
+        WHERE 
+        ${whereServicios}`, valoresServicios);
+    }
+
+      const empleosNormalizados = empleos.rows.map(e => ({ ...e, tipo: 'empleo'}));
+      
+      const serviciosNormalizados = servicios.rows.map(s => ({...s, tipo: 'servicio',
+      titulo: s.title,
+      descripcion: s.description,
+      salario: s.presupuesto,
+      nombre_empresa:
+        `${s.nombre_postulante} ${s.apellido_paterno_postulante}`,
+      img: s.foto_perfil
+    }));
+
+    const resultados = [ ...empleosNormalizados, ...serviciosNormalizados ];
+   
+   if (ordenar === "fecha") {
+     
+     resultados.sort((a,b)=>{
+       const fechaA=new Date(
+         a.fecha_publicacion || a.fecha_creacion 
+        );
+        
+        const fechaB=new Date(
+          b.fecha_publicacion || b.fecha_creacion
+        );
+        
+        return fechaB-fechaA;
+      });
+    }
+
+    if (ordenar === "salario") {
+      resultados.sort((a, b) => {
+        
+        const salarioA = Number(a.salario || 0);
+        const salarioB = Number(b.salario || 0);
+        return salarioB - salarioA;
+        
+      });
+    }
+
+    res.json(resultados);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Error en búsqueda"
+    });
+  }
+});
+
+
+
+
+
+
 app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante", "administrador"), async (req, res) => {
   const { id } = req.params;
   try {

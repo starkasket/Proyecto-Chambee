@@ -253,12 +253,141 @@
       <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
         <h3 class="section-subtitle mb-4">Todos los resultados</h3>
 
-        <div class="filtros-bar d-flex gap-2 mb-4 overflow-auto pb-2">
+       <!--  <div class="filtros-bar d-flex gap-2 mb-4 overflow-auto pb-2">
           <button class="chambee-filter-btn active"><i class="bi bi-sliders me-1"></i> Filtrar y ordenar</button>
           <button class="chambee-filter-btn">Tipo de oferta <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
           <button class="chambee-filter-btn">Modalidad <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
           <button class="chambee-filter-btn">Ubicación <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+        </div> -->
+
+        
+        <div class="filtros-bar d-flex gap-2 mb-3">
+          <button
+          class="chambee-filter-btn active"
+          (click)="toggleFiltros()">
+          <i class="bi bi-sliders me-2"></i>
+          Filtrar y ordenar
+        </button>
+      </div>
+
+      <div
+      class="filter-panel"
+      *ngIf="mostrarFiltros">
+      
+      <div class="row">
+        <div class="col-md-4">
+          <label class="form-label">Tipo</label>
+          <select
+          class="form-select"
+          [(ngModel)]="filtros.tipo" 
+          (change)="onTipoChange()">
+          <option value="">Todos</option>
+          <option value="empleo">Empleos</option>
+          <option value="servicio">Servicios</option>
+        </select>
+      </div>
+      <div class="col-md-4" *ngIf="filtros.tipo === 'empleo'">
+        <label class="form-label">Modalidad</label>
+        <select
+        class="form-select"
+        [(ngModel)]="filtros.modalidad">
+        <option value="">Todas</option>
+        <option value="Presencial">Presencial</option>
+        <option value="Remoto">Remoto</option>
+        <option value="Hibrido">Híbrido</option>
+      </select>
+    </div>
+      <div class="col-md-4" *ngIf="filtros.tipo === 'servicio'">
+        <label class="form-label">Cobertura</label>
+        <select
+        class="form-select"
+        [(ngModel)]="filtros.cobertura">
+        <option value="">Todas</option>
+        <option value="Colonia">Solo mi colonia</option>
+        <option value="Ciudad">Toda la ciudad</option>
+        <option value="Municipios cercanos">Municipios cercanos</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+       <label class="form-label">Estado</label>
+        <select  class="form-select" disabled>
+        <option value="">Guanajuato</option>
+    </select>
+
+    </div>
+    <div class="col-md-4 mt-3">
+      <label>Ciudad</label>
+     
+
+    <select
+        class="form-select"
+        [(ngModel)]="filtros.ciudad">
+        <option value="">Todas</option>
+        <option
+            *ngFor="let ciudad of ciudades"
+            [value]="ciudad">
+            {{ ciudad }}
+        </option>
+    </select>
+  </div>
+    <div class="col-md-4 mt-3" *ngIf="filtros.tipo === 'empleo'">
+      <label>Categoría</label>
+        <select
+        class="form-select"
+        [(ngModel)]="filtros.categoriaEmpleo">
+        <option value="">Todas</option>
+        <option *ngFor="let categoria of categorias" [value]="categoria.nombre">
+        {{categoria.nombre}}
+        </option>
+        </select>
+    </div>
+    <div class="col-md-4 mt-3" *ngIf="filtros.tipo === 'servicio'">
+      <label>Categoría</label>
+        <select
+        class="form-select"
+        [(ngModel)]="filtros.categoriaServicio">
+        <option value="">Todas</option>
+     
+        <option value="Plomería">Plomería</option>
+        <option value="Electricidad">Electricidad</option>
+        <option value="Carpintería">Carpintería</option>
+        <option value="Limpieza">Limpieza</option>
+        <option value="Pintura">Pintura</option>
+        <option value="Jardinería">Jardinería</option>
+        <option value="Cerrajería">Cerrajería</option>
+        <option value="Mudanzas">Mudanzas</option>
+
+        </select>
+    </div>
+
+    
+    
+          <div class="col-md-4 mt-3">    
+            <label>Ordenar</label>
+            <select
+            class="form-select"
+            [(ngModel)]="filtros.ordenar">            
+            <option value="fecha">Más recientes</option>
+            <option value="salario">Mayor salario</option>
+          </select>
+            </div>
+            <div class="col-12 mt-4 d-flex justify-content-end gap-2">            
+            <button class="btn btn-outline-secondary" (click)="filtros={tipo:'',modalidad:'',ciudad:'',categoriaEmpleo:'',categoriaServicio:'',cobertura:'',ordenar:'fecha'}">
+            Limpiar
+            </button>
+            <button class="btn btn-warning" (click)="aplicarFiltros()">            
+            Aplicar filtros            
+          </button>
         </div>
+        
+      </div>
+    </div>
+            
+            
+
+            
+
+        
 
         <div class="jobs-grid mt-4">
           <div class="job-card" *ngFor="let item of todosLosResultados" tabindex="0" (click)="irAlDetalle(item)">

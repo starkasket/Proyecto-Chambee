@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
@@ -266,4 +266,35 @@ export class ApiService {
   marcarNotificacionesLeidas(): Observable<any> {
     return this.http.put(`${this.apiUrl}/notificaciones/marcar-leidas`, {}, this.getHeaders());
   }
+
+  buscar(q: string, filtros: any){
+  let params=new HttpParams();
+
+  if(q)
+  params=params.set("q",q);
+
+  if(filtros.tipo)
+  params=params.set("tipo",filtros.tipo);
+
+  if(filtros.modalidad)
+  params=params.set("modalidad",filtros.modalidad);
+  
+  if(filtros.cobertura)
+  params=params.set("cobertura",filtros.cobertura);
+
+  if(filtros.ciudad)
+  params=params.set("ciudad",filtros.ciudad);
+
+  if(filtros.categoriaEmpleo)
+  params=params.set("categoriaEmpleo",filtros.categoriaEmpleo);
+  
+  if(filtros.categoriaServicio)
+  params=params.set("categoriaServicio",filtros.categoriaServicio);
+
+  if(filtros.ordenar)
+  params=params.set("ordenar",filtros.ordenar);
+
+  return this.http.get<any[]>(`${this.apiUrl}/busqueda`,{params});
+}
+
 }

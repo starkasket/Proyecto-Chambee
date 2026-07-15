@@ -4,12 +4,13 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs'; 
 
 @Component({
   selector: 'app-search-results',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './search-results.component.html',
   styleUrl: './search-results.component.css' 
 })
@@ -37,6 +38,23 @@ export class SearchResultsComponent implements OnInit {
   servicioDetalleOpen = false;
   servicioDetalleCargando = false;
 
+  mostrarFiltros = false;
+
+  sepomex: any[] = [];
+  ciudades: string[] = [];
+  categorias: any[] = [];
+
+
+  filtros = {
+    tipo: '',
+    ciudad: '',
+    ordenar: 'fecha',
+    categoriaEmpleo: '',
+    modalidad: '',
+    categoriaServicio: '',
+    cobertura: ''
+  };
+
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
@@ -48,6 +66,25 @@ export class SearchResultsComponent implements OnInit {
   ngOnInit() {
     this.checkMobile();
 
+    this.api.getSepomex().subscribe((data: any[]) => {
+      this.sepomex = data;
+      this.ciudades = [...new Set(
+        data.map((x: any) => x.ciudad).filter(Boolean)
+      )].sort();
+    });
+
+  
+    
+
+    this.api.obtenerCategorias().subscribe({
+      next: (cats) => {
+        this.categorias = cats;
+      }, 
+      error: (err) => {
+        console.error(err);
+      }
+    });
+
     const usuario = this.api.getUsuario();
     this.estaLogueado = !!this.authApi.getToken();
 
@@ -57,7 +94,7 @@ export class SearchResultsComponent implements OnInit {
       this.cargarNotificaciones();
 
       if (usuario) {
-        this.nombre_postulante = usuario.nombre || 'Usuario';
+        this.nombre_postulante = usuario.nombre || 'Usua  rio';
         this.api.getMiPerfil().subscribe({
           next: (perfil: any) => {
             this.nombre_postulante = perfil?.nombre_postulante || this.nombre_postulante;
@@ -74,7 +111,7 @@ export class SearchResultsComponent implements OnInit {
     });
   }
 
-  cargarYFiltrar(q: string) {
+/*   cargarYFiltrar(q: string) {
     this.cargando = true;
     forkJoin({
       empleos: this.api.obtenerAnunciosPublicos(),
@@ -120,7 +157,31 @@ export class SearchResultsComponent implements OnInit {
         this.cargando = false;
       }
     });
+  } */
+  cargarYFiltrar(q: string) {
+    this.cargando = true;
+   this.api.buscar(q, this.filtros).subscribe({
+      next: (datos) => {
+        this.todosLosResultados=datos;
+        this.destacados=datos.slice(0,3);
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar datos:', err);
+        this.cargando = false;
+      }
+    });
   }
+
+  onTipoChange() {
+    this.filtros.categoriaEmpleo = '';
+    this.filtros.categoriaServicio = '';
+
+    this.filtros.modalidad = '';
+    this.filtros.cobertura = '';
+  }
+
+  
 
   // --- LÓGICA DE TARJETAS Y BÚSQUEDA ---
   irAlDetalle(item: any) {
@@ -196,10 +257,31 @@ export class SearchResultsComponent implements OnInit {
     this.notificationsOpen = false;
   }
 
+  toggleFiltros(){
+    this.mostrarFiltros=!this.mostrarFiltros;
+  }
+
+  limpiarFiltros(){
+    this.filtros = {
+      tipo: '',
+      ciudad: '',
+      ordenar: 'fecha',
+      categoriaEmpleo: '',
+      categoriaServicio: '',
+      modalidad: '',
+      cobertura: ''
+    };
+    this.cargarYFiltrar(this.query);
+  }
+
   logout() {
     this.authApi.logout();
     this.menuOpen = false;
   }
+
+  aplicarFiltros(){
+    this.cargarYFiltrar(this.query);
+}
 
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({

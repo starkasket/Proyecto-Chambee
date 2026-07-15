@@ -99,7 +99,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
   notifications: NotificationItem[] = [];
-
+ 
   slides: Slide[] = [];
   jobs: Job[] = [];
   services: any[] = [];

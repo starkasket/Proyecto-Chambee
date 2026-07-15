@@ -289,6 +289,7 @@ CREATE TABLE servicios (
   fecha_creacion TIMESTAMP DEFAULT NOW(),
   FOREIGN KEY (autor_id) REFERENCES postulante(id_postulante)
 );
+
 docker exec -it chambee_db psql -U postgres chambee_db
 
 
@@ -362,3 +363,8 @@ CREATE TABLE public.reporte_a_anuncio (
     fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     estado VARCHAR(50) DEFAULT 'Pendiente'  
 );
+
+ALTER TABLE servicios
+ALTER COLUMN presupuesto
+TYPE DECIMAL(10,2)
+USING presupuesto::DECIMAL;

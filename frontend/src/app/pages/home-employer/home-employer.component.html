@@ -55,7 +55,7 @@
     <div class="menu fs-4" (click)="toggleMenu()" role="button"><i class="bi bi-list"></i></div>
 
     <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
-      <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a>
+      <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a> 
       <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear vacante</a>
       <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
       <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
