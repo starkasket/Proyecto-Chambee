@@ -232,13 +232,20 @@
   <div class="detail-col">
     <h3>Gestión de C.V</h3>
 
-    <div *ngIf="perfil?.archivo_cv" class="mt-2 cv-section">
+    <div *ngIf="perfil?.archivo_cv; else noCvMessage" class="mt-2 cv-section">
       <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
         <span>Ver C.V. del postulante</span>
         <i class="bi bi-file-earmark-text"></i>
       </a>
       <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
     </div>
+
+    <ng-template #noCvMessage>
+      <div class="mt-2 mb-3 cv-empty-section d-flex align-items-center gap-2 text-muted">
+        <i class="bi bi-file-earmark-x fs-5"></i>
+        <span style="font-size: 0.95rem; font-style: italic;">No hay ningún C.V. cargado</span>
+      </div>
+    </ng-template>
 
     <ng-container *ngIf="isOwnProfile">
       <input type="file" #cvInput accept="application/pdf" style="display: none"
