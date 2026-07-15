@@ -141,7 +141,7 @@
               
             </div>
           </div>
-          <button class="report-btn" type="button"  (click)="abrirModal()" >Reportar cuenta</button> <!-- (click)="" -->
+          <button *ngIf="usuarioActual?.rol === 'postulante'" class="report-btn" type="button"  (click)="abrirModal()" >Reportar cuenta</button> <!-- (click)="" -->
 
           <div class="company-stat">
             <strong>{{ perfil.vacantes_activas || anuncios.length }}</strong>
@@ -209,7 +209,7 @@
 
 
     <!-- Sección para calificar al empleador (solo postulantes) -->
-    <section *ngIf="!cargando && perfil" class="rating-section-shell">
+    <section *ngIf="!cargando && perfil && usuarioActual?.rol === 'postulante'" class="rating-section-shell">
       <div class="yellow-shell">
       <article class="rating-feedback-card">
         <div class="card-header-premium">

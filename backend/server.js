@@ -778,6 +778,23 @@ app.get("/postulantes", verifyToken, authorizeRoles("empleador", "administrador"
   }
 });
 
+app.get("/empleadores", verifyToken, authorizeRoles("administrador"), async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        id_empleador, nombre_empresa, correo_electronico, pais, estado, ciudad, colonia, calle, codigo_postal, 
+        telefono, foto_perfil, fecha_registro, estado_cuenta, rfc, descripcion
+      FROM empleador
+      ORDER BY fecha_registro DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error en GET /empleadores", err);
+    res.status(500).json({ error: "Error al obtener empleadores" });
+  }
+});
+
+
 async function puedeCambiarCampo(id, campo) {
   const diasLimite = LIMITES_CAMBIO[campo];
   if (!diasLimite) return true;
@@ -1082,7 +1099,7 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
-app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante", "administrador"), async (req, res) => {
   const { id } = req.params;
   try {
     const perfilResult = await pool.query(`SELECT

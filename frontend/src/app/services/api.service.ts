@@ -69,6 +69,11 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/postulantes`, this.getHeaders());
   }
 
+  obtenerEmpleadores(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/empleadores`, this.getHeaders());
+  }
+
+
   obtenerAnuncioEmpleador(idEmpleador: number | string, idAnuncio: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios/${idAnuncio}`, this.getHeaders());
   }

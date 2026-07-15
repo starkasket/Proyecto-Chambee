@@ -60,6 +60,11 @@ export class AdminDashboardComponent implements OnInit {
   cargandoPostulantes = true;
   errorPostulantes = '';
 
+  // Variables para empresas
+  empresas: any[] = [];
+  cargandoEmpresas = true;
+  errorEmpresas = '';
+
   notificaciones: NotificacionReporte[] = [
     { mensaje: 'Nuevo reporte sobre anuncio de Mario Sanchez por titulo de publicacion: Venta de fentanilo' },
     { mensaje: 'Nuevo reporte sobre usuario diego velasquez juarez por comentario inapropiado' },
@@ -85,6 +90,7 @@ export class AdminDashboardComponent implements OnInit {
     this.cargarPostulantes();
     this.cargarReportesPerfiles();
     this.cargarReportesAnuncios();
+    this.cargarEmpresas();
   }
 
   cargarPostulantes() {
@@ -98,6 +104,22 @@ export class AdminDashboardComponent implements OnInit {
         console.error('Error al cargar postulantes:', err);
         this.errorPostulantes = 'No se pudieron cargar los postulantes.';
         this.cargandoPostulantes = false;
+      }
+    });
+  }
+
+  cargarEmpresas() {
+    this.cargandoEmpresas = true;
+    this.errorEmpresas = '';
+    this.api.obtenerEmpleadores().subscribe({
+      next: (data) => {
+        this.empresas = data;
+        this.cargandoEmpresas = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar empresas:', err);
+        this.errorEmpresas = 'No se pudieron cargar las empresas.';
+        this.cargandoEmpresas = false;
       }
     });
   }
@@ -153,6 +175,12 @@ export class AdminDashboardComponent implements OnInit {
   verPerfilPostulante(id: string) {
     if(id) {
       this.router.navigate(['/perfil-postulante', id]);
+    }
+  }
+
+  verPerfilEmpresa(id: string) {
+    if(id) {
+      this.router.navigate(['/empresa', id]);
     }
   }
 

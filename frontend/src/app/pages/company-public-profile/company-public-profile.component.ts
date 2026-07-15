@@ -94,8 +94,8 @@ export class CompanyPublicProfileComponent implements OnInit {
       return;
     }
 
-    if (usuario.rol !== 'postulante') {
-      this.error = 'Esta vista esta disponible solo para postulantes.';
+    if (usuario.rol !== 'postulante' && usuario.rol !== 'administrador') {
+      this.error = 'Esta vista esta disponible solo para postulantes y administradores.';
       this.cargando = false;
       return;
     }
