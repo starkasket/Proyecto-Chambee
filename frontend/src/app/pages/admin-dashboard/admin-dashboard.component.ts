@@ -40,27 +40,22 @@ interface NotificacionReporte {
 export class AdminDashboardComponent implements OnInit {
   nombreAdmin = 'Administrador';
   isMobile = false;
-   servicesOpen = false;
-
-   menuOpen = false;
+  servicesOpen = false;
+  menuOpen = false;
   notificationsOpen = false;
   
-  // Variables para reportes de perfiles
   perfilesReportados: PerfilReportado[] = [];
   cargandoReportes = true;
   errorReportes = '';
 
-  // Variables para reportes de anuncios
   anunciosReportados: AnuncioReportado[] = [];
   cargandoReportesAnuncios = true;
   errorReportesAnuncios = '';
 
-  // Variables para postulantes
   postulantes: any[] = [];
   cargandoPostulantes = true;
   errorPostulantes = '';
 
-  // Variables para empresas
   empresas: any[] = [];
   cargandoEmpresas = true;
   errorEmpresas = '';
@@ -144,9 +139,6 @@ export class AdminDashboardComponent implements OnInit {
     this.cargandoReportesAnuncios = true;
     this.errorReportesAnuncios = '';
     
-    // Aquí llamas al método de tu API que trae los reportes de vacantes
-    // Asegúrate de tener este método creado en api.service.ts
-    // Si aún no lo tienes, este código capturará el error sin romper la app.
     if (this.api['obtenerReportesAnuncios']) {
       (this.api as any).obtenerReportesAnuncios().subscribe({
         next: (reportes: AnuncioReportado[]) => {
@@ -160,7 +152,6 @@ export class AdminDashboardComponent implements OnInit {
         }
       });
     } else {
-      // Mock de datos temporal mientras configuras tu backend
       setTimeout(() => {
         this.anunciosReportados = [
           { id_reporte: 1, id_anuncio: '101', titulo: 'Buscamos perritos calientes', razon: 'Titulo inapropiado', descripcion: 'El título no parece un empleo real.', fecha_reporte: new Date().toISOString() },
@@ -187,7 +178,6 @@ export class AdminDashboardComponent implements OnInit {
   suspenderCuenta(idPostulante: string) {
     if (confirm('¿Estás seguro de que deseas suspender esta cuenta?')) {
       console.log('Suspendiendo cuenta con ID:', idPostulante);
-      // this.api.suspenderPostulante(idPostulante).subscribe(...)
     }
   }
 
@@ -196,8 +186,6 @@ export class AdminDashboardComponent implements OnInit {
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
-
-
   
   logout() {
     this.authApi.logout();
@@ -214,9 +202,6 @@ export class AdminDashboardComponent implements OnInit {
   eliminarAnuncio(idAnuncio: string) {
     if (confirm('¿Estás seguro de que deseas eliminar este anuncio permanentemente por incumplimiento de normas?')) {
       console.log('Eliminando anuncio con ID:', idAnuncio);
-      // Aquí conectas tu API: this.api.eliminarAnuncio(idAnuncio).subscribe(...)
-      
-      // Simulación de eliminación local en la vista
       this.anunciosReportados = this.anunciosReportados.filter(a => a.id_anuncio !== idAnuncio);
       alert('Anuncio eliminado con éxito.');
     }

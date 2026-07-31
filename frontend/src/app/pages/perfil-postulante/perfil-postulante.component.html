@@ -4,10 +4,6 @@
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
       <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ navbarWelcomeName }}</span>
     </div>
-   
-   <!--  <div class="search-container flex-grow-1 mx-4" *ngIf="isOwnProfile">
-      <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." />
-    </div> -->
 
 <div id="modalAlerta" class="modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -17,11 +13,9 @@
         <h5 class="text-danger fw-bold">¡Atención!</h5>
         <p class="mb-0">{{ modalMensaje }}</p>
       </div>
-
       <div>
-        <form class="support-form"  #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+        <form class="support-form" #form="ngForm" (ngSubmit)="reportarPerfil(form)">
                 <div class="support-grid">
-                
                   <label class="support-field support-field-span-2">
                     <span>Motivo</span>
                     <select name="motivo" ngModel #motivo="ngModel" required>
@@ -34,27 +28,41 @@
                       <option value="informacion_falsa">Información falsa en el perfil</option>
                       <option value="otro">Otro</option>
                     </select>
-                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es
-                      obligatorio.</small>
+                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es obligatorio.</small>
+                  </label>
+
+                  <label class="support-field support-field-span-2" *ngIf="motivo.value === 'otro'">
+                    <span>Especifica el motivo</span>
+                    <input type="text" name="motivoCustom" ngModel #motivoCustom="ngModel" placeholder="Escribe la razón del reporte" required />
+                    <small *ngIf="motivoCustom.invalid && motivoCustom.touched" class="support-error">Este campo es obligatorio.</small>
                   </label>
 
                   <label class="support-field support-field-full">
-                    <span>Descripción del reporte.</span>
-                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
-                      placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."
-                      required></textarea>
-                    <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es
-                      obligatorio.</small>
+                    <span>Descripción del reporte (Opcional)</span>
+                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5" placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."></textarea>
                   </label>
                 </div>
-
                 <div class="modal-footer border-0 justify-content-center pb-4">
                   <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
                   <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
                 </div>
                 </form>
       </div>
-    
+    </div>
+  </div>
+</div>
+
+<div id="modalExitoReporte" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
+        <h5 class="text-success fw-bold">¡Reporte Enviado!</h5>
+        <p class="mb-0">El usuario se reportó correctamente.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn confirm-btn px-4" (click)="cerrarModalExitoReporte()">Aceptar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -203,7 +211,6 @@
               <p class="subtitle">Candidato en Chambee</p>
               <p class="location">{{ perfil.ciudad }}, {{ perfil.estado }}</p>
               
-              <!-- Promedio de Calificación con estrellas -->
               <div class="profile-rating-summary mt-2 d-flex align-items-center gap-2">
                 <div class="stars-display d-flex align-items-center">
                   <ng-container *ngFor="let starState of getStarsArray(perfil.promedio_valoracion)">
@@ -312,14 +319,12 @@
 
       </article>
 
-      <!-- Sección para calificar al postulante (solo para empleadores) -->
       <article *ngIf="isEmployerView" class="rating-feedback-card mt-4">
         <div class="card-header-premium">
           <h3>Calificar a este Candidato</h3>
           <p class="subtitle-premium">Comparte tu valoración y experiencia sobre este postulante con otras empresas.</p>
         </div>
         <div class="card-body-premium">
-          <!-- Estrellas Interactivas -->
           <div class="interactive-stars-row">
             <span class="rating-label">Tu Calificación:</span>
             <div class="stars-interactive d-flex gap-2">
@@ -340,7 +345,6 @@
             </span>
           </div>
 
-          <!-- Comentario Opcional -->
           <div class="comment-field mt-3">
             <label for="comentario-empleador" class="form-label fw-medium">Escribe una opinión (opcional):</label>
             <textarea 
@@ -352,7 +356,6 @@
             ></textarea>
           </div>
 
-          <!-- Acciones -->
           <div class="actions-row mt-3 d-flex align-items-center gap-3">
             <button 
               type="button" 
@@ -368,7 +371,6 @@
         </div>
       </article>
 
-      <!-- Sección de opiniones (visible para todos) -->
       <article class="reviews-list-card mt-4">
         <div class="card-header-premium">
           <h3>Opiniones de Empresas</h3>

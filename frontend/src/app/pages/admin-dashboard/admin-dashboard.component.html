@@ -56,7 +56,7 @@
       <h2 class="page-title mb-4">Vista General</h2>
 
       <div class="admin-card mb-4">
-        <h4 class="card-title">Usuarios Reportados</h4>
+        <h4 class="card-title">Reporte por empleadores</h4>
         <div *ngIf="cargandoReportes" class="text-center my-3">
           <span>Cargando reportes...</span>
         </div>
@@ -83,7 +83,7 @@
                 </td>
                 <td><span class="badge bg-warning text-dark">{{ reporte.motivo }}</span></td>
                 <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ reporte.descripcion }}">
-                  {{ reporte.descripcion }}
+                  {{ reporte.descripcion || 'Sin detalles' }}
                 </td>
                 <td>{{ reporte.fecha_reporte | date:'dd/MM/yyyy' }}</td>
                 <td class="text-end action-buttons">
