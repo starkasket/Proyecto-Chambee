@@ -1,6 +1,6 @@
 <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4" style="background-color: #ffc107; border-bottom: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
   <div class="d-flex align-items-center gap-3">
-    <img src="assets/LogoChambee.png" alt="Chambee" height="48" style="cursor: pointer;" routerLink="/">
+    <img src="assets/LogoChambee.png" alt="Chambee" height="48" style="cursor: pointer;" (click)="volverInicio()">
     <span class="fs-5 fw-bold text-dark d-none d-md-block" style="color: #111 !important;" *ngIf="estaLogueado">Bienvenido, {{ nombre_postulante }}</span>
   </div>
   
@@ -190,7 +190,7 @@
   
   <div class="left" style="grid-column: 1 / -1;">
     <div class="d-flex align-items-center mb-5 gap-3">
-      <button class="btn return-btn" routerLink="/">
+      <button class="btn return-btn" (click)="volverInicio()">
         <i class="bi bi-arrow-left"></i> Volver al Inicio
       </button>
       <h2 class="search-title m-0" *ngIf="query">Resultados para: "<span class="text-highlight">{{ query }}</span>"</h2>
@@ -253,14 +253,6 @@
       <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
         <h3 class="section-subtitle mb-4">Todos los resultados</h3>
 
-       <!--  <div class="filtros-bar d-flex gap-2 mb-4 overflow-auto pb-2">
-          <button class="chambee-filter-btn active"><i class="bi bi-sliders me-1"></i> Filtrar y ordenar</button>
-          <button class="chambee-filter-btn">Tipo de oferta <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
-          <button class="chambee-filter-btn">Modalidad <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
-          <button class="chambee-filter-btn">Ubicación <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
-        </div> -->
-
-        
         <div class="filtros-bar d-flex gap-2 mb-3">
           <button
           class="chambee-filter-btn active"

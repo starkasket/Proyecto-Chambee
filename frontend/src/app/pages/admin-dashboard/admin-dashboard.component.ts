@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
@@ -33,18 +36,25 @@ interface NotificacionReporte {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
   nombreAdmin = 'Administrador';
   isMobile = false;
-   servicesOpen = false;
+  servicesOpen = false;
 
-   menuOpen = false;
+  menuOpen = false;
   notificationsOpen = false;
-  
+
+  // --- Búsqueda de empleos/servicios ---
+  searchTerm = '';
+  searchSubject = new Subject<string>();
+  searchResults: any[] = [];
+  showSearchDropdown = false;
+  recentSearches: string[] = [];
+
   // Variables para reportes de perfiles
   perfilesReportados: PerfilReportado[] = [];
   cargandoReportes = true;
@@ -91,7 +101,110 @@ export class AdminDashboardComponent implements OnInit {
     this.cargarReportesPerfiles();
     this.cargarReportesAnuncios();
     this.cargarEmpresas();
+    this.cargarBusquedasRecientes();
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.ejecutarBusqueda(query);
+    });
   }
+
+  // --- BÚSQUEDA EN VIVO ---
+  onSearchInput(value: string) {
+    this.showSearchDropdown = true;
+    if (value && value.trim().length > 0) {
+      this.searchSubject.next(value);
+    } else {
+      this.searchResults = [];
+    }
+  }
+
+  ejecutarBusqueda(query: string) {
+    const filtrosVacios = {
+      tipo: '', ciudad: '', ordenar: 'fecha',
+      categoriaEmpleo: '', modalidad: '', categoriaServicio: '', cobertura: ''
+    };
+    this.api.buscar(query, filtrosVacios).subscribe({
+      next: (resultados: any[]) => {
+        this.searchResults = (resultados || []).slice(0, 6);
+      },
+      error: () => {
+        this.searchResults = [];
+      }
+    });
+  }
+
+  cerrarBuscador() {
+    setTimeout(() => {
+      this.showSearchDropdown = false;
+    }, 200);
+  }
+
+  irAResultado(resultado: any) {
+    const titleToSave = resultado.title || resultado.titulo || resultado.categoria || '';
+    this.guardarBusquedaReciente(this.searchTerm || titleToSave);
+    this.showSearchDropdown = false;
+    this.searchTerm = '';
+
+    if (resultado.tipo === 'empleo') {
+      const id = resultado.id_anuncio || resultado.id;
+      this.router.navigate(['/job', id]);
+    } else {
+      const id = resultado.id_servicio || resultado.id;
+      this.router.navigate(['/search'], { queryParams: { q: resultado.titulo || resultado.title } });
+    }
+  }
+
+  cargarBusquedasRecientes() {
+    const stored = localStorage.getItem('chambee_busquedas_recientes');
+    if (stored) {
+      try {
+        this.recentSearches = JSON.parse(stored);
+      } catch {
+        this.recentSearches = [];
+      }
+    }
+  }
+
+  guardarBusquedaReciente(term: string) {
+    if (!term || term.trim() === '') return;
+    let searches = [...this.recentSearches];
+    searches = searches.filter(t => this.normalizarTexto(t) !== this.normalizarTexto(term));
+    searches.unshift(term);
+    if (searches.length > 4) searches = searches.slice(0, 4);
+    this.recentSearches = searches;
+    localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
+  }
+
+  seleccionarBusquedaReciente(term: string) {
+    this.searchTerm = term;
+    this.showSearchDropdown = false;
+    this.router.navigate(['/search'], { queryParams: { q: term } });
+  }
+
+  buscarEmpleos() {
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      this.guardarBusquedaReciente(this.searchTerm);
+      this.showSearchDropdown = false;
+      this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
+    }
+  }
+
+  highlightText(text: string | null | undefined, query: string): string {
+    if (!text) return '';
+    if (!query) return text;
+    const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    const regex = new RegExp(`(${safeQuery})`, 'gi');
+    return text.replace(regex, '<span class="text-highlight">$1</span>');
+  }
+
+  private normalizarTexto(value: unknown): string {
+    return String(value ?? '').toLowerCase().trim();
+  }
+
+  // --- RESTO DEL COMPONENTE (sin cambios) ---
 
   cargarPostulantes() {
     this.cargandoPostulantes = true;
@@ -144,9 +257,6 @@ export class AdminDashboardComponent implements OnInit {
     this.cargandoReportesAnuncios = true;
     this.errorReportesAnuncios = '';
     
-    // Aquí llamas al método de tu API que trae los reportes de vacantes
-    // Asegúrate de tener este método creado en api.service.ts
-    // Si aún no lo tienes, este código capturará el error sin romper la app.
     if (this.api['obtenerReportesAnuncios']) {
       (this.api as any).obtenerReportesAnuncios().subscribe({
         next: (reportes: AnuncioReportado[]) => {
@@ -160,7 +270,6 @@ export class AdminDashboardComponent implements OnInit {
         }
       });
     } else {
-      // Mock de datos temporal mientras configuras tu backend
       setTimeout(() => {
         this.anunciosReportados = [
           { id_reporte: 1, id_anuncio: '101', titulo: 'Buscamos perritos calientes', razon: 'Titulo inapropiado', descripcion: 'El título no parece un empleo real.', fecha_reporte: new Date().toISOString() },
@@ -187,7 +296,6 @@ export class AdminDashboardComponent implements OnInit {
   suspenderCuenta(idPostulante: string) {
     if (confirm('¿Estás seguro de que deseas suspender esta cuenta?')) {
       console.log('Suspendiendo cuenta con ID:', idPostulante);
-      // this.api.suspenderPostulante(idPostulante).subscribe(...)
     }
   }
 
@@ -197,8 +305,11 @@ export class AdminDashboardComponent implements OnInit {
     this.notificationsOpen = false;
   }
 
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.notificationsOpen) this.notificationsOpen = false;
+  }
 
-  
   logout() {
     this.authApi.logout();
     this.menuOpen = false;
@@ -214,9 +325,6 @@ export class AdminDashboardComponent implements OnInit {
   eliminarAnuncio(idAnuncio: string) {
     if (confirm('¿Estás seguro de que deseas eliminar este anuncio permanentemente por incumplimiento de normas?')) {
       console.log('Eliminando anuncio con ID:', idAnuncio);
-      // Aquí conectas tu API: this.api.eliminarAnuncio(idAnuncio).subscribe(...)
-      
-      // Simulación de eliminación local en la vista
       this.anunciosReportados = this.anunciosReportados.filter(a => a.id_anuncio !== idAnuncio);
       alert('Anuncio eliminado con éxito.');
     }

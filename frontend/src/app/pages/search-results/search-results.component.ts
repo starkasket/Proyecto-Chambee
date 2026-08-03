@@ -73,9 +73,6 @@ export class SearchResultsComponent implements OnInit {
       )].sort();
     });
 
-  
-    
-
     this.api.obtenerCategorias().subscribe({
       next: (cats) => {
         this.categorias = cats;
@@ -111,53 +108,6 @@ export class SearchResultsComponent implements OnInit {
     });
   }
 
-/*   cargarYFiltrar(q: string) {
-    this.cargando = true;
-    forkJoin({
-      empleos: this.api.obtenerAnunciosPublicos(),
-      servicios: this.api.obtenerServiciosPublicos()
-    }).subscribe({
-      next: (resp: any) => {
-        const empleos = (resp.empleos || []).map((e: any) => ({ ...e, tipo: 'empleo' }));
-
-        const servicios = (resp.servicios || []).map((s: any) => {
-          const nombreAutor = [s.nombre_postulante, s.apellido_paterno_postulante]
-            .filter((parte: string) => !!parte && parte.trim() !== '')
-            .join(' ');
-
-          return {
-            ...s,
-            tipo: 'servicio',
-            titulo: s.title || s.titulo,
-            nombre_empresa: nombreAutor || 'Servicio independiente',
-            salario: s.presupuesto || s.salario,
-            modalidad: s.modalidad,
-            ciudad: s.ciudad,
-            categoria: s.categoria,
-            img: s.img
-          };
-        });
-
-        const combinados = [...empleos, ...servicios];
-
-        if (q) {
-          this.todosLosResultados = combinados.filter(item =>
-            (item.titulo || item.title || '').toLowerCase().includes(q) ||
-            (item.nombre_empresa || item.company || item.descripcion || '').toLowerCase().includes(q)
-          );
-        } else {
-          this.todosLosResultados = combinados;
-        }
-
-        this.destacados = this.todosLosResultados.slice(0, 3);
-        this.cargando = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar datos:', err);
-        this.cargando = false;
-      }
-    });
-  } */
   cargarYFiltrar(q: string) {
     this.cargando = true;
    this.api.buscar(q, this.filtros).subscribe({
@@ -240,6 +190,28 @@ export class SearchResultsComponent implements OnInit {
       this.router.navigate(['/perfil-postulante']);
     } else {
       this.router.navigate(['/login']);
+    }
+  }
+
+  // Regresa al home correcto segun el rol del usuario (o al home
+  // publico si no hay sesion activa). Usado por el logo y el boton
+  // "Volver al Inicio".
+  volverInicio() {
+    const usuario = this.api.getUsuario();
+
+    if (!usuario || !this.estaLogueado) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    if (usuario.rol === 'administrador') {
+      this.router.navigate(['/admin']);
+    } else if (usuario.rol === 'empleador') {
+      this.router.navigate(['/home-employer']);
+    } else if (usuario.rol === 'postulante') {
+      this.router.navigate(['/home-user']);
+    } else {
+      this.router.navigate(['/']);
     }
   }
 

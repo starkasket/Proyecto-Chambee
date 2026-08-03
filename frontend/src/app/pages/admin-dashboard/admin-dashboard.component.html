@@ -4,6 +4,57 @@
       <img src="assets/LogoChambee.png" alt="Chambee" height="48">
     </div>
 
+    <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+      <input type="text"
+             class="form-control"
+             placeholder="Buscar categoría, puesto, ciudad y más..."
+             [(ngModel)]="searchTerm"
+             (ngModelChange)="onSearchInput($event)"
+             (keydown.enter)="buscarEmpleos()"
+             (blur)="cerrarBuscador()"
+             (focus)="showSearchDropdown = true" />
+
+      <div *ngIf="showSearchDropdown" class="search-dropdown">
+
+        <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+          <div class="search-dropdown-header">Búsquedas recientes</div>
+          <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
+            <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+              <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="search-item-content">
+              <div class="search-item-title fw-normal">{{ term }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="searchTerm.length > 0">
+
+          <div *ngIf="searchResults.length === 0" class="search-empty">
+            No se encontraron resultados para "{{ searchTerm }}"
+          </div>
+
+          <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()" (click)="irAResultado(result)">
+            <div class="search-item-icon">
+              <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+            </div>
+            <div class="search-item-content">
+              <div class="search-item-title" [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
+              <div class="search-item-subtitle">
+                <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> •
+                <span [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="search-see-all" (mousedown)="buscarEmpleos()">
+            Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <div class="header-actions d-flex align-items-center gap-3">
       <button class="theme-toggle admin-theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track"><span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span></span>

@@ -20,6 +20,128 @@
     position: relative;
 }
 
+/* Barra de búsqueda */
+.search-container {
+  flex: 1 1 420px;
+  max-width: 420px;
+  min-width: 180px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.search-container input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Dropdown de búsqueda */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  min-width: 340px;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  box-shadow: var(--shadow-float, 0 8px 24px rgba(0,0,0,0.18));
+  z-index: 1500;
+  overflow: hidden;
+}
+
+.search-dropdown-header {
+  padding: 12px 16px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.search-item:hover {
+  background: var(--surface-secondary);
+}
+
+.search-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(244, 191, 0, 0.16);
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-item-content {
+  min-width: 0;
+}
+
+.search-item-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-item-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge-tipo {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.search-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.search-see-all {
+  padding: 12px 16px;
+  text-align: center;
+  font-weight: 700;
+  color: #b45309;
+  cursor: pointer;
+  border-top: 1px solid var(--border-soft);
+}
+
+.search-see-all:hover {
+  background: var(--surface-secondary);
+}
+
+.text-highlight {
+  background: rgba(244, 191, 0, 0.35);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
 .theme-toggle {
   border: none;
   background: transparent;
