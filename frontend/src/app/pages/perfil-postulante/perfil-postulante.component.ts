@@ -393,6 +393,26 @@ export class PerfilPostulanteComponent implements OnInit {
     }
   }
 
+  // Modal de éxito al reportar un perfil (postulante reportado
+  // correctamente). Se abre desde reportarPerfil() al recibir
+  // respuesta exitosa del backend, y se cierra desde el boton
+  // "Aceptar" del propio modal en el HTML.
+  mostrarModalExitoReporte() {
+    const modal = document.getElementById('modalExitoReporte');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExitoReporte() {
+    const modal = document.getElementById('modalExitoReporte');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
   get isDarkMode(): boolean {
     return this.themeService.isDarkMode();
   }
@@ -416,21 +436,22 @@ export class PerfilPostulanteComponent implements OnInit {
 
   reportarPerfil(form: NgForm) {
     if (form.invalid) return;
-  
-    const motivoSeleccionado = form.value.motivo === 'otro' 
-      ? form.value.motivoCustom 
+
+    const motivoSeleccionado = form.value.motivo === 'otro'
+      ? form.value.motivoCustom
       : form.value.motivo;
-  
+
     const reporte = {
       motivo: motivoSeleccionado,
       descripcion: form.value.descripcion || '',
       id_postulante_reportado: this.selectedPerfilId
     };
-  
+
     this.api.crearReporte(reporte).subscribe({
       next: () => {
         this.cerrarModal();
         form.resetForm();
+        this.mostrarModalExitoReporte();
       },
       error: (err) => console.error(err)
     });
