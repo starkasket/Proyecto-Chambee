@@ -280,7 +280,7 @@
               <h3>Postulaciones recibidas</h3>
             </div>
 
-            <div class="announcements-row">
+            <div class="announcements-row" *ngIf="postulacionesRecibidas && postulacionesRecibidas.length > 0; else noPostulacionesProfile">
               <article class="announcement-card compact" *ngFor="let postulacion of postulacionesRecibidas">
                 <div class="announcement-copy">
                   <div class="card-top">
@@ -293,7 +293,20 @@
                 </div>
               </article>
             </div>
-            <div class="section-footer">
+
+            <ng-template #noPostulacionesProfile>
+              <div class="text-center py-5 px-3" style="background-color: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; margin-top: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                <div class="mb-3" style="background: rgba(243, 156, 18, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <i class="bi bi-people" style="font-size: 1.8rem; color: var(--primary-color, #f39c12);"></i>
+                </div>
+                <h5 style="font-weight: 700; color: var(--text-color); margin-bottom: 8px;">Aún no recibes postulaciones</h5>
+                <p class="text-muted mb-0" style="font-size: 0.9rem; max-width: 380px;">
+                  Las postulaciones de los candidatos que apliquen a tus vacantes se mostrarán aquí.
+                </p>
+              </div>
+            </ng-template>
+
+            <div class="section-footer" *ngIf="postulacionesRecibidas && postulacionesRecibidas.length > 0">
               <button class="see-more" type="button">Ver mas</button>
             </div>
           </ng-container>
