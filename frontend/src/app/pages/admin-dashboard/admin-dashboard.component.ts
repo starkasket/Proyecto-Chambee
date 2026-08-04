@@ -60,17 +60,14 @@ export class AdminDashboardComponent implements OnInit {
   cargandoReportes = true;
   errorReportes = '';
 
-  // Variables para reportes de anuncios
   anunciosReportados: AnuncioReportado[] = [];
   cargandoReportesAnuncios = true;
   errorReportesAnuncios = '';
 
-  // Variables para postulantes
   postulantes: any[] = [];
   cargandoPostulantes = true;
   errorPostulantes = '';
 
-  // Variables para empresas
   empresas: any[] = [];
   cargandoEmpresas = true;
   errorEmpresas = '';

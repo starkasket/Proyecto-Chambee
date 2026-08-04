@@ -64,7 +64,7 @@ interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
-  applicantId?: string; // Agregado para que los empleadores puedan hacer clic
+  applicantId?: string;
 }
 
 type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'historial';
@@ -88,7 +88,6 @@ export class PerfilPostulanteComponent implements OnInit {
 
   modalMensaje = '';
 
-  // VARIABLE PARA LAS ETIQUETAS
   misEtiquetas: string[] = [];
 
   private readonly CLOUDINARY_CLOUD_NAME = 'dqq9oeo4e';
@@ -109,7 +108,6 @@ export class PerfilPostulanteComponent implements OnInit {
   favoritos: PostulanteFavorites[] = [];
   vistosRecientemente: PostulanteFavorites[] = [];
 
-  // Variables para valoración
   ratingEnviando = false;
   ratingExito = '';
   ratingError = '';
@@ -130,7 +128,6 @@ export class PerfilPostulanteComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Cargar notificaciones desde la BD al iniciar
     this.cargarNotificaciones();
 
     this.route.queryParams.subscribe(params => {
@@ -161,7 +158,6 @@ export class PerfilPostulanteComponent implements OnInit {
         this.cargando = false;
         return;
       }
-
 
       this.loadPerfilById(perfilRouteId);
       this.checkMobile();
@@ -223,7 +219,6 @@ export class PerfilPostulanteComponent implements OnInit {
     this.checkMobile();
   }
 
-  // MÉTODO PARA CARGAR NOTIFICACIONES DESDE EL BACKEND
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({
       next: (notifs) => {
@@ -241,18 +236,15 @@ export class PerfilPostulanteComponent implements OnInit {
     });
   }
 
-  // NUEVO: MÉTODO DE CLIC EN NOTIFICACIÓN
   onNotificationClick(notif: NotificationItem, event: Event) {
     event.stopPropagation();
     notif.read = true;
     this.notificationsOpen = false;
 
-    // Si la notificación pertenece a un postulante (y el usuario actual es un empleador), navegamos
     if (notif.applicantId) {
       this.router.navigate(['/perfil-postulante', notif.applicantId], {
         queryParams: { seguimiento: 'true' }
       }).then(() => {
-        // Recargar el componente forzadamente ya que estamos en la misma ruta
         window.location.reload();
       });
     }
@@ -267,7 +259,6 @@ export class PerfilPostulanteComponent implements OnInit {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
 
-      // Llamar a la API para marcarlas como leídas en PostgreSQL
       this.api.marcarNotificacionesLeidas().subscribe({
         error: (err) => console.error('Error al actualizar estado de notificaciones', err)
       });
@@ -425,15 +416,22 @@ export class PerfilPostulanteComponent implements OnInit {
 
   reportarPerfil(form: NgForm) {
     if (form.invalid) return;
-
+  
+    const motivoSeleccionado = form.value.motivo === 'otro' 
+      ? form.value.motivoCustom 
+      : form.value.motivo;
+  
     const reporte = {
-      motivo: form.value.motivo,
-      descripcion: form.value.descripcion,
+      motivo: motivoSeleccionado,
+      descripcion: form.value.descripcion || '',
       id_postulante_reportado: this.selectedPerfilId
     };
-
+  
     this.api.crearReporte(reporte).subscribe({
-      next: () => this.cerrarModal(),
+      next: () => {
+        this.cerrarModal();
+        form.resetForm();
+      },
       error: (err) => console.error(err)
     });
   }

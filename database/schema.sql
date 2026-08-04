@@ -368,3 +368,10 @@ ALTER TABLE servicios
 ALTER COLUMN presupuesto
 TYPE DECIMAL(10,2)
 USING presupuesto::DECIMAL;
+
+ALTER TABLE reporte_a_postulante
+ADD COLUMN id_empleador_reporta UUID REFERENCES empleador(id_empleador) ON DELETE SET NULL,
+ADD COLUMN motivo VARCHAR(255) NOT NULL DEFAULT 'Otro',
+ADD COLUMN descripcion TEXT,
+ADD COLUMN fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN estado VARCHAR(50) DEFAULT 'Pendiente';
