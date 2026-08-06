@@ -265,6 +265,57 @@
 .single-col {
   grid-template-columns: 1fr;
 }
+
+/* Badge de categoría (siempre visible aunque el select esté oculto) */
+.category-badge-row {
+  display: flex;
+}
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(244, 191, 0, 0.16);
+  color: #8a5a00;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+:host-context(body.dark-theme) .category-badge {
+  background: rgba(244, 191, 0, 0.14);
+  color: #f4bf00;
+}
+
+/* Botón para mostrar/ocultar bloques de campos opcionales */
+.toggle-opcionales-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  border: 1px dashed var(--border-soft);
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.toggle-opcionales-btn:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: rgba(244, 191, 0, 0.5);
+}
+.toggle-opcionales-btn i {
+  font-size: 0.95rem;
+}
+
+.direccion-opcional-block {
+  display: grid;
+  gap: 0;
+}
+
 /* Direcciones Custom */
 .dir-label {
   font-weight: 700;
@@ -632,60 +683,3 @@
   }
   
 }
-
-/* Gallery Grid Styles */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  padding: 0;
-}
-
-.gallery-item {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  aspect-ratio: 1;
-  background-color: var(--surface-secondary);
-  border: 1px solid var(--border-soft);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.gallery-item:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-float);
-}
-
-.gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.btn-remove {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  background-color: rgba(220, 53, 69, 0.9);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
-}
-
-.gallery-item:hover .btn-remove {
-  opacity: 1;
-}
-
-.btn-remove:hover {
-  background-color: rgba(220, 53, 69, 1);
-}
-

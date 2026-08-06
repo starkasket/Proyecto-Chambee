@@ -28,18 +28,20 @@ export class CrearServicioComponent implements OnInit {
   servicioForm: FormGroup;
   nombre_postulante = 'Usuario';
   foto_perfil = ''; 
-  previewUrls: string[] = [];
-  archivosSeleccionados: File[] = [];
-  fileNames: string[] = [];
+  previewUrl: string | null = null;
+  archivoSeleccionado: File | null = null;
+  fileName = 'Ningún archivo seleccionado';
   subiendoImagen = false;
-  urlsImagenesSubidas: string[] = [];
+  urlImagenSubida = '';
   mostrarEliminar = false;
-  readonly MAX_IMAGENES = 5;
-  readonly MAX_TAMAÑO_MB = 2;
   menuOpen = false;
   notificationsOpen = false;
    isMobile = false;
     servicesOpen = false;
+
+  // Controla la visibilidad de calle y colonia dentro del bloque de
+  // dirección, dejando código postal / estado / ciudad siempre visibles.
+  mostrarDireccionOpcional = false;
 
   // Variables para la edición
   esEdicion = false;
@@ -60,11 +62,15 @@ export class CrearServicioComponent implements OnInit {
       description: ['', Validators.required],
       cobertura: ['Colonia'], 
       disponibilidad: ['Entre semana'],
+      // Código postal, estado y ciudad ahora son los campos de
+      // dirección visibles por defecto, así que siguen siendo
+      // obligatorios. Calle y colonia quedan ocultos detrás de
+      // "Agregar calle y colonia (opcional)" y ya no bloquean el envío.
       codigo_postal: ['', [Validators.required, Validators.maxLength(5)]],
       estado: ['', Validators.required],
       ciudad: ['', Validators.required],
-      colonia: ['', Validators.required],
-      calle: ['', Validators.required]
+      colonia: [''],
+      calle: ['']
     });
   }
 
@@ -117,6 +123,12 @@ export class CrearServicioComponent implements OnInit {
     }
   }
 
+  // Alterna la visibilidad de calle y colonia dentro del bloque de
+  // dirección, dejando código postal / estado / ciudad siempre visibles.
+  toggleDireccionOpcional() {
+    this.mostrarDireccionOpcional = !this.mostrarDireccionOpcional;
+  }
+
   cargarDatosDelServicio(id: string) {
     const usuario = this.api.getUsuario();
     if (usuario && usuario.id) {
@@ -149,13 +161,17 @@ export class CrearServicioComponent implements OnInit {
               calle: servicioAModificar.calle || ''
             });
 
+            // Si el servicio ya trae calle o colonia guardadas, las
+            // mostramos abiertas desde el inicio para que el usuario
+            // las vea al editar.
+            if (servicioAModificar.calle || servicioAModificar.colonia) {
+              this.mostrarDireccionOpcional = true;
+            }
+
             if (servicioAModificar.img) {
-              this.previewUrls = [servicioAModificar.img];
-              this.urlsImagenesSubidas = [servicioAModificar.img];
-              if (servicioAModificar.imgs && Array.isArray(servicioAModificar.imgs)) {
-                this.urlsImagenesSubidas = servicioAModificar.imgs;
-                this.previewUrls = servicioAModificar.imgs;
-              }
+              this.previewUrl = servicioAModificar.img;
+              this.urlImagenSubida = servicioAModificar.img;
+              this.fileName = 'Imagen del servicio cargada';
               this.mostrarEliminar = true;
             }
           }
@@ -178,7 +194,7 @@ export class CrearServicioComponent implements OnInit {
     this.guardando = true;
 
     try {
-      if (this.archivosSeleccionados.length > 0) {
+      if (this.archivoSeleccionado && !this.urlImagenSubida) {
         await this.subirImagen();
       }
 
@@ -189,18 +205,13 @@ export class CrearServicioComponent implements OnInit {
         ...form,
         ubicacion: ubicacionString,
         esBorrador: esBorrador,
-        img: this.urlsImagenesSubidas.length > 0 ? this.urlsImagenesSubidas[0] : null,
-        imgs: this.urlsImagenesSubidas
+        img: this.urlImagenSubida || null
       };
 
       if (this.esEdicion) {
         this.serviciosService.actualizarServicio(this.idServicioActual, payload).subscribe({
           next: () => {
             this.guardando = false;
-            this.previewUrls = [];
-            this.archivosSeleccionados = [];
-            this.fileNames = [];
-            this.urlsImagenesSubidas = [];
             this.mostrarModalExito('El servicio se actualizó correctamente.');
           },
           error: (err) => {
@@ -216,10 +227,6 @@ export class CrearServicioComponent implements OnInit {
         this.serviciosService.agregarServicio(payload).subscribe({
           next: () => {
             this.guardando = false;
-            this.previewUrls = [];
-            this.archivosSeleccionados = [];
-            this.fileNames = [];
-            this.urlsImagenesSubidas = [];
             if (esBorrador == true) {
               this.mostrarModalExito('Se guardó tu borrador correctamente.');
             } else {
@@ -235,7 +242,7 @@ export class CrearServicioComponent implements OnInit {
       }
     } catch (err: any) {
       this.guardando = false;
-      this.mostrarModalError(err?.message || 'Error al subir las imágenes. Intenta de nuevo.');
+      this.mostrarModalError(err?.message || 'Error al subir la imagen. Intenta de nuevo.');
     }
   }
 
@@ -243,75 +250,58 @@ export class CrearServicioComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
-    const nuevosArchivos = Array.from(input.files);
-    const archivosValidos = nuevosArchivos.filter((archivo) => {
-      if (archivo.size > this.MAX_TAMAÑO_MB * 1024 * 1024) {
-        this.mostrarModalError(`${archivo.name} supera los ${this.MAX_TAMAÑO_MB} MB.`);
-        return false;
-      }
-      return true;
-    });
+    const archivo = input.files[0];
 
-    const espacioDisponible = this.MAX_IMAGENES - this.archivosSeleccionados.length - this.urlsImagenesSubidas.length;
-    const archivosAgregar = archivosValidos.slice(0, espacioDisponible);
-
-    if (archivosAgregar.length < archivosValidos.length) {
-      this.mostrarModalError(`Solo puedes agregar ${archivosAgregar.length} imagen(es) más. Máximo: ${this.MAX_IMAGENES}`);
+    if (archivo.size > 2 * 1024 * 1024) {
+      this.mostrarModalError('La imagen no puede superar los 2 MB.');
+      return;
     }
 
-    archivosAgregar.forEach((archivo) => {
-      this.archivosSeleccionados.push(archivo);
-      const displayName = archivo.name.length > 30 ? archivo.name.substring(0, 27) + '...' : archivo.name;
-      this.fileNames.push(displayName);
+    this.archivoSeleccionado = archivo;
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
+    this.fileName = archivo.name.length > 30
+      ? archivo.name.substring(0, 27) + '...'
+      : archivo.name;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.previewUrls.push(e.target?.result as string);
-      };
-      reader.readAsDataURL(archivo);
-    });
-
-    input.value = '';
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewUrl = e.target?.result as string;
+    };
+    reader.readAsDataURL(archivo);
   }
 
-  async subirImagen(): Promise<void> {
-    if (this.archivosSeleccionados.length === 0) {
-      return;
+  async subirImagen(): Promise<string> {
+    if (!this.archivoSeleccionado) {
+      return this.urlImagenSubida;
     }
 
     this.subiendoImagen = true;
 
     try {
-      for (let i = 0; i < this.archivosSeleccionados.length; i++) {
-        const archivo = this.archivosSeleccionados[i];
-        const formData = new FormData();
-        formData.append('file', archivo);
-        formData.append('upload_preset', 'chambee_upload');
+      const formData = new FormData();
+      formData.append('file', this.archivoSeleccionado);
+      formData.append('upload_preset', 'chambee_upload');
 
-        const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
-          method: 'POST',
-          body: formData
-        });
+      const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+        method: 'POST',
+        body: formData
+      });
 
-        if (!res.ok) {
-          throw new Error(`No se pudo subir la imagen ${i + 1}.`);
-        }
-
-        const data = await res.json();
-        if (!data?.secure_url) {
-          throw new Error(`No se pudo obtener la URL de la imagen ${i + 1}.`);
-        }
-
-        this.urlsImagenesSubidas.push(data.secure_url);
+      if (!res.ok) {
+        throw new Error('No se pudo subir la imagen.');
       }
 
-      this.archivosSeleccionados = [];
-      this.fileNames = [];
-      this.previewUrls = [];
+      const data = await res.json();
+      if (!data?.secure_url) {
+        throw new Error('La respuesta de la imagen no fue válida.');
+      }
+
+      this.urlImagenSubida = data.secure_url;
+      this.mostrarEliminar = true;
+      return this.urlImagenSubida;
+    } finally {
       this.subiendoImagen = false;
-    } catch (err: any) {
-      this.subiendoImagen = false;
-      throw err;
     }
   }
 
@@ -323,14 +313,12 @@ export class CrearServicioComponent implements OnInit {
     }
   }
 
-  eliminarImagenPorIndice(indice: number): void {
-    this.previewUrls.splice(indice, 1);
-    this.archivosSeleccionados.splice(indice, 1);
-    this.fileNames.splice(indice, 1);
-  }
-
-  eliminarImagenSubida(indice: number): void {
-    this.urlsImagenesSubidas.splice(indice, 1);
+  eliminarImagen(): void {
+    this.previewUrl = null;
+    this.archivoSeleccionado = null;
+    this.fileName = 'Ningún archivo seleccionado';
+    this.urlImagenSubida = '';
+    this.mostrarEliminar = false;
   }
 
   // --- FUNCIONES EXTRA QUE PIDE EL HTML --- //
@@ -349,9 +337,12 @@ export class CrearServicioComponent implements OnInit {
     if (resultados.length > 0) {
       this.servicioForm.patchValue({
         estado: resultados[0].estado,
-        ciudad: resultados[0].ciudad,
-        colonia: resultados[0].colonia
+        ciudad: resultados[0].ciudad
       });
+      // Solo llenamos la lista de opciones del dropdown; la colonia
+      // la debe elegir el usuario manualmente (dentro del bloque
+      // opcional "Agregar calle y colonia"). No se autocompleta aquí
+      // para evitar guardar una colonia que el usuario nunca marcó.
       this.colonias = resultados.map(r => r.colonia);
     } else {
       this.servicioForm.patchValue({

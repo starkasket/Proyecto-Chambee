@@ -126,6 +126,13 @@
           <small *ngIf="campoInvalido('description')">Por favor, detalla tu experiencia o lo que incluye tu servicio.</small>
         </label>
 
+        <!-- Badge de categoría siempre visible, aunque el campo esté oculto -->
+        <div class="category-badge-row">
+          <span class="category-badge">
+            <i class="bi bi-tag-fill"></i> {{ servicioForm.value.categoria || 'Sin categoría' }}
+          </span>
+        </div>
+
         <div class="form-grid">
           <label class="field">
             <span>Categoría de oficio</span>
@@ -140,17 +147,6 @@
               <option value="Mudanzas">Mudanzas</option>
             </select>
           </label>
-          
-          <!--  <label class="field">
-            <span>Horario</span>
-            <select formControlName="modalidad">
-              <option value="Mañanas">Mañanas</option>
-              <option value="Tardes">Tardes / Remoto</option>
-              <option value="Noches">Noches</option>
-              <option value="24 horas">24 horas</option>
-            </select>
-          </label>  -->
-
 
           <label class="field">
             <span>Cobertura</span>
@@ -197,7 +193,15 @@
             <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
 
             <input type="text" class="form-control-custom" placeholder="Ciudad / Municipio" formControlName="ciudad" readonly />
+          </label>
 
+          <!-- Botón para mostrar/ocultar calle y colonia -->
+          <button type="button" class="toggle-opcionales-btn" (click)="toggleDireccionOpcional()">
+            <i class="bi" [ngClass]="mostrarDireccionOpcional ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            {{ mostrarDireccionOpcional ? 'Ocultar calle y colonia' : 'Agregar calle y colonia (opcional)' }}
+          </button>
+
+          <div *ngIf="mostrarDireccionOpcional" class="direccion-opcional-block">
             <select class="form-control-custom" formControlName="colonia">
               <option value="" disabled selected>Colonia / Localidad</option>
               <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
@@ -206,61 +210,47 @@
             <input type="text" class="form-control-custom" placeholder="Calle y número" formControlName="calle" />
 
             <small *ngIf="campoInvalido('calle')" class="support-error d-block mt-1" style="font-size: 0.8rem; color: #c2410c;">Calle y número requeridos.</small>
-          </label>
+          </div>
         </div>
 
         <div class="upload-card">
           <div class="upload-copy">
             <div class="upload-copy-text">
-              <p class="eyebrow">Imágenes del servicio</p>
-              <h3>Agrega hasta 5 fotos para destacar tu publicación</h3>
-              <p>Las imágenes aparecerán en la portada y en los listados públicos de tu servicio.</p>
+              <p class="eyebrow">Imagen del servicio</p>
+              <h3>Agrega una foto para destacar tu publicación</h3>
+              <p>La imagen aparecerá en la portada y en los listados públicos de tu servicio.</p>
             </div>
 
             <div class="upload-actions">
-              <input #imagenInput type="file" accept="image/*" multiple style="display:none" (change)="onArchivoSeleccionado($event)" />
+              <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
 
-              <div class="d-flex gap-2 mb-2 align-items-center">
-                <span class="badge bg-info">{{ urlsImagenesSubidas.length + archivosSeleccionados.length }}/{{ MAX_IMAGENES }} imágenes</span>
-                <small class="text-muted" *ngIf="archivosSeleccionados.length > 0">{{ archivosSeleccionados.length }} pendiente de subir</small>
-              </div>
+              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
+                {{ fileName }}
+              </span>
+              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
+                ✓ Imagen guardada
+              </span>
 
               <div class="btn-group">
-                <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()" [disabled]="urlsImagenesSubidas.length + archivosSeleccionados.length >= MAX_IMAGENES">
-                  Agregar imágenes
+                <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()">
+                  {{ previewUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
                 </button>
-                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="archivosSeleccionados.length === 0 || subiendoImagen">
+                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
                   <span class="loading" [class.visible]="subiendoImagen"></span>
-                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imágenes' }}</span>
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
+                </button>
+                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
+                  Quitar imagen
                 </button>
               </div>
             </div>
           </div>
 
           <div class="upload-preview">
-            <div *ngIf="previewUrls.length === 0 && urlsImagenesSubidas.length === 0" class="upload-placeholder">
+            <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa del servicio" />
+            <div *ngIf="!previewUrl" class="upload-placeholder">
               <i class="bi bi-image"></i>
-              <span>Las vistas previas aparecerán aquí</span>
-            </div>
-
-            <div *ngIf="previewUrls.length > 0 || urlsImagenesSubidas.length > 0" class="gallery-grid">
-              <!-- Imágenes subidas -->
-              <div *ngFor="let img of urlsImagenesSubidas; let i = index" class="gallery-item">
-                <img [src]="img" [alt]="'Imagen ' + (i + 1)" />
-                <button type="button" class="btn-remove" (click)="eliminarImagenSubida(i)" title="Eliminar">
-                  <i class="bi bi-trash"></i>
-                </button>
-                <span class="badge bg-success position-absolute top-0 start-0 m-2">Subida</span>
-              </div>
-
-              <!-- Imágenes seleccionadas pero no subidas -->
-              <div *ngFor="let preview of previewUrls; let i = index" class="gallery-item">
-                <img [src]="preview" [alt]="'Vista previa ' + (i + 1)" />
-                <button type="button" class="btn-remove" (click)="eliminarImagenPorIndice(i)" title="Eliminar">
-                  <i class="bi bi-trash"></i>
-                </button>
-                <span class="badge bg-warning position-absolute top-0 start-0 m-2">Pendiente</span>
-              </div>
+              <span>La vista previa aparecerá aquí</span>
             </div>
           </div>
         </div>
