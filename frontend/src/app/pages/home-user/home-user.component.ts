@@ -36,6 +36,8 @@ interface Job {
   applicants: number;
   tags: string[];
   matchScore: number;
+  tipoAnuncio?: string;
+  modalidad?: string;
 }
 
 interface NotificationItem {
@@ -95,6 +97,36 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   searchResults: any[] = [];
   showSearchDropdown = false;
   recentSearches: string[] = [];
+  categoriaSeleccionada = 'Todas';
+  categoriasDisponibles: string[] = [];
+  categoriasOpen = false;
+  tipoSeleccionado = 'Todos';
+  tiposDisponibles: string[] = [];
+  tiposOpen = false;
+
+  private categoriasPreDefinidas: string[] = [
+    'Administración / Oficina',
+    'Agricultura / Ganadería',
+    'Atención al cliente',
+    'Construcción / Obra',
+    'Diseño',
+    'Educación / Docencia',
+    'Finanzas / Contabilidad',
+    'Ingeniería',
+    'Legal / Derecho',
+    'Logística / Transporte',
+    'Manufactura / Producción',
+    'Marketing / Publicidad',
+    'Recursos Humanos',
+    'Restaurantes / Gastronomía',
+    'Salud / Medicina',
+    'Seguridad / Vigilancia',
+    'Servicios de limpieza',
+    'Servicios técnicos / Mantenimiento',
+    'Tecnología / TI',
+    'Turismo / Hotelería',
+    'Ventas'
+  ];
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
@@ -287,9 +319,15 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           rating: anuncio.modalidad || 'Empleo',
           applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
           tags: anuncio.categorias || [],
-          matchScore: anuncio.__score
+          matchScore: anuncio.__score,
+          tipoAnuncio: anuncio.tipo_anuncio || 'Empleo',
+          modalidad: anuncio.modalidad || 'Presencial'
         }));
 
+        this.categoriasDisponibles = this.extraerCategorias(this.jobs);
+        this.tiposDisponibles = this.extraerTipos(this.jobs);
+        this.categoriaSeleccionada = 'Todas';
+        this.tipoSeleccionado = 'Todos';
         this.currentSlide = 0;
         this.maxVisible = Math.max(8, this.jobs.length);
         this.visibleCount = Math.min(8, this.maxVisible);
@@ -522,6 +560,78 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   showMoreJobs() {
     this.visibleCount = Math.min(this.visibleCount + 8, this.maxVisible);
+  }
+
+  get filteredJobs(): Job[] {
+    return this.jobs.filter((job) => {
+      const coincideCategoria = !this.categoriaSeleccionada || this.categoriaSeleccionada === 'Todas'
+        ? true
+        : (job.tags || []).some((tag) => this.normalizarTexto(tag) === this.normalizarTexto(this.categoriaSeleccionada));
+
+      const coincideTipo = this.tipoSeleccionado === 'Todos'
+        ? true
+        : [job.tipoAnuncio, job.modalidad].some((valor) => this.normalizarTexto(valor) === this.normalizarTexto(this.tipoSeleccionado));
+
+      return coincideCategoria && coincideTipo;
+    });
+  }
+
+  get jobsToShow(): Job[] {
+    return this.filteredJobs.slice(0, this.visibleCount);
+  }
+
+  get maxJobsToShow(): number {
+    return this.filteredJobs.length;
+  }
+
+  toggleCategorias() {
+    this.categoriasOpen = !this.categoriasOpen;
+    this.tiposOpen = false;
+  }
+
+  toggleTipos() {
+    this.tiposOpen = !this.tiposOpen;
+    this.categoriasOpen = false;
+  }
+
+  seleccionarCategoria(categoria: string) {
+    this.categoriaSeleccionada = categoria;
+    this.categoriasOpen = false;
+    this.visibleCount = Math.min(8, this.maxJobsToShow);
+  }
+
+  seleccionarTipo(tipo: string) {
+    this.tipoSeleccionado = tipo;
+    this.tiposOpen = false;
+    this.visibleCount = Math.min(8, this.maxJobsToShow);
+  }
+
+  private extraerCategorias(jobs: Job[]): string[] {
+    const categorias = new Set<string>(this.categoriasPreDefinidas);
+    jobs.forEach((job) => {
+      (job.tags || []).forEach((tag) => {
+        const categoria = String(tag || '').trim();
+        if (categoria) {
+          categorias.add(categoria);
+        }
+      });
+    });
+
+    return Array.from(categorias).sort((a, b) => a.localeCompare(b));
+  }
+
+  private extraerTipos(jobs: Job[]): string[] {
+    const tipos = new Set<string>();
+    jobs.forEach((job) => {
+      [job.tipoAnuncio, job.modalidad].forEach((valor) => {
+        const tipo = String(valor || '').trim();
+        if (tipo) {
+          tipos.add(tipo);
+        }
+      });
+    });
+
+    return Array.from(tipos).sort((a, b) => a.localeCompare(b));
   }
 
   nextSlide() {

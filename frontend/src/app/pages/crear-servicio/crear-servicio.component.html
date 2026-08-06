@@ -212,41 +212,55 @@
         <div class="upload-card">
           <div class="upload-copy">
             <div class="upload-copy-text">
-              <p class="eyebrow">Imagen del servicio</p>
-              <h3>Agrega una foto para destacar tu publicación</h3>
-              <p>La imagen aparecerá en la portada y en los listados públicos de tu servicio.</p>
+              <p class="eyebrow">Imágenes del servicio</p>
+              <h3>Agrega hasta 5 fotos para destacar tu publicación</h3>
+              <p>Las imágenes aparecerán en la portada y en los listados públicos de tu servicio.</p>
             </div>
 
             <div class="upload-actions">
-              <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+              <input #imagenInput type="file" accept="image/*" multiple style="display:none" (change)="onArchivoSeleccionado($event)" />
 
-              <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
-                {{ fileName }}
-              </span>
-              <span class="file-name success-name" *ngIf="urlImagenSubida && !archivoSeleccionado">
-                ✓ Imagen guardada
-              </span>
+              <div class="d-flex gap-2 mb-2 align-items-center">
+                <span class="badge bg-info">{{ urlsImagenesSubidas.length + archivosSeleccionados.length }}/{{ MAX_IMAGENES }} imágenes</span>
+                <small class="text-muted" *ngIf="archivosSeleccionados.length > 0">{{ archivosSeleccionados.length }} pendiente de subir</small>
+              </div>
 
               <div class="btn-group">
-                <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()">
-                  {{ previewUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
+                <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()" [disabled]="urlsImagenesSubidas.length + archivosSeleccionados.length >= MAX_IMAGENES">
+                  Agregar imágenes
                 </button>
-                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="archivosSeleccionados.length === 0 || subiendoImagen">
                   <span class="loading" [class.visible]="subiendoImagen"></span>
-                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
-                </button>
-                <button type="button" class="btn-danger" *ngIf="mostrarEliminar" (click)="eliminarImagen()">
-                  Quitar imagen
+                  <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imágenes' }}</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="upload-preview">
-            <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa del servicio" />
-            <div *ngIf="!previewUrl" class="upload-placeholder">
+            <div *ngIf="previewUrls.length === 0 && urlsImagenesSubidas.length === 0" class="upload-placeholder">
               <i class="bi bi-image"></i>
-              <span>La vista previa aparecerá aquí</span>
+              <span>Las vistas previas aparecerán aquí</span>
+            </div>
+
+            <div *ngIf="previewUrls.length > 0 || urlsImagenesSubidas.length > 0" class="gallery-grid">
+              <!-- Imágenes subidas -->
+              <div *ngFor="let img of urlsImagenesSubidas; let i = index" class="gallery-item">
+                <img [src]="img" [alt]="'Imagen ' + (i + 1)" />
+                <button type="button" class="btn-remove" (click)="eliminarImagenSubida(i)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <span class="badge bg-success position-absolute top-0 start-0 m-2">Subida</span>
+              </div>
+
+              <!-- Imágenes seleccionadas pero no subidas -->
+              <div *ngFor="let preview of previewUrls; let i = index" class="gallery-item">
+                <img [src]="preview" [alt]="'Vista previa ' + (i + 1)" />
+                <button type="button" class="btn-remove" (click)="eliminarImagenPorIndice(i)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <span class="badge bg-warning position-absolute top-0 start-0 m-2">Pendiente</span>
+              </div>
             </div>
           </div>
         </div>

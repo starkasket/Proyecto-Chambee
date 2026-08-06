@@ -169,14 +169,48 @@
       </div>
     </ng-template>
 
-    <div class="jobs-grid" *ngIf="jobs.length; else noJobsGrid">
-      <div class="job-card" *ngFor="let job of jobs | slice:0:visibleCount" (click)="openJob(job.id)" role="button" tabindex="0">
+    <div class="filter-section mt-5">
+      <div class="d-flex flex-wrap gap-3 align-items-start">
+        <div class="filter-dropdown" style="position: relative; display: inline-block;">
+          <button class="btn btn-outline-warning" type="button" (click)="toggleCategorias()">
+            <i class="bi bi-funnel-fill me-2"></i> Categorías
+          </button>
+
+          <div *ngIf="categoriasOpen" class="filter-menu" style="position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 220px; background: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-float); padding: 8px 0;">
+            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" (click)="seleccionarCategoria('Todas')">Todas</button>
+            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" *ngFor="let categoria of categoriasDisponibles" (click)="seleccionarCategoria(categoria)">{{ categoria }}</button>
+          </div>
+        </div>
+
+        <div class="filter-dropdown" style="position: relative; display: inline-block;">
+          <button class="btn btn-outline-warning" type="button" (click)="toggleTipos()">
+            <i class="bi bi-briefcase-fill me-2"></i> Tipo
+          </button>
+
+          <div *ngIf="tiposOpen" class="filter-menu" style="position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 220px; background: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-float); padding: 8px 0;">
+            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" (click)="seleccionarTipo('Todos')">Todos</button>
+            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" *ngFor="let tipo of tiposDisponibles" (click)="seleccionarTipo(tipo)">{{ tipo }}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="categoriaSeleccionada !== 'Todas' || tipoSeleccionado !== 'Todos'">
+        <span class="featured-chip" *ngIf="categoriaSeleccionada !== 'Todas'">Categoría: {{ categoriaSeleccionada }}</span>
+        <span class="featured-chip" *ngIf="tipoSeleccionado !== 'Todos'">Tipo: {{ tipoSeleccionado }}</span>
+      </div>
+    </div>
+
+    <div class="jobs-grid mt-4" *ngIf="filteredJobs.length; else noJobsGrid">
+      <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button" tabindex="0">
         <img [src]="job.img" [alt]="job.company" />
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4>{{ job.company }}</h4>
           <p>{{ job.title }}</p>
           <p class="salary">{{ job.salary }}</p>
+          <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags && job.tags.length">
+            <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
+          </div>
           <div class="job-footer"><i class="bi bi-star-fill"></i> {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
         </div>
       </div>
@@ -188,7 +222,7 @@
       </div>
     </ng-template>
 
-    <div class="jobs-more" *ngIf="visibleCount < maxVisible">
+    <div class="jobs-more" *ngIf="visibleCount < maxJobsToShow">
       <button class="services-see-more" (click)="showMoreJobs()">Ver más empleos</button>
     </div>
   </div>

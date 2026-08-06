@@ -69,11 +69,13 @@ export class EmployerJobCreateComponent implements OnInit {
   cargandoPerfil = false;
   error = '';
   exito = '';
-  previewUrl: string | null = null;
-  archivoSeleccionado: File | null = null;
-  fileName = 'Ningún archivo seleccionado';
+  previewUrls: string[] = [];
+  archivosSeleccionados: File[] = [];
+  fileNames: string[] = [];
   subiendoImagen = false;
-  urlImagenSubida = '';
+  urlsImagenesSubidas: string[] = [];
+  readonly MAX_IMAGENES = 5;
+  readonly MAX_TAMAÑO_MB = 2;
   mostrarEliminar = false;
   menuOpen = false;
   notificationsOpen = false;
@@ -256,56 +258,75 @@ export class EmployerJobCreateComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
-    const archivo = input.files[0];
+    const nuevosArchivos = Array.from(input.files);
+    const archivosValidos = nuevosArchivos.filter((archivo) => {
+      if (archivo.size > this.MAX_TAMAÑO_MB * 1024 * 1024) {
+        this.mostrarModal(`${archivo.name} supera los ${this.MAX_TAMAÑO_MB} MB.`);
+        return false;
+      }
+      return true;
+    });
 
-    if (archivo.size > 2 * 1024 * 1024) {
-      this.mostrarModal('La imagen no puede superar los 2 MB.');
-      return;
+    const espacioDisponible = this.MAX_IMAGENES - this.archivosSeleccionados.length - this.urlsImagenesSubidas.length;
+    const archivosAgregar = archivosValidos.slice(0, espacioDisponible);
+
+    if (archivosAgregar.length < archivosValidos.length) {
+      this.mostrarModal(`Solo puedes agregar ${archivosAgregar.length} imagen(es) más. Máximo: ${this.MAX_IMAGENES}`);
     }
 
-    this.archivoSeleccionado = archivo;
-    this.urlImagenSubida = '';
-    this.mostrarEliminar = false;
-    this.fileName = archivo.name.length > 30 ? archivo.name.substring(0, 27) + '...' : archivo.name;
+    archivosAgregar.forEach((archivo) => {
+      this.archivosSeleccionados.push(archivo);
+      const displayName = archivo.name.length > 30 ? archivo.name.substring(0, 27) + '...' : archivo.name;
+      this.fileNames.push(displayName);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.previewUrl = e.target?.result as string;
-    };
-    reader.readAsDataURL(archivo);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.previewUrls.push(e.target?.result as string);
+      };
+      reader.readAsDataURL(archivo);
+    });
+
+    input.value = '';
   }
 
-  async subirImagen(): Promise<string> {
-    if (!this.archivoSeleccionado) {
-      return this.urlImagenSubida;
+  async subirImagen(): Promise<void> {
+    if (this.archivosSeleccionados.length === 0) {
+      return;
     }
 
     this.subiendoImagen = true;
 
     try {
-      const formData = new FormData();
-      formData.append('file', this.archivoSeleccionado);
-      formData.append('upload_preset', 'chambee_upload');
+      for (let i = 0; i < this.archivosSeleccionados.length; i++) {
+        const archivo = this.archivosSeleccionados[i];
+        const formData = new FormData();
+        formData.append('file', archivo);
+        formData.append('upload_preset', 'chambee_upload');
 
-      const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
-        method: 'POST',
-        body: formData
-      });
+        const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+          method: 'POST',
+          body: formData
+        });
 
-      if (!res.ok) {
-        throw new Error('No se pudo subir la imagen.');
+        if (!res.ok) {
+          throw new Error(`No se pudo subir la imagen ${i + 1}.`);
+        }
+
+        const data = await res.json();
+        if (!data?.secure_url) {
+          throw new Error(`No se pudo obtener la URL de la imagen ${i + 1}.`);
+        }
+
+        this.urlsImagenesSubidas.push(data.secure_url);
       }
 
-      const data = await res.json();
-      if (!data?.secure_url) {
-        throw new Error('La respuesta de la imagen no fue válida.');
-      }
-
-      this.urlImagenSubida = data.secure_url;
-      this.mostrarEliminar = true;
-      return this.urlImagenSubida;
-    } finally {
+      this.archivosSeleccionados = [];
+      this.fileNames = [];
+      this.previewUrls = [];
       this.subiendoImagen = false;
+    } catch (err: any) {
+      this.subiendoImagen = false;
+      throw err;
     }
   }
 
@@ -317,12 +338,14 @@ export class EmployerJobCreateComponent implements OnInit {
     }
   }
 
-  eliminarImagen(): void {
-    this.previewUrl = null;
-    this.archivoSeleccionado = null;
-    this.fileName = 'Ningún archivo seleccionado';
-    this.urlImagenSubida = '';
-    this.mostrarEliminar = false;
+  eliminarImagenPorIndice(indice: number): void {
+    this.previewUrls.splice(indice, 1);
+    this.archivosSeleccionados.splice(indice, 1);
+    this.fileNames.splice(indice, 1);
+  }
+
+  eliminarImagenSubida(indice: number): void {
+    this.urlsImagenesSubidas.splice(indice, 1);
   }
 
   volverPanel() {
@@ -410,10 +433,11 @@ export class EmployerJobCreateComponent implements OnInit {
   private publicarConImagen(estadoAnuncio: 'ACTIVO' | 'BORRADOR', estatus: string, esBorrador: boolean) {
     const payloadBase = this.ofertaForm.getRawValue() as EmployerJobFormValue;
 
-    const ejecutarGuardado = (imgUrl: string | null) => {
+    const ejecutarGuardado = (imgs: string[]) => {
       const payload = {
         ...payloadBase,
-        img: imgUrl,
+        img: imgs.length > 0 ? imgs[0] : null,
+        imgs: imgs,
         estado_anuncio: estadoAnuncio,
         estatus
       };
@@ -441,11 +465,10 @@ export class EmployerJobCreateComponent implements OnInit {
             etiquetas: []
           });
 
-          this.previewUrl = null;
-          this.archivoSeleccionado = null;
-          this.fileName = 'Ningún archivo seleccionado';
-          this.urlImagenSubida = '';
-          this.mostrarEliminar = false;
+          this.previewUrls = [];
+          this.archivosSeleccionados = [];
+          this.fileNames = [];
+          this.urlsImagenesSubidas = [];
 
           this.mostrarModalExito(esBorrador ? 'El borrador de tu vacante se ha guardado de forma segura.' : 'Tu oferta laboral fue publicada exitosamente.');
         },
@@ -457,18 +480,18 @@ export class EmployerJobCreateComponent implements OnInit {
       });
     };
 
-    if (this.archivoSeleccionado && !this.urlImagenSubida) {
+    if (this.archivosSeleccionados.length > 0) {
       this.subirImagen()
-        .then((imgUrl) => ejecutarGuardado(imgUrl || null))
+        .then(() => ejecutarGuardado(this.urlsImagenesSubidas))
         .catch((err) => {
           this.guardando = false;
           this.guardandoBorrador = false;
-          this.mostrarModal(err?.message || 'Error al subir la imagen.');
+          this.mostrarModal(err?.message || 'Error al subir las imágenes.');
         });
       return;
     }
 
-    ejecutarGuardado(this.urlImagenSubida || null);
+    ejecutarGuardado(this.urlsImagenesSubidas);
   }
 
   buscarCP() {
