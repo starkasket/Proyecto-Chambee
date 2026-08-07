@@ -266,7 +266,7 @@
         </div>
 
         <div class="service-detail-author" *ngIf="servicioDetalle.nombre_postulante || servicioDetalle.autor_id">
-          <div class="service-detail-author-card" (click)="verPerfilAutor(servicioDetalle.autor_id)" role="button" tabindex="0">
+          <div class="service-detail-author-card">
             <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor" class="author-avatar" />
             <div class="author-info">
               <span class="author-label">Publicado por</span>
@@ -275,7 +275,20 @@
                 {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : '' }}
               </span>
             </div>
-            <i class="bi bi-chevron-right author-arrow"></i>
+          </div>
+        </div>
+
+        <div class="service-detail-section" *ngIf="servicioDetalle.correo_electronico || servicioDetalle.telefono">
+          <h4><i class="bi bi-person-lines-fill"></i> Datos de contacto</h4>
+          <div class="service-detail-location-grid">
+            <div *ngIf="servicioDetalle.correo_electronico" class="location-item">
+              <span class="location-label">Correo</span>
+              <span class="location-value">{{ servicioDetalle.correo_electronico }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.telefono" class="location-item">
+              <span class="location-label">Teléfono</span>
+              <span class="location-value">{{ servicioDetalle.telefono }}</span>
+            </div>
           </div>
         </div>
 
@@ -469,7 +482,7 @@
       <div style="flex: 1;">
         <span *ngIf="service.es_borrador"
           style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e;
-                 padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
+                  padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
           Borrador
         </span>
         <h5 class="service-title">{{ service.title }}</h5>
@@ -498,8 +511,8 @@
         <button
           (click)="editarServicio(idx); menuServicioAbierto = null"
           style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
-                 cursor: pointer; font-size: 0.9rem; color: var(--text-color, #333);
-                 display: flex; align-items: center; gap: 8px;">
+                  cursor: pointer; font-size: 0.9rem; color: var(--text-color, #333);
+                  display: flex; align-items: center; gap: 8px;">
           <i class="bi bi-pencil"></i> Editar
         </button>
 
@@ -508,8 +521,8 @@
         <button
           (click)="eliminarServicio(idx); menuServicioAbierto = null"
           style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
-                 cursor: pointer; font-size: 0.9rem; color: #e53e3e;
-                 display: flex; align-items: center; gap: 8px;">
+                  cursor: pointer; font-size: 0.9rem; color: #e53e3e;
+                  display: flex; align-items: center; gap: 8px;">
           <i class="bi bi-trash"></i> Eliminar
         </button>
       </div>

@@ -1695,10 +1695,12 @@ app.get("/servicios/:autorId", verifyToken, async (req, res) => {
 });
 
 // GET: Obtiene un servicio específico por ID con info del autor
+
 app.get("/servicio-detalle/:id", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT s.*, p.nombre_postulante, p.apellido_paterno_postulante, p.foto_perfil AS foto_autor
+      `SELECT s.*, p.nombre_postulante, p.apellido_paterno_postulante, p.foto_perfil AS foto_autor,
+              p.correo_electronico, p.telefono
        FROM servicios s
        INNER JOIN postulante p ON p.id_postulante = s.autor_id
        WHERE s.id_servicio = $1`,
