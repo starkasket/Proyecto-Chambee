@@ -202,6 +202,11 @@
   font-weight: 500;
 }
 
+.input-error-duplicate {
+  border: 1.5px solid #d93025 !important;
+  box-shadow: 0 0 0 0.2rem rgba(217, 48, 37, 0.2) !important;
+}
+
 /* --- ADAPTACIONES PARA EL MODO OSCURO --- */
 
 

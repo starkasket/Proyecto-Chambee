@@ -11,6 +11,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { decode } = require("punycode");
 const { log } = require("console");
+const axios = require("axios");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -267,6 +268,79 @@ app.post("/postulantes/registro", async (req, res) => {
 
   const estado_cuenta = 'ACTIVA';
   try {
+    // Validar CURP con APIMarket
+    const apimarketKey = process.env.APIMARKET_KEY;
+    if (!apimarketKey) {
+      console.warn("APIMARKET_KEY no está configurada en las variables de entorno. Se omitirá la validación.");
+    } else if (curp) {
+      try {
+        const headers = {
+          "Authorization": `Bearer ${apimarketKey}`,
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        };
+        if (process.env.APIMARKET_SANDBOX === "true") {
+          headers["x-sandbox"] = "true";
+        }
+
+        const apiResponse = await axios.post(
+          "https://apimarket.mx/api/renapo/grupo/valida-curp",
+          { curp: curp.toUpperCase() },
+          {
+            headers,
+            timeout: 10000
+          }
+        );
+
+        const apiData = apiResponse.data;
+        if (!apiData || !apiData.success || apiData.status !== 200) {
+          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+        }
+      } catch (apiErr) {
+        console.error("Error al validar la CURP en APIMarket:", apiErr.response?.data || apiErr.message);
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+      }
+    } else {
+      return res.status(400).json({ error: "La CURP es obligatoria para el registro de postulante." });
+    }
+
+    // Validar RFC con APIMarket (SAT)
+    if (apimarketKey && rfc) {
+      try {
+        const rfcHeaders = {
+          "Authorization": `Bearer ${apimarketKey}`,
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        };
+        if (process.env.APIMARKET_SANDBOX === "true") {
+          rfcHeaders["x-sandbox"] = "true";
+        }
+
+        const rfcResponse = await axios.post(
+          "https://apimarket.mx/api/sat/grupo/validar-rfc",
+          { rfc: rfc.toUpperCase() },
+          {
+            headers: rfcHeaders,
+            timeout: 10000
+          }
+        );
+
+        const rfcData = rfcResponse.data;
+        if (!rfcData || !rfcData.success || rfcData.status !== 200) {
+          console.error("RFC inválido según APIMarket:", rfcData);
+          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        }
+        if (rfcData.data && rfcData.data.existeRfc === false) {
+          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        }
+      } catch (rfcErr) {
+        console.error("Error al validar el RFC en APIMarket:", rfcErr.response?.data || rfcErr.message);
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+      }
+    } else if (!rfc) {
+      return res.status(400).json({ error: "El RFC es obligatorio para el registro de postulante." });
+    }
+
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     const query = `INSERT INTO postulante (
@@ -310,7 +384,18 @@ app.post("/postulantes/registro", async (req, res) => {
     });
 
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    if (err.code === '23505') {
+      if (err.detail && err.detail.includes('curp')) {
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+      }
+      if (err.detail && err.detail.includes('rfc')) {
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+      }
+      if (err.detail && err.detail.includes('correo_electronico')) {
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "correo_electronico" });
+      }
+    }
     res.status(500).json({ error: err.message });
   }
 });

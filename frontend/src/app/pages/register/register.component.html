@@ -60,7 +60,8 @@
 
         
           <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
-            [(ngModel)]="form.correo_electronico" name="correo_electronico" #correo="ngModel" required email />
+            [(ngModel)]="form.correo_electronico" name="correo_electronico" #correo="ngModel" required email
+            [ngClass]="{'input-error-duplicate': erroresDuplicados.correo_electronico}" (input)="erroresDuplicados.correo_electronico = false" />
           <div *ngIf="correo.invalid && correo.touched" class="support-error" style="margin-bottom: 8px;">Correo inválido</div>
               
 
@@ -97,10 +98,12 @@
        
         <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
           <p class="section-label">Identificación</p>
-          <input type="text" class="form-control-custom" placeholder="RFC" [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{13}" maxlength="13"/>
+          <input type="text" class="form-control-custom" placeholder="RFC" [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{13}" maxlength="13"
+            [ngClass]="{'input-error-duplicate': erroresDuplicados.rfc}" (input)="erroresDuplicados.rfc = false" />
           <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>     
        
-          <input type="text" class="form-control-custom" placeholder="CURP" [(ngModel)]="form.curp" name="curp" #curp="ngModel" required pattern=".{18}" maxlength="18"/>
+          <input type="text" class="form-control-custom" placeholder="CURP" [(ngModel)]="form.curp" name="curp" #curp="ngModel" required pattern=".{18}" maxlength="18"
+            [ngClass]="{'input-error-duplicate': erroresDuplicados.curp}" (input)="erroresDuplicados.curp = false" />
            <div *ngIf="curp.invalid && curp.dirty" class="support-error" style="margin-bottom: 8px;">CURP inválida</div>     
           <p class="dir-label">Dirección Completa</p>
           <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal"
@@ -118,7 +121,7 @@
         </div>
   
       </div>
-      <button class="btn-crear" type="button" (click)="registrar()" [disabled]="formRef.invalid || form.contrasena !== form.contrasena_verificar || !esMayorDeEdad(form.fecha_nacimiento)">Crear Cuenta</button>
+      <button class="btn-crear" type="button" (click)="registrar()">Crear Cuenta</button>
   </form>
     </div>
   </div>
