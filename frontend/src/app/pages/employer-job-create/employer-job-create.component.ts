@@ -228,20 +228,25 @@ export class EmployerJobCreateComponent implements OnInit {
     });
   }
 
-  publicarOferta() {
-    this.error = '';
-    this.exito = '';
+ publicarOferta() {
+  this.error = '';
+  this.exito = '';
 
-    if (this.ofertaForm.invalid) {
-      this.ofertaForm.markAllAsTouched();
-      this.error = 'Completa los campos requeridos para publicar la oferta.';
-      return;
-    }
-
-    this.guardando = true;
-    this.publicarConImagen('ACTIVO', 'Publicado', false);
+  if (this.ofertaForm.invalid) {
+    this.ofertaForm.markAllAsTouched();
+    this.error = 'Completa los campos requeridos para publicar la oferta.';
+    return;
   }
 
+  const totalImagenes = this.archivosSeleccionados.length + this.urlsImagenesSubidas.length;
+  if (totalImagenes === 0) {
+    this.mostrarModal('Debes agregar al menos una imagen antes de publicar la oferta.');
+    return;
+  }
+
+  this.guardando = true;
+  this.publicarConImagen('ACTIVO', 'Publicado', false);
+}
   guardarBorrador() {
     this.error = '';
     this.exito = '';
