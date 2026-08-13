@@ -202,7 +202,7 @@
 
     <div class="jobs-grid mt-4" *ngIf="filteredJobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button" tabindex="0">
-        <img [src]="job.img" [alt]="job.company" />
+        <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4>{{ job.company }}</h4>

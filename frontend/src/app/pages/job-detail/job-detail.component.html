@@ -86,7 +86,7 @@
     <div *ngIf="!servicioDetalleCargando && servicioDetalle" class="service-detail-content">
       
       <div class="service-detail-hero">
-        <img [src]="servicioDetalle.img || 'assets/LogoChambee.png'" [alt]="servicioDetalle.title" />
+        <app-carousel [images]="servicioDetalle.images ? servicioDetalle.images : [servicioDetalle.img || 'assets/LogoChambee.png']"></app-carousel>
         <div class="service-detail-hero-overlay">
           <span class="service-detail-category-badge" *ngIf="servicioDetalle.categoria">
             <i class="bi bi-tag-fill"></i> {{ servicioDetalle.categoria }}
@@ -344,8 +344,7 @@
         <div class="chambee-card">
             <div class="company-col">
                 <div class="company-info-top">
-                    <img [src]="jobData.companyLogo || 'assets/LogoChambee.png'" alt="Logo de la empresa"
-                        class="company-logo">
+                    <app-carousel [images]="jobData.companyImages ? jobData.companyImages : [jobData.companyLogo || 'assets/LogoChambee.png']" [jobId]="jobData.employerId"></app-carousel>
                     <h3 class="company-name">{{ jobData.companyName }}</h3>
                     <p class="company-desc">{{ jobData.companyDesc }}</p>
                     <button class="btn-company-profile" type="button" (click)="verPerfilEmpresa()" [disabled]="!jobData.employerId">

@@ -9,6 +9,7 @@ import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SocketService } from '../../services/socket.service';
+import { CarouselComponent } from '../../components/carousel/carousel.component';
 
 interface Slide {
   id?: string | number;
@@ -31,6 +32,7 @@ interface Job {
   title: string;
   salary: string;
   img: string;
+  images?: string[];
   urgency?: string;
   rating: string;
   applicants: number;
@@ -61,7 +63,7 @@ interface SearchResult {
 @Component({
   selector: 'app-home-user',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent],
   templateUrl: './home-user.component.html',
   styleUrl: './home-user.component.css'
 })
@@ -315,6 +317,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           title: anuncio.titulo,
           salary: this.formatearSalario(anuncio.salario),
           img: anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
+          images: anuncio.images?.length ? anuncio.images : [anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'],
           urgency: anuncio.urgencia || 'Normal',
           rating: anuncio.modalidad || 'Empleo',
           applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,

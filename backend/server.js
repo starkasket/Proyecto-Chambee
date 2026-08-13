@@ -999,6 +999,7 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
     const query = `SELECT
       a.id_anuncio, a.titulo, a.descripcion, a.tipo_anuncio, a.urgencia, a.edad, a.educacion,
       (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
+      (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
       a.estado, a.ciudad, a.colonia, a.calle, a.codigo_postal, a.salario, a.modalidad, a.fecha_publicacion,
       a.estado_anuncio, a.vistas, a.id_empleador, COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
@@ -1048,7 +1049,7 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
   const { id } = req.params;
   if (String(req.user.id) !== String(id)) return res.status(403).json({ error: "No autorizado" });
 
-  const { titulo, descripcion, tipo_anuncio, urgencia = "Normal", edad = "Sin especificar", educacion = "Sin especificar", img, estado, ciudad, colonia, calle, codigo_postal, salario, modalidad, estado_anuncio = "ACTIVO", etiquetas = [] } = req.body;
+  const { titulo, descripcion, tipo_anuncio, urgencia = "Normal", edad = "Sin especificar", educacion = "Sin especificar", img, imgs = [], images: imagesBody = [], estado, ciudad, colonia, calle, codigo_postal, salario, modalidad, estado_anuncio = "ACTIVO", etiquetas = [] } = req.body;
 
   if (!titulo || !descripcion || !estado || !ciudad || !colonia || !calle || !codigo_postal || salario === null || salario === undefined || !modalidad) {
     return res.status(400).json({ error: "Faltan campos requeridos" });
@@ -1067,13 +1068,25 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     const values = [titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, codigo_postal, salarioNumero, modalidad, estado_anuncio, id];
     const result = await client.query(query, values);
     const anuncio = result.rows[0];
+    const imagenesPayload = Array.isArray(imgs) && imgs.length ? imgs : imagesBody;
+    const imagenesNormalizadas = [...new Set(
+      [img, ...(Array.isArray(imagenesPayload) ? imagenesPayload : [])]
+        .filter((url) => typeof url === "string")
+        .map((url) => url.trim())
+        .filter(Boolean)
+    )];
 
-    if (img) await client.query(`INSERT INTO imagenes (id_anuncio, url_imagen) VALUES ($1, $2)`, [anuncio.id_anuncio, img]);
+    for (const url of imagenesNormalizadas) {
+      await client.query(`INSERT INTO imagenes (id_anuncio, url_imagen) VALUES ($1, $2)`, [anuncio.id_anuncio, url]);
+    }
     const categorias = await obtenerCategoriasPorNombre(etiquetas, client);
     for (const categoria of categorias) await client.query(`INSERT INTO categoriaAnuncio (id_categoria, id_anuncio) VALUES ($1, $2)`, [categoria.id_categoria, anuncio.id_anuncio]);
     
     await client.query("COMMIT");
-    res.status(201).json({ message: "Oferta creada", anuncio: { ...anuncio, img: img || null, categorias: categorias.map(c => c.nombre) } });
+    // Return images array in response for convenience
+    const imagenesRows = await client.query(`SELECT url_imagen FROM imagenes WHERE id_anuncio = $1 ORDER BY id_imagen`, [anuncio.id_anuncio]);
+    const images = imagenesRows.rows.map(r => r.url_imagen);
+    res.status(201).json({ message: "Oferta creada", anuncio: { ...anuncio, img: images[0] || null, images, categorias: categorias.map(c => c.nombre) } });
   } catch (err) {
     await client.query("ROLLBACK");
     res.status(500).json({ error: "Error al crear oferta", detail: err.message });
@@ -1165,6 +1178,7 @@ app.get("/anuncios", async (_req, res) => {
   try {
     const query = `SELECT
       a.*, (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
+      (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
       e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
       COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
@@ -1365,6 +1379,7 @@ app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"
     const anunciosResult = await pool.query(`SELECT
         a.id_anuncio, a.titulo, a.descripcion, a.urgencia, a.estado, a.ciudad, a.calle,
         (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
+        (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
         a.salario, a.modalidad, a.fecha_publicacion, a.vistas,
         COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
       FROM anuncios a
@@ -1495,6 +1510,7 @@ app.get("/favoritos", verifyToken, authorizeRoles("postulante"), async (req, res
   try {
     const query = `SELECT
       f.id_favoritos, f.fecha_guardado, a.id_anuncio, (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
+      (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
       a.titulo, a.descripcion, a.urgencia, a.edad, a.educacion, a.estado, a.ciudad, a.colonia, a.calle, a.codigo_postal, a.salario, a.modalidad, a.fecha_publicacion, a.estado_anuncio, a.vistas,
       e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias

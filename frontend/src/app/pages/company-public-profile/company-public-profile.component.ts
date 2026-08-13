@@ -3,6 +3,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { CarouselComponent } from '../../components/carousel/carousel.component';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -14,6 +15,7 @@ interface PublicCompanyProfile {
   calle: string;
   descripcion: string;
   foto_perfil?: string;
+  images?: string[];
   vacantes_activas: number;
   promedio_valoracion?: number;
   total_valoraciones?: number;
@@ -29,6 +31,7 @@ interface PublicCompanyJob {
   ciudad: string;
   calle: string;
   img?: string | null;
+  images?: string[];
   salario: string | number;
   modalidad: string;
   fecha_publicacion: string | null;
@@ -39,7 +42,7 @@ interface PublicCompanyJob {
 @Component({
   selector: 'app-company-public-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent],
   templateUrl: './company-public-profile.component.html',
   styleUrl: './company-public-profile.component.css'
 })

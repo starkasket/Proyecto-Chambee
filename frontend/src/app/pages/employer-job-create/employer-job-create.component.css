@@ -757,6 +757,11 @@
   padding: 0;
 }
 
+.gallery-carousel {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .gallery-item {
   position: relative;
   border-radius: 12px;

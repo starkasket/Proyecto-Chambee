@@ -409,7 +409,7 @@
           [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
           <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
         </button>
-        <img [src]="job.img" [alt]="job.company" />
+        <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4 class="job-company">{{ job.company }}</h4>
@@ -443,7 +443,7 @@
             [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
             <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
           </button>
-          <img [src]="job.img" [alt]="job.company" />
+          <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
           <div class="job-content">
             <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
             <h4 class="job-company">{{ job.company }}</h4>

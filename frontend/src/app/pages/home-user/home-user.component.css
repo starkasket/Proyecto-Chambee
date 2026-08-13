@@ -494,6 +494,11 @@ body {
   width: 100%;
 }
 
+.job-card app-carousel {
+  display: block;
+  width: 100%;
+}
+
 .job-content {
   padding: 10px;
 }

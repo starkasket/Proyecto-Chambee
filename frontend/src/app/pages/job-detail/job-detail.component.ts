@@ -7,7 +7,7 @@ import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms'; 
 import * as L from 'leaflet';
 
-import { JobCardComponent } from '../../components/job-card/job-card.component';
+import { CarouselComponent } from '../../components/carousel/carousel.component';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -32,6 +32,7 @@ interface Slide {
   urgency?: string;
   description: string;
   img: string;
+  images?: string[];
   tags: string[];
   matchScore: number;
 }
@@ -42,6 +43,7 @@ interface Job {
   title: string;
   salary: string;
   img: string;
+  images?: string[];
   urgency?: string;
   rating: string;
   applicants: number;
@@ -53,7 +55,7 @@ interface Job {
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, JobCardComponent, FormsModule], 
+  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent], 
   templateUrl: './job-detail.component.html',
   styleUrl: './job-detail.component.css'
 })
@@ -115,15 +117,15 @@ export class JobDetailComponent implements OnInit {
   vistosRecientemente: Job[] = [];
 
   private map: L.Map | null = null;
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private location = inject(Location);
-  private platformId = inject(PLATFORM_ID);
-  private themeService = inject(ThemeService);
-  private api = inject(ApiService);
-  private authApi = inject(AuthService);
-  private http = inject(HttpClient);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly themeService = inject(ThemeService);
+  private readonly api = inject(ApiService);
+  private readonly authApi = inject(AuthService);
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     // Obtenemos el usuario para validar su rol
@@ -542,6 +544,7 @@ export class JobDetailComponent implements OnInit {
           employerId: anuncio.id_empleador,
           companyName: anuncio.nombre_empresa || 'Empresa Certificada',
           companyLogo: anuncio.foto_empresa || 'assets/LogoChambee.png',
+          companyImages: anuncio.images?.length ? anuncio.images : [anuncio.img || anuncio.foto_empresa || 'assets/LogoChambee.png'],
           companyDesc: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
           title: anuncio.titulo || 'Vacante',
           urgency: anuncio.urgencia || 'Normal',
@@ -659,8 +662,8 @@ export class JobDetailComponent implements OnInit {
         let lon = -100.3899;
 
         if (resultado?.length) {
-          lat = parseFloat(resultado[0].lat);
-          lon = parseFloat(resultado[0].lon);
+          lat = Number.parseFloat(resultado[0].lat);
+          lon = Number.parseFloat(resultado[0].lon);
         }
 
         this.map = L.map('map').setView([lat, lon], 16);
@@ -865,12 +868,15 @@ export class JobDetailComponent implements OnInit {
   highlightText(text: string | null | undefined, query: string): string {
     if (!text) return '';
     if (!query) return text;
-    const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${safeQuery})`, 'gi');
     return text.replace(regex, '<span class="text-highlight">$1</span>');
   }
 
   private normalizarTexto(value: unknown): string {
-    return String(value ?? '').toLowerCase().trim();
+    if (value == null) return '';
+    if (typeof value === 'string') return value.toLowerCase().trim();
+    if (typeof value === 'object') return JSON.stringify(value).toLowerCase().trim();
+    return String(value).toLowerCase().trim();
   }
 }

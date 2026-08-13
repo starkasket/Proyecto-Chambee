@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { CarouselComponent } from '../../components/carousel/carousel.component';
 
 interface EmployerJobFormValue {
   titulo: string;
@@ -38,7 +39,7 @@ interface NotificationItem {
 @Component({
   selector: 'app-employer-job-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, CarouselComponent],
   templateUrl: './employer-job-create.component.html',
   styleUrl: './employer-job-create.component.css'
 })
@@ -76,6 +77,7 @@ export class EmployerJobCreateComponent implements OnInit {
   urlsImagenesSubidas: string[] = [];
   readonly MAX_IMAGENES = 5;
   readonly MAX_TAMAÑO_MB = 2;
+  readonly TIPOS_IMAGEN_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
   mostrarEliminar = false;
   menuOpen = false;
   notificationsOpen = false;
@@ -260,6 +262,11 @@ export class EmployerJobCreateComponent implements OnInit {
 
     const nuevosArchivos = Array.from(input.files);
     const archivosValidos = nuevosArchivos.filter((archivo) => {
+      if (!this.esImagenValida(archivo)) {
+        this.mostrarModal(`${archivo.name} no es una imagen valida. Usa JPG, PNG, WEBP o GIF.`);
+        return false;
+      }
+
       if (archivo.size > this.MAX_TAMAÑO_MB * 1024 * 1024) {
         this.mostrarModal(`${archivo.name} supera los ${this.MAX_TAMAÑO_MB} MB.`);
         return false;
@@ -346,6 +353,10 @@ export class EmployerJobCreateComponent implements OnInit {
 
   eliminarImagenSubida(indice: number): void {
     this.urlsImagenesSubidas.splice(indice, 1);
+  }
+
+  get imagenesCarruselPreview(): string[] {
+    return [...this.urlsImagenesSubidas, ...this.previewUrls].filter(Boolean);
   }
 
   volverPanel() {
@@ -492,6 +503,14 @@ export class EmployerJobCreateComponent implements OnInit {
     }
 
     ejecutarGuardado(this.urlsImagenesSubidas);
+  }
+
+  private esImagenValida(archivo: File): boolean {
+    if (this.TIPOS_IMAGEN_PERMITIDOS.includes(archivo.type)) {
+      return true;
+    }
+
+    return /\.(jpe?g|png|webp|gif)$/i.test(archivo.name);
   }
 
   buscarCP() {

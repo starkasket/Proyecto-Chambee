@@ -267,6 +267,9 @@
             </div>
 
             <div *ngIf="previewUrls.length > 0 || urlsImagenesSubidas.length > 0" class="gallery-grid">
+              <div class="gallery-carousel" style="--carousel-height: 220px;">
+                <app-carousel [images]="imagenesCarruselPreview" [autoplay]="true" [interval]="3000"></app-carousel>
+              </div>
               <!-- Imágenes subidas -->
               <div *ngFor="let img of urlsImagenesSubidas; let i = index" class="gallery-item">
                 <img [src]="img" [alt]="'Imagen ' + (i + 1)" />

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
+import { CarouselComponent } from '../../components/carousel/carousel.component';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -28,6 +29,7 @@ interface Job {
   title: string;
   salary: string;
   img: string;
+  images?: string[];
   urgency?: string;
   rating: string;
   applicants: number;
@@ -39,7 +41,7 @@ interface Job {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -48,8 +50,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly themeService: ThemeService,
-    private http: HttpClient,
-    private api: ApiService,
+    private readonly http: HttpClient,
+    private readonly api: ApiService,
     private readonly authApi: AuthService
   ) {}
 
@@ -63,7 +65,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Variables para el buscador estilo Coursera (Pro)
   searchTerm = '';
-  searchSubject = new Subject<string>();
+  readonly searchSubject = new Subject<string>();
   searchResults: any[] = [];
   showSearchDropdown = false;
   recentSearches: string[] = [];
@@ -76,7 +78,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   tiposDisponibles: string[] = [];
   tiposOpen = false;
 
-  private categoriasPreDefinidas: string[] = [
+  private readonly categoriasPreDefinidas: string[] = [
     'Administración / Oficina',
     'Agricultura / Ganadería',
     'Atención al cliente',
@@ -153,6 +155,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             title: anuncio.titulo || 'Posición disponible',
             salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
             img: anuncio.img || `https://picsum.photos/300/150?random=${index + 100}`,
+            images: anuncio.images?.length ? anuncio.images : [anuncio.img || `https://picsum.photos/300/150?random=${index + 100}`],
             urgency: anuncio.urgencia || 'Normal',
             rating: '4.5',
             applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
@@ -232,11 +235,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   openFeaturedJob(id?: string | number) {
-    if (id) {
-      this.router.navigate(['/job', id]);
-    } else {
-      this.router.navigate(['/jobs']);
-    }
+    // Reutiliza la lógica de openJob para evitar duplicación
+    this.openJob(id);
   }
 
   @HostListener('window:resize')
@@ -319,7 +319,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private normalizarTexto(value: unknown): string {
-    return String(value ?? '').toLowerCase().trim();
+    if (value == null) return '';
+    if (typeof value === 'string') return value.toLowerCase().trim();
+    if (typeof value === 'object') return JSON.stringify(value).toLowerCase().trim();
+    return String(value).toLowerCase().trim();
   }
 
   nextSlide() {
@@ -385,7 +388,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     const servicesResults = this.services.filter(service =>
       service.title.toLowerCase().includes(lowerQuery) ||
-      (service.description && service.description.toLowerCase().includes(lowerQuery))
+      (service.description?.toLowerCase().includes(lowerQuery) ?? false)
     ).map(s => ({ ...s, tipo: 'servicio' }));
 
     this.searchResults = [...jobsResults, ...servicesResults].slice(0, 6);
@@ -452,7 +455,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   highlightText(text: string, query: string): string {
     if (!query || !text) return text;
-    const safeQuery = query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+      const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${safeQuery})`, 'gi');
     return text.replace(regex, '<span class="text-highlight">$1</span>');
   }
