@@ -410,6 +410,41 @@ app.post("/empleadores/registro", async (req, res) => {
 
   const estado_cuenta = "ACTIVA";
   try {
+    // Validar RFC Moral con APIMarket (SAT)
+    const apimarketKey = process.env.APIMARKET_KEY;
+    if (apimarketKey && rfc) {
+      try {
+        const rfcHeaders = {
+          "Authorization": `Bearer ${apimarketKey}`,
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        };
+        if (process.env.APIMARKET_SANDBOX === "true") {
+          rfcHeaders["x-sandbox"] = "true";
+        }
+
+        const rfcResponse = await axios.post(
+          "https://apimarket.mx/api/sat/grupo/validar-rfc",
+          { rfc: rfc.toUpperCase() },
+          { headers: rfcHeaders, timeout: 10000 }
+        );
+
+        const rfcData = rfcResponse.data;
+        if (!rfcData || !rfcData.success || rfcData.status !== 200) {
+          console.error("RFC Moral inválido según APIMarket:", rfcData);
+          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        }
+        if (rfcData.data && rfcData.data.existeRfc === false) {
+          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        }
+      } catch (rfcErr) {
+        console.error("Error al validar el RFC en APIMarket:", rfcErr.response?.data || rfcErr.message);
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+      }
+    } else if (!rfc) {
+      return res.status(400).json({ error: "El RFC es obligatorio para el registro de empleador." });
+    }
+
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     const query = `INSERT INTO empleador (
@@ -451,6 +486,18 @@ app.post("/empleadores/registro", async (req, res) => {
     });
 
   } catch (err) {
+    console.error(err);
+    if (err.code === '23505') {
+      if (err.detail && err.detail.includes('rfc')) {
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+      }
+      if (err.detail && err.detail.includes('correo_electronico')) {
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "correo_electronico" });
+      }
+      if (err.detail && err.detail.includes('nombre_empresa')) {
+        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "nombre_empresa" });
+      }
+    }
     res.status(500).json({ error: err.message });
   }
 });

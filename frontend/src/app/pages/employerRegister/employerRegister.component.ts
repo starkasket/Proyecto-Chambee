@@ -35,6 +35,12 @@ export class EmployerRegisterComponent {
   colonias: string[] = [];
   buscandoCP = false;
 
+  erroresDuplicados = {
+    correo_electronico: false,
+    rfc: false,
+    nombre_empresa: false
+  };
+
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
   modalMensajeExito = '';
@@ -109,19 +115,74 @@ export class EmployerRegisterComponent {
   }
 
   registrar() {
-    if (this.form.contrasena !== this.form.contrasena_verificar) {
-      this.mostrarModal('Las contraseñas no coinciden');
+    // Validaciones campo a campo con mensajes claros
+    if (!this.form.nombre_empresa || !this.form.nombre_empresa.trim()) {
+      this.mostrarModal('El nombre de la empresa es obligatorio.');
       return;
     }
+    if (!this.form.correo_electronico || !this.form.correo_electronico.trim()) {
+      this.mostrarModal('El correo electrónico es obligatorio.');
+      return;
+    }
+    if (!this.form.contrasena) {
+      this.mostrarModal('La contraseña es obligatoria.');
+      return;
+    }
+    if (!this.form.contrasena_verificar) {
+      this.mostrarModal('Debes confirmar tu contraseña.');
+      return;
+    }
+    if (this.form.contrasena !== this.form.contrasena_verificar) {
+      this.mostrarModal('Las contraseñas no coinciden.');
+      return;
+    }
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$/;
+    if (!passRegex.test(this.form.contrasena)) {
+      this.mostrarModal('La contraseña debe tener al menos 6 caracteres: una minúscula, una mayúscula, un número y un símbolo.');
+      return;
+    }
+    if (!this.form.telefono || !this.form.telefono.trim()) {
+      this.mostrarModal('El teléfono es obligatorio.');
+      return;
+    }
+    if (!this.form.descripcion || !this.form.descripcion.trim()) {
+      this.mostrarModal('La descripción de la empresa es obligatoria.');
+      return;
+    }
+    if (!this.form.rfc || !this.form.rfc.trim()) {
+      this.mostrarModal('El RFC Moral es obligatorio.');
+      return;
+    }
+    // Validar formato RFC Moral (12 caracteres: 3 letras + 6 dígitos + 3 alfanuméricos)
+    const rfcMoralRegex = /^[A-Z&Ñ]{3}[0-9]{6}[A-Z0-9]{3}$/i;
+    if (!rfcMoralRegex.test(this.form.rfc)) {
+      this.mostrarModal('El formato del RFC Moral es inválido. Debe tener exactamente 12 caracteres (ej. SAT970701NN3).');
+      return;
+    }
+    if (!this.form.codigo_postal) {
+      this.mostrarModal('El código postal es obligatorio.');
+      return;
+    }
+    if (!this.form.estado) {
+      this.mostrarModal('El estado es obligatorio. Por favor ingresa un código postal válido.');
+      return;
+    }
+    if (!this.form.ciudad) {
+      this.mostrarModal('La ciudad es obligatoria.');
+      return;
+    }
+    if (!this.form.colonia) {
+      this.mostrarModal('La colonia es obligatoria.');
+      return;
+    }
+    if (!this.form.calle || !this.form.calle.trim()) {
+      this.mostrarModal('La calle es obligatoria.');
+      return;
+    }
+
+    this.erroresDuplicados = { correo_electronico: false, rfc: false, nombre_empresa: false };
 
     const { contrasena_verificar, ...datos } = this.form;
-
-    // Validar campos obligatorios
-    const camposVacios = Object.values(datos).some(valor => !valor || valor.toString().trim() === '');
-    if (camposVacios) {
-      this.mostrarModal('Todos los campos son obligatorios');
-      return;
-    }
 
     this.api.registrarEmpleador(datos).subscribe({
       next: (res) => {
@@ -157,9 +218,17 @@ export class EmployerRegisterComponent {
 
         this.mostrarModalExito(`¡Tu empresa ya forma parte de ChamBee!`);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error:', err);
-        this.mostrarModal('Error al crear la cuenta. Intenta de nuevo.');
+        const mensaje = err?.error?.error || 'Error al crear la cuenta. Intenta de nuevo.';
+        this.mostrarModal(mensaje);
+
+        if (err?.error?.duplicateField) {
+          const field = err.error.duplicateField;
+          if (field === 'rfc') this.erroresDuplicados.rfc = true;
+          if (field === 'correo_electronico') this.erroresDuplicados.correo_electronico = true;
+          if (field === 'nombre_empresa') this.erroresDuplicados.nombre_empresa = true;
+        }
       }
     });
   }
