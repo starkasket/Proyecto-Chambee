@@ -308,13 +308,16 @@
 
 .company-logo-box {
   width: 154px;
-  height: 94px;
+  height: 140px;
+  --carousel-height: 140px;
   border-radius: 8px;
   background: rgba(252, 206, 52, 0.24);
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
+  overflow: hidden;
+  padding: 0;
 }
 
 .company-logo-box img {

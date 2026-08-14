@@ -1417,8 +1417,8 @@ app.get("/empresas/:id/perfil-publico", verifyToken, authorizeRoles("postulante"
     const perfilResult = await pool.query(`SELECT
         e.id_empleador, e.nombre_empresa, e.estado, e.ciudad, e.calle, e.descripcion, e.foto_perfil, COUNT(a.id_anuncio)::int AS vacantes_activas
       FROM empleador e
-      INNER JOIN anuncios a ON a.id_empleador = e.id_empleador
-      WHERE e.id_empleador = $1 AND a.estado_anuncio = 'ACTIVO' AND e.estado_cuenta = 'ACTIVA'
+      LEFT JOIN anuncios a ON a.id_empleador = e.id_empleador AND a.estado_anuncio = 'ACTIVO'
+      WHERE e.id_empleador = $1 AND e.estado_cuenta = 'ACTIVA'
       GROUP BY e.id_empleador, e.nombre_empresa, e.estado, e.ciudad, e.calle, e.descripcion, e.foto_perfil`, [id]);
 
     if (!perfilResult.rows.length) return res.status(404).json({ error: "Empresa no encontrada" });
@@ -1655,7 +1655,7 @@ app.post("/login", async (req, res) => {
     }
 
     if (!usuario) {
-      const admin = await pool.query(`SELECT id_administrador AS id, correo_electronico AS correo, contrasena, token_version, 'administrador' AS rol FROM administrador WHERE correo_electronico = $1`, [correo_electronico]);
+      const admin = await pool.query(`SELECT id_administrador AS id, nombre, correo_electronico AS correo, contrasena, token_version, 'administrador' AS rol FROM administrador WHERE correo_electronico = $1`, [correo_electronico]);
       if (admin.rows.length > 0) usuario = admin.rows[0];
     }
 

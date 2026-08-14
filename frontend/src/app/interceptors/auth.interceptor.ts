@@ -27,12 +27,17 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log('Interceptor error:', error.status);
 
         if (error.status === 401) {
-          // (registro, onboarding de preferencias)
-          const rutasExcluidas = ['/register', '/job-preferences', '/employer-register'];
+          // No redirigir si el error viene de las rutas de autenticación
+          // (el componente de login ya maneja ese error por su cuenta)
+          const rutasDeAuth = ['/login', '/auth/'];
+          const esUrlDeAuth = rutasDeAuth.some(r => req.url.includes(r));
+
+          // Rutas de página excluidas del redirect automático
+          const rutasExcluidas = ['/register', '/job-preferences', '/employer-register', '/login', '/login-admin'];
           const rutaActual = this.router.url;
           const enRutaExcluida = rutasExcluidas.some(r => rutaActual.startsWith(r));
 
-          if (!enRutaExcluida) {
+          if (!esUrlDeAuth && !enRutaExcluida) {
             const esRutaAdmin = rutaActual.startsWith('/admin') || rutaActual.startsWith('/login-admin');
             this.authApi.clearSession();
             this.router.navigateByUrl(esRutaAdmin ? '/login-admin' : '/login', { replaceUrl: true });

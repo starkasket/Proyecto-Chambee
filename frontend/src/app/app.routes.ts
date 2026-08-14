@@ -22,6 +22,7 @@ import { BorradorServicioComponent } from './pages/borrador-servicio/borrador-se
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { SearchResultsComponent } from './pages/search-results/search-results.component';
 import { CompanyPublicProfileComponent } from './pages/company-public-profile/company-public-profile.component';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -71,7 +72,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    component: AdminDashboardComponent
+    component: AdminDashboardComponent,
+    canActivate: [adminGuard]
   },
   {
     path: 'search',
