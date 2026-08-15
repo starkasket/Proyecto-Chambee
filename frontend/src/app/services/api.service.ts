@@ -73,7 +73,6 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/empleadores`, this.getHeaders());
   }
 
-
   obtenerAnuncioEmpleador(idEmpleador: number | string, idAnuncio: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/empleadores/${idEmpleador}/anuncios/${idAnuncio}`, this.getHeaders());
   }
@@ -232,7 +231,7 @@ export class ApiService {
 
   // ================= REPORTES GENERALES =================
   crearReporte(reporte: any){
-     return this.http.post(`${this.apiUrl}/reportes`, reporte, this.getHeaders());
+      return this.http.post(`${this.apiUrl}/reportes`, reporte, this.getHeaders());
   }
 
   crearReporteEmpleador(reporte: any) {
@@ -244,7 +243,7 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/reportes/perfiles`, this.getHeaders());
   }
 
-  // ================= REPORTES Y ACCIONES DE ANUNCIOS (NUEVO) =================
+  // ================= REPORTES Y ACCIONES DE ANUNCIOS =================
   
   reportarAnuncio(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/reportes/anuncios`, datos, this.getHeaders());
@@ -268,33 +267,17 @@ export class ApiService {
   }
 
   buscar(q: string, filtros: any){
-  let params=new HttpParams();
+    let params=new HttpParams();
 
-  if(q)
-  params=params.set("q",q);
+    if(q) params=params.set("q",q);
+    if(filtros.tipo) params=params.set("tipo",filtros.tipo);
+    if(filtros.modalidad) params=params.set("modalidad",filtros.modalidad);
+    if(filtros.cobertura) params=params.set("cobertura",filtros.cobertura);
+    if(filtros.ciudad) params=params.set("ciudad",filtros.ciudad);
+    if(filtros.categoriaEmpleo) params=params.set("categoriaEmpleo",filtros.categoriaEmpleo);
+    if(filtros.categoriaServicio) params=params.set("categoriaServicio",filtros.categoriaServicio);
+    if(filtros.ordenar) params=params.set("ordenar",filtros.ordenar);
 
-  if(filtros.tipo)
-  params=params.set("tipo",filtros.tipo);
-
-  if(filtros.modalidad)
-  params=params.set("modalidad",filtros.modalidad);
-  
-  if(filtros.cobertura)
-  params=params.set("cobertura",filtros.cobertura);
-
-  if(filtros.ciudad)
-  params=params.set("ciudad",filtros.ciudad);
-
-  if(filtros.categoriaEmpleo)
-  params=params.set("categoriaEmpleo",filtros.categoriaEmpleo);
-  
-  if(filtros.categoriaServicio)
-  params=params.set("categoriaServicio",filtros.categoriaServicio);
-
-  if(filtros.ordenar)
-  params=params.set("ordenar",filtros.ordenar);
-
-  return this.http.get<any[]>(`${this.apiUrl}/busqueda`,{params});
-}
-
+    return this.http.get<any[]>(`${this.apiUrl}/busqueda`,{params});
+  }
 }

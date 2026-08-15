@@ -72,6 +72,12 @@ export class AdminDashboardComponent implements OnInit {
   cargandoEmpresas = true;
   errorEmpresas = '';
 
+  // Control de modales de eliminación
+  mostrarModalEliminarAnuncio: boolean = false;
+  mostrarModalExitoEliminar: boolean = false; // Nueva variable para el modal de éxito
+  anuncioAEliminar: string | null = null;
+  mensajeModalEliminar: string = '¿Estás seguro de que deseas eliminar este anuncio permanentemente por incumplimiento de normas?';
+
   notificaciones: NotificacionReporte[] = [
     { mensaje: 'Nuevo reporte sobre anuncio de Mario Sanchez por titulo de publicacion: Venta de fentanilo' },
     { mensaje: 'Nuevo reporte sobre usuario diego velasquez juarez por comentario inapropiado' },
@@ -201,8 +207,6 @@ export class AdminDashboardComponent implements OnInit {
     return String(value ?? '').toLowerCase().trim();
   }
 
-  // --- RESTO DEL COMPONENTE (sin cambios) ---
-
   cargarPostulantes() {
     this.cargandoPostulantes = true;
     this.api.obtenerPostulantes().subscribe({
@@ -254,8 +258,8 @@ export class AdminDashboardComponent implements OnInit {
     this.cargandoReportesAnuncios = true;
     this.errorReportesAnuncios = '';
     
-    if (this.api['obtenerReportesAnuncios']) {
-      (this.api as any).obtenerReportesAnuncios().subscribe({
+    if (this.api.obtenerReportesAnuncios) {
+      this.api.obtenerReportesAnuncios().subscribe({
         next: (reportes: AnuncioReportado[]) => {
           this.anunciosReportados = reportes;
           this.cargandoReportesAnuncios = false;
@@ -319,13 +323,41 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  eliminarAnuncio(idAnuncio: string) {
-    if (confirm('¿Estás seguro de que deseas eliminar este anuncio permanentemente por incumplimiento de normas?')) {
-      console.log('Eliminando anuncio con ID:', idAnuncio);
-      this.anunciosReportados = this.anunciosReportados.filter(a => a.id_anuncio !== idAnuncio);
-      alert('Anuncio eliminado con éxito.');
-    }
+  // --- MÉTODOS PARA MODALES DE ELIMINAR ANUNCIO ---
+  confirmarEliminarAnuncio(idAnuncio: string) {
+    this.anuncioAEliminar = idAnuncio;
+    this.mostrarModalEliminarAnuncio = true;
   }
+
+  cerrarModalEliminarAnuncio() {
+    this.mostrarModalEliminarAnuncio = false;
+    this.anuncioAEliminar = null;
+  }
+
+  cerrarModalExitoEliminar() {
+    this.mostrarModalExitoEliminar = false;
+  }
+
+  ejecutarEliminarAnuncio() {
+    if (!this.anuncioAEliminar) return;
+
+    const idAnuncio = this.anuncioAEliminar;
+    
+    this.api.eliminarAnuncio(idAnuncio).subscribe({
+      next: (res) => {
+        this.anunciosReportados = this.anunciosReportados.filter(a => a.id_anuncio !== idAnuncio);
+        this.cerrarModalEliminarAnuncio();
+        // Abrimos el modal de éxito
+        this.mostrarModalExitoEliminar = true;
+      },
+      error: (err) => {
+        console.error('Error al intentar eliminar el anuncio:', err);
+        this.cerrarModalEliminarAnuncio();
+        alert('Hubo un problema al eliminar el anuncio de la base de datos. Por favor, intenta más tarde.');
+      }
+    });
+  }
+  // --------------------------------------------------
 
   toggleTheme(): void {
     this.themeService.toggleTheme();

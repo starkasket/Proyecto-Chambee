@@ -1,3 +1,37 @@
+<!-- MODAL CONFIRMAR ELIMINAR ANUNCIO -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalEliminarAnuncio" [style.display]="mostrarModalEliminarAnuncio ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ mensajeModalEliminar }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn me-3 px-4" style="background-color: #6c757d; color: white; border-radius: 8px;" (click)="cerrarModalEliminarAnuncio()">Cancelar</button>
+        <button type="button" class="btn btn-danger px-4" style="border-radius: 8px;" (click)="ejecutarEliminarAnuncio()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ÉXITO AL ELIMINAR ANUNCIO -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalExitoEliminar" [style.display]="mostrarModalExitoEliminar ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <!-- Puedes cambiar la imagen si tienes otra para los casos de éxito, como una abejita feliz -->
+        <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
+        <h5 class="text-success fw-bold">¡Eliminado con Éxito!</h5>
+        <p class="mb-0">El anuncio ha sido eliminado permanentemente de la base de datos.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn px-4" style="background-color: #28a745; color: white; border-radius: 8px;" (click)="cerrarModalExitoEliminar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="admin-layout">
   <header class="navbar-chambee admin-header d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-2">
@@ -261,7 +295,7 @@
                 <td>{{ anuncio.fecha_reporte | date:'dd/MM/yyyy' }}</td>
                 <td class="text-end action-buttons">
                   <button class="btn btn-view me-2" (click)="verAnuncio(anuncio.id_anuncio)" style="background-color: #6c757d; color: white;">Revisar</button>
-                  <button class="btn btn-delete" (click)="eliminarAnuncio(anuncio.id_anuncio)">Eliminar</button>
+                  <button class="btn btn-delete" (click)="confirmarEliminarAnuncio(anuncio.id_anuncio)">Eliminar</button>
                 </td>
               </tr>
               <tr *ngIf="anunciosReportados.length === 0">

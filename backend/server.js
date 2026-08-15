@@ -2175,6 +2175,63 @@ app.get('/reportes/perfiles', async (req, res) => {
         res.status(500).json({ error: 'Error interno al obtener los reportes de perfiles' });
     }
 });
+// =========================================================================
+// ELIMINAR ANUNCIO PERMANENTEMENTE Y NOTIFICAR (DELETE)
+// =========================================================================
+app.delete('/anuncios/:idAnuncio', verifyToken, authorizeRoles("administrador", "empleador"), async (req, res) => {
+    const { idAnuncio } = req.params;
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // 1. Obtener la información del anuncio ANTES de borrarlo para saber a quién notificar
+        const anuncioInfo = await client.query('SELECT id_empleador, titulo FROM anuncios WHERE id_anuncio = $1', [idAnuncio]);
+        
+        if (anuncioInfo.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'El anuncio no existe o ya fue eliminado.' });
+        }
+
+        const { id_empleador, titulo } = anuncioInfo.rows[0];
+
+        // 2. Eliminar dependencias (tablas relacionadas) para evitar error de Llave Foránea
+        await client.query('DELETE FROM reporte_a_anuncio WHERE id_anuncio = $1', [idAnuncio]);
+        await client.query('DELETE FROM categoriaAnuncio WHERE id_anuncio = $1', [idAnuncio]);
+        await client.query('DELETE FROM imagenes WHERE id_anuncio = $1', [idAnuncio]);
+        await client.query('DELETE FROM favoritos WHERE id_anuncio = $1', [idAnuncio]);
+        await client.query('DELETE FROM postulacion WHERE id_anuncio = $1', [idAnuncio]);
+        
+        // Si tu base de datos también tiene tabla de comentarios vinculada a anuncios, descomenta la siguiente línea:
+        // await client.query('DELETE FROM comentarios WHERE id_anuncio = $1', [idAnuncio]);
+
+        // 3. Eliminar el anuncio
+        await client.query('DELETE FROM anuncios WHERE id_anuncio = $1', [idAnuncio]);
+
+        // 4. Crear la notificación para el empleador
+        const tituloNotificacion = 'Anuncio eliminado por el administrador';
+        const mensajeNotificacion = `Su anuncio "${titulo}" se ha borrado por incumplimiento de normas.`;
+
+        await client.query(
+            `INSERT INTO notificaciones (id_empleador, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4)`,
+            [id_empleador, tituloNotificacion, mensajeNotificacion, 'ANUNCIO_ELIMINADO']
+        );
+
+        // 5. Enviar la notificación en tiempo real usando WebSockets (si el empleador está conectado)
+        const io = req.app.get('io');
+        io.to(id_empleador).emit('anuncio_eliminado', { titulo: tituloNotificacion, mensaje: mensajeNotificacion });
+
+        await client.query('COMMIT');
+        res.status(200).json({ mensaje: 'Anuncio eliminado correctamente y notificación enviada al empleador.' });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error al eliminar el anuncio de la BD:', error);
+        res.status(500).json({ error: 'Hubo un problema al intentar eliminar el anuncio en el servidor.' });
+    } finally {
+        client.release();
+    }
+});
 
 /* ===== INICIAR SERVIDOR ===== */
 server.listen(3000, "0.0.0.0", async () => {
