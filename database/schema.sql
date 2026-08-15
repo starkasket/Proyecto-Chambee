@@ -375,3 +375,45 @@ ADD COLUMN motivo VARCHAR(255) NOT NULL DEFAULT 'Otro',
 ADD COLUMN descripcion TEXT,
 ADD COLUMN fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN estado VARCHAR(50) DEFAULT 'Pendiente';
+
+TRUNCATE TABLE reporte_a_anuncio CASCADE;
+TRUNCATE TABLE reporte CASCADE;
+ALTER TABLE reporte_a_anuncio ALTER COLUMN id_anuncio TYPE UUID USING id_anuncio::text::UUID;
+ALTER TABLE reporte ALTER COLUMN id_postulante TYPE UUID USING id_postulante::text::UUID;
+ALTER TABLE reporte ALTER COLUMN id_empleador TYPE UUID USING id_empleador::text::UUID;
+DROP TABLE IF EXISTS reporte_a_anuncio CASCADE;
+DROP TABLE IF EXISTS reporte_a_postulante CASCADE;
+DROP TABLE IF EXISTS reporte_a_empleador CASCADE;
+DROP TABLE IF EXISTS reporte CASCADE;
+
+CREATE TABLE reporte (
+    id_reporte SERIAL PRIMARY KEY,
+    motivo VARCHAR(255),
+    descripcion TEXT,
+    estado VARCHAR(50) DEFAULT 'Pendiente',
+    fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_postulante VARCHAR(255),
+    id_empleador VARCHAR(255)
+);
+
+CREATE TABLE reporte_a_anuncio (
+    id_reporte INT REFERENCES reporte(id_reporte) ON DELETE CASCADE,
+    id_anuncio VARCHAR(255)
+);
+
+CREATE TABLE reporte_a_postulante (
+    id_reporte INT REFERENCES reporte(id_reporte) ON DELETE CASCADE,
+    id_postulante_reportado VARCHAR(255)
+);
+
+CREATE TABLE reporte_a_empleador (
+    id_reporte INT REFERENCES reporte(id_reporte) ON DELETE CASCADE,
+    id_empleador_reportado VARCHAR(255)
+);
+ALTER TABLE reporte_a_postulante ALTER COLUMN id_postulante_reportado TYPE uuid USING id_postulante_reportado::text::uuid;
+
+ALTER TABLE reporte_a_empleador ALTER COLUMN id_empleador_reportado TYPE uuid USING id_empleador_reportado::text::uuid;
+
+ALTER TABLE reporte ALTER COLUMN id_postulante TYPE uuid USING id_postulante::text::uuid;
+
+ALTER TABLE reporte ALTER COLUMN id_empleador TYPE uuid USING id_empleador::text::uuid;

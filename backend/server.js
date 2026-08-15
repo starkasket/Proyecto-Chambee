@@ -2052,6 +2052,22 @@ app.put("/notificaciones/marcar-leidas", verifyToken, async (req, res) => {
 async function ensureDatabaseSchema() {
   try {
     await pool.query("ALTER TABLE valoracion ALTER COLUMN comentario DROP NOT NULL");
+
+    // =============== NUEVO: FORZAR COLUMNAS A TEXTO ===============
+    const tablasAArreglar = [
+      { tabla: 'reporte', columna: 'id_postulante' },
+      { tabla: 'reporte', columna: 'id_empleador' },
+      { tabla: 'reporte_a_anuncio', columna: 'id_anuncio' }
+    ];
+
+    for (const item of tablasAArreglar) {
+      try {
+        await pool.query(`ALTER TABLE ${item.tabla} ALTER COLUMN ${item.columna} TYPE VARCHAR(255) USING ${item.columna}::text::VARCHAR`);
+      } catch (e) {
+        console.error(`[db] Error arreglando ${item.columna} en ${item.tabla}:`, e.message);
+      }
+    }
+    // ==============================================================
     
     const typeEmp = await pool.query("SELECT data_type FROM information_schema.columns WHERE table_name = 'empleador' AND column_name = 'id_empleador'");
     const empDataType = typeEmp.rows[0]?.data_type || 'VARCHAR(255)';
@@ -2142,18 +2158,18 @@ app.post('/reportes/anuncios', async (req, res) => {
 // =========================================================================
 app.get('/reportes/anuncios', async (req, res) => {
     try {
-        // El ::text es crucial aquí para que el VARCHAR y el UUID coincidan
         const query = `
             SELECT 
                 r.id_reporte,
                 r.id_anuncio,
                 a.titulo,
-                r.motivo AS razon,
-                r.detalle AS descripcion,
-                r.fecha_reporte
+                rep.motivo AS razon,
+                rep.descripcion AS descripcion,
+                rep.fecha_reporte
             FROM public.reporte_a_anuncio r
+            INNER JOIN public.reporte rep ON r.id_reporte = rep.id_reporte
             INNER JOIN public.anuncios a ON r.id_anuncio::text = a.id_anuncio::text
-            ORDER BY r.fecha_reporte DESC;
+            ORDER BY rep.fecha_reporte DESC;
         `;
         const result = await pool.query(query);
         res.status(200).json(result.rows);
@@ -2164,16 +2180,26 @@ app.get('/reportes/anuncios', async (req, res) => {
 });
 
 // =========================================================================
-// SOLUCIÓN AL 404: Obtener reportes de perfiles (GET) - Vista del administrador
+// Obtener reportes de perfiles (GET) - Vista del administrador
 // =========================================================================
-app.get('/reportes/perfiles', async (req, res) => {
-    try {
-        // Mientras construyes tu tabla de reportes de perfiles, mandamos un arreglo vacío
-        res.status(200).json([]);
-    } catch (error) {
-        console.error('Error al obtener reportes de perfiles:', error);
-        res.status(500).json({ error: 'Error interno al obtener los reportes de perfiles' });
-    }
+app.get('/reportes/perfiles', verifyToken, authorizeRoles('administrador'), async (req, res) => {
+  try {
+    const query = `
+      SELECT
+        r.id_reporte, rep.motivo, rep.descripcion, rep.estado, rep.fecha_reporte,
+        rap.id_postulante_reportado, p.nombre_postulante,
+        p.apellido_paterno_postulante, p.apellido_materno_postulante
+      FROM public.reporte_a_postulante rap
+      INNER JOIN public.reporte rep ON rap.id_reporte = rep.id_reporte
+      INNER JOIN public.postulante p ON rap.id_postulante_reportado::text = p.id_postulante::text
+      ORDER BY rep.fecha_reporte DESC;
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error al obtener reportes de perfiles:', err);
+    res.status(500).json({ error: "Error al obtener la lista de reportes." });
+  }
 });
 // =========================================================================
 // ELIMINAR ANUNCIO PERMANENTEMENTE Y NOTIFICAR (DELETE)
