@@ -504,8 +504,16 @@
 
 .announcement-card img {
   width: 100%;
-  height: 96px;
+  height: 160px;
   object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.announcement-card app-carousel {
+  display: block;
+  width: 100%;
+  --carousel-height: 160px;
 }
 
 .announcement-copy {

@@ -94,11 +94,18 @@
       <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menu" role="button">☰</div>
 
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
-        <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
-        <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
-        <a (click)="irAFavoritos()" class="desktop-menu-link" style="cursor: pointer;">Mis favoritos</a>
-        <hr />
-        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+        <ng-container *ngIf="isAdminView">
+          <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+        </ng-container>
+        <ng-container *ngIf="!isAdminView">
+          <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
+          <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+          <a (click)="irAFavoritos()" class="desktop-menu-link" style="cursor: pointer;">Mis favoritos</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+        </ng-container>
       </div>
     </div>
 
@@ -106,10 +113,16 @@
       <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <button class="mobile-close" aria-label="Cerrar menu" (click)="toggleMenu()">x</button>
         <nav class="mobile-nav">
-          <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
-          <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
-          <a class="mobile-nav-link" (click)="irAFavoritos()" style="cursor: pointer;">Mis favoritos</a>
-          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+          <ng-container *ngIf="isAdminView">
+            <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+          </ng-container>
+          <ng-container *ngIf="!isAdminView">
+            <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
+            <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+            <a class="mobile-nav-link" (click)="irAFavoritos()" style="cursor: pointer;">Mis favoritos</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+          </ng-container>
         </nav>
       </aside>
     </div>
@@ -208,9 +221,9 @@
     </section>
 
 
-    <!-- Sección para calificar al empleador (solo postulantes) -->
-    <section *ngIf="!cargando && perfil && usuarioActual?.rol === 'postulante'" class="rating-section-shell">
-      <div class="yellow-shell">
+    <!-- Sección para calificar al empleador y opiniones -->
+    <section *ngIf="!cargando && perfil" class="rating-section-shell">
+      <div class="yellow-shell" *ngIf="usuarioActual?.rol === 'postulante'">
       <article class="rating-feedback-card">
         <div class="card-header-premium">
           <h3>Calificar a esta Empresa</h3>

@@ -61,6 +61,7 @@ export class CompanyPublicProfileComponent implements OnInit {
   mostrarDescripcionCompleta = false;
   modalMensaje = '';
 
+  isAdminView = false;
   selectedPerfilId = '';
   usuarioActual: any = null;
   ratingSeleccionado = 0;
@@ -91,13 +92,15 @@ export class CompanyPublicProfileComponent implements OnInit {
     const usuario = this.api.getUsuario();
     this.usuarioActual = usuario;
 
-
     if (!usuario) {
       this.router.navigate(['/login']);
       return;
     }
 
-    if (usuario.rol !== 'postulante' && usuario.rol !== 'administrador') {
+    const esAdmin = usuario.rol === 'administrador' || usuario.rol === 'admin';
+    this.isAdminView = esAdmin;
+
+    if (usuario.rol !== 'postulante' && !esAdmin) {
       this.error = 'Esta vista esta disponible solo para postulantes y administradores.';
       this.cargando = false;
       return;

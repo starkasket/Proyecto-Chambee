@@ -917,6 +917,7 @@ app.get("/empleadores", verifyToken, authorizeRoles("administrador"), async (req
         id_empleador, nombre_empresa, correo_electronico, pais, estado, ciudad, colonia, calle, codigo_postal, 
         telefono, foto_perfil, fecha_registro, estado_cuenta, rfc, descripcion
       FROM empleador
+      WHERE estado_cuenta = 'ACTIVA'
       ORDER BY fecha_registro DESC
     `);
     res.json(result.rows);

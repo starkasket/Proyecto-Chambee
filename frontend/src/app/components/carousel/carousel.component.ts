@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -17,6 +17,8 @@ export class CarouselComponent {
   // Autoplay settings
   @Input() autoplay = true;
   @Input() interval = 3000; // ms
+
+  @Output() imageClick = new EventEmitter<{ index: number; images: string[] }>();
 
   private timer: any;
 
@@ -67,6 +69,7 @@ export class CarouselComponent {
   }
 
   abrirDetalle() {
+    this.imageClick.emit({ index: this.current, images: this.images || [] });
     if (this.jobId) {
       this.router.navigate(['/job', this.jobId]);
     }

@@ -105,6 +105,10 @@ export class JobDetailComponent implements OnInit {
   detalleReporte: string = '';
   enviandoReporte: boolean = false;
 
+  // MODAL DE GALERÍA DE IMÁGENES DEL ANUNCIO
+  modalGaleriaAbierto: boolean = false;
+  modalGaleriaImagenes: string[] = [];
+  modalGaleriaIndex: number = 0;
 
   // SERVICES
   servicioDetalle: any = null;
@@ -226,6 +230,59 @@ export class JobDetailComponent implements OnInit {
     if (this.notificationsOpen) this.notificationsOpen = false;
     if (this.menuOpen) this.menuOpen = false;
     if (this.dropdownOpenIndex !== null) this.dropdownOpenIndex = null;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (!this.modalGaleriaAbierto) return;
+    if (event.key === 'Escape') {
+      this.cerrarModalGaleria();
+    } else if (event.key === 'ArrowLeft') {
+      this.anteriorImagenGaleria();
+    } else if (event.key === 'ArrowRight') {
+      this.siguienteImagenGaleria();
+    }
+  }
+
+  // ================= MODAL GALERÍA DE IMÁGENES =================
+  abrirModalGaleria(imagenes?: string[], index: number = 0): void {
+    const rawImages = (imagenes && imagenes.length ? imagenes : (this.jobData?.companyImages || []));
+    const validImages = rawImages
+      .filter((img: any) => typeof img === 'string' && img.trim().length > 0)
+      .map((img: string) => img.trim());
+
+    if (!validImages.length) {
+      if (this.jobData?.companyLogo) {
+        validImages.push(this.jobData.companyLogo);
+      } else {
+        validImages.push('assets/LogoChambee.png');
+      }
+    }
+
+    this.modalGaleriaImagenes = validImages;
+    this.modalGaleriaIndex = Math.max(0, Math.min(index, validImages.length - 1));
+    this.modalGaleriaAbierto = true;
+  }
+
+  cerrarModalGaleria(): void {
+    this.modalGaleriaAbierto = false;
+  }
+
+  anteriorImagenGaleria(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.modalGaleriaImagenes.length <= 1) return;
+    this.modalGaleriaIndex = (this.modalGaleriaIndex - 1 + this.modalGaleriaImagenes.length) % this.modalGaleriaImagenes.length;
+  }
+
+  siguienteImagenGaleria(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (this.modalGaleriaImagenes.length <= 1) return;
+    this.modalGaleriaIndex = (this.modalGaleriaIndex + 1) % this.modalGaleriaImagenes.length;
+  }
+
+  seleccionarImagenGaleria(index: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.modalGaleriaIndex = index;
   }
 
   // ==================================================

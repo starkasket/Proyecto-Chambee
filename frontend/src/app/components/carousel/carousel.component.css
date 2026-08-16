@@ -1,10 +1,11 @@
-:host { display: block; }
-.carousel-wrapper { position: relative; width: 100%; height: var(--carousel-height, 140px); overflow: hidden; border-radius: 8px; }
-.carousel-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+:host { display: block; width: 100%; }
+.carousel-wrapper { position: relative; width: 100%; height: var(--carousel-height, 180px); overflow: hidden; border-radius: 8px; background-color: var(--surface-secondary, #f0f0f0); }
+.carousel-image { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.carousel-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 .carousel-prev, .carousel-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .carousel-prev { left: 8px; }
 .carousel-next { right: 8px; }
 .carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display:flex; gap:6px; }
 .carousel-dots span { width:8px; height:8px; background: rgba(255,255,255,0.6); border-radius:50%; display:inline-block; cursor:pointer; }
 .carousel-dots span.active { background: #fff; }
-.carousel-placeholder { display:flex; align-items:center; justify-content:center; height:100%; background: #f0f0f0; color:#777; }
+.carousel-placeholder { display:flex; align-items:center; justify-content:center; width: 100%; height:100%; background: #f0f0f0; color:#777; }

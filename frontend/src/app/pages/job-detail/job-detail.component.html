@@ -70,6 +70,69 @@
     </div>
 </div>
 
+<!-- MODAL DE GALERÍA DE IMÁGENES DEL ANUNCIO -->
+<div *ngIf="modalGaleriaAbierto" class="gallery-modal-backdrop" (click)="cerrarModalGaleria()" role="dialog" aria-modal="true" aria-labelledby="galleryModalTitle">
+  <div class="gallery-modal-content" (click)="$event.stopPropagation()">
+    
+    <!-- Encabezado del modal -->
+    <div class="gallery-modal-header">
+      <div class="gallery-modal-info">
+        <h5 id="galleryModalTitle" class="gallery-modal-title">
+          <i class="bi bi-image me-2 text-warning"></i>{{ jobData?.title || 'Imágenes del anuncio' }}
+        </h5>
+        <span class="gallery-counter" *ngIf="modalGaleriaImagenes.length > 1">
+          {{ modalGaleriaIndex + 1 }} / {{ modalGaleriaImagenes.length }}
+        </span>
+      </div>
+      <button type="button" class="gallery-close-btn" (click)="cerrarModalGaleria()" aria-label="Cerrar galería">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Visor de imagen principal -->
+    <div class="gallery-main-viewer">
+      <button 
+        *ngIf="modalGaleriaImagenes.length > 1" 
+        type="button" 
+        class="gallery-nav-btn gallery-nav-prev" 
+        (click)="anteriorImagenGaleria($event)"
+        aria-label="Imagen anterior">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <div class="gallery-img-wrapper">
+        <img 
+          [src]="modalGaleriaImagenes[modalGaleriaIndex]" 
+          [alt]="'Imagen ' + (modalGaleriaIndex + 1) + ' del anuncio'" 
+          class="gallery-active-image" />
+      </div>
+
+      <button 
+        *ngIf="modalGaleriaImagenes.length > 1" 
+        type="button" 
+        class="gallery-nav-btn gallery-nav-next" 
+        (click)="siguienteImagenGaleria($event)"
+        aria-label="Imagen siguiente">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Tira de miniaturas (thumbnails) si hay más de 1 imagen -->
+    <div class="gallery-thumbnails" *ngIf="modalGaleriaImagenes.length > 1">
+      <button 
+        type="button"
+        *ngFor="let thumb of modalGaleriaImagenes; let idx = index" 
+        class="gallery-thumb-item" 
+        [class.active]="idx === modalGaleriaIndex"
+        (click)="seleccionarImagenGaleria(idx, $event)"
+        [attr.aria-label]="'Ver imagen ' + (idx + 1)">
+        <img [src]="thumb" [alt]="'Miniatura ' + (idx + 1)" />
+      </button>
+    </div>
+
+  </div>
+</div>
+
 
 <div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
   <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
@@ -85,8 +148,8 @@
 
     <div *ngIf="!servicioDetalleCargando && servicioDetalle" class="service-detail-content">
       
-      <div class="service-detail-hero">
-        <app-carousel [images]="servicioDetalle.images ? servicioDetalle.images : [servicioDetalle.img || 'assets/LogoChambee.png']"></app-carousel>
+      <div class="service-detail-hero" (click)="abrirModalGaleria(servicioDetalle.images ? servicioDetalle.images : [servicioDetalle.img || 'assets/LogoChambee.png'])" role="button" tabindex="0" title="Haz clic para ver las imágenes">
+        <app-carousel [images]="servicioDetalle.images ? servicioDetalle.images : [servicioDetalle.img || 'assets/LogoChambee.png']" (imageClick)="abrirModalGaleria(servicioDetalle.images ? servicioDetalle.images : [servicioDetalle.img || 'assets/LogoChambee.png'], $event.index)"></app-carousel>
         <div class="service-detail-hero-overlay">
           <span class="service-detail-category-badge" *ngIf="servicioDetalle.categoria">
             <i class="bi bi-tag-fill"></i> {{ servicioDetalle.categoria }}
@@ -344,7 +407,9 @@
         <div class="chambee-card">
             <div class="company-col">
                 <div class="company-info-top">
-                    <app-carousel [images]="jobData.companyImages ? jobData.companyImages : [jobData.companyLogo || 'assets/LogoChambee.png']" [jobId]="jobData.employerId"></app-carousel>
+                    <div class="job-image-container" (click)="abrirModalGaleria(jobData.companyImages)" role="button" tabindex="0">
+                        <app-carousel [images]="jobData.companyImages ? jobData.companyImages : [jobData.companyLogo || 'assets/LogoChambee.png']" (imageClick)="abrirModalGaleria(jobData.companyImages, $event.index)"></app-carousel>
+                    </div>
                     <h3 class="company-name">{{ jobData.companyName }}</h3>
                     <p class="company-desc">{{ jobData.companyDesc }}</p>
                     <button class="btn-company-profile" type="button" (click)="verPerfilEmpresa()" [disabled]="!jobData.employerId">
