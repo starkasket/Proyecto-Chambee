@@ -588,7 +588,7 @@
         <h3 class="mb-4 fw-bold">Empleos similares</h3>
         <div class="jobs-grid">
             <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)">
-                <img [src]="relJob.img" [alt]="relJob.company" />
+                <app-carousel [images]="relJob.images ? relJob.images : [relJob.img || 'assets/LogoChambee.png']" [jobId]="relJob.id"></app-carousel>
                 <div class="job-content">
                     <h4>{{ relJob.company }}</h4>
                     <p class="job-title">{{ relJob.title }}</p>

@@ -441,7 +441,8 @@ body {
   margin-top: 20px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: auto;
+  grid-auto-rows: 1fr;
+  align-items: stretch;
   gap: 15px;
 }
 
@@ -453,6 +454,9 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .job-card img {
@@ -471,6 +475,9 @@ body {
 
 .job-content {
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .job-content p{
@@ -502,7 +509,9 @@ body {
 .job-footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 5px;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .job-card:hover {

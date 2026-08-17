@@ -632,18 +632,24 @@ export class JobDetailComponent implements OnInit {
 }));
         this.relatedJobs = anuncios
           .filter((item: any) => String(item.id_anuncio) !== String(id))
-          .map((item: any, index: number) => ({
-            id: item.id_anuncio,
-            company: item.nombre_empresa || 'Empresa',
-            title: item.titulo || 'Vacante',
-            salary: this.formatearSalario(item.salario),
-            img: 'https://picsum.photos/30' + ((index % 9) + 1) + '/150',
-            rating: item.modalidad || 'Empleo',
-            applicants: item.vistas || 0,
-            tags: item.categorias || [],
-            score: this.calcularCoincidencias(item.categorias || [], categoriasActuales) * 2
-              + this.calcularCoincidencias(item.categorias || [], intereses)
-          }))
+          .map((item: any) => {
+            const fotos = Array.isArray(item.images) && item.images.length
+              ? item.images
+              : (item.img ? [item.img] : (item.foto_empresa ? [item.foto_empresa] : ['assets/LogoChambee.png']));
+            return {
+              id: item.id_anuncio,
+              company: item.nombre_empresa || 'Empresa',
+              title: item.titulo || 'Vacante',
+              salary: this.formatearSalario(item.salario),
+              img: fotos[0] || 'assets/LogoChambee.png',
+              images: fotos,
+              rating: item.modalidad || 'Empleo',
+              applicants: item.vistas || 0,
+              tags: item.categorias || [],
+              score: this.calcularCoincidencias(item.categorias || [], categoriasActuales) * 2
+                + this.calcularCoincidencias(item.categorias || [], intereses)
+            };
+          })
           .sort((a: any, b: any) => b.score - a.score)
           .slice(0, 4);
 
