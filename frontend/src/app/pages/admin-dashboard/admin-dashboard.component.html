@@ -1,3 +1,36 @@
+<!-- MODAL ERROR GENÉRICO -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalError" [style.display]="mostrarModalError ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-x-circle-fill text-danger mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-danger fw-bold">¡Ocurrió un error!</h5>
+        <p class="mb-0">{{ mensajeModalError }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn px-4" style="background-color: #dc3545; color: white; border-radius: 8px;" (click)="cerrarModalError()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR REPORTE -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalEliminarReporte" [style.display]="mostrarModalEliminarReporte ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-trash3-fill text-danger mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-danger fw-bold">Eliminar Reporte</h5>
+        <p class="mb-0">¿Estás seguro de que deseas descartar y eliminar este reporte permanentemente de la base de datos?</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn me-3 px-4" style="background-color: #6c757d; color: white; border-radius: 8px;" (click)="cerrarModalEliminarReporte()">Cancelar</button>
+        <button type="button" class="btn btn-danger px-4" style="border-radius: 8px;" (click)="ejecutarEliminarReporte()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CONFIRMAR ELIMINAR ANUNCIO -->
 <div class="modal" tabindex="-1" [class.show]="mostrarModalEliminarAnuncio" [style.display]="mostrarModalEliminarAnuncio ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
   <div class="modal-dialog modal-dialog-centered">
@@ -20,13 +53,53 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <!-- Puedes cambiar la imagen si tienes otra para los casos de éxito, como una abejita feliz -->
         <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
         <h5 class="text-success fw-bold">¡Eliminado con Éxito!</h5>
         <p class="mb-0">El anuncio ha sido eliminado permanentemente de la base de datos.</p>
       </div>
       <div class="modal-footer border-0 justify-content-center pb-4">
         <button type="button" class="btn px-4" style="background-color: #28a745; color: white; border-radius: 8px;" (click)="cerrarModalExitoEliminar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUSPENDER CUENTA -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalSuspender" [style.display]="mostrarModalSuspender ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-person-x-fill text-warning mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-warning fw-bold">Suspender Cuenta</h5>
+        <p>Selecciona el tiempo que deseas suspender a este usuario:</p>
+        
+        <select class="form-select mx-auto w-75 mb-3" [(ngModel)]="tiempoSuspension">
+          <option value="1">1 Día</option>
+          <option value="3">3 Días</option>
+          <option value="7">1 Semana</option>
+          <option value="30">1 Mes</option>
+          <option value="0">Permanente</option>
+        </select>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn me-3 px-4" style="background-color: #6c757d; color: white; border-radius: 8px;" (click)="cerrarModalSuspender()">Cancelar</button>
+        <button type="button" class="btn btn-warning px-4" style="border-radius: 8px; color: black; font-weight: bold;" (click)="ejecutarSuspension()">Suspender</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ÉXITO AL SUSPENDER CUENTA -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalExitoSuspension" [style.display]="mostrarModalExitoSuspension ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-success fw-bold">¡Cuenta Suspendida!</h5>
+        <p class="mb-0">El usuario ha sido suspendido exitosamente por el tiempo establecido.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn px-4" style="background-color: #28a745; color: white; border-radius: 8px;" (click)="cerrarModalExitoSuspension()">Aceptar</button>
       </div>
     </div>
   </div>
@@ -172,8 +245,18 @@
                 </td>
                 <td>{{ reporte.fecha_reporte | date:'dd/MM/yyyy' }}</td>
                 <td class="text-end action-buttons">
-                  <button class="btn btn-view" (click)="verPerfilPostulante(reporte.id_postulante_reportado)">Revisar</button>
-                  <button class="btn btn-suspend" (click)="suspenderCuenta(reporte.id_postulante_reportado)">Suspender</button>
+                  <!-- Botones normales cuando NO está suspendido -->
+                  <ng-container *ngIf="!reporte.suspendido">
+                    <button class="btn btn-view" (click)="verPerfilPostulante(reporte.id_postulante_reportado)">Revisar</button>
+                    <button class="btn btn-suspend" (click)="abrirModalSuspender(reporte.id_postulante_reportado)">Suspender</button>
+                  </ng-container>
+
+                  <!-- Botones cuando SÍ está suspendido -->
+                  <ng-container *ngIf="reporte.suspendido">
+                    <span class="badge bg-danger me-2"><i class="bi bi-ban"></i> Suspendido</span>
+                    <!-- Botón actualizado para usar Modal en vez de window.confirm() -->
+                    <button class="btn btn-delete" (click)="confirmarEliminarReporte(reporte.id_reporte)">Eliminar</button>
+                  </ng-container>
                 </td>
               </tr>
               <tr *ngIf="perfilesReportados.length === 0">

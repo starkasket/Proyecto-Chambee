@@ -42,6 +42,32 @@
   </div>
 </div>
 
+<!-- MODAL CUENTA SUSPENDIDA (CON TEMPORIZADOR) -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalSuspendido" [style.display]="mostrarModalSuspendido ? 'flex' : 'none'" style="background: rgba(0,0,0,0.8); align-items: center;">
+  <div class="modal-dialog modal-dialog-centered w-100">
+    <div class="modal-content text-center" style="border: 2px solid #ffc107; background-color: var(--bg-card); color: var(--text-primary);">
+      <div class="modal-body pt-4 pb-4">
+        <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 4rem;"></i>
+        <h4 class="text-warning fw-bold">Cuenta Suspendida</h4>
+        <p class="mt-3">Tu cuenta ha sido suspendida por infringir nuestras normas de la comunidad Chambee.</p>
+        
+        <div class="p-3 mt-3 rounded" style="background-color: var(--bg-body); border: 1px dashed var(--text-muted);">
+          <h6 class="text-muted mb-2">Tiempo restante de suspensión:</h6>
+          <h3 class="fw-bold text-danger mb-0" style="font-family: monospace;">
+            <span *ngIf="diasRestantes > 0">{{ diasRestantes }}d </span>
+            <span>{{ horasRestantes | number:'2.0-0' }}h </span>
+            <span>{{ minutosRestantes | number:'2.0-0' }}m </span>
+            <span>{{ segundosRestantes | number:'2.0-0' }}s</span>
+          </h3>
+        </div>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-warning px-5" style="border-radius: 8px; font-weight: bold; color: #000;" (click)="cerrarModalSuspendido()">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <main class="login-container">
     <div class="login-card">
       <button class="close-btn" type="button" routerLink="/">×</button>

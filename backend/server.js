@@ -1290,7 +1290,7 @@ app.get("/busqueda", async (req, res) => {
   if (modalidad) {
     valoresEmpleos.push(modalidad);
     whereEmpleos += ` AND a.modalidad=$${valoresEmpleos.length} `;
-   
+    
   }
 
   if (cobertura) {
@@ -1647,11 +1647,11 @@ app.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;
   try {
     let usuario = null;
-    const postulante = await pool.query(`SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, token_version, estado_cuenta, 'postulante' AS rol FROM postulante WHERE correo_electronico = $1`, [correo_electronico]);
+    const postulante = await pool.query(`SELECT id_postulante AS id, nombre_postulante as nombre, correo_electronico AS correo, contrasena, token_version, estado_cuenta, suspendido_hasta, 'postulante' AS rol FROM postulante WHERE correo_electronico = $1`, [correo_electronico]);
     if (postulante.rows.length > 0) usuario = postulante.rows[0];
 
     if (!usuario) {
-      const empleador = await pool.query(`SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, token_version, estado_cuenta, 'empleador' AS rol FROM empleador WHERE correo_electronico = $1`, [correo_electronico]);
+      const empleador = await pool.query(`SELECT id_empleador AS id, nombre_empresa as nombre, correo_electronico AS correo, contrasena, token_version, estado_cuenta, suspendido_hasta, 'empleador' AS rol FROM empleador WHERE correo_electronico = $1`, [correo_electronico]);
       if (empleador.rows.length > 0) usuario = empleador.rows[0];
     }
 
@@ -1662,6 +1662,26 @@ app.post("/login", async (req, res) => {
 
     if (!usuario) return res.status(401).json({ error: "Usuario no encontrado" });
     if (usuario.estado_cuenta === 'ELIMINADA') return res.status(401).json({ error: "Usuario no encontrado" }); 
+
+    // --- AQUÍ VALIDAMOS LA SUSPENSIÓN (SIRVE PARA POSTULANTE Y EMPLEADOR) ---
+    if (usuario.suspendido_hasta) {
+      const fechaFin = new Date(usuario.suspendido_hasta);
+      const ahora = new Date();
+
+      if (fechaFin > ahora) {
+        // La cuenta sigue suspendida, le bloqueamos el paso y mandamos código 403
+        return res.status(403).json({ 
+          error: 'cuenta_suspendida', 
+          suspendido_hasta: usuario.suspendido_hasta 
+        });
+      } else {
+        // El ban ya terminó, limpiamos la columna para mantener la BD limpia
+        const tabla = usuario.rol === 'postulante' ? 'postulante' : 'empleador';
+        const idCampo = usuario.rol === 'postulante' ? 'id_postulante' : 'id_empleador';
+        await pool.query(`UPDATE ${tabla} SET suspendido_hasta = NULL WHERE ${idCampo} = $1`, [usuario.id]);
+      }
+    }
+    // --- FIN VALIDACIÓN SUSPENSIÓN ---
 
     const validPassword = await bcrypt.compare(contrasena, usuario.contrasena);
     if (!validPassword) return res.status(401).json({ error: "Contraseña incorrecta" });
@@ -1954,22 +1974,72 @@ app.post('/reportes', verifyToken, async (req, res) => {
   }
 });
 
+// =========================================================================
+// Obtener reportes de perfiles (POSTULANTES Y EMPLEADORES) - Vista Administrador
+// =========================================================================
 app.get('/reportes/perfiles', verifyToken, authorizeRoles('administrador'), async (req, res) => {
   try {
     const query = `
       SELECT
-        r.id_reporte, r.motivo, r.descripcion, r.estado, r.fecha_reporte,
-        rap.id_postulante_reportado, p.nombre_postulante,
-        p.apellido_paterno_postulante, p.apellido_materno_postulante
-      FROM reporte r
-      INNER JOIN reporte_a_postulante rap ON r.id_reporte = rap.id_reporte
-      INNER JOIN postulante p ON rap.id_postulante_reportado = p.id_postulante
-      ORDER BY r.id_reporte DESC;
+        rep.id_reporte, rep.motivo, rep.descripcion, rep.estado, rep.fecha_reporte,
+        rap.id_postulante_reportado AS id_postulante_reportado,
+        p.nombre_postulante,
+        p.apellido_paterno_postulante,
+        p.apellido_materno_postulante,
+        CASE WHEN p.suspendido_hasta > CURRENT_TIMESTAMP THEN true ELSE false END AS suspendido
+      FROM public.reporte_a_postulante rap
+      INNER JOIN public.reporte rep ON rap.id_reporte = rep.id_reporte
+      INNER JOIN public.postulante p ON rap.id_postulante_reportado::text = p.id_postulante::text
+
+      UNION ALL
+
+      SELECT
+        rep.id_reporte, rep.motivo, rep.descripcion, rep.estado, rep.fecha_reporte,
+        rae.id_empleador_reportado AS id_postulante_reportado,
+        e.nombre_empresa AS nombre_postulante,
+        '' AS apellido_paterno_postulante,
+        '' AS apellido_materno_postulante,
+        CASE WHEN e.suspendido_hasta > CURRENT_TIMESTAMP THEN true ELSE false END AS suspendido
+      FROM public.reporte_a_empleador rae
+      INNER JOIN public.reporte rep ON rae.id_reporte = rep.id_reporte
+      INNER JOIN public.empleador e ON rae.id_empleador_reportado::text = e.id_empleador::text
+
+      ORDER BY fecha_reporte DESC;
     `;
     const result = await pool.query(query);
     res.json(result.rows);
   } catch (err) {
+    console.error('Error al obtener reportes de perfiles:', err);
     res.status(500).json({ error: "Error al obtener la lista de reportes." });
+  }
+});
+
+// =========================================================================
+// ELIMINAR REPORTE DE LA BD (DELETE) - Administrador
+// =========================================================================
+app.delete('/reportes/:idReporte', verifyToken, authorizeRoles('administrador'), async (req, res) => {
+  const { idReporte } = req.params;
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    // Eliminamos primero las dependencias (hijos) para evitar errores de Llave Foránea
+    await client.query('DELETE FROM reporte_a_postulante WHERE id_reporte = $1', [idReporte]);
+    await client.query('DELETE FROM reporte_a_empleador WHERE id_reporte = $1', [idReporte]);
+    await client.query('DELETE FROM reporte_a_anuncio WHERE id_reporte = $1', [idReporte]);
+    
+    // Por último, eliminamos el reporte principal (padre)
+    await client.query('DELETE FROM reporte WHERE id_reporte = $1', [idReporte]);
+    
+    await client.query('COMMIT');
+    res.json({ message: 'Reporte eliminado correctamente de la base de datos' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error al eliminar el reporte:', err);
+    res.status(500).json({ error: 'Hubo un error al eliminar el reporte' });
+  } finally {
+    client.release();
   }
 });
 
@@ -2049,6 +2119,80 @@ app.put("/notificaciones/marcar-leidas", verifyToken, async (req, res) => {
   }
 });
 
+// =========================================================================
+// SUSPENDER CUENTA (PUT) - Administrador
+// =========================================================================
+app.put("/usuarios/:id/suspender", verifyToken, authorizeRoles("administrador"), async (req, res) => {
+  const { id } = req.params;
+  const { dias_suspension } = req.body; 
+
+  try {
+    // Si envían 0 (permanente), le ponemos unos 100 años de suspensión
+    const dias = dias_suspension === 0 ? 36500 : dias_suspension; 
+
+    // 1. Intentar actualizar en la tabla postulante
+    let result = await pool.query(`
+      UPDATE postulante 
+      SET suspendido_hasta = NOW() + INTERVAL '${dias} days' 
+      WHERE id_postulante = $1
+    `, [id]);
+
+    // 2. Si no se actualizó ningún postulante, intentar en la tabla empleador
+    if (result.rowCount === 0) {
+      result = await pool.query(`
+        UPDATE empleador 
+        SET suspendido_hasta = NOW() + INTERVAL '${dias} days' 
+        WHERE id_empleador = $1
+      `, [id]);
+    }
+
+    // 3. Verificar si realmente se encontró y suspendió a alguien
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'No se encontró el postulante ni el empleador con ese ID' });
+    }
+
+    res.json({ success: true, message: 'Cuenta suspendida correctamente' });
+  } catch (error) {
+    console.error('Error al suspender:', error);
+    res.status(500).json({ error: 'Error al suspender la cuenta' });
+  }
+});
+
+// =========================================================================
+// REACTIVAR CUENTA (PUT) - Administrador
+// =========================================================================
+app.put("/usuarios/:id/reactivar", verifyToken, authorizeRoles("administrador"), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 1. Intentar limpiar la fecha en la tabla postulante
+    let result = await pool.query(`
+      UPDATE postulante 
+      SET suspendido_hasta = NULL 
+      WHERE id_postulante = $1
+    `, [id]);
+
+    // 2. Si no se actualizó ningún postulante, intentar en la tabla empleador
+    if (result.rowCount === 0) {
+      result = await pool.query(`
+        UPDATE empleador 
+        SET suspendido_hasta = NULL 
+        WHERE id_empleador = $1
+      `, [id]);
+    }
+
+    // 3. Verificar si realmente se encontró a alguien
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'No se encontró el postulante ni el empleador con ese ID' });
+    }
+
+    res.json({ success: true, message: 'Cuenta reactivada correctamente' });
+  } catch (error) {
+    console.error('Error al reactivar:', error);
+    res.status(500).json({ error: 'Error al reactivar la cuenta' });
+  }
+});
+
 /* ===== MIGRACIÓN DE BASE DE DATOS DINÁMICA ===== */
 async function ensureDatabaseSchema() {
   try {
@@ -2070,6 +2214,11 @@ async function ensureDatabaseSchema() {
     }
     // ==============================================================
     
+    // ================= AQUÍ CREA LAS COLUMNAS DE SUSPENSIÓN SI NO EXISTEN =================
+    await pool.query(`ALTER TABLE postulante ADD COLUMN IF NOT EXISTS suspendido_hasta TIMESTAMP;`);
+    await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS suspendido_hasta TIMESTAMP;`);
+    // ======================================================================================
+
     const typeEmp = await pool.query("SELECT data_type FROM information_schema.columns WHERE table_name = 'empleador' AND column_name = 'id_empleador'");
     const empDataType = typeEmp.rows[0]?.data_type || 'VARCHAR(255)';
 
@@ -2180,28 +2329,6 @@ app.get('/reportes/anuncios', async (req, res) => {
     }
 });
 
-// =========================================================================
-// Obtener reportes de perfiles (GET) - Vista del administrador
-// =========================================================================
-app.get('/reportes/perfiles', verifyToken, authorizeRoles('administrador'), async (req, res) => {
-  try {
-    const query = `
-      SELECT
-        r.id_reporte, rep.motivo, rep.descripcion, rep.estado, rep.fecha_reporte,
-        rap.id_postulante_reportado, p.nombre_postulante,
-        p.apellido_paterno_postulante, p.apellido_materno_postulante
-      FROM public.reporte_a_postulante rap
-      INNER JOIN public.reporte rep ON rap.id_reporte = rep.id_reporte
-      INNER JOIN public.postulante p ON rap.id_postulante_reportado::text = p.id_postulante::text
-      ORDER BY rep.fecha_reporte DESC;
-    `;
-    const result = await pool.query(query);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Error al obtener reportes de perfiles:', err);
-    res.status(500).json({ error: "Error al obtener la lista de reportes." });
-  }
-});
 // =========================================================================
 // ELIMINAR ANUNCIO PERMANENTEMENTE Y NOTIFICAR (DELETE)
 // =========================================================================

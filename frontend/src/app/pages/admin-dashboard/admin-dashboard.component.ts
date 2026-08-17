@@ -17,6 +17,7 @@ interface PerfilReportado {
   nombre_postulante?: string;
   apellido_paterno_postulante?: string;
   apellido_materno_postulante?: string;
+  suspendido?: boolean;
 }
 
 interface AnuncioReportado {
@@ -72,11 +73,25 @@ export class AdminDashboardComponent implements OnInit {
   cargandoEmpresas = true;
   errorEmpresas = '';
 
-  // Control de modales de eliminación
+  // Control de modales de error
+  mostrarModalError: boolean = false;
+  mensajeModalError: string = '';
+
+  // Control de modales de eliminar REPORTE
+  mostrarModalEliminarReporte: boolean = false;
+  reporteAEliminar: number | null = null;
+
+  // Control de modales de eliminación de ANUNCIO
   mostrarModalEliminarAnuncio: boolean = false;
-  mostrarModalExitoEliminar: boolean = false; // Nueva variable para el modal de éxito
+  mostrarModalExitoEliminar: boolean = false; 
   anuncioAEliminar: string | null = null;
   mensajeModalEliminar: string = '¿Estás seguro de que deseas eliminar este anuncio permanentemente por incumplimiento de normas?';
+
+  // Control de modales de suspensión de cuenta
+  mostrarModalSuspender: boolean = false;
+  mostrarModalExitoSuspension: boolean = false;
+  cuentaASuspender: string | null = null;
+  tiempoSuspension: string = '7'; // Valor por defecto: 1 semana
 
   notificaciones: NotificacionReporte[] = [
     { mensaje: 'Nuevo reporte sobre anuncio de Mario Sanchez por titulo de publicacion: Venta de fentanilo' },
@@ -243,7 +258,7 @@ export class AdminDashboardComponent implements OnInit {
     this.errorReportes = '';
     this.api.obtenerReportesPerfiles().subscribe({
       next: (reportes: PerfilReportado[]) => {
-        this.perfilesReportados = reportes;
+        this.perfilesReportados = reportes.map(r => ({...r, suspendido: r.suspendido || false}));
         this.cargandoReportes = false;
       },
       error: (err) => {
@@ -294,10 +309,83 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  suspenderCuenta(idPostulante: string) {
-    if (confirm('¿Estás seguro de que deseas suspender esta cuenta?')) {
-      console.log('Suspendiendo cuenta con ID:', idPostulante);
-    }
+  // --- MODAL DE ERROR GENÉRICO ---
+  abrirModalError(mensaje: string) {
+    this.mensajeModalError = mensaje;
+    this.mostrarModalError = true;
+  }
+
+  cerrarModalError() {
+    this.mostrarModalError = false;
+    this.mensajeModalError = '';
+  }
+
+  // --- MÉTODOS PARA MODALES DE SUSPENDER CUENTA ---
+  abrirModalSuspender(idPostulante: string) {
+    this.cuentaASuspender = idPostulante;
+    this.tiempoSuspension = '7'; 
+    this.mostrarModalSuspender = true;
+  }
+
+  cerrarModalSuspender() {
+    this.mostrarModalSuspender = false;
+    this.cuentaASuspender = null;
+  }
+
+  cerrarModalExitoSuspension() {
+    this.mostrarModalExitoSuspension = false;
+  }
+
+  ejecutarSuspension() {
+    if (!this.cuentaASuspender) return;
+
+    const idPostulante = this.cuentaASuspender;
+    const diasSuspension = parseInt(this.tiempoSuspension, 10);
+
+    this.api.suspenderUsuario(idPostulante, diasSuspension).subscribe({
+      next: (res) => {
+        this.perfilesReportados.forEach(p => {
+          if (p.id_postulante_reportado === idPostulante) {
+            p.suspendido = true;
+          }
+        });
+        this.cerrarModalSuspender();
+        this.mostrarModalExitoSuspension = true;
+      },
+      error: (err) => {
+        console.error('Error al suspender cuenta:', err);
+        this.cerrarModalSuspender();
+        this.abrirModalError('Hubo un problema al suspender al usuario. Intenta más tarde.');
+      }
+    });
+  }
+
+  // --- FUNCIÓN PARA ELIMINAR EL REPORTE DE LA LISTA Y DE LA BD ---
+  confirmarEliminarReporte(idReporte: number) {
+    this.reporteAEliminar = idReporte;
+    this.mostrarModalEliminarReporte = true;
+  }
+
+  cerrarModalEliminarReporte() {
+    this.mostrarModalEliminarReporte = false;
+    this.reporteAEliminar = null;
+  }
+
+  ejecutarEliminarReporte() {
+    if (this.reporteAEliminar === null) return;
+    const idReporte = this.reporteAEliminar;
+
+    this.api.eliminarReporte(idReporte).subscribe({
+      next: () => {
+        this.perfilesReportados = this.perfilesReportados.filter(p => p.id_reporte !== idReporte);
+        this.cerrarModalEliminarReporte();
+      },
+      error: (err) => {
+        console.error('Error al eliminar el reporte:', err);
+        this.cerrarModalEliminarReporte();
+        this.abrirModalError('Hubo un error al intentar eliminar el reporte. Revisa la conexión.');
+      }
+    });
   }
 
   toggleMenu(event?: Event) {
@@ -347,13 +435,12 @@ export class AdminDashboardComponent implements OnInit {
       next: (res) => {
         this.anunciosReportados = this.anunciosReportados.filter(a => a.id_anuncio !== idAnuncio);
         this.cerrarModalEliminarAnuncio();
-        // Abrimos el modal de éxito
         this.mostrarModalExitoEliminar = true;
       },
       error: (err) => {
         console.error('Error al intentar eliminar el anuncio:', err);
         this.cerrarModalEliminarAnuncio();
-        alert('Hubo un problema al eliminar el anuncio de la base de datos. Por favor, intenta más tarde.');
+        this.abrirModalError('Hubo un problema al eliminar el anuncio de la base de datos. Por favor, intenta más tarde.');
       }
     });
   }

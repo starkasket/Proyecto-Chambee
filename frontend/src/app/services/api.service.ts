@@ -280,4 +280,21 @@ export class ApiService {
 
     return this.http.get<any[]>(`${this.apiUrl}/busqueda`,{params});
   }
+
+  // ================= ACCIONES DE ADMINISTRADOR =================
+  
+  // Función para suspender cuenta
+  suspenderUsuario(id: string, dias: number) {
+    return this.http.put(`${this.apiUrl}/usuarios/${id}/suspender`, { dias_suspension: dias }, this.getHeaders());
+  }
+
+  // Función para QUITAR la suspensión a un usuario (Reactivar)
+  reactivarUsuario(id: string) {
+    return this.http.put(`${this.apiUrl}/usuarios/${id}/reactivar`, {}, this.getHeaders());
+  }
+
+  // Función para eliminar un reporte
+  eliminarReporte(idReporte: number) {
+    return this.http.delete(`${this.apiUrl}/reportes/${idReporte}`, this.getHeaders());
+  }
 }

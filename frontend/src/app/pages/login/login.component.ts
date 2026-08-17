@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'; 
+import { Component, inject, OnDestroy } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -12,13 +12,21 @@ import { ThemeService } from '../../services/theme.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   loginForm: FormGroup;
   private redirectAfterLogin = '/home-user';
 
   // --- CONTROL DE MODALES ---
   modalMensaje = '';
   mostrarPassword = false;
+
+  // --- VARIABLES DEL TEMPORIZADOR DE SUSPENSIÓN ---
+  mostrarModalSuspendido: boolean = false;
+  tiempoInterval: any;
+  diasRestantes: number = 0;
+  horasRestantes: number = 0;
+  minutosRestantes: number = 0;
+  segundosRestantes: number = 0;
 
   // Inyectamos el servicio del tema
   private readonly themeService = inject(ThemeService);
@@ -109,7 +117,6 @@ export class LoginComponent {
             }));
           }
 
-          // 👇 AQUI ESTÁ LA CORRECCIÓN
           this.redirectAfterLogin = user.rol === 'empleador'
             ? '/home-employer'
             : user.rol === 'administrador'
@@ -121,11 +128,73 @@ export class LoginComponent {
         },
         error: (err) => {
           console.error('Error en el login:', err);
-          this.mostrarModal('Hijole, algo fallo. Revisa que tus datos sean correctos.');
+          
+          // --- AQUÍ ATRAPAMOS EL ERROR DE CUENTA SUSPENDIDA ---
+          if (err.status === 403 && err.error?.error === 'cuenta_suspendida') {
+            this.iniciarTemporizador(err.error.suspendido_hasta);
+          } 
+          // --- VALIDAMOS SI LA CUENTA FUE ELIMINADA ---
+          else if (err.status === 401 && err.error?.error === 'Cuenta eliminada') {
+            this.mostrarModal('Esta cuenta ha sido eliminada por infringir nuestras normas.');
+          }
+          // --- ERROR NORMAL DE CORREO/CONTRASEÑA ---
+          else {
+            this.mostrarModal('Hijole, algo fallo. Revisa que tus datos sean correctos.');
+          }
         }
       });
     } else {
       this.mostrarModal('Formulario no valido. Checa el correo o la contraseña.');
+    }
+  }
+
+  // --- LÓGICA DEL TEMPORIZADOR DE SUSPENSIÓN ---
+  iniciarTemporizador(fechaFinISO: string) {
+    this.mostrarModalSuspendido = true;
+    const fechaFin = new Date(fechaFinISO).getTime();
+
+    // Limpiar intervalo anterior si existe
+    if (this.tiempoInterval) {
+      clearInterval(this.tiempoInterval);
+    }
+
+    // Ejecutar cálculo inmediatamente
+    this.calcularTiempo(fechaFin);
+
+    // Actualizar cada segundo (1000 ms)
+    this.tiempoInterval = setInterval(() => {
+      this.calcularTiempo(fechaFin);
+    }, 1000);
+  }
+
+  calcularTiempo(fechaFin: number) {
+    const ahora = new Date().getTime();
+    const diferencia = fechaFin - ahora;
+
+    if (diferencia <= 0) {
+      // El castigo terminó mientras tenía el modal abierto
+      clearInterval(this.tiempoInterval);
+      this.mostrarModalSuspendido = false;
+      this.mostrarModal('¡Tu suspensión ha terminado! Ya puedes iniciar sesión nuevamente.');
+      return;
+    }
+
+    // Cálculos matemáticos de fechas
+    this.diasRestantes = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    this.horasRestantes = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    this.minutosRestantes = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+    this.segundosRestantes = Math.floor((diferencia % (1000 * 60)) / 1000);
+  }
+
+  cerrarModalSuspendido() {
+    this.mostrarModalSuspendido = false;
+    if (this.tiempoInterval) clearInterval(this.tiempoInterval);
+  }
+
+  // Limpiar el intervalo de memoria cuando cambiamos de página
+  ngOnDestroy() {
+    if (this.tiempoInterval) {
+      clearInterval(this.tiempoInterval);
     }
   }
 }
