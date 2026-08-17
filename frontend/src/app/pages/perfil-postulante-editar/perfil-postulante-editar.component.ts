@@ -313,7 +313,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
 
   volverPerfil() { this.router.navigate(['/perfil-postulante']); }
   buscarEmpleos() { this.router.navigate(['/buscar-empleos']); }
-  editarCategorias() { this.router.navigate(['/job-preferences']); }
+  editarCategorias() { this.router.navigate(['/job-preferences'], { queryParams: { editMode: 'true' } }); }
   toggleTheme() { this.themeService.toggleTheme(); }
 
   get isDarkMode(): boolean {

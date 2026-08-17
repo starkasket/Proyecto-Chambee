@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { CommonModule, Location } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -22,6 +22,7 @@ export class JobPreferencesComponent implements OnInit {
   selectedTags: string[] = [];
   guardando = false;
   cargando = true;
+  isEditMode = false;
 
   // Modal state
   modalVisible = false;
@@ -55,10 +56,18 @@ export class JobPreferencesComponent implements OnInit {
   constructor(
     private router: Router,
     private api: ApiService,
-    private authService: AuthService
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['editMode'] === 'true') {
+        this.isEditMode = true;
+      }
+    });
+
     // Si no hay token válido, redirigir al login
     if (!this.authService.getToken()) {
       this.router.navigate(['/login']);
@@ -129,7 +138,11 @@ export class JobPreferencesComponent implements OnInit {
     this.api.guardarMisEtiquetas(this.selectedTags).subscribe({
       next: () => {
         this.guardando = false;
-        this.router.navigate(['/home-user']);
+        if (this.isEditMode) {
+          this.location.back();
+        } else {
+          this.router.navigate(['/home-user']);
+        }
       },
       error: (err: any) => {
         this.guardando = false;
@@ -145,5 +158,9 @@ export class JobPreferencesComponent implements OnInit {
 
   skipPreferences() {
     this.router.navigate(['/home-user']);
+  }
+
+  goBack() {
+    this.location.back();
   }
 }
