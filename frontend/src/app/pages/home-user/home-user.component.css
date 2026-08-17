@@ -516,12 +516,26 @@ body {
   width: 100%;
 }
 
-.job-company{
-display: -webkit-box;
+.job-company {
+  display: -webkit-box;
   -webkit-line-clamp: 3;   
   -webkit-box-orient: vertical;
   overflow: hidden;
   width: 90%;
+}
+
+/* NUEVAS CLASES PARA EL ORDEN INVERTIDO */
+.job-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-color);
+  margin: 0 0 4px;
+}
+
+.job-company-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #999);
+  margin: 0 0 6px;
 }
 
 .salary {

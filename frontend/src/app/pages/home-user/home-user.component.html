@@ -396,6 +396,7 @@
       </div>
     </div>
 
+    <!-- SECCIÓN DE CUADRÍCULA DE EMPLEOS CON EL CAMBIO APLICADO -->
     <div class="jobs-grid mt-4" *ngIf="filteredJobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button"
         tabindex="0">
@@ -412,8 +413,8 @@
         <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
         <div class="job-content">
           <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
-          <h4 class="job-company">{{ job.company }}</h4>
-          <p>{{ job.title }}</p>
+          <h4 class="job-title">{{ job.title }}</h4>
+          <p class="job-company-sub">{{ job.company }}</p>
           <p class="salary">{{ job.salary }}</p>
           <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
             <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
@@ -429,6 +430,7 @@
       </div>
     </ng-template>
 
+    <!-- SECCIÓN VISTOS RECIENTEMENTE CON EL CAMBIO APLICADO -->
     <div class="recently-viewed-section mt-5" *ngIf="vistosRecientemente.length > 0">
       <h3 class="mb-4" style="font-weight: 700; color: var(--text-color);">Vistos recientemente</h3>
       <div class="jobs-horizontal-scroll">
@@ -446,8 +448,8 @@
           <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
           <div class="job-content">
             <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
-            <h4 class="job-company">{{ job.company }}</h4>
-            <p>{{ job.title }}</p>
+            <h4 class="job-title">{{ job.title }}</h4>
+            <p class="job-company-sub">{{ job.company }}</p>
             <p class="salary">{{ job.salary }}</p>
             <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
               <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
