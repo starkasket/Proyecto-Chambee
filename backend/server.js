@@ -2387,6 +2387,84 @@ app.delete('/anuncios/:idAnuncio', verifyToken, authorizeRoles("administrador", 
     }
 });
 
+
+/* ===== COMENTARIOS DE ANUNCIOS ===== */
+
+app.get("/comentarios/:idAnuncio", async (req, res) => {
+  try {
+    const query = `
+      SELECT c.id_comentario, c.texto, c.fecha_comentario, c.id_postulante,
+             p.nombre_postulante, p.apellido_paterno_postulante
+      FROM comentarios_anuncio c
+      INNER JOIN postulante p ON p.id_postulante = c.id_postulante
+      WHERE c.id_anuncio = $1 AND p.estado_cuenta = 'ACTIVA'
+      ORDER BY c.fecha_comentario DESC
+    `;
+    const result = await pool.query(query, [req.params.idAnuncio]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error en GET /comentarios:", err);
+    res.status(500).json({ error: "Error al obtener comentarios" });
+  }
+});
+
+app.post("/comentarios", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { id_anuncio, texto } = req.body;
+  const id_postulante = req.user.id;
+  if (!texto || !texto.trim()) return res.status(400).json({ error: "El comentario no puede estar vacío" });
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO comentarios_anuncio (id_anuncio, id_postulante, texto) VALUES ($1, $2, $3) RETURNING *`,
+      [id_anuncio, id_postulante, texto.trim()]
+    );
+
+    const postulanteRes = await pool.query(
+      `SELECT nombre_postulante, apellido_paterno_postulante FROM postulante WHERE id_postulante = $1`,
+      [id_postulante]
+    );
+
+    res.status(201).json({ ...result.rows[0], ...postulanteRes.rows[0] });
+  } catch (err) {
+    console.error("Error en POST /comentarios:", err);
+    res.status(500).json({ error: "Error al crear comentario" });
+  }
+});
+
+app.put("/comentarios/:idComentario", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { texto } = req.body;
+  const id_postulante = req.user.id;
+  if (!texto || !texto.trim()) return res.status(400).json({ error: "El comentario no puede estar vacío" });
+
+  try {
+    const result = await pool.query(
+      `UPDATE comentarios_anuncio SET texto = $1 WHERE id_comentario = $2 AND id_postulante = $3 RETURNING *`,
+      [texto.trim(), req.params.idComentario, id_postulante]
+    );
+    if (result.rows.length === 0) return res.status(403).json({ error: "No autorizado o comentario no encontrado" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error en PUT /comentarios:", err);
+    res.status(500).json({ error: "Error al editar comentario" });
+  }
+});
+
+app.delete("/comentarios/:idComentario", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const id_postulante = req.user.id;
+  try {
+    const result = await pool.query(
+      `DELETE FROM comentarios_anuncio WHERE id_comentario = $1 AND id_postulante = $2 RETURNING *`,
+      [req.params.idComentario, id_postulante]
+    );
+    if (result.rows.length === 0) return res.status(403).json({ error: "No autorizado o comentario no encontrado" });
+    res.json({ message: "Comentario eliminado" });
+  } catch (err) {
+    console.error("Error en DELETE /comentarios:", err);
+    res.status(500).json({ error: "Error al eliminar comentario" });
+  }
+});
+
+
 /* ===== INICIAR SERVIDOR ===== */
 server.listen(3000, "0.0.0.0", async () => {
   console.log("Servidor corriendo en http://localhost:3000");
