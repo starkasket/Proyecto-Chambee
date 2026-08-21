@@ -139,7 +139,8 @@ export class JobPreferencesComponent implements OnInit {
       next: () => {
         this.guardando = false;
         if (this.isEditMode) {
-          this.location.back();
+          this.router.navigate(['/perfil-postulante'])
+          // this.location.back();
         } else {
           this.router.navigate(['/home-user']);
         }

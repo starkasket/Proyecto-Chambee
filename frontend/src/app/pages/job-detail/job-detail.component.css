@@ -214,6 +214,22 @@
   font-weight: 700;
 }
 
+.job-urgency-badge-normal {
+  background: rgba(81, 220, 38, 0.12);
+  color: #35a313;
+
+}
+.job-urgency-badge-urgent {
+
+  background: rgba(220, 153, 38, 0.12);
+  color: #cd9300;
+
+}
+.job-urgency-badge-very-urgent {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+}
+
 .job-match-badge {
   display: inline-flex;
   align-items: center;

@@ -23,6 +23,7 @@ import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard
 import { SearchResultsComponent } from './pages/search-results/search-results.component';
 import { CompanyPublicProfileComponent } from './pages/company-public-profile/company-public-profile.component';
 import { adminGuard } from './guards/admin.guard';
+import { TestGoogleComponent } from './pages/test-google/test-google.component';
 
 export const routes: Routes = [
   {
@@ -131,6 +132,10 @@ export const routes: Routes = [
   {
     path: 'borrador-servicio',
     component: BorradorServicioComponent
+  },
+  {
+  path: 'test-google',
+  component: TestGoogleComponent
   },
   {
     path: '**',

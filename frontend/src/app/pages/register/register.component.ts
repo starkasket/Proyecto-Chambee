@@ -1,17 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
+import { DireccionCompleta } from '../../services/google-maps.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { GoogleMapsService } from '../../services/google-maps.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule],
+  imports: [RouterLink, FormsModule, CommonModule, MapaUbicacionComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent {
 
   form = {
     nombre_postulante: '',
@@ -27,10 +30,14 @@ export class RegisterComponent implements OnInit {
     ciudad: '',
     colonia: '',
     calle: '',
+    numero_exterior: '',
+    direccion_formateada: '',
     codigo_postal: '',
     telefono: '',
     rfc: '',
-    curp: ''
+    curp: '',
+    latitud: null as number | null,
+    longitud: null as number | null
   };
 
   erroresDuplicados = {
@@ -58,6 +65,9 @@ export class RegisterComponent implements OnInit {
   mostrarPassword = false;
   mostrarPassword2 = false;
 
+  ubicacionSeleccionadaFlag = false;
+
+
   hoy = new Date().toISOString().split('T')[0];
   sepomex: any[] = [];
   colonias: string[] = [];
@@ -67,12 +77,22 @@ export class RegisterComponent implements OnInit {
   modalErrorVisible = false;
   modalExitoVisible = false;
 
-  constructor(private api: ApiService, private router: Router) { }
+  // --- FLAGS ---
+/*   autocompleteListo = false;
+  private autocompleteInicializado = false;
+  direccionValidada = false; */
 
-  ngOnInit() {
+
+  constructor(private api: ApiService, private router: Router, private googleMaps: GoogleMapsService) { }
+
+  async ngOnInit() {
     this.api.getSepomex().subscribe(data => this.sepomex = data);
-
   }
+
+
+
+
+
 
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
@@ -97,7 +117,7 @@ export class RegisterComponent implements OnInit {
   }
 
   // --- BUSCAR CP ---
-  buscarCP() {
+  /* buscarCP() {
     const cp = this.form.codigo_postal.trim();
     const resultados = this.sepomex.filter(r => r.cp === cp);
 
@@ -106,6 +126,17 @@ export class RegisterComponent implements OnInit {
       this.form.ciudad = resultados[0].ciudad;
       this.form.colonia = '';
       this.colonias = resultados.map(r => r.colonia);
+      this.autocompleteListo = false;
+      this.form.calle = '';
+      const contenedor = document.getElementById("autocomplete")
+      if (contenedor) {
+        contenedor.innerHTML = "";
+      }
+      this.form.latitud = null;
+      this.form.longitud = null;
+      this.autocompleteInicializado = false;
+
+      this.direccionValidada = false;
     } else {
       this.form.estado = '';
       this.form.ciudad = '';
@@ -114,6 +145,8 @@ export class RegisterComponent implements OnInit {
       this.mostrarModal('Código postal no encontrado');
     }
   }
+ */
+ 
 
   registrar() {
     // Validar campos vacíos y específicos con mensajes claros
@@ -195,19 +228,29 @@ export class RegisterComponent implements OnInit {
       this.mostrarModal('La ciudad es obligatoria.');
       return;
     }
-    if (!this.form.colonia) {
-      this.mostrarModal('La colonia es obligatoria.');
-      return;
-    }
-    if (!this.form.calle || !this.form.calle.trim()) {
-      this.mostrarModal('La calle es obligatoria.');
-      return;
-    }
+    /*     if (!this.form.colonia) {
+          this.mostrarModal('La colonia es obligatoria.');
+          return;
+        }
+        if (!this.form.calle || !this.form.calle.trim()) {
+          this.mostrarModal('La calle es obligatoria.');
+          return;
+        } */
     if (!this.form.telefono || !this.form.telefono.trim()) {
       this.mostrarModal('El teléfono es obligatorio.');
       return;
     }
 
+    if (
+      this.googleMaps.normalizar(this.form.estado) !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+      return;
+    }
+    
     this.erroresDuplicados = {
       correo_electronico: false,
       curp: false,
@@ -215,6 +258,15 @@ export class RegisterComponent implements OnInit {
     };
 
     const { contrasena_verificar, ...datos } = this.form;
+
+    if (
+      this.form.latitud === null ||
+      this.form.longitud === null
+    ) {
+      this.mostrarModal("Selecciona tu ubicación el mapa.");
+      return;
+    }
+
 
     this.api.registrarPostulante(datos).subscribe({
       next: (res) => {
@@ -248,5 +300,86 @@ export class RegisterComponent implements OnInit {
         this.mostrarModal(mensaje);
       }
     });
+  }
+
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    if (
+      this.googleMaps.normalizar(direccion.estado) !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+
+      this.form.latitud = null;
+      this.form.longitud = null;
+
+      this.form.calle = '';
+      this.form.numero_exterior = '';
+      this.form.colonia = '';
+      this.form.ciudad = '';
+      this.form.estado = '';
+      this.form.codigo_postal = '';
+      this.form.direccion_formateada = '';
+
+      this.colonias = [];
+      this.ubicacionSeleccionadaFlag = false;
+
+      this.mostrarModal(
+        'Por el momento, Chambee solo permite registrar ubicaciones dentro del estado de Guanajuato.'
+      );
+
+      return;
+    }
+
+    this.form.calle = direccion.calle;
+
+    this.form.numero_exterior = direccion.numero;
+
+    this.form.ciudad = direccion.ciudad;
+
+    this.form.estado = direccion.estado;
+
+    this.form.codigo_postal = direccion.codigoPostal;
+
+    this.form.direccion_formateada = direccion.direccionFormateada;
+
+    this.form.latitud = direccion.latitud;
+
+    this.form.longitud = direccion.longitud;
+
+    if (direccion.colonia) {
+      this.form.colonia = direccion.colonia;
+      this.colonias = [];
+    } else {
+      this.form.colonia = '';
+
+      this.buscarColoniasPorCP(
+        direccion.codigoPostal
+      );
+    }
+    this.ubicacionSeleccionadaFlag = true;
+
+    console.log('Ubicación seleccionada:', direccion);
+
+  }
+
+  private buscarColoniasPorCP(cp: string) {
+
+    if (!cp) {
+      this.colonias = [];
+      return;
+    }
+
+    const resultados = this.sepomex.filter(
+      r => r.cp === cp
+    );
+
+    this.colonias = [
+      ...new Set(
+        resultados.map(r => r.colonia)
+      )
+    ];
+
+    console.log('Colonias encontradas en SEPOMEX:', this.colonias);
   }
 }

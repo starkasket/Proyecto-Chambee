@@ -4,11 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { GoogleMapsService } from '../../services/google-maps.service';
+import { DireccionCompleta } from '../../services/google-maps.service';
 
 @Component({
   selector: 'app-employer-register',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule],
+  imports: [RouterLink, FormsModule, CommonModule, MapaUbicacionComponent],
   templateUrl: './employerRegister.component.html',
   styleUrl: './employerRegister.component.css'
 })
@@ -24,14 +27,19 @@ export class EmployerRegisterComponent {
     ciudad: '',
     colonia: '',
     calle: '',
+    numero_exterior: '',
+    direccion_formateada: '',
     codigo_postal: '',
     telefono: '',
     rfc: '',
-    descripcion: ''
+    descripcion: '',
+    latitud: null as number | null,
+    longitud: null as number | null
   };
 
   mostrarPassword = false;
   mostrarPassword2 = false;
+  sepomex: any[] = [];
   colonias: string[] = [];
   buscandoCP = false;
 
@@ -45,8 +53,16 @@ export class EmployerRegisterComponent {
   modalMensaje = '';
   modalMensajeExito = '';
 
-  constructor(private api: ApiService, private router: Router, private http: HttpClient) {}
 
+  // ☆☆☆ Flag para ubicación ☆☆☆
+   ubicacionSeleccionadaFlag = false;
+
+  constructor(private api: ApiService, private router: Router, private http: HttpClient, private googleMaps: GoogleMapsService) {}
+
+
+  async ngOnInit(){
+    this.api.getSepomex().subscribe(data => this.sepomex = data);
+  }
   // --- MODAL DE ERROR ---
   mostrarModal(mensaje: string) {
     this.modalMensaje = mensaje;
@@ -242,4 +258,85 @@ export class EmployerRegisterComponent {
       }
     });
   }
+
+  
+    ubicacionSeleccionada(direccion: DireccionCompleta) {
+  
+      if (
+        this.googleMaps.normalizar(direccion.estado) !==
+        this.googleMaps.normalizar('Guanajuato')
+      ) {
+  
+        this.form.latitud = null;
+        this.form.longitud = null;
+  
+        this.form.calle = '';
+        this.form.numero_exterior = '';
+        this.form.colonia = '';
+        this.form.ciudad = '';
+        this.form.estado = '';
+        this.form.codigo_postal = '';
+        this.form.direccion_formateada = '';
+  
+        this.colonias = [];
+        this.ubicacionSeleccionadaFlag = false;
+  
+        this.mostrarModal(
+          'Por el momento, Chambee solo permite registrar ubicaciones dentro del estado de Guanajuato.'
+        );
+  
+        return;
+      }
+  
+      this.form.calle = direccion.calle;
+  
+      this.form.numero_exterior = direccion.numero;
+  
+      this.form.ciudad = direccion.ciudad;
+  
+      this.form.estado = direccion.estado;
+  
+      this.form.codigo_postal = direccion.codigoPostal;
+  
+      this.form.direccion_formateada = direccion.direccionFormateada;
+  
+      this.form.latitud = direccion.latitud;
+  
+      this.form.longitud = direccion.longitud;
+  
+      if (direccion.colonia) {
+        this.form.colonia = direccion.colonia;
+        this.colonias = [];
+      } else {
+        this.form.colonia = '';
+  
+        this.buscarColoniasPorCP(
+          direccion.codigoPostal
+        );
+      }
+      this.ubicacionSeleccionadaFlag = true;
+  
+      console.log('Ubicación seleccionada:', direccion);
+  
+    }
+  
+    private buscarColoniasPorCP(cp: string) {
+  
+      if (!cp) {
+        this.colonias = [];
+        return;
+      }
+  
+      const resultados = this.sepomex.filter(
+        r => r.cp === cp
+      );
+  
+      this.colonias = [
+        ...new Set(
+          resultados.map(r => r.colonia)
+        )
+      ];
+  
+      console.log('Colonias encontradas en SEPOMEX:', this.colonias);
+    }
 }

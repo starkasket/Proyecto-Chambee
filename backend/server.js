@@ -12,6 +12,7 @@ const nodemailer = require("nodemailer");
 const { decode } = require("punycode");
 const { log } = require("console");
 const axios = require("axios");
+const { text } = require("stream/consumers");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -120,8 +121,8 @@ const verifyToken = async (req, res, next) => {
 
     if (result.rows[0].estado_cuenta === 'ELIMINADA') {
       return res.status(401).json({
-      error: "Cuenta eliminada"
-    });
+        error: "Cuenta eliminada"
+      });
     }
 
     const currentVersion = result.rows[0].token_version;
@@ -129,7 +130,7 @@ const verifyToken = async (req, res, next) => {
     const tokenVersion = decoded.tokenVersion !== undefined ? decoded.tokenVersion : 0;
     if (tokenVersion !== currentVersion) {
       return res.status(401).json({ error: "Sesión expirada" })
-    } 
+    }
 
     req.user = decoded;
     next();
@@ -263,7 +264,8 @@ app.post("/postulantes/registro", async (req, res) => {
     nombre_postulante, apellido_paterno_postulante,
     apellido_materno_postulante, correo_electronico, contrasena,
     fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle,
-    codigo_postal, telefono, foto_perfil, curp, rfc
+    numero_exterior, codigo_postal, direccion_formateada, latitud,
+    longitud, telefono, foto_perfil, curp, rfc
   } = req.body;
 
   const estado_cuenta = 'ACTIVA';
@@ -380,20 +382,30 @@ app.post("/postulantes/registro", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
+    if (latitud === null || latitud === undefined ||
+      longitud === null || longitud === undefined) {
+
+      return res.status(400).json({
+        error: "La ubicación es obligatoria."
+      });
+    }
+
     const query = `INSERT INTO postulante (
       nombre_postulante, apellido_paterno_postulante,
       apellido_materno_postulante, correo_electronico, contrasena,
       fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle,
-      codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
+      numero_exterior, codigo_postal, direccion_formateada, latitud,
+      longitud, telefono, foto_perfil, estado_cuenta, curp, rfc
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18, $19, $20, $21, $22)
     RETURNING id_postulante AS id, nombre_postulante AS nombre, correo_electronico AS correo, estado_cuenta, token_version`;
 
     const values = [
       nombre_postulante, apellido_paterno_postulante,
       apellido_materno_postulante, correo_electronico, hashedPassword,
       fecha_nacimiento, sexo, pais, estado, ciudad, colonia, calle,
-      codigo_postal, telefono, foto_perfil, estado_cuenta, curp, rfc
+      numero_exterior, codigo_postal, direccion_formateada, latitud,
+      longitud, telefono, foto_perfil, estado_cuenta, curp, rfc
     ];
 
     const result = await pool.query(query, values);
@@ -441,7 +453,8 @@ app.post("/postulantes/registro", async (req, res) => {
 app.post("/empleadores/registro", async (req, res) => {
   const {
     nombre_empresa, correo_electronico, contrasena, pais,
-    estado, ciudad, colonia, calle, codigo_postal, telefono,
+    estado, ciudad, colonia, calle, numero_exterior, codigo_postal,
+    direccion_formateada, latitud, longitud, telefono,
     rfc, descripcion
   } = req.body;
 
@@ -504,7 +517,7 @@ app.post("/empleadores/registro", async (req, res) => {
         }
       } catch (rfcErr) {
         console.error("Error al validar el RFC en APIMarket:", rfcErr.response?.data || rfcErr.message);
-        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        return res.status(400).json({ error: "La RFC no es válida o no pudo ser validada.", duplicateField: "rfc" });
       }
     } else if (!rfc) {
       return res.status(400).json({ error: "El RFC es obligatorio para el registro de empleador." });
@@ -512,17 +525,28 @@ app.post("/empleadores/registro", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
+
+    if (latitud === null || latitud === undefined ||
+      longitud === null || longitud === undefined) {
+
+      return res.status(400).json({
+        error: "La ubicación es obligatoria."
+      });
+    }
+
     const query = `INSERT INTO empleador (
       nombre_empresa, correo_electronico, contrasena, pais,
-      estado, ciudad, colonia, calle, codigo_postal, telefono,
+      estado, ciudad, colonia, calle, numero_exterior, codigo_postal, 
+      direccion_formateada, latitud, longitud, telefono,
       rfc, descripcion
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16 )
     RETURNING id_empleador AS id, nombre_empresa AS nombre, correo_electronico AS correo, estado, token_version`;
 
     const values = [
       nombre_empresa, correo_electronico, hashedPassword, pais,
-      estado, ciudad, colonia, calle, codigo_postal, telefono,
+      estado, ciudad, colonia, calle, numero_exterior, codigo_postal,
+      direccion_formateada, latitud, longitud, telefono,
       rfc, descripcion
     ];
 
@@ -589,7 +613,11 @@ app.get("/empleadores/:id/perfil", verifyToken, async (req, res) => {
       telefono,
       rfc,
       descripcion,
-      foto_perfil
+      foto_perfil,
+      latitud,
+      longitud,
+      numero_exterior,
+      direccion_formateada
     FROM empleador
     WHERE id_empleador = $1`;
 
@@ -621,7 +649,11 @@ app.put("/empleadores/:id/perfil", verifyToken, async (req, res) => {
     telefono,
     rfc,
     descripcion,
-    foto_perfil
+    foto_perfil,
+    latitud,
+    longitud,
+    numero_exterior,
+    direccion_formateada
   } = req.body;
 
   try {
@@ -684,7 +716,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       query = `SELECT 
         p.id_postulante, p.nombre_postulante, p.apellido_paterno_postulante, p.apellido_materno_postulante, 
         p.correo_electronico, p.fecha_nacimiento, p.sexo, p.pais, p.estado, p.ciudad, p.colonia, 
-        p.calle, p.codigo_postal, p.telefono, p.foto_perfil, p.curp, p.rfc, p.descripcion, c.visible_empresas, 
+        p.calle, p.numero_exterior, p.codigo_postal, p.direccion_formateada, p.latitud, p.longitud, p.telefono, p.foto_perfil, p.curp, p.rfc, c.visible_empresas, 
         p.fecha_registro, c.archivo_cv
       FROM postulante p
       LEFT JOIN cv c ON c.id_postulante = p.id_postulante
@@ -893,7 +925,7 @@ app.post("/postulantes/:id/valoracion", verifyToken, authorizeRoles("empleador")
     await client.query("BEGIN");
 
     const checkRes = await client.query(`SELECT pv.id_valoracion FROM postulante_valoracion pv WHERE pv.id_postulante = $1 AND pv.id_empleador = $2`, [id, id_empleador]);
-    
+
     let id_valoracion;
     if (checkRes.rows.length > 0) {
       id_valoracion = checkRes.rows[0].id_valoracion;
@@ -1163,12 +1195,29 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
   const { id } = req.params;
   if (String(req.user.id) !== String(id)) return res.status(403).json({ error: "No autorizado" });
 
-  const { titulo, descripcion, tipo_anuncio, urgencia = "Normal", edad = "Sin especificar", educacion = "Sin especificar", img, imgs = [], images: imagesBody = [], estado, ciudad, colonia, calle, codigo_postal, salario, modalidad, estado_anuncio = "ACTIVO", etiquetas = [] } = req.body;
+  const { titulo, descripcion, tipo_anuncio, urgencia = "Normal", edad = "Sin especificar", educacion = "Sin especificar", img, imgs = [], images: imagesBody = [], estado, ciudad, colonia, calle, numero_exterior, codigo_postal, latitud, longitud, direccion_formateada, salario, modalidad, estado_anuncio = "ACTIVO", etiquetas = [] } = req.body;
 
-  if (!titulo || !descripcion || !estado || !ciudad || !colonia || !calle || !codigo_postal || salario === null || salario === undefined || !modalidad) {
+  if (!titulo || !descripcion || !estado || !ciudad || salario === null || salario === undefined || !modalidad) {
     return res.status(400).json({ error: "Faltan campos requeridos" });
   }
+
+  if(latitud === null || latitud === undefined ||
+     longitud === null || longitud ===undefined) {
+       return res.status(400).json({
+        error: "La ubicación del anuncio es obligatoria"
+      });
+     }
+
+  const latitudNumero = parseFloat(latitud);
+  const longitudNumero = parseFloat(longitud);
   const salarioNumero = parseFloat(salario);
+
+  if (isNaN(latitudNumero) || isNaN(longitudNumero)) {
+     return res.status(400).json({
+      error: "Coordenadas inválidas"
+    });
+  }
+
   if (isNaN(salarioNumero) || salarioNumero <= 0) return res.status(400).json({ error: "Salario inválido" });
 
   const client = await pool.connect();
@@ -1177,9 +1226,9 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     await ensureCategoriasBase(client);
 
     const query = `INSERT INTO anuncios (
-      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, codigo_postal, salario, modalidad, estado_anuncio, id_empleador, vistas
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,0) RETURNING *`;
-    const values = [titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, codigo_postal, salarioNumero, modalidad, estado_anuncio, id];
+      titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, latitud, longitud, direccion_formateada, salario, modalidad, estado_anuncio, id_empleador, vistas
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,0) RETURNING *`;
+    const values = [titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia || null, calle || null,numero_exterior || null, codigo_postal || null, latitudNumero, longitudNumero, direccion_formateada, salarioNumero, modalidad, estado_anuncio, id];
     const result = await client.query(query, values);
     const anuncio = result.rows[0];
     const imagenesPayload = Array.isArray(imgs) && imgs.length ? imgs : imagesBody;
@@ -1195,7 +1244,7 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     }
     const categorias = await obtenerCategoriasPorNombre(etiquetas, client);
     for (const categoria of categorias) await client.query(`INSERT INTO categoriaAnuncio (id_categoria, id_anuncio) VALUES ($1, $2)`, [categoria.id_categoria, anuncio.id_anuncio]);
-    
+
     await client.query("COMMIT");
     // Return images array in response for convenience
     const imagenesRows = await client.query(`SELECT url_imagen FROM imagenes WHERE id_anuncio = $1 ORDER BY id_imagen`, [anuncio.id_anuncio]);
@@ -1328,6 +1377,83 @@ app.post("/anuncios/:id/vista", async (req, res) => {
 });
 
 app.get("/busqueda", async (req, res) => {
+
+  try {
+
+    const {
+
+      tipo = "",
+
+      ordenar = "fecha"
+
+    } = req.query;
+
+    const filtrosEmpleos = construirFiltroEmpleos(req.query);
+
+    const filtrosServicios = construirFiltroServicios(req.query);
+
+    let empleos = { rows: [] };
+
+    let servicios = { rows: [] };
+
+    if (tipo === "" || tipo === "empleo") {
+
+      empleos = await pool.query(
+
+        consultaEmpleos(filtrosEmpleos.where),
+
+        filtrosEmpleos.valores
+
+      );
+
+    }
+
+    if (tipo === "" || tipo === "servicio") {
+
+      servicios = await pool.query(
+
+        consultaServicios(filtrosServicios.where),
+
+        filtrosServicios.valores
+
+      );
+
+    }
+
+    let resultados = normalizarResultados(
+
+      empleos.rows,
+
+      servicios.rows
+
+    );
+
+    resultados = ordenarResultados(
+
+      resultados,
+
+      ordenar
+
+    );
+
+    res.json(resultados);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+
+      error: "Error en búsqueda"
+
+    });
+
+  }
+
+});
+
+
+/* app.get("/busqueda", async (req, res) => {
   try {
     const { 
       q = "",
@@ -1485,9 +1611,188 @@ app.get("/busqueda", async (req, res) => {
     });
   }
 });
+ */
+function construirFiltroEmpleos(query) {
+  const {
+    q = "",
+    modalidad = "",
+    ciudad = "",
+    categoriaEmpleo = ""
+  } = query;
+
+  const valores = [];
+
+  let where = ` a.estado_anuncio='ACTIVO' AND e.estado_cuenta='ACTIVA' `;
+
+  const texto = `%${q.toLowerCase()}%`;
+  if (q) {
+    const texto = `%${q.toLowerCase()}%`;
+    valores.push(texto);
+    where += ` 
+            AND(LOWER(a.titulo) LIKE $${valores.length}
+                OR LOWER(a.descripcion) LIKE $${valores.length}
+                OR LOWER(e.nombre_empresa) LIKE $${valores.length})`;
+  }
+
+  if (modalidad) {
+    valores.push(modalidad);
+    where += ` 
+    AND a.modalidad=$${valores.length}`;
+  }
+
+  if (ciudad) {
+    valores.push(ciudad);
+    where += ` 
+            AND a.ciudad=$${valores.length}`;
+  }
+
+  if (categoriaEmpleo) {
+    valores.push(categoriaEmpleo);
+    where += ` 
+        AND EXISTS(SELECT 1 FROM categoriaAnuncio ca2
+            INNER JOIN categorias c2
+            ON c2.id_categoria=ca2.id_categoria
+            WHERE
+            ca2.id_anuncio=a.id_anuncio
+            AND
+            c2.nombre=$${valores.length})`;
+
+  }
+
+  return {
+    where, valores
+  };
+
+}
+
+function construirFiltroServicios(query) {
+  const {
+    q = "",
+    cobertura = "",
+    ciudad = "",
+    categoriaServicio = ""
+  } = query;
+
+  const valores = [];
+
+  let where = `s.es_borrador=false AND p.estado_cuenta='ACTIVA'`;
 
 
 
+  if (q) {
+    const texto = `%${q.toLowerCase()}%`;
+    valores.push(texto);
+    where += ` AND (
+        LOWER(s.title) LIKE $${valores.length}
+        OR LOWER(s.description) LIKE $${valores.length}
+        OR LOWER(s.categoria) LIKE $${valores.length}
+        OR LOWER(p.nombre_postulante) LIKE $${valores.length}
+        OR LOWER(p.apellido_paterno_postulante) LIKE $${valores.length}
+        ) `;
+  }
+
+  if (cobertura) {
+    valores.push(cobertura);
+    where += ` AND s.modalidad=$${valores.length} `;
+  }
+
+  if (ciudad) {
+    valores.push(ciudad);
+    where += ` AND s.ciudad=$${valores.length} `;
+  }
+  if (categoriaServicio) {
+    valores.push(categoriaServicio);
+    where += ` AND s.categoria=$${valores.length}`;
+  }
+
+  return {
+    where, valores
+  };
+}
+
+function normalizarResultados(empleos, servicios) {
+  const empleosNormalizados = empleos.map(e => ({ ...e, tipo: 'empleo' }));
+
+  const serviciosNormalizados = servicios.map(s => ({
+    ...s, tipo: 'servicio',
+    titulo: s.title,
+    descripcion: s.description,
+    salario: s.presupuesto,
+    nombre_empresa:
+      `${s.nombre_postulante} ${s.apellido_paterno_postulante}`,
+    img: s.foto_perfil
+  }));
+
+  return [
+    ...empleosNormalizados, ...serviciosNormalizados
+  ];
+}
+
+function ordenarResultados(resultados, ordenar) {
+  if (ordenar === "fecha") {
+
+    resultados.sort((a, b) => {
+      const fechaA = new Date(
+        a.fecha_publicacion || a.fecha_creacion
+      );
+
+      const fechaB = new Date(
+        b.fecha_publicacion || b.fecha_creacion
+      );
+
+      return fechaB - fechaA;
+    });
+  }
+
+  if (ordenar === "salario") {
+    resultados.sort((a, b) => {
+
+      const salarioA = Number(a.salario || 0);
+      const salarioB = Number(b.salario || 0);
+      return salarioB - salarioA;
+
+    });
+  }
+  return resultados;
+}
+
+function consultaEmpleos(where) {
+  const SQL_EMPLEOS = `SELECT a.*, (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio=a.id_anuncio LIMIT 1) AS img,
+        e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
+        COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
+        COALESCE(
+          ARRAY_AGG(DISTINCT c.nombre)
+          FILTER(WHERE c.nombre IS NOT NULL),
+          ARRAY[]::VARCHAR[]
+        ) AS categorias
+      FROM anuncios a
+      INNER JOIN empleador e ON e.id_empleador=a.id_empleador
+      LEFT JOIN postulacion po ON po.id_anuncio=a.id_anuncio
+      LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio=a.id_anuncio
+      LEFT JOIN categorias c ON c.id_categoria=ca.id_categoria
+      WHERE
+      %WHERE%
+      GROUP BY 
+      a.id_anuncio,
+      e.nombre_empresa,
+      e.descripcion,
+      e.foto_perfil`;
+
+  return SQL_EMPLEOS.replace("%WHERE%", where);
+}
+
+function consultaServicios(where) {
+  const SQL_SERVICIOS = `SELECT s.*, p.nombre_postulante,
+        p.apellido_paterno_postulante,
+        p.apellido_materno_postulante,
+        p.foto_perfil
+        FROM servicios s
+        INNER JOIN postulante p
+        ON p.id_postulante=s.autor_id
+        WHERE 
+        %WHERE%`;
+  return SQL_SERVICIOS.replace("%WHERE%", where);;
+}
 
 
 
@@ -1740,7 +2045,7 @@ app.post("/login", async (req, res) => {
     }
 
     if (!usuario) return res.status(401).json({ error: "Usuario no encontrado" });
-    if (usuario.estado_cuenta === 'ELIMINADA') return res.status(401).json({ error: "Usuario no encontrado" }); 
+    if (usuario.estado_cuenta === 'ELIMINADA') return res.status(401).json({ error: "Usuario no encontrado" });
 
     // --- AQUÍ VALIDAMOS LA SUSPENSIÓN (SIRVE PARA POSTULANTE Y EMPLEADOR) ---
     if (usuario.suspendido_hasta) {
@@ -1749,9 +2054,9 @@ app.post("/login", async (req, res) => {
 
       if (fechaFin > ahora) {
         // La cuenta sigue suspendida, le bloqueamos el paso y mandamos código 403
-        return res.status(403).json({ 
-          error: 'cuenta_suspendida', 
-          suspendido_hasta: usuario.suspendido_hasta 
+        return res.status(403).json({
+          error: 'cuenta_suspendida',
+          suspendido_hasta: usuario.suspendido_hasta
         });
       } else {
         // El ban ya terminó, limpiamos la columna para mantener la BD limpia
@@ -1793,22 +2098,22 @@ app.post("/api/support", async (req, res) => {
   }
 });
 
-app.delete('/postulantes/eliminar-cuenta', verifyToken, async (req, res) => {  
-    try {
-        await pool.query(`UPDATE postulante SET estado_cuenta = 'ELIMINADA', token_version = token_version + 1 WHERE id_postulante = $1`, [req.user.id]);
-        res.status(200).json({ mensaje: 'Cuenta eliminada' });
-    } catch (error) {
-        res.status(500).json({ mensaje: 'Error al eliminar la cuenta' });
-    }
+app.delete('/postulantes/eliminar-cuenta', verifyToken, async (req, res) => {
+  try {
+    await pool.query(`UPDATE postulante SET estado_cuenta = 'ELIMINADA', token_version = token_version + 1 WHERE id_postulante = $1`, [req.user.id]);
+    res.status(200).json({ mensaje: 'Cuenta eliminada' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al eliminar la cuenta' });
+  }
 });
 
-app.delete('/empleadores/eliminar-cuenta', verifyToken, async (req, res) => {  
-    try {
-        await pool.query(`UPDATE empleador SET estado_cuenta = 'ELIMINADA', token_version = token_version + 1 WHERE id_empleador = $1`, [req.user.id]);
-        res.status(200).json({ mensaje: 'Cuenta eliminada' });
-    } catch (error) {
-        res.status(500).json({ mensaje: 'Error al eliminar la cuenta' });
-    }
+app.delete('/empleadores/eliminar-cuenta', verifyToken, async (req, res) => {
+  try {
+    await pool.query(`UPDATE empleador SET estado_cuenta = 'ELIMINADA', token_version = token_version + 1 WHERE id_empleador = $1`, [req.user.id]);
+    res.status(200).json({ mensaje: 'Cuenta eliminada' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al eliminar la cuenta' });
+  }
 });
 
 app.post("/auth/forgot-password", async (req, res) => {
@@ -1898,7 +2203,7 @@ app.put("/mi-perfil/cv", verifyToken, authorizeRoles("postulante"), async (req, 
   } catch (err) {
     res.status(500).json({ error: "Error al actualizar CV" });
   }
-}); 
+});
 
 /* ===== TOGGLE VISIBILIDAD CV ===== */
 app.patch("/mi-perfil/cv/visibilidad", verifyToken, authorizeRoles("postulante"), async (req, res) => {
@@ -1917,15 +2222,15 @@ app.patch("/mi-perfil/cv/visibilidad", verifyToken, authorizeRoles("postulante")
   } catch (err) {
     res.status(500).json({ error: "Error al actualizar visibilidad" });
   }
-}); 
+});
 
 /* ===== SERVICIOS (OFICIOS) ===== */
 app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, res) => {
-  const { title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, codigo_postal, cobertura, disponibilidad, img, esBorrador, autorId } = req.body;
+  const { title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, cobertura, disponibilidad, img, esBorrador, autorId } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO servicios (title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, codigo_postal, modalidad, urgencia, img, es_borrador, autor_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
-      [title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, codigo_postal, cobertura, disponibilidad, img, esBorrador, autorId]
+      `INSERT INTO servicios (title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, modalidad, urgencia, img, es_borrador, autor_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`,
+      [title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, cobertura, disponibilidad, img, esBorrador, autorId]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -2040,10 +2345,10 @@ app.post('/reportes', verifyToken, async (req, res) => {
   try {
     await pool.query('BEGIN');
     if (req.user.rol !== 'empleador') return res.status(403).json({ error: 'Solo empleadores.' });
-    
+
     const reporteResult = await pool.query(`INSERT INTO reporte (motivo, descripcion, estado, id_empleador) VALUES ($1, $2,'Pendiente',$3) RETURNING id_reporte`, [motivo, descripcion, id_empleador]);
     const idReporte = reporteResult.rows[0].id_reporte;
-    
+
     await pool.query(`INSERT INTO reporte_a_postulante (id_reporte, id_postulante_reportado) VALUES ($1, $2)`, [idReporte, id_postulante_reportado]);
     await pool.query('COMMIT');
     res.status(201).json({ mensaje: 'Reporte creado', id_reporte: idReporte });
@@ -2099,18 +2404,18 @@ app.get('/reportes/perfiles', verifyToken, authorizeRoles('administrador'), asyn
 app.delete('/reportes/:idReporte', verifyToken, authorizeRoles('administrador'), async (req, res) => {
   const { idReporte } = req.params;
   const client = await pool.connect();
-  
+
   try {
     await client.query('BEGIN');
-    
+
     // Eliminamos primero las dependencias (hijos) para evitar errores de Llave Foránea
     await client.query('DELETE FROM reporte_a_postulante WHERE id_reporte = $1', [idReporte]);
     await client.query('DELETE FROM reporte_a_empleador WHERE id_reporte = $1', [idReporte]);
     await client.query('DELETE FROM reporte_a_anuncio WHERE id_reporte = $1', [idReporte]);
-    
+
     // Por último, eliminamos el reporte principal (padre)
     await client.query('DELETE FROM reporte WHERE id_reporte = $1', [idReporte]);
-    
+
     await client.query('COMMIT');
     res.json({ message: 'Reporte eliminado correctamente de la base de datos' });
   } catch (err) {
@@ -2124,22 +2429,22 @@ app.delete('/reportes/:idReporte', verifyToken, authorizeRoles('administrador'),
 
 
 app.post('/reportes/empleador', verifyToken, async (req, res) => {
-    const { motivo, descripcion, id_empleador_reportado } = req.body;
-    const id_postulante = req.user.id;
-    try {
-        await pool.query('BEGIN');
-        if (req.user.rol !== 'postulante') return res.status(403).json({ error: 'Solo postulantes.' });
+  const { motivo, descripcion, id_empleador_reportado } = req.body;
+  const id_postulante = req.user.id;
+  try {
+    await pool.query('BEGIN');
+    if (req.user.rol !== 'postulante') return res.status(403).json({ error: 'Solo postulantes.' });
 
-        const reporteResult = await pool.query(`INSERT INTO reporte (motivo, descripcion, estado, id_postulante) VALUES ($1, $2, 'Pendiente', $3) RETURNING id_reporte`, [motivo, descripcion, id_postulante]);
-        const idReporte = reporteResult.rows[0].id_reporte;
-        
-        await pool.query(`INSERT INTO reporte_a_empleador (id_reporte, id_empleador_reportado) VALUES ($1, $2)`, [idReporte, id_empleador_reportado]);
-        await pool.query('COMMIT');
-        res.status(201).json({ mensaje: 'Reporte creado' });
-    } catch (err) {
-        await pool.query('ROLLBACK');
-        res.status(500).json({ error: 'Error al crear reporte' });
-    }
+    const reporteResult = await pool.query(`INSERT INTO reporte (motivo, descripcion, estado, id_postulante) VALUES ($1, $2, 'Pendiente', $3) RETURNING id_reporte`, [motivo, descripcion, id_postulante]);
+    const idReporte = reporteResult.rows[0].id_reporte;
+
+    await pool.query(`INSERT INTO reporte_a_empleador (id_reporte, id_empleador_reportado) VALUES ($1, $2)`, [idReporte, id_empleador_reportado]);
+    await pool.query('COMMIT');
+    res.status(201).json({ mensaje: 'Reporte creado' });
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    res.status(500).json({ error: 'Error al crear reporte' });
+  }
 });
 
 /* ===== NOTIFICACIONES ===== */
@@ -2158,7 +2463,7 @@ app.get("/notificaciones", verifyToken, async (req, res) => {
     }
 
     const result = await pool.query(query, [userId]);
-    
+
     const notificacionesFormateadas = result.rows.map(n => ({
       id: n.id_notificacion,
       title: n.titulo,
@@ -2166,7 +2471,7 @@ app.get("/notificaciones", verifyToken, async (req, res) => {
       time: n.fecha_creacion,
       read: n.leida,
       tipo: n.tipo,
-      applicantId: n.id_postulante 
+      applicantId: n.id_postulante
     }));
 
     res.json(notificacionesFormateadas);
@@ -2203,11 +2508,11 @@ app.put("/notificaciones/marcar-leidas", verifyToken, async (req, res) => {
 // =========================================================================
 app.put("/usuarios/:id/suspender", verifyToken, authorizeRoles("administrador"), async (req, res) => {
   const { id } = req.params;
-  const { dias_suspension } = req.body; 
+  const { dias_suspension } = req.body;
 
   try {
     // Si envían 0 (permanente), le ponemos unos 100 años de suspensión
-    const dias = dias_suspension === 0 ? 36500 : dias_suspension; 
+    const dias = dias_suspension === 0 ? 36500 : dias_suspension;
 
     // 1. Intentar actualizar en la tabla postulante
     let result = await pool.query(`
@@ -2300,7 +2605,7 @@ async function ensureDatabaseSchema() {
       }
     }
     // ==============================================================
-    
+
     // ================= AQUÍ CREA LAS COLUMNAS DE SUSPENSIÓN SI NO EXISTEN =================
     await pool.query(`ALTER TABLE postulante ADD COLUMN IF NOT EXISTS suspendido_hasta TIMESTAMP;`);
     await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS suspendido_hasta TIMESTAMP;`);
@@ -2314,7 +2619,7 @@ async function ensureDatabaseSchema() {
 
     await pool.query(`ALTER TABLE postulante_valoracion ADD COLUMN IF NOT EXISTS id_empleador ${empDataType}`);
     await pool.query(`ALTER TABLE empleador_valoracion ADD COLUMN IF NOT EXISTS id_postulante ${postDataType}`);
-    
+
     await pool.query(`ALTER TABLE servicios ADD COLUMN IF NOT EXISTS img VARCHAR(255)`);
 
     await pool.query(`
@@ -2374,42 +2679,42 @@ async function ensureDatabaseSchema() {
 // ENDPOINT PARA GUARDAR REPORTE (POST) - Vista del postulante
 // =========================================================================
 app.post('/reportes/anuncios', async (req, res) => {
-    try {
-        const { id_anuncio, id_postulante, motivo, detalle } = req.body;
-        
-        await pool.query('BEGIN');
+  try {
+    const { id_anuncio, id_postulante, motivo, detalle } = req.body;
 
-        const reporteQuery = `
+    await pool.query('BEGIN');
+
+    const reporteQuery = `
             INSERT INTO public.reporte (motivo, descripcion, estado, id_postulante)
             VALUES ($1, $2, 'Pendiente', $3) RETURNING *;
         `;
-        const reporteValues = [motivo, detalle, id_postulante];
-        const reporteResult = await pool.query(reporteQuery, reporteValues);
-        const nuevoReporte = reporteResult.rows[0];
+    const reporteValues = [motivo, detalle, id_postulante];
+    const reporteResult = await pool.query(reporteQuery, reporteValues);
+    const nuevoReporte = reporteResult.rows[0];
 
-        const anuncioQuery = `
+    const anuncioQuery = `
             INSERT INTO public.reporte_a_anuncio (id_reporte, id_anuncio)
             VALUES ($1, $2);
         `;
-        await pool.query(anuncioQuery, [nuevoReporte.id_reporte, id_anuncio]);
+    await pool.query(anuncioQuery, [nuevoReporte.id_reporte, id_anuncio]);
 
-        await pool.query('COMMIT');
+    await pool.query('COMMIT');
 
-        nuevoReporte.id_anuncio = id_anuncio;
-        res.status(200).json({ mensaje: 'Reporte creado con éxito', reporte: nuevoReporte });
-    } catch (error) {
-        await pool.query('ROLLBACK');
-        console.error('Error al crear reporte:', error);
-        res.status(500).json({ error: 'Error interno al guardar el reporte' });
-    }
+    nuevoReporte.id_anuncio = id_anuncio;
+    res.status(200).json({ mensaje: 'Reporte creado con éxito', reporte: nuevoReporte });
+  } catch (error) {
+    await pool.query('ROLLBACK');
+    console.error('Error al crear reporte:', error);
+    res.status(500).json({ error: 'Error interno al guardar el reporte' });
+  }
 });
 
 // =========================================================================
 // SOLUCIÓN AL 500: Obtener reportes (GET) - Vista del administrador
 // =========================================================================
 app.get('/reportes/anuncios', async (req, res) => {
-    try {
-        const query = `
+  try {
+    const query = `
             SELECT 
                 r.id_reporte,
                 r.id_anuncio,
@@ -2422,70 +2727,81 @@ app.get('/reportes/anuncios', async (req, res) => {
             INNER JOIN public.anuncios a ON r.id_anuncio::text = a.id_anuncio::text
             ORDER BY rep.fecha_reporte DESC;
         `;
-        const result = await pool.query(query);
-        res.status(200).json(result.rows);
-    } catch (error) {
-        console.error('Error al obtener reportes de anuncios:', error);
-        res.status(500).json({ error: 'Error interno al obtener los reportes' });
-    }
+    const result = await pool.query(query);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener reportes de anuncios:', error);
+    res.status(500).json({ error: 'Error interno al obtener los reportes' });
+  }
 });
 
 // =========================================================================
 // ELIMINAR ANUNCIO PERMANENTEMENTE Y NOTIFICAR (DELETE)
 // =========================================================================
 app.delete('/anuncios/:idAnuncio', verifyToken, authorizeRoles("administrador", "empleador"), async (req, res) => {
-    const { idAnuncio } = req.params;
-    const client = await pool.connect();
-    
-    try {
-        await client.query('BEGIN');
-        
-        // 1. Obtener la información del anuncio ANTES de borrarlo para saber a quién notificar
-        const anuncioInfo = await client.query('SELECT id_empleador, titulo FROM anuncios WHERE id_anuncio = $1', [idAnuncio]);
-        
-        if (anuncioInfo.rowCount === 0) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'El anuncio no existe o ya fue eliminado.' });
-        }
+  const { idAnuncio } = req.params;
+  const client = await pool.connect();
 
-        const { id_empleador, titulo } = anuncioInfo.rows[0];
+  try {
+    await client.query('BEGIN');
 
-        // 2. Eliminar dependencias (tablas relacionadas) para evitar error de Llave Foránea
-        await client.query('DELETE FROM reporte_a_anuncio WHERE id_anuncio = $1', [idAnuncio]);
-        await client.query('DELETE FROM categoriaAnuncio WHERE id_anuncio = $1', [idAnuncio]);
-        await client.query('DELETE FROM imagenes WHERE id_anuncio = $1', [idAnuncio]);
-        await client.query('DELETE FROM favoritos WHERE id_anuncio = $1', [idAnuncio]);
-        await client.query('DELETE FROM postulacion WHERE id_anuncio = $1', [idAnuncio]);
-        
-        // Si tu base de datos también tiene tabla de comentarios vinculada a anuncios, descomenta la siguiente línea:
-        // await client.query('DELETE FROM comentarios WHERE id_anuncio = $1', [idAnuncio]);
+    // 1. Obtener la información del anuncio ANTES de borrarlo para saber a quién notificar
+    const anuncioInfo = await client.query('SELECT id_empleador, titulo FROM anuncios WHERE id_anuncio = $1', [idAnuncio]);
 
-        // 3. Eliminar el anuncio
-        await client.query('DELETE FROM anuncios WHERE id_anuncio = $1', [idAnuncio]);
-
-        // 4. Crear la notificación para el empleador
-        const tituloNotificacion = 'Anuncio eliminado por el administrador';
-        const mensajeNotificacion = `Su anuncio "${titulo}" se ha borrado por incumplimiento de normas.`;
-
-        await client.query(
-            `INSERT INTO notificaciones (id_empleador, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4)`,
-            [id_empleador, tituloNotificacion, mensajeNotificacion, 'ANUNCIO_ELIMINADO']
-        );
-
-        // 5. Enviar la notificación en tiempo real usando WebSockets (si el empleador está conectado)
-        const io = req.app.get('io');
-        io.to(id_empleador).emit('anuncio_eliminado', { titulo: tituloNotificacion, mensaje: mensajeNotificacion });
-
-        await client.query('COMMIT');
-        res.status(200).json({ mensaje: 'Anuncio eliminado correctamente y notificación enviada al empleador.' });
-
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Error al eliminar el anuncio de la BD:', error);
-        res.status(500).json({ error: 'Hubo un problema al intentar eliminar el anuncio en el servidor.' });
-    } finally {
-        client.release();
+    if (anuncioInfo.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'El anuncio no existe o ya fue eliminado.' });
     }
+
+    const { id_empleador, titulo } = anuncioInfo.rows[0];
+
+    // 2. Eliminar dependencias (tablas relacionadas) para evitar error de Llave Foránea
+    await client.query('DELETE FROM reporte_a_anuncio WHERE id_anuncio = $1', [idAnuncio]);
+    await client.query('DELETE FROM categoriaAnuncio WHERE id_anuncio = $1', [idAnuncio]);
+    await client.query('DELETE FROM imagenes WHERE id_anuncio = $1', [idAnuncio]);
+    await client.query('DELETE FROM favoritos WHERE id_anuncio = $1', [idAnuncio]);
+    await client.query('DELETE FROM postulacion WHERE id_anuncio = $1', [idAnuncio]);
+
+    // Si tu base de datos también tiene tabla de comentarios vinculada a anuncios, descomenta la siguiente línea:
+    // await client.query('DELETE FROM comentarios WHERE id_anuncio = $1', [idAnuncio]);
+
+    // 3. Eliminar el anuncio
+    await client.query('DELETE FROM anuncios WHERE id_anuncio = $1', [idAnuncio]);
+
+    // 4. Crear la notificación para el empleador
+    const tituloNotificacion = 'Anuncio eliminado por el administrador';
+    const mensajeNotificacion = `Su anuncio "${titulo}" se ha borrado por incumplimiento de normas.`;
+
+    await client.query(
+      `INSERT INTO notificaciones (id_empleador, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4)`,
+      [id_empleador, tituloNotificacion, mensajeNotificacion, 'ANUNCIO_ELIMINADO']
+    );
+
+    // 5. Enviar la notificación en tiempo real usando WebSockets (si el empleador está conectado)
+    const io = req.app.get('io');
+    io.to(id_empleador).emit('anuncio_eliminado', { titulo: tituloNotificacion, mensaje: mensajeNotificacion });
+
+    await client.query('COMMIT');
+    res.status(200).json({ mensaje: 'Anuncio eliminado correctamente y notificación enviada al empleador.' });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al eliminar el anuncio de la BD:', error);
+    res.status(500).json({ error: 'Hubo un problema al intentar eliminar el anuncio en el servidor.' });
+  } finally {
+    client.release();
+  }
+});
+
+
+app.get('/reportes/perfiles', async (req, res) => {
+  try {
+    // Mientras construyes tu tabla de reportes de perfiles, mandamos un arreglo vacío
+    res.status(200).json([]);
+  } catch (error) {
+    console.error('Error al obtener reportes de perfiles:', error);
+    res.status(500).json({ error: 'Error interno al obtener los reportes de perfiles' });
+  }
 });
 // =========================================================================
 // BORRAR USUARIO PERMANENTEMENTE (DELETE) - Administrador

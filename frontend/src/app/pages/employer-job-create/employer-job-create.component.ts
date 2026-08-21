@@ -6,6 +6,8 @@ import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
 import { CarouselComponent } from '../../components/carousel/carousel.component';
+import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
 
 interface EmployerJobFormValue {
   titulo: string;
@@ -21,6 +23,10 @@ interface EmployerJobFormValue {
   colonia: string;
   calle: string;
   codigo_postal: string;
+  numero_exterior: string;
+  latitud: number | null;
+  longitud: number | null;
+  direccion_formateada: string;
   salario: number;
   modalidad: string;
   etiquetas: string[];
@@ -39,7 +45,7 @@ interface NotificationItem {
 @Component({
   selector: 'app-employer-job-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, CarouselComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, CarouselComponent, MapaUbicacionComponent],
   templateUrl: './employer-job-create.component.html',
   styleUrl: './employer-job-create.component.css'
 })
@@ -59,6 +65,7 @@ export class EmployerJobCreateComponent implements OnInit {
     colonia: '',
     calle: '',
     codigo_postal: '',
+    direccion_formateada: '',
     telefono: '',
     rfc: '',
     curp: ''
@@ -134,9 +141,13 @@ export class EmployerJobCreateComponent implements OnInit {
     experiencia: ['Sin experiencia', [Validators.required, Validators.maxLength(50)]],
     estado: ['', [Validators.required, Validators.maxLength(100)]],
     ciudad: ['', [Validators.required, Validators.maxLength(100)]],
-    colonia: ['', [Validators.required, Validators.maxLength(100)]],
-    calle: ['', [Validators.required, Validators.maxLength(150)]],
-    codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
+    colonia: ['', [Validators.maxLength(100)]],
+    calle: ['', [Validators.maxLength(150)]],
+    codigo_postal: ['', [Validators.maxLength(10)]],
+    numero_exterior: ['', [Validators.maxLength(20)]],
+    latitud: [null as number | null],
+    longitud: [null as number | null],
+    direccion_formateada: ['', Validators.maxLength(300)],
     salario: [null as number | null, [Validators.required, Validators.min(1)]],
     modalidad: ['Presencial', [Validators.required]],
     etiquetas: this.fb.nonNullable.control<string[]>([], [Validators.required])
@@ -152,7 +163,8 @@ export class EmployerJobCreateComponent implements OnInit {
     private readonly api: ApiService,
     private readonly router: Router,
     private readonly themeService: ThemeService,
-    private readonly authApi: AuthService
+    private readonly authApi: AuthService,
+    private googleMaps: GoogleMapsService
   ) { }
 
   ngOnInit(): void {
@@ -193,7 +205,11 @@ export class EmployerJobCreateComponent implements OnInit {
           ciudad: perfil.ciudad || '',
           colonia: perfil.colonia || '',
           calle: perfil.calle || '',
-          codigo_postal: perfil.codigo_postal || ''
+          numero_exterior: perfil.numero_exterior || '',
+          codigo_postal: perfil.codigo_postal || '',
+          latitud: perfil.latitud ?? null,
+          longitud: perfil.longitud ?? null,
+          direccion_formateada: perfil.direccion_formateada || ''
         });
 
         if (perfil.codigo_postal) {
@@ -206,6 +222,9 @@ export class EmployerJobCreateComponent implements OnInit {
     });
 
     this.checkMobile();
+
+
+
   }
 
   cargarPerfilBase() {
@@ -218,7 +237,11 @@ export class EmployerJobCreateComponent implements OnInit {
           ciudad: perfil.ciudad || '',
           colonia: perfil.colonia || '',
           calle: perfil.calle || '',
-          codigo_postal: perfil.codigo_postal || ''
+          numero_exterior: perfil.numero_exterior || '',
+          codigo_postal: perfil.codigo_postal || '',
+          latitud: perfil.latitud,
+          longitud: perfil.longitud,
+          direccion_formateada: perfil.direccion_formateada
         });
         this.cargandoPerfil = false;
       },
@@ -228,25 +251,35 @@ export class EmployerJobCreateComponent implements OnInit {
     });
   }
 
- publicarOferta() {
-  this.error = '';
-  this.exito = '';
+  publicarOferta() {
+    this.error = '';
+    this.exito = '';
 
-  if (this.ofertaForm.invalid) {
-    this.ofertaForm.markAllAsTouched();
-    this.error = 'Completa los campos requeridos para publicar la oferta.';
-    return;
+    if (this.ofertaForm.invalid) {
+      this.ofertaForm.markAllAsTouched();
+      this.error = 'Completa los campos requeridos para publicar la oferta.';
+      return;
+    }
+
+    const totalImagenes = this.archivosSeleccionados.length + this.urlsImagenesSubidas.length;
+    if (totalImagenes === 0) {
+      this.mostrarModal('Debes agregar al menos una imagen antes de publicar la oferta.');
+      return;
+    }
+
+    const latitud = this.ofertaForm.value.latitud;
+    const longitud = this.ofertaForm.value.longitud;
+
+    if (latitud === null || longitud === null) {
+      this.mostrarModal(
+        'Debes seleccionar una ubicación en el mapa.'
+      );
+      return;
+    }
+
+    this.guardando = true;
+    this.publicarConImagen('ACTIVO', 'Publicado', false);
   }
-
-  const totalImagenes = this.archivosSeleccionados.length + this.urlsImagenesSubidas.length;
-  if (totalImagenes === 0) {
-    this.mostrarModal('Debes agregar al menos una imagen antes de publicar la oferta.');
-    return;
-  }
-
-  this.guardando = true;
-  this.publicarConImagen('ACTIVO', 'Publicado', false);
-}
   guardarBorrador() {
     this.error = '';
     this.exito = '';
@@ -574,5 +607,44 @@ export class EmployerJobCreateComponent implements OnInit {
       modal.style.display = 'none';
     }
     this.router.navigate(['/home-employer']);
+  }
+
+
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    this.ofertaForm.patchValue({
+      estado: direccion.estado,
+      ciudad: direccion.ciudad,
+      colonia: direccion.colonia || '',
+      calle: direccion.calle || '',
+      numero_exterior: direccion.numero || '',
+      codigo_postal: direccion.codigoPostal || '',
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      direccion_formateada: direccion.direccionFormateada
+
+    });
+
+  }
+
+  private buscarColoniasPorCP(cp: string) {
+
+    if (!cp) {
+      this.colonias = [];
+      return;
+    }
+
+    const resultados = this.sepomex.filter(
+      r => r.cp === cp
+    );
+
+    this.colonias = [
+      ...new Set(
+        resultados.map(r => r.colonia)
+      )
+    ];
+
+    console.log('Colonias encontradas en SEPOMEX:', this.colonias);
   }
 }

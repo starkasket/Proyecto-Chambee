@@ -4,13 +4,15 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
 
 import { CarouselComponent } from '../../components/carousel/carousel.component';
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
 
 interface NotificationItem {
   id: number;
@@ -55,12 +57,12 @@ interface Job {
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent], 
+  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent, MapaUbicacionComponent],
   templateUrl: './job-detail.component.html',
   styleUrl: './job-detail.component.css'
 })
 export class JobDetailComponent implements OnInit {
-  nombre_postulante = 'Usuario';    
+  nombre_postulante = 'Usuario';
   foto_perfil = '';
   jobId: string | null = null;
   jobData: any = null;
@@ -70,14 +72,14 @@ export class JobDetailComponent implements OnInit {
   guardandoFavorito = false;
   isAdminView = false;
   isMobile = false;
-   servicesOpen = false;
+  servicesOpen = false;
 
   // SEARCH BAR
-   searchTerm = '';
-    searchSubject = new Subject<string>();
-    searchResults: any[] = [];
-    showSearchDropdown = false;
-    recentSearches: string[] = [];
+  searchTerm = '';
+  searchSubject = new Subject<string>();
+  searchResults: any[] = [];
+  showSearchDropdown = false;
+  recentSearches: string[] = [];
 
   // NOTIFICACIONES Y MENÚ
   menuOpen = false;
@@ -90,7 +92,7 @@ export class JobDetailComponent implements OnInit {
   comentarios: any[] = [];
   nuevoComentario: string = '';
   enviandoComentario = false;
-  dropdownOpenIndex: number | null = null; 
+  dropdownOpenIndex: number | null = null;
 
   // VARIABLES PARA REPORTE DE ANUNCIO
   opcionesReporte: string[] = [
@@ -131,14 +133,18 @@ export class JobDetailComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  constructor(private googleMaps: GoogleMapsService) {
+
+  }
+
   ngOnInit(): void {
     // Obtenemos el usuario para validar su rol
     this.usuarioActual = this.api.getUsuario();
 
-     this.isAdminView = this.usuarioActual?.rol === 'administrador';
-     console.log(this.isAdminView);
-     
-    
+    this.isAdminView = this.usuarioActual?.rol === 'administrador';
+    console.log(this.isAdminView);
+
+
 
     // Cargar notificaciones al iniciar
     if (this.usuarioActual) {
@@ -152,9 +158,9 @@ export class JobDetailComponent implements OnInit {
       this.cargarDetalles(this.jobId);
       this.cargarComentarios(this.jobId);
     });
-    this.cargarBusquedasRecientes(); 
+    this.cargarBusquedasRecientes();
 
-     this.api.obtenerServiciosPublicos().subscribe({
+    this.api.obtenerServiciosPublicos().subscribe({
       next: (servicios) => {
         this.services = servicios || [];
       },
@@ -165,12 +171,12 @@ export class JobDetailComponent implements OnInit {
 
     this.cargarFotoPerfil();
 
-     this.searchSubject.pipe(
-          debounceTime(300),
-          distinctUntilChanged()
-        ).subscribe(query => {
-          this.ejecutarBusqueda(query);
-        });
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.ejecutarBusqueda(query);
+    });
   }
 
   // ================= NOTIFICACIONES =================
@@ -183,7 +189,7 @@ export class JobDetailComponent implements OnInit {
           message: n.message,
           time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
           read: n.read,
-          applicantId: n.applicantId 
+          applicantId: n.applicantId
         }));
         this.hasUnreadNotifications = this.notifications.some(n => !n.read);
       },
@@ -198,7 +204,7 @@ export class JobDetailComponent implements OnInit {
     if (this.notificationsOpen && this.hasUnreadNotifications) {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
-      
+
       this.api.marcarNotificacionesLeidas().subscribe({
         error: (err) => console.error('Error al actualizar estado de notificaciones', err)
       });
@@ -212,11 +218,11 @@ export class JobDetailComponent implements OnInit {
     this.notificationsOpen = false;
 
     if (notif.applicantId) {
-      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
-        queryParams: { seguimiento: 'true' } 
+      this.router.navigate(['/perfil-postulante', notif.applicantId], {
+        queryParams: { seguimiento: 'true' }
       });
     }
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   toggleMenu(event?: Event) {
@@ -349,7 +355,7 @@ export class JobDetailComponent implements OnInit {
   editarComentario(index: number) {
     this.comentarios[index].editando = true;
     this.comentarios[index].textoEditado = this.comentarios[index].texto;
-    this.dropdownOpenIndex = null; 
+    this.dropdownOpenIndex = null;
   }
 
   guardarEdicion(index: number) {
@@ -413,7 +419,7 @@ export class JobDetailComponent implements OnInit {
 
   enviarReporte(): void {
     if (!this.jobId || !this.motivoReporte) return;
-    
+
     this.enviandoReporte = true;
 
     // Construimos el objeto que se enviará al backend
@@ -489,7 +495,7 @@ export class JobDetailComponent implements OnInit {
   }
 
 
-   openService(index: number) {
+  openService(index: number) {
     const servicio = this.services[index];
     if (!servicio) return;
     const id = servicio.id_servicio || servicio.id;
@@ -516,14 +522,14 @@ export class JobDetailComponent implements OnInit {
     this.servicioDetalle = null;
   }
 
-   verPerfilAutor(autorId: string) {    
+  verPerfilAutor(autorId: string) {
     if (autorId) {
       this.cerrarDetalleServicio();
       this.router.navigate(['/perfil-postulante', autorId]);
     }
   }
 
-   checkMobile() {
+  checkMobile() {
     try {
       this.isMobile = window.innerWidth <= 768;
     } catch {
@@ -537,7 +543,7 @@ export class JobDetailComponent implements OnInit {
     this.servicesOpen = false;
   }
 
-    private registrarVista(id: string | number) {
+  private registrarVista(id: string | number) {
     const strId = String(id);
     let historial: string[] = [];
     const stored = localStorage.getItem('chambee_vistos_recientemente');
@@ -560,7 +566,7 @@ export class JobDetailComponent implements OnInit {
     this.router.navigate(['/perfil-postulante']);
   }
 
-   openJob(id?: string | number) {
+  openJob(id?: string | number) {
     if (id) {
       this.registrarVista(id);
       this.router.navigate(['/job', id]);
@@ -638,7 +644,9 @@ export class JobDetailComponent implements OnInit {
           vistas: anuncio.vistas || 0,
           applicants: parseInt(anuncio.postulaciones_count) || 0,
           direccion: ubicacion,
-          ubicacion,
+          ubicacion: ubicacion,
+          latitud: anuncio.latitud,
+          longitud: anuncio.longitud,
           tags: categoriasActuales,
           interesMatch: this.calcularCoincidencias(categoriasActuales, intereses) > 0
         };
@@ -708,11 +716,11 @@ export class JobDetailComponent implements OnInit {
 
     this.api.getMiPerfil().subscribe({
       next: (perfil: any) => {
-         this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
+        this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
         this.foto_perfil = perfil?.foto_perfil || '';
       },
       error: (err) => {
-         this.nombre_postulante = usuario?.nombre || 'Usuario';
+        this.nombre_postulante = usuario?.nombre || 'Usuario';
         console.log('No se pudo cargar la foto de perfil:', err);
       }
     });
@@ -807,8 +815,12 @@ export class JobDetailComponent implements OnInit {
   }
 
   private formatearDireccion(anuncio: any): string {
+    if (anuncio.direccion_formateada) {
+      return anuncio.direccion_formateada;
+    }
     return [
       anuncio.calle,
+      anuncio.numero_exterior,
       anuncio.colonia,
       anuncio.ciudad,
       anuncio.estado,
@@ -826,7 +838,7 @@ export class JobDetailComponent implements OnInit {
     const numero = Number(salario);
     if (Number.isNaN(numero) || numero === 0) return 'Salario a convenir';
     return new Intl.NumberFormat('es-MX', {
-      style: 'currency', 
+      style: 'currency',
       currency: 'MXN',
       maximumFractionDigits: 0
     }).format(numero);
@@ -835,8 +847,8 @@ export class JobDetailComponent implements OnInit {
   // Modales
   modalMensaje = '';
 
-   abrirModal(){
-      this.mostrarModal("¿Estás seguro de querer eliminar esta publicación?")        
+  abrirModal() {
+    this.mostrarModal("¿Estás seguro de querer eliminar esta publicación?")
   }
 
   mostrarModal(mensaje: string) {
@@ -874,8 +886,8 @@ export class JobDetailComponent implements OnInit {
   }
 
   onSearchInput(value: string) {
- 
-    
+
+
     this.showSearchDropdown = true;
     if (value && value.trim().length > 0) {
       this.searchSubject.next(value);
@@ -887,7 +899,7 @@ export class JobDetailComponent implements OnInit {
   // --- BUSCADOR INTELIGENTE Y COMPATIBLE CON SERVICIOS ---
   ejecutarBusqueda(query: string) {
     const tokens = this.normalizarTexto(query).split(/\s+/).filter(t => t.length > 0);
-    
+
     // Busca en empleos
     const jobsResults = this.jobs.filter(job => {
       const textoCompleto = this.normalizarTexto(`${job.title} ${job.company} ${job.tags.join(' ')}`);
@@ -955,7 +967,7 @@ export class JobDetailComponent implements OnInit {
     // Forzamos la navegación al panel de resultados
     this.router.navigate(['/search'], { queryParams: { q: term } });
   }
-  
+
   // --- AL DAR ENTER O CLIC EN "VER TODOS LOS RESULTADOS" ---
   verTodosResultados() {
     if (this.searchTerm && this.searchTerm.trim() !== '') {
@@ -980,4 +992,7 @@ export class JobDetailComponent implements OnInit {
     if (typeof value === 'object') return JSON.stringify(value).toLowerCase().trim();
     return String(value).toLowerCase().trim();
   }
+
+
+
 }

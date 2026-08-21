@@ -144,7 +144,8 @@
 
             <div class="featured-content">
               <div class="featured-meta">
-                <span class="featured-chip urgency-chip" *ngIf="slide.urgency">{{ slide.urgency }}</span>
+                <span class="featured-chip urgency-chip"  [ngClass]="{ 'job-urgency-badge-normal': slide.urgency === 'Normal',
+          'job-urgency-badge-urgent': slide.urgency === 'Urgente', 'job-urgency-badge-very-urgent': slide.urgency === 'Muy urgente'}"  *ngIf="slide.urgency">{{ slide.urgency }}</span>
                 <span class="featured-chip">{{ slide.company }}</span>
                 <span class="featured-chip">{{ slide.mode }}</span>
                 <span class="featured-chip">{{ slide.location }}</span>
@@ -205,7 +206,8 @@
       <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button" tabindex="0">
         <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
         <div class="job-content">
-          <span class="job-urgency-badge" *ngIf="job.urgency">{{ job.urgency }}</span>
+          <span class="job-urgency-badge"  [ngClass]="{ 'job-urgency-badge-normal': job.urgency === 'Normal',
+          'job-urgency-badge-urgent': job.urgency === 'Urgente', 'job-urgency-badge-very-urgent': job.urgency === 'Muy urgente'}" *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4 class="job-title">{{ job.title }}</h4>
           <p class="job-company-sub">{{ job.company }}</p>
           <p class="salary">{{ job.salary }}</p>

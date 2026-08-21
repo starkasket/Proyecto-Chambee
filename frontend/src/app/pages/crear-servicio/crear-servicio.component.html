@@ -1,7 +1,7 @@
 <div class="offer-page">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
-      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()" />
       <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, Mi perfil de servicios</span>
     </div>
 
@@ -12,8 +12,8 @@
     <div class="nav-buttons d-flex align-items-center gap-3">
       <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" (click)="irAlPerfil()">
         <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
-        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
-      <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
+          style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+        <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
         <span class="d-none d-md-block">Mi perfil</span>
       </button>
 
@@ -23,39 +23,40 @@
         </span>
       </button>
 
-      
- <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
-    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
-      <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
-      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
-      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
-      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
-      <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
-      <a routerLink="/crear-servicio" class="desktop-menu-link active"> Crear servicio</a>
-      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
-      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
-      <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
+          class="bi bi-list"></i></div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
+        <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+        <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+        <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+        <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
+        <a routerLink="/crear-servicio" class="desktop-menu-link active"> Crear servicio</a>
+        <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+        <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
-    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
-      <nav class="mobile-nav">
-        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
-        </div>
-        <hr />
-        <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
-        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
-        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
-        <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
-        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
-        <hr />
-        <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
-      </nav>
-    </aside>
-  </div>
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+        <nav class="mobile-nav">
+          <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
+          </div>
+          <hr />
+          <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+          <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+          <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+          <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+          <hr />
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        </nav>
+      </aside>
+    </div>
   </nav>
 
   <!-- MODAL DE ÉXITO -->
@@ -123,7 +124,8 @@
           <span>Descripción detallada de tu servicio</span>
           <textarea rows="8" formControlName="description"
             placeholder="Explica detalladamente en qué consiste tu servicio, qué incluye, herramientas que usas y tu experiencia laboral..."></textarea>
-          <small *ngIf="campoInvalido('description')">Por favor, detalla tu experiencia o lo que incluye tu servicio.</small>
+          <small *ngIf="campoInvalido('description')">Por favor, detalla tu experiencia o lo que incluye tu
+            servicio.</small>
         </label>
 
         <!-- Badge de categoría siempre visible, aunque el campo esté oculto -->
@@ -184,19 +186,47 @@
         </div>
 
         <div class="form-grid single-col">
-          <label class="field">
+          <div class="field">
             <p class="dir-label">Dirección Completa (Guanajuato)</p>
 
+   
+            <p>
+              {{ servicioForm.get('direccion_formateada')?.value }}
+            </p>
+
+
+            <app-mapa-ubicacion [latitudInicial]="servicioForm.value.latitud ?? null"
+              [longitudInicial]="servicioForm.value.longitud ?? null"
+              (ubicacionSeleccionada)="ubicacionSeleccionada($event)">
+            </app-mapa-ubicacion>
+
+
+            <input type="text" class="form-control-custom" placeholder="C.P." formControlName="codigo_postal"
+              readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Ciudad" formControlName="ciudad" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Colonia" formControlName="colonia" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Calle" formControlName="calle" readonly />
+
+
+            <input type="text" class="form-control-custom" placeholder="Número exterior"
+              formControlName="numero_exterior" readonly />
+
+            <!--             
             <input type="text" class="form-control-custom" placeholder="Código Postal (C.P.)" formControlName="codigo_postal"
               (blur)="buscarCP()" maxlength="5" />
 
             <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
 
-            <input type="text" class="form-control-custom" placeholder="Ciudad / Municipio" formControlName="ciudad" readonly />
-          </label>
+            <input type="text" class="form-control-custom" placeholder="Ciudad / Municipio" formControlName="ciudad" readonly /> -->
+          </div>
 
           <!-- Botón para mostrar/ocultar calle y colonia -->
-          <button type="button" class="toggle-opcionales-btn" (click)="toggleDireccionOpcional()">
+          <!--     <button type="button" class="toggle-opcionales-btn" (click)="toggleDireccionOpcional()">
             <i class="bi" [ngClass]="mostrarDireccionOpcional ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             {{ mostrarDireccionOpcional ? 'Ocultar calle y colonia' : 'Agregar calle y colonia (opcional)' }}
           </button>
@@ -210,7 +240,7 @@
             <input type="text" class="form-control-custom" placeholder="Calle y número" formControlName="calle" />
 
             <small *ngIf="campoInvalido('calle')" class="support-error d-block mt-1" style="font-size: 0.8rem; color: #c2410c;">Calle y número requeridos.</small>
-          </div>
+          </div> -->
         </div>
 
         <div class="upload-card">
@@ -222,7 +252,8 @@
             </div>
 
             <div class="upload-actions">
-              <input #imagenInput type="file" accept="image/*" style="display:none" (change)="onArchivoSeleccionado($event)" />
+              <input #imagenInput type="file" accept="image/*" style="display:none"
+                (change)="onArchivoSeleccionado($event)" />
 
               <span class="file-name" *ngIf="!urlImagenSubida || archivoSeleccionado">
                 {{ fileName }}
@@ -235,7 +266,8 @@
                 <button type="button" class="btn-secondary btn-select" (click)="imagenInput.click()">
                   {{ previewUrl ? 'Cambiar imagen' : 'Elegir imagen' }}
                 </button>
-                <button type="button" class="btn-primary-img" (click)="subirImagenManual()" [disabled]="!archivoSeleccionado || subiendoImagen">
+                <button type="button" class="btn-primary-img" (click)="subirImagenManual()"
+                  [disabled]="!archivoSeleccionado || subiendoImagen">
                   <span class="loading" [class.visible]="subiendoImagen"></span>
                   <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imagen' }}</span>
                 </button>
@@ -265,8 +297,9 @@
             <i class="bi bi-briefcase-fill me-1"></i>Modalidad: {{ servicioForm.value.modalidad || 'Presencial' }}
           </p>
           <p class="mb-1 text-muted-custom">
-            <i class="bi bi-geo-alt-fill me-1"></i>Ubicación: 
-            {{ (servicioForm.value.colonia ? servicioForm.value.colonia + ', ' : '') + (servicioForm.value.ciudad || 'Municipio') }}
+            <i class="bi bi-geo-alt-fill me-1"></i>Ubicación:
+            {{ (servicioForm.value.colonia ? servicioForm.value.colonia + ', ' : '') + (servicioForm.value.ciudad ||
+            'Municipio') }}
           </p>
           <p class="mb-2 text-muted-custom">
             <i class="bi bi-lightning-charge-fill me-1"></i>Urgencia: {{ servicioForm.value.urgencia || 'Normal' }}
@@ -278,10 +311,11 @@
 
         <!-- ACCIONES DE FORMULARIO -->
         <div class="actions-wrapper d-flex flex-column gap-2 mt-3">
-          <button type="button" class="ghost-btn w-100 py-3" [disabled]="guardando" (click)="publicar(true)" *ngIf="!esEdicion">
+          <button type="button" class="ghost-btn w-100 py-3" [disabled]="guardando" (click)="publicar(true)"
+            *ngIf="!esEdicion">
             Guardar como Borrador
           </button>
-          
+
           <button type="button" class="primary-btn w-100 py-3" [disabled]="guardando" (click)="publicar(false)">
             {{ ending }}
           </button>

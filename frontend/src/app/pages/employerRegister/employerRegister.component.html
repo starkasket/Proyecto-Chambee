@@ -8,7 +8,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaEmpresarial.png" alt="saludo" height="200" class="mb-3"/>
+        <img src="assets/abejaEmpresarial.png" alt="saludo" height="200" class="mb-3" />
         <h4 class="text-success fw-bold">¡Empresa registrada!</h4>
         <p class="mb-0">{{ modalMensajeExito }}</p>
       </div>
@@ -23,7 +23,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
         <h5 class="text-danger fw-bold">¡Atención!</h5>
         <p class="mb-0">{{ modalMensaje }}</p>
       </div>
@@ -33,7 +33,7 @@
     </div>
   </div>
 </div>
- 
+
 <div class="page-bg">
   <div class="fondo-registro-card">
     <div class="registro-card">
@@ -49,60 +49,129 @@
             <p class="section-label">Datos Relevantes</p>
             <input type="text" class="form-control-custom" placeholder="Nombre de la Empresa"
               [(ngModel)]="form.nombre_empresa" name="nombre_empresa" required #nombre="ngModel"
-              [ngClass]="{'input-error-duplicate': erroresDuplicados.nombre_empresa}" (input)="erroresDuplicados.nombre_empresa = false" />
-            <div *ngIf="nombre.invalid && nombre.dirty" class="support-error" style="margin-bottom: 8px;">Nombre inválido</div>
+              [ngClass]="{'input-error-duplicate': erroresDuplicados.nombre_empresa}"
+              (input)="erroresDuplicados.nombre_empresa = false" />
+            <div *ngIf="nombre.invalid && nombre.dirty" class="support-error" style="margin-bottom: 8px;">Nombre
+              inválido</div>
 
             <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
               [(ngModel)]="form.correo_electronico" name="correo" required email #correo="ngModel"
-              [ngClass]="{'input-error-duplicate': erroresDuplicados.correo_electronico}" (input)="erroresDuplicados.correo_electronico = false" />
-            <div *ngIf="correo.invalid && correo.touched" class="support-error" style="margin-bottom: 8px;">Correo inválido</div>
+              [ngClass]="{'input-error-duplicate': erroresDuplicados.correo_electronico}"
+              (input)="erroresDuplicados.correo_electronico = false" />
+            <div *ngIf="correo.invalid && correo.touched" class="support-error" style="margin-bottom: 8px;">Correo
+              inválido</div>
 
             <div class="input-with-icon">
               <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control-custom" placeholder="Contraseña"
-                [(ngModel)]="form.contrasena" name="password" #pass="ngModel" required pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$"/>
-              <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword =!mostrarPassword"></i>
-              <div *ngIf="pass.errors?.['required'] && pass.dirty" class="support-error" style="margin-bottom: 8px; ">La contraseña es obligatoria</div>
-              <div *ngIf="pass.errors?.['pattern'] && pass.touched" class="support-error" style="margin-bottom: 8px; ">La contraseña debe tener al menos 6 caracteres: una minúscula, una mayúscula, un número y un símbolo </div>
+                [(ngModel)]="form.contrasena" name="password" #pass="ngModel" required
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$" />
+              <i class="bi eye-icon" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'"
+                (click)="mostrarPassword =!mostrarPassword"></i>
+              <div *ngIf="pass.errors?.['required'] && pass.dirty" class="support-error" style="margin-bottom: 8px; ">La
+                contraseña es obligatoria</div>
+              <div *ngIf="pass.errors?.['pattern'] && pass.touched" class="support-error" style="margin-bottom: 8px; ">
+                La contraseña debe tener al menos 6 caracteres: una minúscula, una mayúscula, un número y un símbolo
+              </div>
             </div>
 
             <div class="input-with-icon">
-              <input [type]="mostrarPassword2 ? 'text' : 'password'" class="form-control-custom" placeholder="Verificar contraseña"
-                [(ngModel)]="form.contrasena_verificar" name="password_verificar" #pass2="ngModel" required/>
-              <i class="bi eye-icon" [ngClass]="mostrarPassword2 ? 'bi-eye-slash' : 'bi-eye'" (click)="mostrarPassword2 = !mostrarPassword2"></i>
-              <div *ngIf="pass2.dirty && form.contrasena !== form.contrasena_verificar" class="support-error" style="margin-bottom: 8px;"> Las contraseñas no coinciden</div>
+              <input [type]="mostrarPassword2 ? 'text' : 'password'" class="form-control-custom"
+                placeholder="Verificar contraseña" [(ngModel)]="form.contrasena_verificar" name="password_verificar"
+                #pass2="ngModel" required />
+              <i class="bi eye-icon" [ngClass]="mostrarPassword2 ? 'bi-eye-slash' : 'bi-eye'"
+                (click)="mostrarPassword2 = !mostrarPassword2"></i>
+              <div *ngIf="pass2.dirty && form.contrasena !== form.contrasena_verificar" class="support-error"
+                style="margin-bottom: 8px;"> Las contraseñas no coinciden</div>
             </div>
 
-            <input type="tel" class="form-control-custom" placeholder="Teléfono"
-              [(ngModel)]="form.telefono" name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" maxlength="10"/>
-            <div *ngIf="telefono.invalid && telefono.touched" class="support-error" style="margin-bottom: 8px;">Telefono inválido</div>
+            <input type="tel" class="form-control-custom" placeholder="Teléfono" [(ngModel)]="form.telefono"
+              name="telefono" #telefono="ngModel" required pattern="^[0-9]{10}$" maxlength="10" />
+            <div *ngIf="telefono.invalid && telefono.touched" class="support-error" style="margin-bottom: 8px;">Telefono
+              inválido</div>
 
             <textarea class="form-control-custom" placeholder="Descripción de la empresa" rows="3"
               [(ngModel)]="form.descripcion" name="descripcion" required #descripcion="ngModel"></textarea>
-            <div *ngIf="descripcion.invalid && descripcion.touched" class="support-error" style="margin-bottom: 8px;">Descripción inválido</div>
+            <div *ngIf="descripcion.invalid && descripcion.touched" class="support-error" style="margin-bottom: 8px;">
+              Descripción inválido</div>
+
+            <p class="section-label">Identificación</p>
+            <input type="text" class="form-control-custom" placeholder="RFC Moral" [(ngModel)]="form.rfc" name="rfc"
+              #rfc="ngModel" required pattern=".{12}" maxlength="12"
+              [ngClass]="{'input-error-duplicate': erroresDuplicados.rfc}" (input)="erroresDuplicados.rfc = false" />
+            <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>
+
           </div>
 
           <div class="col-12 col-md-6 ps-md-3 mt-3 mt-md-0">
-            <p class="section-label">Identificación</p>
-            <input type="text" class="form-control-custom" placeholder="RFC Moral"
-              [(ngModel)]="form.rfc" name="rfc" #rfc="ngModel" required pattern=".{12}" maxlength="12"
-              [ngClass]="{'input-error-duplicate': erroresDuplicados.rfc}" (input)="erroresDuplicados.rfc = false" />
-            <div *ngIf="rfc.invalid && rfc.dirty" class="support-error" style="margin-bottom: 8px;">RFC inválida</div>    
 
             <p class="dir-label">Dirección Completa</p>
-            <input type="text" class="form-control-custom" placeholder="C.P."
-              [(ngModel)]="form.codigo_postal" name="cp"
-              (blur)="buscarCP()" maxlength="5"/>
-            <input type="text" class="form-control-custom" placeholder="Estado"
-              [(ngModel)]="form.estado" name="estado" readonly/>
-            <input type="text" class="form-control-custom" placeholder="Ciudad"
-              [(ngModel)]="form.ciudad" name="ciudad" readonly/>
+
+            <app-mapa-ubicacion (ubicacionSeleccionada)="ubicacionSeleccionada($event)">
+            </app-mapa-ubicacion>
+
+            <div *ngIf="ubicacionSeleccionadaFlag" class="direccion-detectada">
+              <strong>✓ Dirección detectada</strong>
+
+              <p>
+                {{ form.direccion_formateada }}
+              </p>
+
+              <small>
+                <i>Si la dirección aparece incompleta, no te preocupes: tu ubicación se registrará mediante las
+                  coordenadas del mapa. Si necesitas corregir algún dato, comunícate con soporte.</i>
+              </small>
+            </div>
+
+            <div *ngIf="ubicacionSeleccionadaFlag">
+              <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" name="calle"
+                readonly />
+
+              <input type="text" class="form-control-custom" placeholder="Número exterior"
+                [(ngModel)]="form.numero_exterior" name="numero_exterior" readonly />
+
+              <input *ngIf="form.colonia || colonias.length === 0" type="text" class="form-control-custom"
+                placeholder="Colonia" [(ngModel)]="form.colonia" name="colonia" readonly />
+
+              <select *ngIf="!form.colonia && colonias.length > 0" class="form-control-custom"
+                [(ngModel)]="form.colonia" name="colonia">
+                <option value="" disabled>
+                  Selecciona una colonia
+                </option>
+
+                <option *ngFor="let colonia of colonias" [value]="colonia">
+                  {{ colonia }}
+                </option>
+              </select>
+
+              <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad"
+                name="ciudad" readonly />
+
+              <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado"
+                name="estado" readonly />
+
+              <input type="text" class="form-control-custom" placeholder="Código postal"
+                [(ngModel)]="form.codigo_postal" name="codigo_postal" readonly />
+
+            </div>
+
+
+           <!--  <input type="text" class="form-control-custom" placeholder="C.P." [(ngModel)]="form.codigo_postal" name="cp"
+              (blur)="buscarCP()" maxlength="5" />
+            <input type="text" class="form-control-custom" placeholder="Estado" [(ngModel)]="form.estado" name="estado"
+              readonly />
+            <input type="text" class="form-control-custom" placeholder="Ciudad" [(ngModel)]="form.ciudad" name="ciudad"
+              readonly />
             <select class="form-control-custom" [(ngModel)]="form.colonia" name="colonia">
               <option value="" disabled selected>{{ buscandoCP ? 'Buscando...' : 'Colonia' }}</option>
               <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
             </select>
-            <input type="text" class="form-control-custom" placeholder="Calle"
-              [(ngModel)]="form.calle" name="calle" required #calle="ngModel"/>
-            <div *ngIf="calle.invalid && calle.dirty" class="support-error" style="margin-bottom: 8px;">Calle inválida</div>    
+            <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" name="calle"
+              required #calle="ngModel" />
+            <div *ngIf="calle.invalid && calle.dirty" class="support-error" style="margin-bottom: 8px;">Calle inválida
+            </div> -->
+          
+          
+          
           </div>
 
         </div>

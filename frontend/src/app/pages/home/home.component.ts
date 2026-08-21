@@ -164,6 +164,8 @@ export class HomeComponent implements OnInit, OnDestroy {
             modalidad: anuncio.modalidad || 'Presencial'
           }));
 
+          
+           
           this.categoriasDisponibles = this.extraerCategorias(this.jobs);
           this.tiposDisponibles = this.extraerTipos(this.jobs);
           this.categoriaSeleccionada = 'Todas';

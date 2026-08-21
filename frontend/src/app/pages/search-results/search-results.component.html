@@ -216,56 +216,7 @@
       </div>
     </div>
 
-    <div *ngIf="!cargando && todosLosResultados.length === 0" class="empty-state">
-      <img src="assets/abejaAlerta.png" alt="Sin resultados" height="140" class="mb-4 opacity-75">
-      <h4 class="fw-bold">No encontramos nada para "{{ query }}"</h4>
-      <p class="text-muted">Intenta usar otras palabras clave o revisa la ortografía.</p>
-    </div>
-
-    <ng-container *ngIf="!cargando && todosLosResultados.length > 0">
-      
-      <!-- SECCIÓN DESTACADOS -->
-      <section class="destacados-section mb-5" *ngIf="destacados.length > 0">
-        <h3 class="section-subtitle mb-4">Los mejores resultados para empezar</h3>
-        
-        <div class="jobs-grid">
-          <div class="job-card featured-result-card" *ngFor="let item of destacados" tabindex="0" (click)="irAlDetalle(item)">
-            
-            <div class="job-card-img-wrapper">
-              <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
-              <span class="type-badge" [ngClass]="item.tipo === 'empleo' ? 'badge-empleo' : 'badge-servicio'">
-                <i class="bi" [ngClass]="item.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i> {{ item.tipo | titlecase }}
-              </span>
-            </div>
-            
-            <div class="job-content">
-              <h4 class="job-company">{{ item.nombre_empresa || item.company || 'Servicio Independiente' }}</h4>
-              <p class="job-title">{{ item.titulo || item.title }}</p>
-              
-              <p class="salary" *ngIf="item.salario || item.salary">{{ item.salario || item.salary }}</p>
-              <p class="salary" *ngIf="!(item.salario || item.salary)">A convenir</p>
-              
-              <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
-                <span class="featured-chip" *ngIf="item.modalidad || item.mode">
-                  <i class="bi bi-geo-alt-fill me-1 opacity-50"></i>{{ item.modalidad || item.mode }}
-                </span>
-                <span class="featured-chip" *ngIf="item.ciudad">
-                  <i class="bi bi-pin-map-fill me-1 opacity-50"></i>{{ item.ciudad }}
-                </span>
-                <span class="featured-chip" *ngIf="item.categoria || (item.categorias && item.categorias[0])">
-                  <i class="bi bi-tag-fill me-1 opacity-50"></i>{{ item.categoria || item.categorias[0] }}
-                </span>
-              </div>
-            </div>
-            <div class="card-bottom-strip"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECCIÓN TODOS LOS RESULTADOS -->
-      <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
-        <h3 class="section-subtitle mb-4">Todos los resultados</h3>
-
+        <!-- FILTRADO DE BÚSQUEDA -->
         <div class="filtros-bar d-flex gap-2 mb-3">
           <button
           class="chambee-filter-btn active"
@@ -387,6 +338,67 @@
         
       </div>
     </div>
+
+    <div *ngIf="!cargando && todosLosResultados.length === 0" class="empty-state">
+      <img src="assets/abejaAlerta.png" alt="Sin resultados" height="140" class="mb-4 opacity-75">
+      <h4 class="fw-bold">No encontramos nada para "{{ query }}"</h4>
+      <p class="text-muted">Intenta usar otras palabras clave o revisa la ortografía.</p>
+    </div>
+
+    
+
+    <ng-container *ngIf="!cargando && todosLosResultados.length > 0">
+      
+      <!-- SECCIÓN DESTACADOS -->
+      <section class="destacados-section mb-5" *ngIf="destacados.length > 0">
+        <h3 class="section-subtitle mb-4">Los mejores resultados para empezar</h3>
+        
+        <div class="jobs-grid">
+          <div class="job-card featured-result-card" *ngFor="let item of destacados" tabindex="0" (click)="irAlDetalle(item)">
+            
+            <div class="job-card-img-wrapper">
+              <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
+              <span class="type-badge" [ngClass]="item.tipo === 'empleo' ? 'badge-empleo' : 'badge-servicio'">
+                <i class="bi" [ngClass]="item.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i> {{ item.tipo | titlecase }}
+              </span>
+            </div>
+            
+            <div class="job-content">
+              <h4 class="job-company">{{ item.nombre_empresa || item.company || 'Servicio Independiente' }}</h4>
+              <p class="job-title">{{ item.titulo || item.title }}</p>
+              
+              <p class="salary" *ngIf="item.salario || item.salary">{{ item.salario || item.salary }}</p>
+              <p class="salary" *ngIf="!(item.salario || item.salary)">A convenir</p>
+              
+              <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
+                <span class="featured-chip" *ngIf="item.modalidad || item.mode">
+                  <i class="bi bi-geo-alt-fill me-1 opacity-50"></i>{{ item.modalidad || item.mode }}
+                </span>
+                <span class="featured-chip" *ngIf="item.ciudad">
+                  <i class="bi bi-pin-map-fill me-1 opacity-50"></i>{{ item.ciudad }}
+                </span>
+                <span class="featured-chip" *ngIf="item.categoria || (item.categorias && item.categorias[0])">
+                  <i class="bi bi-tag-fill me-1 opacity-50"></i>{{ item.categoria || item.categorias[0] }}
+                </span>
+              </div>
+            </div>
+            <div class="card-bottom-strip"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN TODOS LOS RESULTADOS -->
+      <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
+        <h3 class="section-subtitle mb-4">Todos los resultados</h3>
+
+       <!--  <div class="filtros-bar d-flex gap-2 mb-4 overflow-auto pb-2">
+          <button class="chambee-filter-btn active"><i class="bi bi-sliders me-1"></i> Filtrar y ordenar</button>
+          <button class="chambee-filter-btn">Tipo de oferta <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+          <button class="chambee-filter-btn">Modalidad <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+          <button class="chambee-filter-btn">Ubicación <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
+        </div> -->
+
+    
             
             
 

@@ -6,16 +6,18 @@ import { ThemeService } from '../../services/theme.service';
 import { ServiciosService } from '../../services/servicios.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
 
 @Component({
   selector: 'app-crear-servicio',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, MapaUbicacionComponent],
   templateUrl: './crear-servicio.component.html',
   styleUrl: './crear-servicio.component.css'
 })
 export class CrearServicioComponent implements OnInit {
-  
+
   private themeService = inject(ThemeService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -23,11 +25,11 @@ export class CrearServicioComponent implements OnInit {
   private serviciosService = inject(ServiciosService);
   private api = inject(ApiService);
   private authApi = inject(AuthService);
-  
+
 
   servicioForm: FormGroup;
   nombre_postulante = 'Usuario';
-  foto_perfil = ''; 
+  foto_perfil = '';
   previewUrl: string | null = null;
   archivoSeleccionado: File | null = null;
   fileName = 'Ningún archivo seleccionado';
@@ -36,8 +38,8 @@ export class CrearServicioComponent implements OnInit {
   mostrarEliminar = false;
   menuOpen = false;
   notificationsOpen = false;
-   isMobile = false;
-    servicesOpen = false;
+  isMobile = false;
+  servicesOpen = false;
 
   // Controla la visibilidad de calle y colonia dentro del bloque de
   // dirección, dejando código postal / estado / ciudad siempre visibles.
@@ -54,23 +56,28 @@ export class CrearServicioComponent implements OnInit {
   sepomex: any[] = [];
   colonias: string[] = []; // Se llena al buscar el CP
 
-  constructor() {
+  constructor(private googleMaps: GoogleMapsService) {
     this.servicioForm = this.fb.group({
       title: ['', Validators.required],
       categoria: ['Plomería'],
       presupuesto: [''],
       description: ['', Validators.required],
-      cobertura: ['Colonia'], 
+      cobertura: ['Colonia'],
       disponibilidad: ['Entre semana'],
       // Código postal, estado y ciudad ahora son los campos de
       // dirección visibles por defecto, así que siguen siendo
       // obligatorios. Calle y colonia quedan ocultos detrás de
       // "Agregar calle y colonia (opcional)" y ya no bloquean el envío.
-      codigo_postal: ['', [Validators.required, Validators.maxLength(5)]],
+      codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
       estado: ['', Validators.required],
       ciudad: ['', Validators.required],
-      colonia: [''],
-      calle: ['']
+      colonia: ['', Validators.maxLength(100)],
+      calle: ['', Validators.maxLength(150)],
+      numero_exterior: ['', [Validators.maxLength(20)]],
+      latitud: [null as number | null],
+      longitud: [null as number | null],
+      direccion_formateada: ['', Validators.maxLength(300)]
+
     });
   }
 
@@ -79,7 +86,7 @@ export class CrearServicioComponent implements OnInit {
     this.api.getSepomex().subscribe({
       next: (data) => {
         this.sepomex = data;
-        
+
         this.route.paramMap.subscribe(params => {
           const id = params.get('id');
           if (id) {
@@ -106,9 +113,24 @@ export class CrearServicioComponent implements OnInit {
         next: (perfil: any) => {
           this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
           this.foto_perfil = perfil?.foto_perfil || '';
+
+          this.servicioForm.patchValue({
+            codigo_postal: perfil?.codigo_postal || '',
+            estado: perfil?.estado || '',
+            ciudad: perfil?.ciudad || '',
+            colonia: perfil?.colonia || '',
+            calle: perfil?.calle || '',
+            numero_exterior: perfil?.numero_exterior || '',
+            latitud: perfil?.latitud ?? null,
+            longitud: perfil?.longitud ?? null,
+            direccion_formateada: perfil?.direccion_formateada || ''
+          });
+
+          console.log(this.servicioForm);
+          
         },
         error: () => {
-           this.nombre_postulante = usuario?.nombre || 'Usuario';
+          this.nombre_postulante = usuario?.nombre || 'Usuario';
           console.log("Ocurrió un error");
         }
       });
@@ -131,6 +153,7 @@ export class CrearServicioComponent implements OnInit {
 
   cargarDatosDelServicio(id: string) {
     const usuario = this.api.getUsuario();
+
     if (usuario && usuario.id) {
       this.api.obtenerMisServicios(String(usuario.id)).subscribe({
         next: (misServicios: any[]) => {
@@ -158,7 +181,10 @@ export class CrearServicioComponent implements OnInit {
               estado: servicioAModificar.estado || '',
               ciudad: servicioAModificar.ciudad || '',
               colonia: servicioAModificar.colonia || '',
-              calle: servicioAModificar.calle || ''
+              calle: servicioAModificar.calle || '',
+              latitud: servicioAModificar.latitud ?? null,
+              longitud: servicioAModificar.longitud ?? null,
+              direccion_formateada: servicioAModificar.direccion_formateada || ''
             });
 
             // Si el servicio ya trae calle o colonia guardadas, las
@@ -191,6 +217,15 @@ export class CrearServicioComponent implements OnInit {
       return;
     }
 
+    const latitud = this.servicioForm.value.latitud;
+    const longitud = this.servicioForm.value.longitud;
+
+    if (latitud === null || longitud === null) {
+      this.mostrarModalError(
+        'Debes seleccionar una ubicación en el mapa.'
+      );
+      return;
+    }
     this.guardando = true;
 
     try {
@@ -359,7 +394,7 @@ export class CrearServicioComponent implements OnInit {
     this.router.navigate(['/home-user']);
   }
 
-   logout() {
+  logout() {
     this.authApi.logout();
     this.menuOpen = false;
     this.servicesOpen = false;
@@ -404,4 +439,24 @@ export class CrearServicioComponent implements OnInit {
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
+
+
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    this.servicioForm.patchValue({
+      estado: direccion.estado,
+      ciudad: direccion.ciudad,
+      colonia: direccion.colonia || '',
+      calle: direccion.calle || '',
+      numero_exterior: direccion.numero || '',
+      codigo_postal: direccion.codigoPostal || '',
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      direccion_formateada: direccion.direccionFormateada
+
+    });
+
+  }
+
 }
