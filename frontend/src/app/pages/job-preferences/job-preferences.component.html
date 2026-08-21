@@ -84,17 +84,27 @@
           @if (guardando) {
             <span class="jp-spinner-sm"></span> Guardando...
           } @else {
-            Empezemos
+            {{ isEditMode ? 'Guardar' : 'Empezemos' }}
           }
         </button>
 
-        <button
-          class="jp-btn-skip"
-          type="button"
-          (click)="skipPreferences()"
-        >
-          Omitir por ahora
-        </button>
+        @if (!isEditMode) {
+          <button
+            class="jp-btn-skip"
+            type="button"
+            (click)="skipPreferences()"
+          >
+            Omitir por ahora
+          </button>
+        } @else {
+          <button
+            class="jp-btn-skip"
+            type="button"
+            (click)="goBack()"
+          >
+            Cancelar
+          </button>
+        }
       </div>
     }
 

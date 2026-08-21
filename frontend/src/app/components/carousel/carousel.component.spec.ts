@@ -16,11 +16,8 @@ describe('CarouselComponent', () => {
     
     fixture = TestBed.createComponent(CarouselComponent);
     component = fixture.componentInstance;
-    component.job = {
-      id: 1,
-      imageUrl: 'assets/LogoChambee.png',
-      title: 'Vacante de prueba'
-    };
+    component.jobId = 1;
+    component.images = ['assets/LogoChambee.png'];
     fixture.detectChanges();
   });
 

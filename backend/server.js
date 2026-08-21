@@ -268,6 +268,34 @@ app.post("/postulantes/registro", async (req, res) => {
 
   const estado_cuenta = 'ACTIVA';
   try {
+    // Verificar duplicados globalmente antes de las APIs
+    const emailCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE correo_electronico = $1
+       UNION SELECT 'empleador' FROM empleador WHERE correo_electronico = $1
+       UNION SELECT 'administrador' FROM administrador WHERE correo_electronico = $1`,
+      [correo_electronico]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "correo_electronico" });
+    }
+
+    const rfcCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE rfc = $1
+       UNION SELECT 'empleador' FROM empleador WHERE rfc = $1`,
+       [rfc]
+    );
+    if (rfcCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+    }
+
+    const curpCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE curp = $1`,
+       [curp]
+    );
+    if (curpCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+    }
+
     // Validar CURP con APIMarket
     const apimarketKey = process.env.APIMARKET_KEY;
     if (!apimarketKey) {
@@ -293,12 +321,18 @@ app.post("/postulantes/registro", async (req, res) => {
         );
 
         const apiData = apiResponse.data;
-        if (!apiData || !apiData.success || apiData.status !== 200) {
-          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+
+        // Sin saldo (402) u otro error de servicio → omitir validación y continuar
+        if (apiData && (apiData.status === 402 || apiData.status === 500 || apiData.status === 503)) {
+          console.warn("APIMarket no disponible para validar CURP (status:", apiData.status, "), se omite la validación:", apiData.message);
+        } else if (!apiData || !apiData.success || apiData.status !== 200) {
+          // APIMarket respondió correctamente pero la CURP es inválida → rechazar
+          console.error("CURP inválida según APIMarket:", apiData);
+          return res.status(400).json({ error: "La CURP proporcionada no es válida. Verifica que esté escrita correctamente." });
         }
       } catch (apiErr) {
-        console.error("Error al validar la CURP en APIMarket:", apiErr.response?.data || apiErr.message);
-        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+        // Error de red / timeout → advertir y continuar el registro
+        console.warn("No se pudo contactar APIMarket para validar la CURP, se omite la validación:", apiErr.response?.data || apiErr.message);
       }
     } else {
       return res.status(400).json({ error: "La CURP es obligatoria para el registro de postulante." });
@@ -326,16 +360,19 @@ app.post("/postulantes/registro", async (req, res) => {
         );
 
         const rfcData = rfcResponse.data;
-        if (!rfcData || !rfcData.success || rfcData.status !== 200) {
+        // Sin saldo (402) u otro error de servicio → omitir validación y continuar
+        if (rfcData && (rfcData.status === 402 || rfcData.status === 500 || rfcData.status === 503)) {
+          console.warn("APIMarket no disponible para validar RFC (status:", rfcData.status, "), se omite la validación:", rfcData.message);
+        } else if (!rfcData || !rfcData.success || rfcData.status !== 200) {
+          // APIMarket respondió correctamente pero el RFC es inválido → rechazar
           console.error("RFC inválido según APIMarket:", rfcData);
-          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
-        }
-        if (rfcData.data && rfcData.data.existeRfc === false) {
-          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+          return res.status(400).json({ error: "El RFC proporcionado no es válido. Verifica que esté escrito correctamente." });
+        } else if (rfcData.data && rfcData.data.existeRfc === false) {
+          return res.status(400).json({ error: "El RFC proporcionado no está registrado en el SAT." });
         }
       } catch (rfcErr) {
-        console.error("Error al validar el RFC en APIMarket:", rfcErr.response?.data || rfcErr.message);
-        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        // Error de red / timeout / sin créditos → advertir y continuar el registro
+        console.warn("No se pudo contactar APIMarket para validar el RFC, se omite la validación:", rfcErr.response?.data || rfcErr.message);
       }
     } else if (!rfc) {
       return res.status(400).json({ error: "El RFC es obligatorio para el registro de postulante." });
@@ -410,6 +447,34 @@ app.post("/empleadores/registro", async (req, res) => {
 
   const estado_cuenta = "ACTIVA";
   try {
+    // Verificar duplicados globalmente antes de las APIs
+    const emailCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE correo_electronico = $1
+       UNION SELECT 'empleador' FROM empleador WHERE correo_electronico = $1
+       UNION SELECT 'administrador' FROM administrador WHERE correo_electronico = $1`,
+      [correo_electronico]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "correo_electronico" });
+    }
+
+    const rfcCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE rfc = $1
+       UNION SELECT 'empleador' FROM empleador WHERE rfc = $1`,
+       [rfc]
+    );
+    if (rfcCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+    }
+
+    const empresaCheck = await pool.query(
+      `SELECT 'empleador' AS tipo FROM empleador WHERE nombre_empresa = $1`,
+       [nombre_empresa]
+    );
+    if (empresaCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "nombre_empresa" });
+    }
+
     // Validar RFC Moral con APIMarket (SAT)
     const apimarketKey = process.env.APIMARKET_KEY;
     if (apimarketKey && rfc) {
@@ -619,7 +684,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       query = `SELECT 
         p.id_postulante, p.nombre_postulante, p.apellido_paterno_postulante, p.apellido_materno_postulante, 
         p.correo_electronico, p.fecha_nacimiento, p.sexo, p.pais, p.estado, p.ciudad, p.colonia, 
-        p.calle, p.codigo_postal, p.telefono, p.foto_perfil, p.curp, p.rfc, c.visible_empresas, 
+        p.calle, p.codigo_postal, p.telefono, p.foto_perfil, p.curp, p.rfc, p.descripcion, c.visible_empresas, 
         p.fecha_registro, c.archivo_cv
       FROM postulante p
       LEFT JOIN cv c ON c.id_postulante = p.id_postulante
@@ -998,15 +1063,16 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
             telefono = COALESCE($13, telefono),
             curp = COALESCE($14, curp),
             rfc = COALESCE($15, rfc),
-            foto_perfil = COALESCE($16, foto_perfil)
-        WHERE id_postulante = $17 RETURNING *`;
+            foto_perfil = COALESCE($16, foto_perfil),
+            descripcion = COALESCE($17, descripcion)
+        WHERE id_postulante = $18 RETURNING *`;
 
       values = [
         datos.nombre_postulante || null, datos.apellido_paterno_postulante || null, datos.apellido_materno_postulante || null,
         datos.correo_electronico || null, datos.fecha_nacimiento || null, datos.sexo || null,
         datos.pais || null, datos.estado || null, datos.ciudad || null, datos.colonia || null,
         datos.calle || null, datos.codigo_postal || null, datos.telefono || null,
-        datos.curp || null, datos.rfc || null, datos.foto_perfil || null, id
+        datos.curp || null, datos.rfc || null, datos.foto_perfil || null, datos.descripcion || null, id
       ];
 
       if (datos.archivo_cv) {
@@ -1229,6 +1295,7 @@ app.get("/anuncios", async (_req, res) => {
       (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
       e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
       COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
+      (SELECT COALESCE(ARRAY_AGG(p.foto_perfil), ARRAY[]::VARCHAR[]) FROM (SELECT pp.foto_perfil FROM postulacion po2 JOIN postulante pp ON pp.id_postulante = po2.id_postulante WHERE po2.id_anuncio = a.id_anuncio AND pp.foto_perfil IS NOT NULL LIMIT 3) p) AS postulantes_fotos,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
     FROM anuncios a
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
@@ -1246,7 +1313,19 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
-
+app.post("/anuncios/:id/vista", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "UPDATE anuncios SET vistas = vistas + 1 WHERE id_anuncio = $1 RETURNING vistas",
+      [id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: "Anuncio no encontrado" });
+    res.json({ message: "Vista registrada", vistas: result.rows[0].vistas });
+  } catch (err) {
+    res.status(500).json({ error: "Error al registrar vista" });
+  }
+});
 
 app.get("/busqueda", async (req, res) => {
   try {
@@ -2199,6 +2278,14 @@ async function ensureDatabaseSchema() {
     await pool.query("ALTER TABLE valoracion ALTER COLUMN comentario DROP NOT NULL");
 
     // =============== NUEVO: FORZAR COLUMNAS A TEXTO ===============
+    // Primero eliminar las FK de 'reporte' para poder cambiar los tipos de columna
+    try {
+      await pool.query(`ALTER TABLE reporte DROP CONSTRAINT IF EXISTS fk_reporte_postulante`);
+      await pool.query(`ALTER TABLE reporte DROP CONSTRAINT IF EXISTS fk_reporte_empleador`);
+    } catch (e) {
+      console.warn("[db] Aviso al eliminar FK de reporte:", e.message);
+    }
+
     const tablasAArreglar = [
       { tabla: 'reporte', columna: 'id_postulante' },
       { tabla: 'reporte', columna: 'id_empleador' },
@@ -2262,6 +2349,20 @@ async function ensureDatabaseSchema() {
         )
       );
     `);
+
+    // =============== CREAR TABLA comentarios_anuncio SI NO EXISTE ===============
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS comentarios_anuncio (
+        id_comentario UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id_anuncio UUID NOT NULL,
+        id_postulante UUID NOT NULL,
+        texto VARCHAR(500) NOT NULL,
+        fecha_comentario TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_comentario_anuncio FOREIGN KEY (id_anuncio) REFERENCES anuncios(id_anuncio) ON DELETE CASCADE,
+        CONSTRAINT fk_comentario_postulante FOREIGN KEY (id_postulante) REFERENCES postulante(id_postulante) ON DELETE CASCADE
+      );
+    `);
+    // ============================================================================
 
     console.log("[db] Estructura de base de datos verificada y actualizada correctamente.");
   } catch (err) {
@@ -2474,6 +2575,84 @@ app.delete('/admin/usuarios/:id', verifyToken, authorizeRoles('administrador'), 
         client.release();
     }
 });
+
+
+/* ===== COMENTARIOS DE ANUNCIOS ===== */
+
+app.get("/comentarios/:idAnuncio", async (req, res) => {
+  try {
+    const query = `
+      SELECT c.id_comentario, c.texto, c.fecha_comentario, c.id_postulante,
+             p.nombre_postulante, p.apellido_paterno_postulante
+      FROM comentarios_anuncio c
+      INNER JOIN postulante p ON p.id_postulante = c.id_postulante
+      WHERE c.id_anuncio = $1 AND p.estado_cuenta = 'ACTIVA'
+      ORDER BY c.fecha_comentario DESC
+    `;
+    const result = await pool.query(query, [req.params.idAnuncio]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error en GET /comentarios:", err);
+    res.status(500).json({ error: "Error al obtener comentarios" });
+  }
+});
+
+app.post("/comentarios", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { id_anuncio, texto } = req.body;
+  const id_postulante = req.user.id;
+  if (!texto || !texto.trim()) return res.status(400).json({ error: "El comentario no puede estar vacío" });
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO comentarios_anuncio (id_anuncio, id_postulante, texto) VALUES ($1, $2, $3) RETURNING *`,
+      [id_anuncio, id_postulante, texto.trim()]
+    );
+
+    const postulanteRes = await pool.query(
+      `SELECT nombre_postulante, apellido_paterno_postulante FROM postulante WHERE id_postulante = $1`,
+      [id_postulante]
+    );
+
+    res.status(201).json({ ...result.rows[0], ...postulanteRes.rows[0] });
+  } catch (err) {
+    console.error("Error en POST /comentarios:", err);
+    res.status(500).json({ error: "Error al crear comentario" });
+  }
+});
+
+app.put("/comentarios/:idComentario", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const { texto } = req.body;
+  const id_postulante = req.user.id;
+  if (!texto || !texto.trim()) return res.status(400).json({ error: "El comentario no puede estar vacío" });
+
+  try {
+    const result = await pool.query(
+      `UPDATE comentarios_anuncio SET texto = $1 WHERE id_comentario = $2 AND id_postulante = $3 RETURNING *`,
+      [texto.trim(), req.params.idComentario, id_postulante]
+    );
+    if (result.rows.length === 0) return res.status(403).json({ error: "No autorizado o comentario no encontrado" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error en PUT /comentarios:", err);
+    res.status(500).json({ error: "Error al editar comentario" });
+  }
+});
+
+app.delete("/comentarios/:idComentario", verifyToken, authorizeRoles("postulante"), async (req, res) => {
+  const id_postulante = req.user.id;
+  try {
+    const result = await pool.query(
+      `DELETE FROM comentarios_anuncio WHERE id_comentario = $1 AND id_postulante = $2 RETURNING *`,
+      [req.params.idComentario, id_postulante]
+    );
+    if (result.rows.length === 0) return res.status(403).json({ error: "No autorizado o comentario no encontrado" });
+    res.json({ message: "Comentario eliminado" });
+  } catch (err) {
+    console.error("Error en DELETE /comentarios:", err);
+    res.status(500).json({ error: "Error al eliminar comentario" });
+  }
+});
+
 
 /* ===== INICIAR SERVIDOR ===== */
 server.listen(3000, "0.0.0.0", async () => {

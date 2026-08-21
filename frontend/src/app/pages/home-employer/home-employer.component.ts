@@ -76,6 +76,11 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   misAnuncios: Anuncio[] = [];
   allApplicants: Applicant[] = [];
 
+  // Modal de imagen de perfil
+  imagenModalUrl: string = '';
+  imagenModalNombre: string = '';
+  imagenModalVisible: boolean = false;
+
   constructor(
     private readonly router: Router,
     private readonly api: ApiService,
@@ -229,6 +234,19 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     alert('CV no disponible para este postulante.');
   }
 
+  verImagen(url: string, nombre: string, event: Event) {
+    event.stopPropagation();
+    this.imagenModalUrl = url;
+    this.imagenModalNombre = nombre;
+    this.imagenModalVisible = true;
+  }
+
+  cerrarImagenModal() {
+    this.imagenModalVisible = false;
+    this.imagenModalUrl = '';
+    this.imagenModalNombre = '';
+  }
+
   logout() {
     this.authApi.logout();
     this.menuOpen = false;
@@ -321,7 +339,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
           appliedFor: item.vacante || 'Vacante desconocida',
           description: item.perfil_postulante || 'Candidato interesado.',
           skills: item.perfil_postulante ? item.perfil_postulante.slice(0, 90) : 'Detalle no disponible',
-          profilePic: item.foto_perfil || `https://i.pravatar.cc/150?img=${index + 30}`,
+          profilePic: item.foto_perfil || null,
           dateApplied: item.fecha_postulacion ? new Date(item.fecha_postulacion).toLocaleDateString('es-MX') : 'Reciente',
           cvUrl: item.archivo_cv ?? null,
           email: item.correo_electronico || 'No disponible',

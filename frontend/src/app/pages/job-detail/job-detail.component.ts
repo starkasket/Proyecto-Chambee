@@ -287,51 +287,57 @@ export class JobDetailComponent implements OnInit {
 
   // ==================================================
 
-  // Cargar comentarios
+  // Cargar comentarios desde el backend
   cargarComentarios(id: string | null) {
     if (!id) return;
-    
-    // Simulación de datos.
-    this.comentarios = [
-      { 
-        autor: 'María López', 
-        texto: 'Trabajé aquí hace 2 años, el ambiente es excelente y pagan puntual.', 
-        fecha: 'Hace 2 días',
-        esMio: false,
-        editando: false,
-        textoEditado: ''
+
+    this.api.obtenerComentariosAnuncio(id).subscribe({
+      next: (data: any[]) => {
+        this.comentarios = (data || []).map((c) => ({
+          id: c.id_comentario,
+          autor: `${c.nombre_postulante || 'Usuario'} ${c.apellido_paterno_postulante || ''}`.trim(),
+          texto: c.texto,
+          fecha: new Date(c.fecha_comentario).toLocaleDateString('es-MX'),
+          esMio: this.usuarioActual?.id === c.id_postulante,
+          editando: false,
+          textoEditado: ''
+        }));
       },
-      { 
-        autor: 'Carlos Ramírez', 
-        texto: '¿Alguien sabe si el horario es flexible? Me interesa mucho.', 
-        fecha: 'Hace 1 semana',
-        esMio: false,
-        editando: false,
-        textoEditado: ''
+      error: (err) => {
+        console.error('Error al cargar comentarios:', err);
+        this.comentarios = [];
       }
-    ];
+    });
   }
 
-  // Enviar nuevo comentario
+  // Enviar nuevo comentario al backend
   agregarComentario() {
     if (!this.nuevoComentario.trim() || !this.jobId) return;
 
     this.enviandoComentario = true;
 
-    setTimeout(() => {
-      this.comentarios.unshift({
-        autor: 'Tú', // Aquí irá el nombre real del usuario
-        texto: this.nuevoComentario,
-        fecha: 'Justo ahora',
-        esMio: true, 
-        editando: false,
-        textoEditado: ''
-      });
-      
-      this.nuevoComentario = '';
-      this.enviandoComentario = false;
-      this.mostrarModalExito('Tu comentario se publicó correctamente.');
-    }, 800);
+    this.api.agregarComentario(this.jobId, this.usuarioActual?.id, this.nuevoComentario.trim()).subscribe({
+      next: (nuevo: any) => {
+        this.comentarios.unshift({
+          id: nuevo.id_comentario,
+          autor: `${nuevo.nombre_postulante || this.usuarioActual?.nombre || 'Tú'} ${nuevo.apellido_paterno_postulante || ''}`.trim(),
+          texto: nuevo.texto,
+          fecha: 'Justo ahora',
+          esMio: true,
+          editando: false,
+          textoEditado: ''
+        });
+
+        this.nuevoComentario = '';
+        this.enviandoComentario = false;
+        this.mostrarModalExito('Tu comentario se publicó correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al publicar comentario:', err);
+        this.enviandoComentario = false;
+        this.mostrarModal('No fue posible publicar tu comentario. Intenta de nuevo.');
+      }
+    });
   }
 
   // ================= METODOS DE EDICIÓN Y ELIMINACIÓN =================
@@ -347,12 +353,21 @@ export class JobDetailComponent implements OnInit {
   }
 
   guardarEdicion(index: number) {
-    const textoModificado = this.comentarios[index].textoEditado.trim();
-    if (textoModificado) {
-      this.comentarios[index].texto = textoModificado;
-      this.comentarios[index].editando = false;
-      this.mostrarModalExito('Comentario actualizado correctamente.');
-    }
+    const comentario = this.comentarios[index];
+    const textoModificado = comentario.textoEditado.trim();
+    if (!textoModificado) return;
+
+    this.api.editarComentario(comentario.id, this.usuarioActual?.id, textoModificado).subscribe({
+      next: () => {
+        comentario.texto = textoModificado;
+        comentario.editando = false;
+        this.mostrarModalExito('Comentario actualizado correctamente.');
+      },
+      error: (err) => {
+        console.error('Error al editar comentario:', err);
+        this.mostrarModal('No fue posible editar el comentario.');
+      }
+    });
   }
 
   cancelarEdicion(index: number) {
@@ -360,11 +375,20 @@ export class JobDetailComponent implements OnInit {
   }
 
   eliminarComentario(index: number) {
-    this.dropdownOpenIndex = null; 
-    
-    if (confirm('¿Estás seguro de que deseas eliminar este comentario?')) {
-      this.comentarios.splice(index, 1);
-    }
+    this.dropdownOpenIndex = null;
+    const comentario = this.comentarios[index];
+
+    if (!confirm('¿Estás seguro de que deseas eliminar este comentario?')) return;
+
+    this.api.eliminarComentario(comentario.id, this.usuarioActual?.id).subscribe({
+      next: () => {
+        this.comentarios.splice(index, 1);
+      },
+      error: (err) => {
+        console.error('Error al eliminar comentario:', err);
+        this.mostrarModal('No fue posible eliminar el comentario.');
+      }
+    });
   }
 
   // ================= METODOS DE REPORTE ==============================
@@ -465,7 +489,7 @@ export class JobDetailComponent implements OnInit {
   }
 
 
-    openService(index: number) {
+   openService(index: number) {
     const servicio = this.services[index];
     if (!servicio) return;
     const id = servicio.id_servicio || servicio.id;
@@ -612,11 +636,23 @@ export class JobDetailComponent implements OnInit {
           higiene: anuncio.descripcion || 'Consulta la publicacion para conocer mas detalles.',
           salario: anuncio.salario,
           vistas: anuncio.vistas || 0,
+          applicants: parseInt(anuncio.postulaciones_count) || 0,
           direccion: ubicacion,
           ubicacion,
           tags: categoriasActuales,
           interesMatch: this.calcularCoincidencias(categoriasActuales, intereses) > 0
         };
+
+        if (this.jobData.id) {
+          this.api.registrarVistaAnuncio(this.jobData.id).subscribe({
+            next: (res) => {
+              if (this.jobData && res.vistas) {
+                this.jobData.vistas = res.vistas;
+              }
+            },
+            error: (err) => console.error('Error al registrar vista:', err)
+          });
+        }
 
         this.jobs = anuncios.map((anuncio: any) => ({
           id: anuncio.id_anuncio,
@@ -626,24 +662,32 @@ export class JobDetailComponent implements OnInit {
           img: anuncio.img || '',
           urgency: anuncio.urgencia || 'Normal',
           rating: anuncio.modalidad || 'Empleo',
-          applicants: anuncio.vistas || 0,
+          applicants: parseInt(anuncio.postulaciones_count) || 0,
+          applicantsFotos: anuncio.postulantes_fotos || [],
           tags: anuncio.categorias || [],
           matchScore: 0
-}));
+        }));
         this.relatedJobs = anuncios
           .filter((item: any) => String(item.id_anuncio) !== String(id))
-          .map((item: any, index: number) => ({
-            id: item.id_anuncio,
-            company: item.nombre_empresa || 'Empresa',
-            title: item.titulo || 'Vacante',
-            salary: this.formatearSalario(item.salario),
-            img: 'https://picsum.photos/30' + ((index % 9) + 1) + '/150',
-            rating: item.modalidad || 'Empleo',
-            applicants: item.vistas || 0,
-            tags: item.categorias || [],
-            score: this.calcularCoincidencias(item.categorias || [], categoriasActuales) * 2
-              + this.calcularCoincidencias(item.categorias || [], intereses)
-          }))
+          .map((item: any) => {
+            const fotos = Array.isArray(item.images) && item.images.length
+              ? item.images
+              : (item.img ? [item.img] : (item.foto_empresa ? [item.foto_empresa] : ['assets/LogoChambee.png']));
+            return {
+              id: item.id_anuncio,
+              company: item.nombre_empresa || 'Empresa',
+              title: item.titulo || 'Vacante',
+              salary: this.formatearSalario(item.salario),
+              img: fotos[0] || 'assets/LogoChambee.png',
+              images: fotos,
+              rating: item.modalidad || 'Empleo',
+              applicants: parseInt(item.postulaciones_count) || 0,
+              applicantsFotos: item.postulantes_fotos || [],
+              tags: item.categorias || [],
+              score: this.calcularCoincidencias(item.categorias || [], categoriasActuales) * 2
+                + this.calcularCoincidencias(item.categorias || [], intereses)
+            };
+          })
           .sort((a: any, b: any) => b.score - a.score)
           .slice(0, 4);
 

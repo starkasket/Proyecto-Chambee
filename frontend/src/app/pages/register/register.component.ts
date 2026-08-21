@@ -227,15 +227,25 @@ export class RegisterComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error:', err);
-        const mensaje = err?.error?.error || 'Error al crear la cuenta. Intenta de nuevo.';
-        this.mostrarModal(mensaje);
+        let mensaje = err?.error?.error || 'Error al crear la cuenta. Intenta de nuevo.';
 
         if (err?.error?.duplicateField) {
           const field = err.error.duplicateField;
-          if (field === 'curp') this.erroresDuplicados.curp = true;
-          if (field === 'rfc') this.erroresDuplicados.rfc = true;
-          if (field === 'correo_electronico') this.erroresDuplicados.correo_electronico = true;
+          if (field === 'curp') {
+            this.erroresDuplicados.curp = true;
+            mensaje = 'La CURP ingresada ya se encuentra registrada en una cuenta.';
+          }
+          if (field === 'rfc') {
+            this.erroresDuplicados.rfc = true;
+            mensaje = 'El RFC ingresado ya se encuentra registrado en una cuenta.';
+          }
+          if (field === 'correo_electronico') {
+            this.erroresDuplicados.correo_electronico = true;
+            mensaje = 'El correo electrónico ingresado ya se encuentra registrado en una cuenta.';
+          }
         }
+
+        this.mostrarModal(mensaje);
       }
     });
   }

@@ -154,11 +154,11 @@ export class HomeComponent implements OnInit, OnDestroy {
             company: anuncio.nombre_empresa || 'Empresa',
             title: anuncio.titulo || 'Posición disponible',
             salary: anuncio.salario ? `$${anuncio.salario.toLocaleString()} MXN` : 'Salario competitivo',
-            img: anuncio.img || `https://picsum.photos/300/150?random=${index + 100}`,
+            img: anuncio.img || '',
             images: anuncio.images?.length ? anuncio.images : [anuncio.img || `https://picsum.photos/300/150?random=${index + 100}`],
             urgency: anuncio.urgencia || 'Normal',
             rating: '4.5',
-            applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
+            applicants: parseInt(anuncio.postulaciones_count) || 0,
             tags: anuncio.categorias || [],
             tipoAnuncio: anuncio.tipo_anuncio || 'Empleo',
             modalidad: anuncio.modalidad || 'Presencial'
