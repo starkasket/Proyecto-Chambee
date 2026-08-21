@@ -293,8 +293,11 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/usuarios/${id}/reactivar`, {}, this.getHeaders());
   }
 
-  // Función para eliminar un reporte
   eliminarReporte(idReporte: number) {
     return this.http.delete(`${this.apiUrl}/reportes/${idReporte}`, this.getHeaders());
+  }
+
+eliminarUsuario(idUsuario: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/usuarios/${idUsuario}`, this.getHeaders());
   }
 }

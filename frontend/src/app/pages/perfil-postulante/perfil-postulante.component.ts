@@ -87,6 +87,8 @@ export class PerfilPostulanteComponent implements OnInit {
   cvPublico = true;
 
   modalMensaje = '';
+  modalMensajeExitoAdmin = '';
+  modalMensajeErrorAdmin = '';
 
   misEtiquetas: string[] = [];
 
@@ -117,6 +119,8 @@ export class PerfilPostulanteComponent implements OnInit {
 
   notifications: NotificationItem[] = [];
   mostrarBannerSeguimiento: boolean = false;
+  
+  tiempoSuspensionAdmin: string = '7';
 
   constructor(
     private router: Router,
@@ -128,8 +132,6 @@ export class PerfilPostulanteComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cargarNotificaciones();
-
     this.route.queryParams.subscribe(params => {
       if (params['seguimiento'] === 'true') {
         this.mostrarBannerSeguimiento = true;
@@ -148,12 +150,16 @@ export class PerfilPostulanteComponent implements OnInit {
     this.usuarioActual = usuario;
     this.isAdminView = usuario.rol === 'administrador' || usuario.rol === 'admin';
 
+    if (!this.isAdminView) {
+      this.cargarNotificaciones();
+    }
+
     if (perfilRouteId) {
       this.selectedPerfilId = perfilRouteId;
       this.isEmployerView = usuario.rol === 'empleador';
       this.isOwnProfile = usuario.rol === 'postulante' && usuario.id === perfilRouteId;
 
-      if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId) {
+      if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId && !this.isAdminView) {
         this.error = 'No estás autorizado para ver este perfil.';
         this.cargando = false;
         return;
@@ -164,7 +170,7 @@ export class PerfilPostulanteComponent implements OnInit {
       return;
     }
 
-    if (usuario.rol !== 'postulante') {
+    if (usuario.rol !== 'postulante' && !this.isAdminView) {
       this.error = 'Esta sección es solo para postulantes.';
       this.cargando = false;
       return;
@@ -393,10 +399,6 @@ export class PerfilPostulanteComponent implements OnInit {
     }
   }
 
-  // Modal de éxito al reportar un perfil (postulante reportado
-  // correctamente). Se abre desde reportarPerfil() al recibir
-  // respuesta exitosa del backend, y se cierra desde el boton
-  // "Aceptar" del propio modal en el HTML.
   mostrarModalExitoReporte() {
     const modal = document.getElementById('modalExitoReporte');
     if (modal) {
@@ -740,5 +742,104 @@ export class PerfilPostulanteComponent implements OnInit {
         }
       }
     });
+  }
+
+  abrirModalEliminarAdmin() {
+    const modal = document.getElementById('modalEliminarAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalEliminarAdmin() {
+    const modal = document.getElementById('modalEliminarAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  ejecutarEliminarAdmin() {
+    const id = this.perfil?.id_postulante || this.selectedPerfilId;
+    if (!id) return;
+
+    this.api.eliminarUsuario(id).subscribe({
+      next: () => {
+        this.cerrarModalEliminarAdmin();
+        this.mostrarModalExitoAdmin("El perfil ha sido borrado permanentemente.");
+      },
+      error: (err) => {
+        this.cerrarModalEliminarAdmin();
+        this.mostrarModalErrorAdmin('Hubo un problema al intentar borrar este perfil de la base de datos.');
+      }
+    });
+  }
+
+  abrirModalSuspenderAdmin() {
+    const modal = document.getElementById('modalSuspenderAdmin');
+    this.tiempoSuspensionAdmin = '7';
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalSuspenderAdmin() {
+    const modal = document.getElementById('modalSuspenderAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  ejecutarSuspensionAdmin() {
+    const id = this.perfil?.id_postulante || this.selectedPerfilId;
+    if (!id) return;
+
+    const dias = parseInt(this.tiempoSuspensionAdmin, 10);
+
+    this.api.suspenderUsuario(id, dias).subscribe({
+      next: () => {
+        this.cerrarModalSuspenderAdmin();
+        this.mostrarModalExitoAdmin(dias === 0 ? "El perfil ha sido suspendido permanentemente." : `El perfil ha sido suspendido por ${dias} días.`);
+      },
+      error: (err) => {
+        this.cerrarModalSuspenderAdmin();
+        this.mostrarModalErrorAdmin('Hubo un problema al suspender el perfil.');
+      }
+    });
+  }
+
+  mostrarModalExitoAdmin(mensaje: string) {
+    this.modalMensajeExitoAdmin = mensaje;
+    const modal = document.getElementById('modalExitoAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+
+      setTimeout(() => {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        this.router.navigate(['/admin']);
+      }, 2500);
+    }
+  }
+
+  mostrarModalErrorAdmin(mensaje: string) {
+    this.modalMensajeErrorAdmin = mensaje;
+    const modal = document.getElementById('modalErrorAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalErrorAdmin() {
+    const modal = document.getElementById('modalErrorAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
 }

@@ -417,3 +417,6 @@ ALTER TABLE reporte_a_empleador ALTER COLUMN id_empleador_reportado TYPE uuid US
 ALTER TABLE reporte ALTER COLUMN id_postulante TYPE uuid USING id_postulante::text::uuid;
 
 ALTER TABLE reporte ALTER COLUMN id_empleador TYPE uuid USING id_empleador::text::uuid;
+
+ALTER TABLE postulante ADD COLUMN suspendido_hasta TIMESTAMP;
+ALTER TABLE empleador ADD COLUMN suspendido_hasta TIMESTAMP;

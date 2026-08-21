@@ -88,11 +88,82 @@
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
         <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">Adiós</h5>
+        <h5 class="text-danger fw-bold">Mensaje</h5>
         <p class="mb-0">{{ modalMensaje }}</p>
       </div>
       <div class="modal-footer border-0 justify-content-center pb-4">
         <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación para Borrar (Admin) -->
+<div id="modalEliminarAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
+        <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminarAdmin()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar Perfil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVO: Modal de Confirmación para Suspender (Admin) -->
+<div id="modalSuspenderAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-warning fw-bold">Suspender Perfil</h5>
+        <p class="mb-3">Selecciona el tiempo que deseas suspender a este postulante:</p>
+        <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
+          <option value="1">1 Día</option>
+          <option value="3">3 Días</option>
+          <option value="7">1 Semana</option>
+          <option value="30">1 Mes</option>
+          <option value="0">Permanente</option>
+        </select>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalSuspenderAdmin()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;" (click)="ejecutarSuspensionAdmin()">Suspender</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVO: Modal de Éxito para Admin (Abeja Feliz) -->
+<div id="modalExitoAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <!-- Asegúrate de tener abejaExito.png o cambia el nombre al que corresponda -->
+        <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
+        <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
+        <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVO: Modal de Error para Admin (Abeja Alerta) -->
+<div id="modalErrorAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
+        <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalErrorAdmin()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -141,7 +212,7 @@
 
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
         <ng-container *ngIf="isAdminView">
-          <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
+          <a routerLink="/admin-dashboard" class="desktop-menu-link">Panel de Admin</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
@@ -171,7 +242,7 @@
         <button class="mobile-close" (click)="toggleMenu()">✕</button>
         <nav class="mobile-nav">
           <ng-container *ngIf="isAdminView">
-            <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
+            <a class="mobile-nav-link" routerLink="/admin-dashboard" (click)="toggleMenu()">Panel de Admin</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
           <ng-container *ngIf="!isAdminView && isEmployerView">
@@ -299,7 +370,6 @@
     <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
     <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
     <button *ngIf="isOwnProfile" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
-
   </div>
 </div>
 
@@ -538,12 +608,24 @@
     <span class="fab-text">Buscar Empleos</span>
   </button>
 </div>
-<div class="seguimiento-banner" *ngIf="mostrarBannerSeguimiento">
+
+<!-- Banner Original (Seguimiento de Empleador) -->
+<div class="seguimiento-banner" *ngIf="mostrarBannerSeguimiento && !isAdminView">
   <div class="container banner-content">
     <span class="banner-text">¿Te gustaría darle seguimiento a este postulante?</span>
     <div class="banner-actions">
       <button class="btn btn-outline-danger" (click)="rechazarSeguimiento()">Rechazar</button>
       <button class="btn btn-outline-success"  (click)="aceptarSeguimiento()">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div class="seguimiento-banner" *ngIf="isAdminView" style="z-index: 1000; border-top: 3px solid #dc3545;">
+  <div class="container banner-content d-flex justify-content-between align-items-center">
+    <span class="banner-text fw-bold text-dark"><i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador</span>
+    <div class="banner-actions d-flex gap-2">
+      <button class="btn btn-secondary text-white fw-semibold" style="border: none;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
+      <button class="btn btn-danger text-white fw-semibold" style="border: none;" (click)="abrirModalEliminarAdmin()">Borrar Perfil</button>
     </div>
   </div>
 </div>

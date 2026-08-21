@@ -2386,6 +2386,94 @@ app.delete('/anuncios/:idAnuncio', verifyToken, authorizeRoles("administrador", 
         client.release();
     }
 });
+// =========================================================================
+// BORRAR USUARIO PERMANENTEMENTE (DELETE) - Administrador
+// =========================================================================
+app.delete('/admin/usuarios/:id', verifyToken, authorizeRoles('administrador'), async (req, res) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+    
+    // Función anti-crasheo: Usa SAVEPOINT para que Postgres no aborte toda la transacción si una tabla no existe
+    const borrarSeguro = async (query, params) => {
+        try { 
+            await client.query('SAVEPOINT sp_borrar');
+            await client.query(query, params); 
+            await client.query('RELEASE SAVEPOINT sp_borrar');
+        } catch (error) { 
+            await client.query('ROLLBACK TO SAVEPOINT sp_borrar');
+            console.warn(`[Aviso] Omitiendo tabla inexistente:`, error.message); 
+        }
+    };
+
+    try {
+        await client.query('BEGIN');
+
+        // 1. VERIFICAR SI EL ID PERTENECE A UN POSTULANTE
+        const checkPostulante = await client.query('SELECT id_postulante FROM postulante WHERE id_postulante = $1', [id]);
+        
+        if (checkPostulante.rowCount > 0) {
+            await borrarSeguro('DELETE FROM notificaciones WHERE id_postulante = $1', [id]);
+            await borrarSeguro('DELETE FROM cv WHERE id_postulante = $1', [id]);
+            await borrarSeguro('DELETE FROM favoritos WHERE id_postulante = $1', [id]);
+            await borrarSeguro('DELETE FROM postulacion WHERE id_postulante = $1', [id]);
+            await borrarSeguro('DELETE FROM servicios WHERE autor_id = $1', [id]);
+            await borrarSeguro('DELETE FROM historial_cambios WHERE id_postulante = $1', [id]);
+            await borrarSeguro('DELETE FROM seguimiento WHERE id_postulante = $1', [id]);
+            
+            await borrarSeguro('DELETE FROM reporte_a_postulante WHERE id_postulante_reportado = $1', [id]);
+            await borrarSeguro('DELETE FROM reporte_a_empleador WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_postulante = $1)', [id]);
+            await borrarSeguro('DELETE FROM reporte_a_anuncio WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_postulante = $1)', [id]);
+            await borrarSeguro('DELETE FROM reporte WHERE id_postulante = $1', [id]);
+            
+            await borrarSeguro('DELETE FROM postulante_valoracion WHERE id_postulante = $1', [id]);
+            await borrarSeguro('DELETE FROM empleador_valoracion WHERE id_postulante = $1', [id]);
+            
+            await client.query('DELETE FROM postulante WHERE id_postulante = $1', [id]);
+            
+            await client.query('COMMIT');
+            return res.status(200).json({ mensaje: 'Perfil de postulante eliminado permanentemente.' });
+        }
+
+        // 2. VERIFICAR SI EL ID PERTENECE A UN EMPLEADOR
+        const checkEmpleador = await client.query('SELECT id_empleador FROM empleador WHERE id_empleador = $1', [id]);
+        
+        if (checkEmpleador.rowCount > 0) {
+            await borrarSeguro('DELETE FROM notificaciones WHERE id_empleador = $1', [id]);
+
+            const anuncios = await client.query('SELECT id_anuncio FROM anuncios WHERE id_empleador = $1', [id]);
+            for (const anuncio of anuncios.rows) {
+                await borrarSeguro('DELETE FROM imagenes WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+                await borrarSeguro('DELETE FROM categoriaAnuncio WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+                await borrarSeguro('DELETE FROM favoritos WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+                await borrarSeguro('DELETE FROM postulacion WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+                await borrarSeguro('DELETE FROM reporte_a_anuncio WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+            }
+            await borrarSeguro('DELETE FROM anuncios WHERE id_empleador = $1', [id]);
+            
+            await borrarSeguro('DELETE FROM reporte_a_empleador WHERE id_empleador_reportado = $1', [id]);
+            await borrarSeguro('DELETE FROM reporte_a_postulante WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_empleador = $1)', [id]);
+            await borrarSeguro('DELETE FROM reporte WHERE id_empleador = $1', [id]);
+            
+            await borrarSeguro('DELETE FROM empleador_valoracion WHERE id_empleador = $1', [id]);
+            await borrarSeguro('DELETE FROM postulante_valoracion WHERE id_empleador = $1', [id]);
+            
+            await client.query('DELETE FROM empleador WHERE id_empleador = $1', [id]);
+
+            await client.query('COMMIT');
+            return res.status(200).json({ mensaje: 'Perfil de empresa eliminado permanentemente.' });
+        }
+
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'No se encontró ningún usuario con ese ID.' });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error al eliminar usuario de la BD:', error);
+        res.status(500).json({ error: 'Hubo un error interno al intentar borrar la cuenta.' });
+    } finally {
+        client.release();
+    }
+});
 
 /* ===== INICIAR SERVIDOR ===== */
 server.listen(3000, "0.0.0.0", async () => {

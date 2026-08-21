@@ -1,6 +1,7 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
@@ -58,7 +59,7 @@ type ProfileSectionTab = 'anuncios' | 'postulaciones';
 @Component({
   selector: 'app-employer-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule], // <-- AGREGADO FormsModule
   templateUrl: './employer-profile.component.html',
   styleUrl: './employer-profile.component.css'
 })
@@ -75,23 +76,24 @@ export class EmployerProfileComponent implements OnInit {
   activeTab: ProfileSectionTab = 'anuncios';
   modalMensaje = '';
 
+  isAdminView = false;
+  tiempoSuspensionAdmin: string = '7'; // Variable para el modal
+  modalMensajeExitoAdmin: string = ''; // Mensaje para la abeja feliz
+
   anuncios: EmployerAnnouncement[] = [];
   resenas: any[] = [];
   postulacionesRecibidas: ReceivedApplication[] = [];
-  notifications: NotificationItem[] = []; // Inicia vacío para DB
+  notifications: NotificationItem[] = []; 
 
   constructor(
     private api: ApiService,
     private router: Router,
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService,
-    private cdr: ChangeDetectorRef // Agregado para refresco de interfaz
+    private cdr: ChangeDetectorRef 
   ) {}
 
   ngOnInit(): void {
-    // 1. Cargar notificaciones
-    this.cargarNotificaciones();
-
     const usuario = this.api.getUsuario();
     const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
 
@@ -101,7 +103,14 @@ export class EmployerProfileComponent implements OnInit {
       return;
     }
 
-    if (usuario.rol !== 'empleador') {
+    this.isAdminView = usuario.rol === 'administrador' || usuario.rol === 'admin';
+
+    // Evitar que el admin cargue notificaciones (Previene el error 403)
+    if (!this.isAdminView) {
+      this.cargarNotificaciones();
+    }
+
+    if (usuario.rol !== 'empleador' && !this.isAdminView) {
       this.error = 'Esta seccion es solo para empleadores.';
       this.cargando = false;
       return;
@@ -138,7 +147,6 @@ export class EmployerProfileComponent implements OnInit {
     this.checkMobile();
   };
 
-  // MÉTODO NUEVO: Cargar Notificaciones desde PostgreSQL
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({
       next: (notifs) => {
@@ -156,7 +164,6 @@ export class EmployerProfileComponent implements OnInit {
     });
   }
 
-  // MÉTODO NUEVO: Clic en Notificación
   onNotificationClick(notif: NotificationItem, event: Event) {
     event.stopPropagation();
     notif.read = true;
@@ -342,7 +349,11 @@ export class EmployerProfileComponent implements OnInit {
   }
 
   volverPanel() {
-    this.router.navigate(['/home-employer']);
+    if(this.isAdminView){
+      this.router.navigate(['/admin-dashboard']);
+    } else {
+      this.router.navigate(['/home-employer']);
+    }
   }
 
   private mapAnnouncementState(estado: string): EmployerAnnouncement['estado'] {
@@ -406,7 +417,7 @@ export class EmployerProfileComponent implements OnInit {
     }
   }
 
-    mostrarModalEliminar(mensaje: string) {
+  mostrarModalEliminar(mensaje: string) {
     const modal = document.getElementById('modalSaludo');
     this.modalMensaje = mensaje;
     if (modal) {
@@ -445,5 +456,101 @@ export class EmployerProfileComponent implements OnInit {
         console.error('Error al eliminar valoración:', err);
       }
     });
+  }
+
+  // ==========================================
+  // FUNCIONES NUEVAS DE ADMIN: ELIMINAR Y SUSPENDER
+  // ==========================================
+  
+  // MODALES BORRAR
+  abrirModalEliminarAdmin() {
+    const modal = document.getElementById('modalEliminarAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalEliminarAdmin() {
+    const modal = document.getElementById('modalEliminarAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  ejecutarEliminarAdmin() {
+    const id = this.perfil?.id_empleador;
+    
+    if (!id) {
+      alert("No se pudo obtener el ID de la empresa.");
+      return;
+    }
+
+    this.api.eliminarUsuario(id).subscribe({
+      next: () => {
+        this.cerrarModalEliminarAdmin();
+        this.mostrarModalExitoAdmin("El perfil de la empresa ha sido borrado permanentemente.");
+      },
+      error: (err) => {
+        console.error('Error al eliminar perfil:', err);
+        alert('Hubo un problema al intentar borrar este perfil desde la base de datos.');
+        this.cerrarModalEliminarAdmin();
+      }
+    });
+  }
+
+  // MODALES SUSPENDER
+  abrirModalSuspenderAdmin() {
+    const modal = document.getElementById('modalSuspenderAdmin');
+    this.tiempoSuspensionAdmin = '7'; // Valor predeterminado
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalSuspenderAdmin() {
+    const modal = document.getElementById('modalSuspenderAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  ejecutarSuspensionAdmin() {
+    const id = this.perfil?.id_empleador;
+    if (!id) return;
+
+    const dias = parseInt(this.tiempoSuspensionAdmin, 10);
+
+    this.api.suspenderUsuario(id, dias).subscribe({
+      next: () => {
+        this.cerrarModalSuspenderAdmin();
+        this.mostrarModalExitoAdmin(dias === 0 ? "La empresa ha sido suspendida permanentemente." : `La empresa ha sido suspendida por ${dias} días.`);
+      },
+      error: (err) => {
+        console.error('Error al suspender empresa:', err);
+        alert('Hubo un problema al suspender la empresa.');
+        this.cerrarModalSuspenderAdmin();
+      }
+    });
+  }
+
+  // MODAL DE ÉXITO FELIZ Y REDIRECCIÓN
+  mostrarModalExitoAdmin(mensaje: string) {
+    this.modalMensajeExitoAdmin = mensaje;
+    const modal = document.getElementById('modalExitoAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+
+      // Esperamos 2.5 segundos para que la abeja feliz se luzca, y luego redirigimos al dashboard
+      setTimeout(() => {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        this.router.navigate(['/admin-dashboard']);
+      }, 2500);
+    }
   }
 }
