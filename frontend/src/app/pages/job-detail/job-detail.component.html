@@ -474,6 +474,9 @@
                         <span class="views ms-3 fw-bold">
                             <i class="bi bi-eye"></i> {{ jobData.vistas }} vistas
                         </span>
+                        <span class="applicants ms-3 fw-bold">
+                            <i class="bi bi-people-fill"></i> {{ jobData.applicants }} postulados
+                        </span>
                     </div>
                     <div class="actions d-flex align-items-center gap-2">
                         <!-- BOTÓN DE REPORTAR -->
@@ -597,7 +600,14 @@
                         <span class="job-tag" *ngFor="let tag of relJob.tags | slice:0:2">{{ tag }}</span>
                     </div>
                     <div class="job-footer-card">
-                        ★ {{ relJob.rating }} <span>{{ relJob.applicants }} postulados</span>
+                        ★ {{ relJob.rating }} 
+                        
+                        <div class="applicants-info">
+                            <div class="applicants-avatars" *ngIf="relJob.applicantsFotos?.length">
+                                <img *ngFor="let foto of relJob.applicantsFotos" [src]="foto" alt="postulante" class="applicant-avatar">
+                            </div>
+                            <span>{{ relJob.applicants }} postulados</span>
+                        </div>
                     </div>
                 </div>
             </div>

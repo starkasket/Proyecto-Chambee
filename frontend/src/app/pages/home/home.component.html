@@ -212,7 +212,7 @@
           <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags && job.tags.length">
             <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
           </div>
-          <div class="job-footer"><i class="bi bi-star-fill"></i> {{ job.rating }} <span>{{ job.applicants }} postulados</span></div>
+          <div class="job-footer" style="justify-content: flex-start; gap: 8px;"><span><i class="bi bi-star-fill"></i> {{ job.rating }}</span> <span style="color: #aaa;">&bull;</span> <span>{{ job.applicants }} postulados</span></div>
         </div>
       </div>
     </div>

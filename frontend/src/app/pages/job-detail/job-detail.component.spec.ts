@@ -22,7 +22,9 @@ describe('JobDetailComponent', () => {
     getMiPerfil: jasmine.createSpy('getMiPerfil').and.returnValue(of({ foto_perfil: '' })),
     obtenerAnunciosPublicos: jasmine.createSpy('obtenerAnunciosPublicos').and.returnValue(of([])),
     obtenerMisEtiquetas: jasmine.createSpy('obtenerMisEtiquetas').and.returnValue(of({ etiquetas: [] })),
-    postularAAnuncio: jasmine.createSpy('postularAAnuncio').and.returnValue(of({}))
+    postularAAnuncio: jasmine.createSpy('postularAAnuncio').and.returnValue(of({})),
+    obtenerNotificaciones: jasmine.createSpy('obtenerNotificaciones').and.returnValue(of([])),
+    obtenerServiciosPublicos: jasmine.createSpy('obtenerServiciosPublicos').and.returnValue(of([]))
   };
 
   beforeEach(async () => {

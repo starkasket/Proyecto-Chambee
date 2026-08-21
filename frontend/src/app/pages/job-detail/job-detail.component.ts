@@ -636,11 +636,23 @@ export class JobDetailComponent implements OnInit {
           higiene: anuncio.descripcion || 'Consulta la publicacion para conocer mas detalles.',
           salario: anuncio.salario,
           vistas: anuncio.vistas || 0,
+          applicants: parseInt(anuncio.postulaciones_count) || 0,
           direccion: ubicacion,
           ubicacion,
           tags: categoriasActuales,
           interesMatch: this.calcularCoincidencias(categoriasActuales, intereses) > 0
         };
+
+        if (this.jobData.id) {
+          this.api.registrarVistaAnuncio(this.jobData.id).subscribe({
+            next: (res) => {
+              if (this.jobData && res.vistas) {
+                this.jobData.vistas = res.vistas;
+              }
+            },
+            error: (err) => console.error('Error al registrar vista:', err)
+          });
+        }
 
         this.jobs = anuncios.map((anuncio: any) => ({
           id: anuncio.id_anuncio,
@@ -650,10 +662,11 @@ export class JobDetailComponent implements OnInit {
           img: anuncio.img || '',
           urgency: anuncio.urgencia || 'Normal',
           rating: anuncio.modalidad || 'Empleo',
-          applicants: anuncio.vistas || 0,
+          applicants: parseInt(anuncio.postulaciones_count) || 0,
+          applicantsFotos: anuncio.postulantes_fotos || [],
           tags: anuncio.categorias || [],
           matchScore: 0
-}));
+        }));
         this.relatedJobs = anuncios
           .filter((item: any) => String(item.id_anuncio) !== String(id))
           .map((item: any) => {
@@ -668,7 +681,8 @@ export class JobDetailComponent implements OnInit {
               img: fotos[0] || 'assets/LogoChambee.png',
               images: fotos,
               rating: item.modalidad || 'Empleo',
-              applicants: item.vistas || 0,
+              applicants: parseInt(item.postulaciones_count) || 0,
+              applicantsFotos: item.postulantes_fotos || [],
               tags: item.categorias || [],
               score: this.calcularCoincidencias(item.categorias || [], categoriasActuales) * 2
                 + this.calcularCoincidencias(item.categorias || [], intereses)

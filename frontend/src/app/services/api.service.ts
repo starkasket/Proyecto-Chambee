@@ -101,6 +101,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/empresas/${idEmpleador}/perfil-publico`, this.getHeaders());
   }
 
+  registrarVistaAnuncio(idAnuncio: number | string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/anuncios/${idAnuncio}/vista`, {});
+  }
+
   postularAAnuncio(idAnuncio: number | string): Observable<any> {
     return this.http.post(`${this.apiUrl}/anuncios/${idAnuncio}/postular`, {}, this.getHeaders());
   }

@@ -320,7 +320,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
           images: anuncio.images?.length ? anuncio.images : [anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'],
           urgency: anuncio.urgencia || 'Normal',
           rating: anuncio.modalidad || 'Empleo',
-          applicants: anuncio.postulaciones_count ?? anuncio.vistas ?? 0,
+          applicants: parseInt(anuncio.postulaciones_count) || 0,
           tags: anuncio.categorias || [],
           matchScore: anuncio.__score,
           tipoAnuncio: anuncio.tipo_anuncio || 'Empleo',

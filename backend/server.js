@@ -1229,6 +1229,7 @@ app.get("/anuncios", async (_req, res) => {
       (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
       e.nombre_empresa, e.descripcion AS descripcion_empresa, e.foto_perfil AS foto_empresa,
       COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
+      (SELECT COALESCE(ARRAY_AGG(p.foto_perfil), ARRAY[]::VARCHAR[]) FROM (SELECT pp.foto_perfil FROM postulacion po2 JOIN postulante pp ON pp.id_postulante = po2.id_postulante WHERE po2.id_anuncio = a.id_anuncio AND pp.foto_perfil IS NOT NULL LIMIT 3) p) AS postulantes_fotos,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
     FROM anuncios a
     INNER JOIN empleador e ON e.id_empleador = a.id_empleador
@@ -1246,7 +1247,19 @@ app.get("/anuncios", async (_req, res) => {
   }
 });
 
-
+app.post("/anuncios/:id/vista", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "UPDATE anuncios SET vistas = vistas + 1 WHERE id_anuncio = $1 RETURNING vistas",
+      [id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: "Anuncio no encontrado" });
+    res.json({ message: "Vista registrada", vistas: result.rows[0].vistas });
+  } catch (err) {
+    res.status(500).json({ error: "Error al registrar vista" });
+  }
+});
 
 app.get("/busqueda", async (req, res) => {
   try {
