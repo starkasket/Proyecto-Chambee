@@ -321,12 +321,18 @@ app.post("/postulantes/registro", async (req, res) => {
         );
 
         const apiData = apiResponse.data;
-        if (!apiData || !apiData.success || apiData.status !== 200) {
-          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+
+        // Sin saldo (402) u otro error de servicio → omitir validación y continuar
+        if (apiData && (apiData.status === 402 || apiData.status === 500 || apiData.status === 503)) {
+          console.warn("APIMarket no disponible para validar CURP (status:", apiData.status, "), se omite la validación:", apiData.message);
+        } else if (!apiData || !apiData.success || apiData.status !== 200) {
+          // APIMarket respondió correctamente pero la CURP es inválida → rechazar
+          console.error("CURP inválida según APIMarket:", apiData);
+          return res.status(400).json({ error: "La CURP proporcionada no es válida. Verifica que esté escrita correctamente." });
         }
       } catch (apiErr) {
-        console.error("Error al validar la CURP en APIMarket:", apiErr.response?.data || apiErr.message);
-        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+        // Error de red / timeout → advertir y continuar el registro
+        console.warn("No se pudo contactar APIMarket para validar la CURP, se omite la validación:", apiErr.response?.data || apiErr.message);
       }
     } else {
       return res.status(400).json({ error: "La CURP es obligatoria para el registro de postulante." });
@@ -354,16 +360,19 @@ app.post("/postulantes/registro", async (req, res) => {
         );
 
         const rfcData = rfcResponse.data;
-        if (!rfcData || !rfcData.success || rfcData.status !== 200) {
+        // Sin saldo (402) u otro error de servicio → omitir validación y continuar
+        if (rfcData && (rfcData.status === 402 || rfcData.status === 500 || rfcData.status === 503)) {
+          console.warn("APIMarket no disponible para validar RFC (status:", rfcData.status, "), se omite la validación:", rfcData.message);
+        } else if (!rfcData || !rfcData.success || rfcData.status !== 200) {
+          // APIMarket respondió correctamente pero el RFC es inválido → rechazar
           console.error("RFC inválido según APIMarket:", rfcData);
-          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
-        }
-        if (rfcData.data && rfcData.data.existeRfc === false) {
-          return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+          return res.status(400).json({ error: "El RFC proporcionado no es válido. Verifica que esté escrito correctamente." });
+        } else if (rfcData.data && rfcData.data.existeRfc === false) {
+          return res.status(400).json({ error: "El RFC proporcionado no está registrado en el SAT." });
         }
       } catch (rfcErr) {
-        console.error("Error al validar el RFC en APIMarket:", rfcErr.response?.data || rfcErr.message);
-        return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+        // Error de red / timeout / sin créditos → advertir y continuar el registro
+        console.warn("No se pudo contactar APIMarket para validar el RFC, se omite la validación:", rfcErr.response?.data || rfcErr.message);
       }
     } else if (!rfc) {
       return res.status(400).json({ error: "El RFC es obligatorio para el registro de postulante." });
@@ -2269,6 +2278,14 @@ async function ensureDatabaseSchema() {
     await pool.query("ALTER TABLE valoracion ALTER COLUMN comentario DROP NOT NULL");
 
     // =============== NUEVO: FORZAR COLUMNAS A TEXTO ===============
+    // Primero eliminar las FK de 'reporte' para poder cambiar los tipos de columna
+    try {
+      await pool.query(`ALTER TABLE reporte DROP CONSTRAINT IF EXISTS fk_reporte_postulante`);
+      await pool.query(`ALTER TABLE reporte DROP CONSTRAINT IF EXISTS fk_reporte_empleador`);
+    } catch (e) {
+      console.warn("[db] Aviso al eliminar FK de reporte:", e.message);
+    }
+
     const tablasAArreglar = [
       { tabla: 'reporte', columna: 'id_postulante' },
       { tabla: 'reporte', columna: 'id_empleador' },
@@ -2332,6 +2349,20 @@ async function ensureDatabaseSchema() {
         )
       );
     `);
+
+    // =============== CREAR TABLA comentarios_anuncio SI NO EXISTE ===============
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS comentarios_anuncio (
+        id_comentario UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        id_anuncio UUID NOT NULL,
+        id_postulante UUID NOT NULL,
+        texto VARCHAR(500) NOT NULL,
+        fecha_comentario TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_comentario_anuncio FOREIGN KEY (id_anuncio) REFERENCES anuncios(id_anuncio) ON DELETE CASCADE,
+        CONSTRAINT fk_comentario_postulante FOREIGN KEY (id_postulante) REFERENCES postulante(id_postulante) ON DELETE CASCADE
+      );
+    `);
+    // ============================================================================
 
     console.log("[db] Estructura de base de datos verificada y actualizada correctamente.");
   } catch (err) {

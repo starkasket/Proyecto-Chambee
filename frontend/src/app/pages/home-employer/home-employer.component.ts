@@ -76,6 +76,11 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   misAnuncios: Anuncio[] = [];
   allApplicants: Applicant[] = [];
 
+  // Modal de imagen de perfil
+  imagenModalUrl: string = '';
+  imagenModalNombre: string = '';
+  imagenModalVisible: boolean = false;
+
   constructor(
     private readonly router: Router,
     private readonly api: ApiService,
@@ -227,6 +232,19 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
       return;
     }
     alert('CV no disponible para este postulante.');
+  }
+
+  verImagen(url: string, nombre: string, event: Event) {
+    event.stopPropagation();
+    this.imagenModalUrl = url;
+    this.imagenModalNombre = nombre;
+    this.imagenModalVisible = true;
+  }
+
+  cerrarImagenModal() {
+    this.imagenModalVisible = false;
+    this.imagenModalUrl = '';
+    this.imagenModalNombre = '';
   }
 
   logout() {

@@ -398,8 +398,8 @@ body {
 .jobs-grid {
   margin-top: 20px;
   display: grid;
-  /* Este grid responsive acomoda automáticamente 3 columnas en pantallas grandes, 2 en tablets y 1 en móviles */
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  /* Este grid responsive acomoda automáticamente las columnas, se aumentó a 340px para evitar amontonamiento */
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 20px;
 }
 
@@ -413,6 +413,7 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: var(--shadow-card);
   height: 100%;
+  padding: 20px 20px 16px !important;
 }
 
 .applicant-content {
@@ -445,6 +446,16 @@ width: 90%;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--border-soft);
+}
+
+.applicant-profile-img {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.applicant-profile-img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
 
 .applicant-title {
