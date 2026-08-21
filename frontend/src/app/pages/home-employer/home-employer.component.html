@@ -88,9 +88,9 @@
             <div class="featured-card featured-clickable" (click)="viewProfile(slide)">
               <div class="featured-upper">
                 <div class="featured-company">
-                  <div class="featured-media d-flex justify-content-center align-items-center" style="background-color: var(--surface-secondary);">
-                    <img *ngIf="slide.profilePic" class="featured-image" [src]="slide.profilePic" [alt]="slide.name" style="border-radius: 50%; object-fit: cover; width: 100%; height: 100%;" />
-                    <i *ngIf="!slide.profilePic" class="bi bi-person-circle" style="font-size: 5rem; color: #ccc;"></i>
+                  <div class="featured-media d-flex justify-content-center align-items-center" style="background-color: var(--surface-secondary); padding: 20px;">
+                    <img *ngIf="slide.profilePic" class="featured-image" [src]="slide.profilePic" [alt]="slide.name" style="border-radius: 50%; object-fit: cover; width: 120px; height: 120px; min-width: 120px; min-height: 120px; flex-shrink: 0; box-shadow: var(--shadow-soft);" />
+                    <i *ngIf="!slide.profilePic" class="bi bi-person-circle" style="font-size: 6rem; color: #ccc;"></i>
                   </div>
                   <div class="featured-company-copy">
                     <h3>{{ slide.name }}</h3>
@@ -142,8 +142,8 @@
         <div class="applicant-card p-3" *ngFor="let applicant of allApplicants | slice:0:visibleCount"
              style="background-color: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-soft);">
           <div class="d-flex align-items-center gap-3 applicant-content">
-            <img *ngIf="applicant.profilePic" [src]="applicant.profilePic" [alt]="applicant.name" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
-            <div *ngIf="!applicant.profilePic" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; background-color: var(--surface-secondary);">
+            <img *ngIf="applicant.profilePic" [src]="applicant.profilePic" [alt]="applicant.name" style="width: 70px; height: 70px; min-width: 70px; min-height: 70px; flex-shrink: 0; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+            <div *ngIf="!applicant.profilePic" style="width: 70px; height: 70px; min-width: 70px; min-height: 70px; flex-shrink: 0; border-radius: 50%; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; background-color: var(--surface-secondary);">
               <i class="bi bi-person-circle" style="font-size: 2.5rem; color: #ccc;"></i>
             </div>
 

@@ -268,6 +268,34 @@ app.post("/postulantes/registro", async (req, res) => {
 
   const estado_cuenta = 'ACTIVA';
   try {
+    // Verificar duplicados globalmente antes de las APIs
+    const emailCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE correo_electronico = $1
+       UNION SELECT 'empleador' FROM empleador WHERE correo_electronico = $1
+       UNION SELECT 'administrador' FROM administrador WHERE correo_electronico = $1`,
+      [correo_electronico]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "correo_electronico" });
+    }
+
+    const rfcCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE rfc = $1
+       UNION SELECT 'empleador' FROM empleador WHERE rfc = $1`,
+       [rfc]
+    );
+    if (rfcCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+    }
+
+    const curpCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE curp = $1`,
+       [curp]
+    );
+    if (curpCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
+    }
+
     // Validar CURP con APIMarket
     const apimarketKey = process.env.APIMARKET_KEY;
     if (!apimarketKey) {
@@ -410,6 +438,34 @@ app.post("/empleadores/registro", async (req, res) => {
 
   const estado_cuenta = "ACTIVA";
   try {
+    // Verificar duplicados globalmente antes de las APIs
+    const emailCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE correo_electronico = $1
+       UNION SELECT 'empleador' FROM empleador WHERE correo_electronico = $1
+       UNION SELECT 'administrador' FROM administrador WHERE correo_electronico = $1`,
+      [correo_electronico]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "correo_electronico" });
+    }
+
+    const rfcCheck = await pool.query(
+      `SELECT 'postulante' AS tipo FROM postulante WHERE rfc = $1
+       UNION SELECT 'empleador' FROM empleador WHERE rfc = $1`,
+       [rfc]
+    );
+    if (rfcCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
+    }
+
+    const empresaCheck = await pool.query(
+      `SELECT 'empleador' AS tipo FROM empleador WHERE nombre_empresa = $1`,
+       [nombre_empresa]
+    );
+    if (empresaCheck.rows.length > 0) {
+      return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "nombre_empresa" });
+    }
+
     // Validar RFC Moral con APIMarket (SAT)
     const apimarketKey = process.env.APIMARKET_KEY;
     if (apimarketKey && rfc) {
