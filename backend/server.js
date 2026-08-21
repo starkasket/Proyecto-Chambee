@@ -619,7 +619,7 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
       query = `SELECT 
         p.id_postulante, p.nombre_postulante, p.apellido_paterno_postulante, p.apellido_materno_postulante, 
         p.correo_electronico, p.fecha_nacimiento, p.sexo, p.pais, p.estado, p.ciudad, p.colonia, 
-        p.calle, p.codigo_postal, p.telefono, p.foto_perfil, p.curp, p.rfc, c.visible_empresas, 
+        p.calle, p.codigo_postal, p.telefono, p.foto_perfil, p.curp, p.rfc, p.descripcion, c.visible_empresas, 
         p.fecha_registro, c.archivo_cv
       FROM postulante p
       LEFT JOIN cv c ON c.id_postulante = p.id_postulante
@@ -998,15 +998,16 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
             telefono = COALESCE($13, telefono),
             curp = COALESCE($14, curp),
             rfc = COALESCE($15, rfc),
-            foto_perfil = COALESCE($16, foto_perfil)
-        WHERE id_postulante = $17 RETURNING *`;
+            foto_perfil = COALESCE($16, foto_perfil),
+            descripcion = COALESCE($17, descripcion)
+        WHERE id_postulante = $18 RETURNING *`;
 
       values = [
         datos.nombre_postulante || null, datos.apellido_paterno_postulante || null, datos.apellido_materno_postulante || null,
         datos.correo_electronico || null, datos.fecha_nacimiento || null, datos.sexo || null,
         datos.pais || null, datos.estado || null, datos.ciudad || null, datos.colonia || null,
         datos.calle || null, datos.codigo_postal || null, datos.telefono || null,
-        datos.curp || null, datos.rfc || null, datos.foto_perfil || null, id
+        datos.curp || null, datos.rfc || null, datos.foto_perfil || null, datos.descripcion || null, id
       ];
 
       if (datos.archivo_cv) {

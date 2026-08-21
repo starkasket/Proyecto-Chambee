@@ -321,7 +321,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
           appliedFor: item.vacante || 'Vacante desconocida',
           description: item.perfil_postulante || 'Candidato interesado.',
           skills: item.perfil_postulante ? item.perfil_postulante.slice(0, 90) : 'Detalle no disponible',
-          profilePic: item.foto_perfil || `https://i.pravatar.cc/150?img=${index + 30}`,
+          profilePic: item.foto_perfil || null,
           dateApplied: item.fecha_postulacion ? new Date(item.fecha_postulacion).toLocaleDateString('es-MX') : 'Reciente',
           cvUrl: item.archivo_cv ?? null,
           email: item.correo_electronico || 'No disponible',
