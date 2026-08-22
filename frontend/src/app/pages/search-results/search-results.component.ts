@@ -91,7 +91,7 @@ export class SearchResultsComponent implements OnInit {
       this.cargarNotificaciones();
 
       if (usuario) {
-        this.nombre_postulante = usuario.nombre || 'Usua  rio';
+        this.nombre_postulante = usuario.nombre || 'Usuario';
         this.api.getMiPerfil().subscribe({
           next: (perfil: any) => {
             this.nombre_postulante = perfil?.nombre_postulante || this.nombre_postulante;
@@ -110,10 +110,27 @@ export class SearchResultsComponent implements OnInit {
 
   cargarYFiltrar(q: string) {
     this.cargando = true;
-   this.api.buscar(q, this.filtros).subscribe({
+    this.api.buscar(q, this.filtros).subscribe({
       next: (datos) => {
-        this.todosLosResultados=datos;
-        this.destacados=datos.slice(0,3);
+        
+        // --- AQUÍ APLICAMOS LA LÓGICA DE ORDENAMIENTO EN EL FRONTEND ---
+        if (this.filtros.ordenar === 'vistas') {
+          // Ordena por vistas de mayor a menor
+          datos.sort((a: any, b: any) => (b.vistas || 0) - (a.vistas || 0));
+        } else if (this.filtros.ordenar === 'salario') {
+          // Ordena por salario de mayor a menor
+          datos.sort((a: any, b: any) => (parseFloat(b.salario) || 0) - (parseFloat(a.salario) || 0));
+        } else if (this.filtros.ordenar === 'fecha') {
+          // Ordena por fecha de publicación (más reciente a más antiguo)
+          datos.sort((a: any, b: any) => {
+            const fechaB = new Date(b.fecha_publicacion || b.fecha_creacion).getTime();
+            const fechaA = new Date(a.fecha_publicacion || a.fecha_creacion).getTime();
+            return fechaB - fechaA;
+          });
+        }
+
+        this.todosLosResultados = datos;
+        this.destacados = datos.slice(0, 3);
         this.cargando = false;
       },
       error: (err) => {
@@ -130,8 +147,6 @@ export class SearchResultsComponent implements OnInit {
     this.filtros.modalidad = '';
     this.filtros.cobertura = '';
   }
-
-  
 
   // --- LÓGICA DE TARJETAS Y BÚSQUEDA ---
   irAlDetalle(item: any) {
@@ -230,7 +245,7 @@ export class SearchResultsComponent implements OnInit {
   }
 
   toggleFiltros(){
-    this.mostrarFiltros=!this.mostrarFiltros;
+    this.mostrarFiltros = !this.mostrarFiltros;
   }
 
   limpiarFiltros(){
@@ -253,7 +268,7 @@ export class SearchResultsComponent implements OnInit {
 
   aplicarFiltros(){
     this.cargarYFiltrar(this.query);
-}
+  }
 
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({

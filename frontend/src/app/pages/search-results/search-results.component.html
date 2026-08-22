@@ -319,14 +319,15 @@
     
     
           <div class="col-md-4 mt-3">    
-            <label>Ordenar</label>
-            <select
-            class="form-select"
-            [(ngModel)]="filtros.ordenar">            
-            <option value="fecha">Más recientes</option>
-            <option value="salario">Mayor salario</option>
-          </select>
-            </div>
+  <label>Ordenar</label>
+  <select
+    class="form-select"
+    [(ngModel)]="filtros.ordenar">            
+    <option value="fecha">Más recientes</option>
+    <option value="salario">Mayor salario</option>
+    <option value="vistas">Más vistas</option>
+  </select>
+</div>
             <div class="col-12 mt-4 d-flex justify-content-end gap-2">            
             <button class="btn btn-outline-secondary" (click)="filtros={tipo:'',modalidad:'',ciudad:'',categoriaEmpleo:'',categoriaServicio:'',cobertura:'',ordenar:'fecha'}">
             Limpiar
@@ -390,21 +391,6 @@
       <!-- SECCIÓN TODOS LOS RESULTADOS -->
       <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
         <h3 class="section-subtitle mb-4">Todos los resultados</h3>
-
-       <!--  <div class="filtros-bar d-flex gap-2 mb-4 overflow-auto pb-2">
-          <button class="chambee-filter-btn active"><i class="bi bi-sliders me-1"></i> Filtrar y ordenar</button>
-          <button class="chambee-filter-btn">Tipo de oferta <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
-          <button class="chambee-filter-btn">Modalidad <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
-          <button class="chambee-filter-btn">Ubicación <i class="bi bi-chevron-down ms-1 opacity-50"></i></button>
-        </div> -->
-
-    
-            
-            
-
-            
-
-        
 
         <div class="jobs-grid mt-4">
           <div class="job-card" *ngFor="let item of todosLosResultados" tabindex="0" (click)="irAlDetalle(item)">
