@@ -2611,6 +2611,17 @@ async function ensureDatabaseSchema() {
     await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS suspendido_hasta TIMESTAMP;`);
     // ======================================================================================
 
+    // ================= COLUMNAS DE UBICACIÓN / GEOLOCALIZACIÓN ==========================
+    await pool.query(`ALTER TABLE postulante ADD COLUMN IF NOT EXISTS numero_exterior VARCHAR(20)`);
+    await pool.query(`ALTER TABLE postulante ADD COLUMN IF NOT EXISTS direccion_formateada VARCHAR(300)`);
+    await pool.query(`ALTER TABLE postulante ADD COLUMN IF NOT EXISTS latitud DOUBLE PRECISION`);
+    await pool.query(`ALTER TABLE postulante ADD COLUMN IF NOT EXISTS longitud DOUBLE PRECISION`);
+    await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS numero_exterior VARCHAR(20)`);
+    await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS direccion_formateada VARCHAR(300)`);
+    await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS latitud DOUBLE PRECISION`);
+    await pool.query(`ALTER TABLE empleador ADD COLUMN IF NOT EXISTS longitud DOUBLE PRECISION`);
+    // =====================================================================================
+
     const typeEmp = await pool.query("SELECT data_type FROM information_schema.columns WHERE table_name = 'empleador' AND column_name = 'id_empleador'");
     const empDataType = typeEmp.rows[0]?.data_type || 'VARCHAR(255)';
 
@@ -2621,6 +2632,10 @@ async function ensureDatabaseSchema() {
     await pool.query(`ALTER TABLE empleador_valoracion ADD COLUMN IF NOT EXISTS id_postulante ${postDataType}`);
 
     await pool.query(`ALTER TABLE servicios ADD COLUMN IF NOT EXISTS img VARCHAR(255)`);
+    await pool.query(`ALTER TABLE servicios ADD COLUMN IF NOT EXISTS latitud DOUBLE PRECISION`);
+    await pool.query(`ALTER TABLE servicios ADD COLUMN IF NOT EXISTS longitud DOUBLE PRECISION`);
+    await pool.query(`ALTER TABLE servicios ADD COLUMN IF NOT EXISTS numero_exterior VARCHAR(20)`);
+    await pool.query(`ALTER TABLE servicios ADD COLUMN IF NOT EXISTS direccion_formateada VARCHAR(300)`);
 
     await pool.query(`
       DO $$
