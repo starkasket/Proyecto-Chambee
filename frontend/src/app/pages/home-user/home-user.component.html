@@ -565,6 +565,12 @@
     </div>
   </div>
 
+
+  <button class="create-service-bubble" (click)="irACrearServicio()" aria-label="Crear servicio" title="Crear un nuevo servicio">
+    <span class="create-service-bubble-icon">+</span>
+    <span class="create-service-bubble-text">Crear servicio</span>
+  </button>
+
   <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
     <span class="services-bubble-icon">✦</span>
     <span class="services-bubble-text">Servicios</span>
