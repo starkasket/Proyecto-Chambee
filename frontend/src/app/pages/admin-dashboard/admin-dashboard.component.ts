@@ -13,10 +13,17 @@ interface PerfilReportado {
   motivo: string;
   descripcion: string;
   fecha_reporte: string;
-  id_postulante_reportado: string;
+  
+  // Datos si el reportado es un postulante
+  id_postulante_reportado?: string;
   nombre_postulante?: string;
   apellido_paterno_postulante?: string;
   apellido_materno_postulante?: string;
+  
+  // Datos si el reportado es una empresa
+  id_empleador_reportado?: string;
+  nombre_empresa?: string;
+  
   suspendido?: boolean;
 }
 
@@ -56,8 +63,8 @@ export class AdminDashboardComponent implements OnInit {
   showSearchDropdown = false;
   recentSearches: string[] = [];
 
-  // Variables para reportes de perfiles
-  perfilesReportados: PerfilReportado[] = [];
+  // Variable única para todos los reportes de perfiles
+  reportesDePerfiles: PerfilReportado[] = []; 
   cargandoReportes = true;
   errorReportes = '';
 
@@ -96,7 +103,7 @@ export class AdminDashboardComponent implements OnInit {
   notificaciones: NotificacionReporte[] = [
     { mensaje: 'Nuevo reporte sobre anuncio de Mario Sanchez por titulo de publicacion: Venta de fentanilo' },
     { mensaje: 'Nuevo reporte sobre usuario diego velasquez juarez por comentario inapropiado' },
-    { mensaje: 'Nuevo reporte sobre anuncio de Abigail Fresa por por comentario inapropiado' },
+    { mensaje: 'Nuevo reporte sobre anuncio de Abigail Fresa por comentario inapropiado' },
     { mensaje: 'Nuevo reporte sobre Usuario Alma marcela gozo Rico por nombre inapropiado' },
     { mensaje: 'Nuevo reporte sobre Anuncio de Carla Panini por posible fraude' }
   ];
@@ -258,7 +265,7 @@ export class AdminDashboardComponent implements OnInit {
     this.errorReportes = '';
     this.api.obtenerReportesPerfiles().subscribe({
       next: (reportes: PerfilReportado[]) => {
-        this.perfilesReportados = reportes.map(r => ({...r, suspendido: r.suspendido || false}));
+        this.reportesDePerfiles = reportes.map(r => ({...r, suspendido: r.suspendido || false}));
         this.cargandoReportes = false;
       },
       error: (err) => {
@@ -297,13 +304,22 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  verPerfilPostulante(id: string) {
+  // Método unificado para ver el perfil dependiendo de quién es reportado
+  verPerfilReportado(reporte: PerfilReportado) {
+    if (reporte.id_postulante_reportado) {
+      this.router.navigate(['/perfil-postulante', reporte.id_postulante_reportado]);
+    } else if (reporte.id_empleador_reportado) {
+      this.router.navigate(['/empresa', reporte.id_empleador_reportado]);
+    }
+  }
+
+  verPerfilPostulante(id?: string) {
     if(id) {
       this.router.navigate(['/perfil-postulante', id]);
     }
   }
 
-  verPerfilEmpresa(id: string) {
+  verPerfilEmpresa(id?: string) {
     if(id) {
       this.router.navigate(['/empresa', id]);
     }
@@ -321,10 +337,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // --- MÉTODOS PARA MODALES DE SUSPENDER CUENTA ---
-  abrirModalSuspender(idPostulante: string) {
-    this.cuentaASuspender = idPostulante;
-    this.tiempoSuspension = '7'; 
-    this.mostrarModalSuspender = true;
+  abrirModalSuspender(reporte: PerfilReportado) {
+    const idUsuario = reporte.id_postulante_reportado || reporte.id_empleador_reportado;
+    if(idUsuario) {
+      this.cuentaASuspender = idUsuario;
+      this.tiempoSuspension = '7'; 
+      this.mostrarModalSuspender = true;
+    }
   }
 
   cerrarModalSuspender() {
@@ -339,16 +358,18 @@ export class AdminDashboardComponent implements OnInit {
   ejecutarSuspension() {
     if (!this.cuentaASuspender) return;
 
-    const idPostulante = this.cuentaASuspender;
+    const idUsuario = this.cuentaASuspender;
     const diasSuspension = parseInt(this.tiempoSuspension, 10);
 
-    this.api.suspenderUsuario(idPostulante, diasSuspension).subscribe({
+    this.api.suspenderUsuario(idUsuario, diasSuspension).subscribe({
       next: (res) => {
-        this.perfilesReportados.forEach(p => {
-          if (p.id_postulante_reportado === idPostulante) {
+        // Actualizar estado visual
+        this.reportesDePerfiles.forEach(p => {
+          if (p.id_postulante_reportado === idUsuario || p.id_empleador_reportado === idUsuario) {
             p.suspendido = true;
           }
         });
+        
         this.cerrarModalSuspender();
         this.mostrarModalExitoSuspension = true;
       },
@@ -377,7 +398,8 @@ export class AdminDashboardComponent implements OnInit {
 
     this.api.eliminarReporte(idReporte).subscribe({
       next: () => {
-        this.perfilesReportados = this.perfilesReportados.filter(p => p.id_reporte !== idReporte);
+        // Remover de la lista general
+        this.reportesDePerfiles = this.reportesDePerfiles.filter(p => p.id_reporte !== idReporte);
         this.cerrarModalEliminarReporte();
       },
       error: (err) => {

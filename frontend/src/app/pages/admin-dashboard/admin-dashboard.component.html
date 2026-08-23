@@ -213,8 +213,9 @@
     <main class="admin-content">
       <h2 class="page-title mb-4">Vista General</h2>
 
+      <!-- TABLA GENERAL: REPORTES A PERFILES -->
       <div class="admin-card mb-4">
-        <h4 class="card-title">Reporte por empleadores</h4>
+        <h4 class="card-title">Perfiles Reportados</h4>
         <div *ngIf="cargandoReportes" class="text-center my-3">
           <span>Cargando reportes...</span>
         </div>
@@ -226,7 +227,7 @@
           <table class="table admin-table">
             <thead>
               <tr>
-                <th>Nombre</th>
+                <th>Perfil Reportado</th>
                 <th>Motivo</th>
                 <th>Descripción</th>
                 <th>Fecha</th>
@@ -234,10 +235,18 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let reporte of perfilesReportados">
+              <tr *ngFor="let reporte of reportesDePerfiles">
                 <td>
-                  {{ reporte.nombre_postulante || 'Desconocido' }} 
-                  {{ reporte.apellido_paterno_postulante || '' }}
+                  <!-- Muestra el nombre dependiendo de si es empresa o postulante -->
+                  <ng-container *ngIf="reporte.id_postulante_reportado">
+                    <i class="bi bi-person me-1 text-muted"></i>
+                    {{ reporte.nombre_postulante || 'Desconocido' }} {{ reporte.apellido_paterno_postulante || '' }}
+                  </ng-container>
+                  <ng-container *ngIf="reporte.id_empleador_reportado">
+                    <i class="bi bi-building me-1 text-muted"></i>
+                    {{ reporte.nombre_empresa || 'Empresa Desconocida' }}
+                  </ng-container>
+                  <span *ngIf="!reporte.id_postulante_reportado && !reporte.id_empleador_reportado">Desconocido</span>
                 </td>
                 <td><span class="badge bg-warning text-dark">{{ reporte.motivo }}</span></td>
                 <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ reporte.descripcion }}">
@@ -245,21 +254,17 @@
                 </td>
                 <td>{{ reporte.fecha_reporte | date:'dd/MM/yyyy' }}</td>
                 <td class="text-end action-buttons">
-                  <!-- Botones normales cuando NO está suspendido -->
                   <ng-container *ngIf="!reporte.suspendido">
-                    <button class="btn btn-view" (click)="verPerfilPostulante(reporte.id_postulante_reportado)">Revisar</button>
-                    <button class="btn btn-suspend" (click)="abrirModalSuspender(reporte.id_postulante_reportado)">Suspender</button>
+                    <button class="btn btn-view" (click)="verPerfilReportado(reporte)">Revisar</button>
+                    <button class="btn btn-suspend" (click)="abrirModalSuspender(reporte)">Suspender</button>
                   </ng-container>
-
-                  <!-- Botones cuando SÍ está suspendido -->
                   <ng-container *ngIf="reporte.suspendido">
                     <span class="badge bg-danger me-2"><i class="bi bi-ban"></i> Suspendido</span>
-                    <!-- Botón actualizado para usar Modal en vez de window.confirm() -->
                     <button class="btn btn-delete" (click)="confirmarEliminarReporte(reporte.id_reporte)">Eliminar</button>
                   </ng-container>
                 </td>
               </tr>
-              <tr *ngIf="perfilesReportados.length === 0">
+              <tr *ngIf="reportesDePerfiles.length === 0">
                 <td colspan="5" class="text-center">No hay reportes de perfiles en este momento.</td>
               </tr>
             </tbody>
@@ -346,7 +351,6 @@
           </table>
         </div>
       </div>
-
 
       <div class="admin-card mb-4">
         <h4 class="card-title">Anuncios Reportados</h4>
