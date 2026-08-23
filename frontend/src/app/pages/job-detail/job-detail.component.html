@@ -122,6 +122,7 @@
     </div>
 </div>
 
+<!-- MODAL DE DETALLE DE SERVICIO -->
 <div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
     <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
 
@@ -241,7 +242,8 @@
         <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
     </div>
 
-    <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+    <!-- EL BUSCADOR SE OCULTA PARA EL ADMIN -->
+    <div *ngIf="!isAdminView" class="search-container flex-grow-1 mx-4" style="position: relative;">
         <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..."
             [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" (keydown.enter)="verTodosResultados()"
             (blur)="cerrarBuscador()" (focus)="showSearchDropdown = true" />
@@ -293,8 +295,8 @@
     </div>
 
     <div class="nav-buttons">
-        <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL -->
-        <div *ngIf="estaLogueado" class="notification-wrapper" style="position: relative; margin-right: 10px;">
+        <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL: SE OCULTA AL ADMIN -->
+        <div *ngIf="estaLogueado && !isAdminView" class="notification-wrapper" style="position: relative; margin-right: 10px;">
             <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
                 (click)="toggleNotifications($event)">
                 <i class="bi bi-bell-fill fs-5"></i>
@@ -337,21 +339,22 @@
             </div>
         </div>
 
-        <!-- Botón de perfil: condicional según sesión -->
-        <button *ngIf="estaLogueado" class="btn-profile" (click)="irAlPerfil()">
+        <!-- Botón de perfil: SE OCULTA AL ADMIN -->
+        <button *ngIf="estaLogueado && !isAdminView" class="btn-profile" (click)="irAlPerfil()">
             <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
                 style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
             <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
             <span>Mi perfil</span>
         </button>
 
-        <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">
+        <button *ngIf="!estaLogueado && !isMobile && !isAdminView" class="btn login" routerLink="/login">
             Iniciar Sesión
         </button>
-        <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">
+        <button *ngIf="!estaLogueado && !isMobile && !isAdminView" class="btn register" routerLink="/register">
             Registrarse
         </button>
 
+        <!-- Toggle de tema: SIEMPRE VISIBLE -->
         <button class="theme-toggle" type="button" (click)="toggleTheme()"
             [attr.aria-pressed]="isDarkMode"
             [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
@@ -360,10 +363,12 @@
             </span>
         </button>
 
-        <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
+        <!-- Menú Hamburguesa: SE OCULTA AL ADMIN -->
+        <div *ngIf="estaLogueado && !isAdminView" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
                 class="bi bi-list"></i></div>
 
-        <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">
+        <!-- Desktop Menu: SE OCULTA AL ADMIN -->
+        <div *ngIf="menuOpen && !isMobile && estaLogueado && !isAdminView" class="desktop-menu" (click)="$event.stopPropagation()">
             <div *ngIf="!isAdminView">
                 <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
                 <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
@@ -375,15 +380,11 @@
                 <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
                 <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
             </div>
-            <div *ngIf="isAdminView">
-                <a routerLink="/admin" class="desktop-menu-link">Panel principal</a>
-                <hr />
-                <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
-            </div>
         </div>
     </div>
 
-    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <!-- Menú Móvil: SE OCULTA AL ADMIN -->
+    <div *ngIf="menuOpen && isMobile && !isAdminView" class="mobile-menu-backdrop" (click)="toggleMenu()">
         <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
             <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i
                     class="bi bi-x-lg"></i></button>

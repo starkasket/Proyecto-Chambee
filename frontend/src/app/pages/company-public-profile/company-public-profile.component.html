@@ -1,7 +1,7 @@
 <div class="company-public-page">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3" routerLink="/home-user" style="cursor: pointer;">
-      <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
+      <img src="/assets/LogoChambee.png" alt="Chambee" height="48" />
       <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
     </div>
 
@@ -10,7 +10,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center">
           <div class="modal-body pt-4">
-            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
             <h5 class="text-danger fw-bold">¡Atención!</h5>
             <p class="mb-0">{{ modalMensaje }}</p>
           </div>
@@ -158,7 +158,7 @@
         <div class="company-main">
           <div class="company-brand">
             <div class="company-logo-box">
-              <app-carousel [images]="perfil.images ? perfil.images : [perfil.foto_perfil || 'assets/LogoChambee.png']"></app-carousel>
+              <app-carousel [images]="perfil.images ? perfil.images : [perfil.foto_perfil || '/assets/LogoChambee.png']"></app-carousel>
             </div>
             <div class="company-info">
               <p class="eyebrow">Perfil de empresa</p>
@@ -297,7 +297,7 @@
                 <div class="review-header d-flex justify-content-between align-items-start">
                   <div class="reviewer-info d-flex align-items-center gap-2">
                     <div class="reviewer-logo-box">
-                      <img [src]="rev.foto_postulante || 'assets/LogoChambee.png'" alt="Foto Postulante" class="reviewer-logo" />
+                      <img [src]="rev.foto_postulante || '/assets/LogoChambee.png'" alt="Foto Postulante" class="reviewer-logo" />
                     </div>
                     <div>
                       <h4 class="reviewer-name mb-0">{{ rev.nombre_postulante }}</h4>
@@ -339,7 +339,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
         <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
       </div>
@@ -356,7 +356,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-warning fw-bold">Suspender Perfil</h5>
         <p class="mb-3">Selecciona el tiempo que deseas suspender a esta empresa:</p>
         <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
@@ -380,7 +380,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
+        <img src="/assets/abejaSaludando.png" alt="éxito" height="200" class="mb-3"/>
         <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
         <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
       </div>
@@ -393,7 +393,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
         <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
       </div>

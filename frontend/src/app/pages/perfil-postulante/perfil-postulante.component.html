@@ -1,7 +1,7 @@
 <div class="profile-page">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
-      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
+      <img src="/assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()"/>
       <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ navbarWelcomeName }}</span>
     </div>
 
@@ -9,7 +9,7 @@
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">¡Atención!</h5>
         <p class="mb-0">{{ modalMensaje }}</p>
       </div>
@@ -56,7 +56,7 @@
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
         <h5 class="text-success fw-bold">¡Reporte Enviado!</h5>
         <p class="mb-0">El usuario se reportó correctamente.</p>
       </div>
@@ -71,7 +71,7 @@
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">¡Atención!</h5>
         <p class="mb-0">{{ modalMensaje }}</p>
       </div>
@@ -87,7 +87,7 @@
     <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">Mensaje</h5>
         <p class="mb-0">{{ modalMensaje }}</p>
       </div>
@@ -103,7 +103,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
         <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
       </div>
@@ -115,12 +115,12 @@
   </div>
 </div>
 
-<!-- NUEVO: Modal de Confirmación para Suspender (Admin) -->
+<!-- Modal de Confirmación para Suspender (Admin) -->
 <div id="modalSuspenderAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-warning fw-bold">Suspender Perfil</h5>
         <p class="mb-3">Selecciona el tiempo que deseas suspender a este postulante:</p>
         <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
@@ -139,12 +139,13 @@
   </div>
 </div>
 
-<!-- NUEVO: Modal de Éxito para Admin (Abeja Feliz) -->
+<!-- Modal de Éxito para Admin (Abeja Feliz) -->
 <div id="modalExitoAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
+        <!-- CORRECCIÓN AQUÍ: abejaSaludando.png -->
+        <img src="/assets/abejaSaludando.png" alt="éxito" height="200" class="mb-3"/>
         <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
         <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
       </div>
@@ -152,12 +153,12 @@
   </div>
 </div>
 
-<!-- NUEVO: Modal de Error para Admin (Abeja Alerta) -->
+<!-- Modal de Error para Admin (Abeja Alerta) -->
 <div id="modalErrorAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
       <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
+        <img src="/assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
         <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
       </div>
@@ -211,7 +212,7 @@
 
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
         <ng-container *ngIf="isAdminView">
-          <a routerLink="/admin-dashboard" class="desktop-menu-link">Panel de Admin</a>
+          <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
@@ -241,7 +242,7 @@
         <button class="mobile-close" (click)="toggleMenu()">✕</button>
         <nav class="mobile-nav">
           <ng-container *ngIf="isAdminView">
-            <a class="mobile-nav-link" routerLink="/admin-dashboard" (click)="toggleMenu()">Panel de Admin</a>
+            <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
           <ng-container *ngIf="!isAdminView && isEmployerView">
@@ -273,7 +274,7 @@
         <div class="company-main">
           <div class="company-brand">
             <div class="company-logo-box" style="border-radius: 50%; overflow: hidden; background: transparent;">
-              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"
+              <img [src]="perfil.foto_perfil || '/assets/perfil-user.jpg'" alt="Foto de perfil"
                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
             </div>
             <div class="company-info">
@@ -456,7 +457,7 @@
               <div class="review-header d-flex justify-content-between align-items-start">
                 <div class="reviewer-info d-flex align-items-center gap-2">
                   <div class="reviewer-logo-box">
-                    <img [src]="rev.foto_empresa || 'assets/LogoChambee.png'" alt="Logo Empresa" class="reviewer-logo" />
+                    <img [src]="rev.foto_empresa || '/assets/LogoChambee.png'" alt="Logo Empresa" class="reviewer-logo" />
                   </div>
                   <div>
                     <h4 class="reviewer-name mb-0">{{ rev.nombre_empresa }}</h4>
