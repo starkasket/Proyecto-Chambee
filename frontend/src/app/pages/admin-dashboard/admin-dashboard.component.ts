@@ -57,6 +57,9 @@ export class AdminDashboardComponent implements OnInit {
   menuOpen = false;
   notificationsOpen = false;
 
+  // --- CONTROL DE SECCIONES ---
+  seccionActual: string = 'principal';
+
   // --- Búsqueda de empleos/servicios ---
   searchTerm = '';
   searchSubject = new Subject<string>();
@@ -101,13 +104,7 @@ export class AdminDashboardComponent implements OnInit {
   cuentaASuspender: string | null = null;
   tiempoSuspension: string = '7'; // Valor por defecto: 1 semana
 
-  notificaciones: NotificacionReporte[] = [
-    { mensaje: 'Nuevo reporte sobre anuncio de Mario Sanchez por titulo de publicacion: Venta de fentanilo' },
-    { mensaje: 'Nuevo reporte sobre usuario diego velasquez juarez por comentario inapropiado' },
-    { mensaje: 'Nuevo reporte sobre anuncio de Abigail Fresa por comentario inapropiado' },
-    { mensaje: 'Nuevo reporte sobre Usuario Alma marcela gozo Rico por nombre inapropiado' },
-    { mensaje: 'Nuevo reporte sobre Anuncio de Carla Panini por posible fraude' }
-  ];
+  notificaciones: NotificacionReporte[] = [];
 
   constructor(
     private readonly api: ApiService,
@@ -135,6 +132,15 @@ export class AdminDashboardComponent implements OnInit {
     ).subscribe(query => {
       this.ejecutarBusqueda(query);
     });
+  }
+
+  // --- FUNCIÓN PARA CAMBIAR DE SECCIÓN ---
+  cambiarSeccion(seccion: string, event?: Event) {
+    if (event) {
+      event.preventDefault();
+    }
+    this.seccionActual = seccion;
+    this.menuOpen = false; // Cierra el menú en móviles al seleccionar una opción
   }
 
   // --- BÚSQUEDA EN VIVO ---
@@ -305,12 +311,7 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // --- NUEVA VERSIÓN: DETECTANDO EMPLEADOR POR FALTA DE APELLIDOS ---
   verPerfilReportado(reporte: PerfilReportado) {
-    console.log('--- DATOS DEL REPORTE AL HACER CLIC ---', reporte);
-
-    // Si tiene un ID pero NO tiene apellidos, asumimos que es una EMPRESA 
-    // (ya que el backend manda el nombre de la empresa en 'nombre_postulante')
     const tieneApellidos = (reporte.apellido_paterno_postulante && reporte.apellido_paterno_postulante.trim() !== '') || 
                            (reporte.apellido_materno_postulante && reporte.apellido_materno_postulante.trim() !== '');
 
@@ -322,10 +323,8 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     if (!tieneApellidos) {
-       // Es un empleador disfrazado de postulante (o uno real)
        this.router.navigate(['/empresa', idUsuario]);
     } else {
-       // Si tiene apellidos, sí es un postulante real
        this.router.navigate(['/perfil-postulante', idUsuario]);
     }
   }
@@ -342,7 +341,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // --- MODAL DE ERROR GENÉRICO ---
   abrirModalError(mensaje: string) {
     this.mensajeModalError = mensaje;
     this.mostrarModalError = true;
@@ -353,7 +351,6 @@ export class AdminDashboardComponent implements OnInit {
     this.mensajeModalError = '';
   }
 
-  // --- MÉTODOS PARA MODALES DE SUSPENDER CUENTA ---
   abrirModalSuspender(reporte: PerfilReportado) {
     const idUsuario = reporte.id_empleador_reportado || reporte.id_empleador || reporte.id_postulante_reportado;
 
@@ -383,7 +380,6 @@ export class AdminDashboardComponent implements OnInit {
 
     this.api.suspenderUsuario(idUsuario, diasSuspension).subscribe({
       next: (res) => {
-        // Actualizar estado visual
         this.reportesDePerfiles.forEach(p => {
           if (p.id_postulante_reportado === idUsuario || p.id_empleador_reportado === idUsuario || p.id_empleador === idUsuario) {
             p.suspendido = true;
@@ -401,7 +397,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // --- FUNCIÓN PARA ELIMINAR EL REPORTE DE LA LISTA Y DE LA BD ---
   confirmarEliminarReporte(idReporte: number) {
     this.reporteAEliminar = idReporte;
     this.mostrarModalEliminarReporte = true;
@@ -418,7 +413,6 @@ export class AdminDashboardComponent implements OnInit {
 
     this.api.eliminarReporte(idReporte).subscribe({
       next: () => {
-        // Remover de la lista general
         this.reportesDePerfiles = this.reportesDePerfiles.filter(p => p.id_reporte !== idReporte);
         this.cerrarModalEliminarReporte();
       },
@@ -453,7 +447,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // --- MÉTODOS PARA MODALES DE ELIMINAR ANUNCIO ---
   confirmarEliminarAnuncio(idAnuncio: string) {
     this.anuncioAEliminar = idAnuncio;
     this.mostrarModalEliminarAnuncio = true;
