@@ -293,12 +293,8 @@
     </div>
 
     <div class="nav-buttons">
-<<<<<<< Updated upstream
-        <div class="notification-wrapper" style="position: relative; margin-right: 10px;">
-=======
         <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL -->
         <div *ngIf="estaLogueado" class="notification-wrapper" style="position: relative; margin-right: 10px;">
->>>>>>> Stashed changes
             <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
                 (click)="toggleNotifications($event)">
                 <i class="bi bi-bell-fill fs-5"></i>
@@ -364,11 +360,7 @@
             </span>
         </button>
 
-<<<<<<< Updated upstream
-        <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
-=======
         <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
->>>>>>> Stashed changes
                 class="bi bi-list"></i></div>
 
         <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">

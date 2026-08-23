@@ -139,11 +139,8 @@ export class JobDetailComponent implements OnInit {
   ngOnInit(): void {
     this.usuarioActual = this.api.getUsuario();
     this.isAdminView = this.usuarioActual?.rol === 'administrador';
-<<<<<<< Updated upstream
-=======
     this.estaLogueado = !!this.usuarioActual;
     console.log(this.isAdminView);
->>>>>>> Stashed changes
 
     if (this.usuarioActual) {
       this.cargarNotificaciones();
