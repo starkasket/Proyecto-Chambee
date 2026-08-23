@@ -1,4 +1,4 @@
-<div class="company-public-page">
+<div class="company-public-page" [ngStyle]="{'padding-bottom': isAdminView ? '90px' : '0'}">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3" routerLink="/home-user" style="cursor: pointer;">
       <img src="/assets/LogoChambee.png" alt="Chambee" height="48" />
@@ -33,8 +33,7 @@
                 </label>
                 <label class="support-field support-field-full">
                   <span>Descripción del reporte.</span>
-                  <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
-                    placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo." required></textarea>
+                  <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5" placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo." required></textarea>
                   <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es obligatorio.</small>
                 </label>
               </div>
@@ -48,17 +47,35 @@
       </div>
     </div>
 
+    <div id="modalAceptar" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Adiós</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Se oculta la barra de búsqueda para el Admin -->
     <div class="search-container flex-grow-1 mx-4" *ngIf="!isAdminView">
-      <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
+      <input type="text" class="form-control" placeholder="Buscar, categoría, puesto, ciudad y más..." />
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-      <!-- Se oculta la campanita para el Admin -->
-      <div class="notification-wrapper" *ngIf="!isAdminView">
-        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <i class="bi bi-bell-fill"></i>
-          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+      <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
+        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
+            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+          </svg>
+          <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+            <span class="visually-hidden">Nuevas notificaciones</span>
+          </span>
         </div>
 
         <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
@@ -67,11 +84,7 @@
           </div>
           <div style="max-height: 350px; overflow-y: auto;">
             <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
-              <div *ngFor="let notification of notifications" 
-                   class="notification-item" 
-                   [class.unread]="!notification.read" 
-                   style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;"
-                   [ngStyle]="{'background-color': notification.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+              <div *ngFor="let notification of notifications" class="notification-item" [class.unread]="!notification.read" style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;" [ngStyle]="{'background-color': notification.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
                 <span class="notif-header" style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notification.title }}</span>
                 <span class="notif-message" style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notification.message }}</span>
                 <span class="notif-time" style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notification.time }}</span>
@@ -86,13 +99,14 @@
         </div>
       </div>
 
-      <!-- Se oculta el botón de perfil para el Admin -->
-      <button class="profile-chip" type="button" (click)="irAlPerfil()" *ngIf="!isAdminView">
-        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" />
-        <i *ngIf="!fotoPostulante" class="bi bi-person-circle"></i>
+      <!-- Botón Mi perfil (Oculto para Admins) -->
+      <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2" style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);" type="button" (click)="irAlPerfil()">
+        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+        <i *ngIf="!fotoPostulante" class="bi bi-person-circle fs-5"></i>
         <span class="d-none d-md-inline">Mi perfil</span>
       </button>
 
+      <!-- Toggle de modo oscuro -->
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
           <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
@@ -166,7 +180,7 @@
               <p class="subtitle">Empresa registrada en Chambee</p>
               <p class="location">
                 <i class="bi bi-geo-alt"></i>
-                {{ ubicacionGeneral || 'Ubicacion no disponible' }}
+                {{ ubicacionGeneral || 'Ubicación no disponible' }}
               </p>
             </div>
           </div>
@@ -183,20 +197,20 @@
             <h3>Acerca de la empresa</h3>
             <p>{{ descripcionVisible }}</p>
             <button type="button" class="link-btn" *ngIf="(perfil.descripcion || '').length > 220" (click)="toggleDescripcion()">
-              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver mas' }}
+              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver más' }}
             </button>
           </div>
 
           <div class="detail-col">
-            <h3>Direccion</h3>
-            <p><strong>Direccion:</strong><br />{{ direccionVisible || 'Sin especificar' }}</p>
+            <h3>Dirección</h3>
+            <p><strong>Dirección:</strong><br />{{ direccionVisible || 'Sin especificar' }}</p>
             <p><strong>Ciudad:</strong> {{ perfil.ciudad || 'Sin especificar' }}</p>
             <p><strong>Estado:</strong> {{ perfil.estado || 'Sin especificar' }}</p>
           </div>
 
           <div class="detail-col">
-            <h3>Informacion visible</h3>
-            <p>Este perfil muestra solo datos publicos de la empresa y sus vacantes activas.</p>
+            <h3>Información visible</h3>
+            <p>Este perfil muestra solo datos públicos de la empresa y sus vacantes activas.</p>
           </div>
         </div>
       </article>
@@ -236,7 +250,6 @@
       </div>
     </section>
 
-    <!-- Sección para calificar al empleador y opiniones -->
     <section *ngIf="!cargando && perfil" class="rating-section-shell">
       <div class="yellow-shell" *ngIf="usuarioActual?.rol === 'postulante'">
         <article class="rating-feedback-card">
@@ -248,9 +261,7 @@
             <div class="interactive-stars-row">
               <span class="rating-label">Tu Calificación:</span>
               <div class="stars-interactive d-flex gap-2">
-                <button *ngFor="let starIndex of [1, 2, 3, 4, 5]" type="button" class="star-btn"
-                  (click)="setRating(starIndex)" (mouseenter)="setHover(starIndex)" (mouseleave)="setHover(0)"
-                  [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'">
+                <button *ngFor="let starIndex of [1, 2, 3, 4, 5]" type="button" class="star-btn" (click)="setRating(starIndex)" (mouseenter)="setHover(starIndex)" (mouseleave)="setHover(0)" [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'">
                   <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
                 </button>
               </div>
@@ -261,15 +272,11 @@
 
             <div class="comment-field mt-3">
               <label for="comentario-postulante" class="form-label fw-medium">Escribe una opinión (opcional):</label>
-              <textarea id="comentario-postulante" class="form-control premium-textarea" rows="3"
-                placeholder="Ej. Proceso de selección transparente, buen ambiente de trabajo, comunicación profesional..."
-                [(ngModel)]="nuevoComentario"></textarea>
+              <textarea id="comentario-postulante" class="form-control premium-textarea" rows="3" placeholder="Ej. Proceso de selección transparente, buen ambiente de trabajo, comunicación profesional..." [(ngModel)]="nuevoComentario"></textarea>
             </div>
 
             <div class="actions-row mt-3 d-flex align-items-center gap-3">
-              <button type="button" class="btn btn-premium-submit"
-                [disabled]="ratingEnviando || (ratingSeleccionado === 0 && !nuevoComentario.trim())"
-                (click)="enviarCalificacion()">
+              <button type="button" class="btn btn-premium-submit" [disabled]="ratingEnviando || (ratingSeleccionado === 0 && !nuevoComentario.trim())" (click)="enviarCalificacion()">
                 {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
               </button>
               <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
@@ -279,7 +286,6 @@
         </article>
       </div>
 
-      <!-- Opiniones de postulantes -->
       <div class="yellow-shell mt-4">
         <article class="reviews-list-card">
           <div class="card-header-premium">
@@ -288,8 +294,8 @@
           </div>
           <div class="card-body-premium">
             <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
-              <i class="bi bi-chat-left-heart display-6 text-muted"></i>
-              <p class="mt-2 text-muted">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
+              <i class="bi bi-chat-left-heart display-6" style="color: var(--text-secondary); opacity: 0.6;"></i>
+              <p class="mt-2" style="color: var(--text-secondary); opacity: 0.8;">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
             </div>
 
             <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
@@ -304,7 +310,6 @@
                       <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
                     </div>
                   </div>
-                  <!-- Menú 3 puntos: creador del comentario o dueño del perfil -->
                   <div class="review-menu-wrapper" *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
                     <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
                       <i class="bi bi-three-dots-vertical"></i>
@@ -318,8 +323,7 @@
                 </div>
                 <div class="review-body mt-2">
                   <div class="review-stars-display d-flex gap-1 mb-1">
-                    <i *ngFor="let s of [1,2,3,4,5]"
-                      [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"></i>
+                    <i *ngFor="let s of [1,2,3,4,5]" [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"></i>
                   </div>
                   <div *ngIf="rev.comentario" class="review-comment">
                     <p class="mb-0">{{ rev.comentario }}</p>
@@ -334,7 +338,7 @@
   </main>
 </div>
 
-<!-- Modal de Confirmación para Borrar (Admin) -->
+<!-- Modales Inferiores (Fuera del Main) -->
 <div id="modalEliminarAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -351,7 +355,6 @@
   </div>
 </div>
 
-<!-- Modal de Confirmación para Suspender (Admin) -->
 <div id="modalSuspenderAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -375,7 +378,6 @@
   </div>
 </div>
 
-<!-- Modal de Éxito para Admin -->
 <div id="modalExitoAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -388,7 +390,6 @@
   </div>
 </div>
 
-<!-- Modal de Error para Admin -->
 <div id="modalErrorAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
