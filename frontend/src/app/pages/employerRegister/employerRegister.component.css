@@ -1,3 +1,8 @@
+/* FORZAR SCROLLBAR PARA EVITAR SALTOS HORIZONTALES */
+html {
+  overflow-y: scroll;
+}
+
 /* NAVBAR */
 .navbar-chambee {
   background-color: var(--navbar-bg) !important;
@@ -26,6 +31,12 @@
   padding: 40px;
   border-radius: 25px;
   background-color: color-mix(in srgb, var(--accent-surface) 28%, var(--surface-primary));
+  
+  /* --- TAMAÑO ORIGINAL RESTAURADO --- */
+  width: 90%;            
+  max-width: 730px;      /* 650px de la tarjeta interna + 80px de padding total */
+  display: flex;         
+  justify-content: center;
 }
 
 .registro-card {
@@ -33,8 +44,11 @@
   color: var(--text-primary);
   border-radius: 20px;
   padding: 35px;
-  width: 100%;
-  max-width: 650px;
+  
+  /* --- TAMAÑO ORIGINAL RESTAURADO --- */
+  width: 100%;           
+  max-width: 650px;      /* El límite que tenías desde un principio */
+  
   position: relative;
   box-shadow: var(--shadow-card);
 }
@@ -66,16 +80,29 @@
   font-weight: bold;
 }
 
+/* CONTENEDORES PARA INPUTS Y MENSAJES FLOTANTES */
+.campo-wrapper, 
+.input-with-icon {
+  position: relative;
+  margin-bottom: 12px; 
+}
+
 /* INPUTS PERSONALIZADOS */
 .form-control-custom {
   border: 1px solid var(--border-soft);
   border-radius: 20px;
   padding: 10px 18px;
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: 12px; 
   font-size: 14px;
   background: var(--input-bg);
   color: var(--text-primary);
+}
+
+/* Eliminamos el margen inferior si están dentro del wrapper */
+.campo-wrapper .form-control-custom,
+.input-with-icon .form-control-custom {
+  margin-bottom: 0; 
 }
 
 .section-label, .dir-label {
@@ -115,7 +142,6 @@
   opacity: 0.6;
 }
 
-.input-with-icon { position: relative; }
 .eye-icon {
   position: absolute;
   right: 15px;
@@ -124,31 +150,38 @@
   cursor: pointer;
 }
 
-.modal{ 
-display:none;
- background:rgba(0,0,0,0.5);
-  position:fixed; inset:0; 
-  z-index:9998; 
-  align-items:center; 
-  justify-content:center;
-
-}
-
-.modalSaludo{
+.modal { 
   display:none;
- background:rgba(0,0,0,0.5);
+  background:rgba(0,0,0,0.5);
   position:fixed; inset:0; 
   z-index:9998; 
   align-items:center; 
   justify-content:center;
 }
 
-.support-error {
-  margin-left: 10px;
-  color: #d93025;
-  font-size: 12px;
-  font-weight: 500;
+.modalSaludo {
+  display:none;
+  background:rgba(0,0,0,0.5);
+  position:fixed; inset:0; 
+  z-index:9998; 
+  align-items:center; 
+  justify-content:center;
 }
+
+/* CLASES PARA EL MANEJO DE ERRORES (TEXTO LIMPIO) */
+/* CLASES PARA EL MANEJO DE ERRORES (FLUJO NORMAL) */
+::ng-deep .support-error {
+  color: #d93025;
+  font-size: 11.5px; /* Un poquitito más pequeño para que encaje mejor */
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 4px;
+  margin-left: 10px;
+  display: block;
+  /* Eliminamos el position: absolute para que empuje limpiamente sin chocar */
+}
+  
+ 
 
 .input-error-duplicate {
   border: 1.5px solid #d93025 !important;
@@ -156,8 +189,6 @@ display:none;
 }
 
 /* --- ADAPTACIONES PARA EL MODO OSCURO --- */
-
-
 :host-context(body.dark-theme) .page-bg {
   background-image: url('/assets/login_fondo_Negro.png');
 }
