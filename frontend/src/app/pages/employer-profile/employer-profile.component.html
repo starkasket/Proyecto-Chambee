@@ -1,5 +1,4 @@
 <div class="profile-page" [ngStyle]="{'padding-bottom': isAdminView ? '90px' : '0'}">
-  <!-- Navbar -->
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
       <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" role="button" (click)="volverPanel()" />
@@ -8,7 +7,7 @@
       </span>
     </div>
 
-    <!-- Modales estándar de Employer -->
+    <!-- Modales -->
     <div id="modalSaludo" class="modal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center">
@@ -40,7 +39,6 @@
       </div>
     </div>
 
-    <!-- Modal de Confirmación para Borrar (Admin) -->
     <div id="modalEliminarAdmin" class="modal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center">
@@ -57,7 +55,6 @@
       </div>
     </div>
 
-    <!-- Modal de Éxito para Admin (Abeja Feliz) -->
     <div id="modalExitoAdmin" class="modal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center">
@@ -70,7 +67,6 @@
       </div>
     </div>
 
-    <!-- Modal de Confirmación para Suspender (Admin) -->
     <div id="modalSuspenderAdmin" class="modal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content text-center">
@@ -99,7 +95,6 @@
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-<<<<<<< HEAD
       <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
         <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
@@ -115,26 +110,8 @@
             <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
           </div>
           <div style="max-height: 350px; overflow-y: auto;">
-=======
-      
-      <!-- Las notificaciones solo se muestran si NO eres admin -->
-      <div class="notification-wrapper" *ngIf="!isAdminView">
-        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <i class="bi bi-bell-fill"></i>
-          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
-        </div>
-
-        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
-          <div class="notifications-title">Notificaciones</div>
-          <div class="notifications-list">
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
             <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
-              <div *ngFor="let notif of notifications" 
-                   class="notification-item" 
-                   [class.unread]="!notif.read" 
-                   (click)="onNotificationClick(notif, $event)"
-                   style="cursor: pointer; padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;"
-                   [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+              <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read" (click)="onNotificationClick(notif, $event)" style="cursor: pointer; padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
                 <span class="notif-header" style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
                 <span class="notif-message" style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
                 <span class="notif-time" style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
@@ -149,22 +126,15 @@
         </div>
       </div>
 
-<<<<<<< HEAD
       <!-- Botón Mi perfil (Oculto para Admins) -->
-      <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2"
-        style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
-        (click)="irAlPerfil()" title="Ir a mi perfil">
-        <img *ngIf="perfil?.foto_perfil" [src]="perfil!.foto_perfil" alt="Foto de perfil"
-          style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2" style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);" (click)="irAlPerfil()" title="Ir a mi perfil">
+        <img *ngIf="perfil?.foto_perfil" [src]="perfil!.foto_perfil" alt="Foto de perfil" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
         <i *ngIf="!perfil?.foto_perfil" class="bi bi-person-circle fs-5"></i>
         <span class="d-none d-md-block">Mi perfil</span>
       </button>
 
       <!-- Toggle de modo oscuro usando ThemeService global -->
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
-=======
-      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
         <span class="theme-toggle-track">
           <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
         </span>
@@ -172,9 +142,8 @@
 
       <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
-      <!-- Menú Desktop CLONADO de postulantes para controlar lo que ve cada rol -->
+      <!-- Menú Desktop -->
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
-        
         <!-- Vista Administrador -->
         <ng-container *ngIf="isAdminView">
           <a routerLink="/admin-dashboard" class="desktop-menu-link">Panel de Admin</a>
@@ -201,7 +170,6 @@
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
-
       </div>
     </div>
 
@@ -210,7 +178,6 @@
       <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
         <button class="mobile-close" (click)="toggleMenu()">✕</button>
         <nav class="mobile-nav">
-          
           <ng-container *ngIf="isAdminView">
             <a class="mobile-nav-link" routerLink="/admin-dashboard" (click)="toggleMenu()">Panel de Admin</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
@@ -230,7 +197,6 @@
             <a class="mobile-nav-link" routerLink="/postulaciones" (click)="toggleMenu()">Mis postulaciones</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
-
         </nav>
       </aside>
     </div>
@@ -287,11 +253,9 @@
           <div class="detail-col">
             <h3>Descripción</h3>
             <p class="employer-desc">{{ descripcionVisible }}</p>
-            <button type="button" class="link-btn" *ngIf="perfil.descripcion.length > 190"
-              (click)="toggleDescripcion()">
+            <button type="button" class="link-btn" *ngIf="perfil.descripcion.length > 190" (click)="toggleDescripcion()">
               {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver más' }}
             </button>
-
             <!-- Solo el dueño elimina su propia cuenta -->
             <button *ngIf="isOwnProfile" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
           </div>
@@ -326,9 +290,7 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   <div *ngIf="rev.puntuacion" class="review-stars-display d-flex gap-1">
-                    <i *ngFor="let s of [1,2,3,4,5]"
-                       [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
-                    ></i>
+                    <i *ngFor="let s of [1,2,3,4,5]" [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"></i>
                   </div>
                   <div *ngIf="isOwnProfile" class="review-menu-wrapper">
                     <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
@@ -355,14 +317,12 @@
     <section *ngIf="!cargando && perfil" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
-          <button class="tab" type="button" [class.active]="activeTab === 'anuncios'"
-            (click)="setActiveTab('anuncios')">
+          <button class="tab" type="button" [class.active]="activeTab === 'anuncios'" (click)="setActiveTab('anuncios')">
             Anuncios <span class="tab-count">{{ anuncios.length }}</span>
           </button>
           
           <!-- SOLO EL DUEÑO O EL ADMIN VEN ESTA PESTAÑA -->
-          <button *ngIf="isOwnProfile || isAdminView" class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
-            (click)="setActiveTab('postulaciones')">
+          <button *ngIf="isOwnProfile || isAdminView" class="tab" type="button" [class.active]="activeTab === 'postulaciones'" (click)="setActiveTab('postulaciones')">
             Postulaciones recibidas <span class="tab-count">{{ postulacionesRecibidas.length }}</span>
           </button>
         </div>
@@ -375,8 +335,7 @@
               <h3>Anuncios de Empresa</h3>
               <div class="d-flex gap-2" *ngIf="isOwnProfile">
                 <button class="inline-create-btn" type="button" (click)="crearOferta()">Nueva oferta</button>
-                <button class="inline-create-btn secondary" type="button"
-                  (click)="administrarVacantes()">Administrar</button>
+                <button class="inline-create-btn secondary" type="button" (click)="administrarVacantes()">Administrar</button>
               </div>
             </div>
 
@@ -440,21 +399,15 @@
   </button>
 </div>
 
-<<<<<<< HEAD
-<div class="seguimiento-banner" *ngIf="isAdminView" style="z-index: 1000; border-top: 3px solid #dc3545;">
-  <div class="container banner-content d-flex justify-content-between align-items-center">
-    <span class="banner-text fw-bold"><i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador</span>
-    <div class="banner-actions d-flex gap-2">
-=======
+<!-- Banner Inferior Fijo de Administrador -->
 <div *ngIf="isAdminView" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 9999; background-color: var(--surface-primary, #ffffff); border-top: 3px solid #dc3545; padding: 15px 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.15);">
   <div class="container d-flex justify-content-between align-items-center">
     <span class="fw-bold text-dark" style="font-size: 1.1rem;">
       <i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador
     </span>
     <div class="d-flex gap-2">
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
-      <button class="btn btn-secondary text-white fw-semibold" style="border: none;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
-      <button class="btn btn-danger text-white fw-semibold" style="border: none;" (click)="abrirModalEliminarAdmin()">Borrar Empresa</button>
+      <button class="btn btn-secondary text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
+      <button class="btn btn-danger text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalEliminarAdmin()">Borrar Empresa</button>
     </div>
   </div>
 </div>

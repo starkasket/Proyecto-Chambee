@@ -5,176 +5,168 @@
       <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ navbarWelcomeName }}</span>
     </div>
 
-<div id="modalAlerta" class="modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">¡Atención!</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
-      </div>
-      <div>
-        <form class="support-form" #form="ngForm" (ngSubmit)="reportarPerfil(form)">
-                <div class="support-grid">
-                  <label class="support-field support-field-span-2">
-                    <span>Motivo</span>
-                    <select name="motivo" ngModel #motivo="ngModel" required>
-                      <option value="" disabled>Selecciona un motivo</option>
-                      <option value="perfil_falso">Perfil falso o suplantación</option>
-                      <option value="fraude">Posible fraude o estafa</option>
-                      <option value="contenido_inapropiado">Contenido inapropiado</option>
-                      <option value="acoso">Acoso o comportamiento ofensivo</option>
-                      <option value="spam">Spam</option>
-                      <option value="informacion_falsa">Información falsa en el perfil</option>
-                      <option value="otro">Otro</option>
-                    </select>
-                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es obligatorio.</small>
-                  </label>
+    <!-- Modales -->
+    <div id="modalAlerta" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">¡Atención!</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div>
+            <form class="support-form" #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+              <div class="support-grid">
+                <label class="support-field support-field-span-2">
+                  <span>Motivo</span>
+                  <select name="motivo" ngModel #motivo="ngModel" required>
+                    <option value="" disabled>Selecciona un motivo</option>
+                    <option value="perfil_falso">Perfil falso o suplantación</option>
+                    <option value="fraude">Posible fraude o estafa</option>
+                    <option value="contenido_inapropiado">Contenido inapropiado</option>
+                    <option value="acoso">Acoso o comportamiento ofensivo</option>
+                    <option value="spam">Spam</option>
+                    <option value="informacion_falsa">Información falsa en el perfil</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                  <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es obligatorio.</small>
+                </label>
 
-                  <label class="support-field support-field-span-2" *ngIf="motivo.value === 'otro'">
-                    <span>Especifica el motivo</span>
-                    <input type="text" name="motivoCustom" ngModel #motivoCustom="ngModel" placeholder="Escribe la razón del reporte" required />
-                    <small *ngIf="motivoCustom.invalid && motivoCustom.touched" class="support-error">Este campo es obligatorio.</small>
-                  </label>
+                <label class="support-field support-field-span-2" *ngIf="motivo.value === 'otro'">
+                  <span>Especifica el motivo</span>
+                  <input type="text" name="motivoCustom" ngModel #motivoCustom="ngModel" placeholder="Escribe la razón del reporte" required />
+                  <small *ngIf="motivoCustom.invalid && motivoCustom.touched" class="support-error">Este campo es obligatorio.</small>
+                </label>
 
-                  <label class="support-field support-field-full">
-                    <span>Descripción del reporte (Opcional)</span>
-                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5" placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."></textarea>
-                  </label>
-                </div>
-                <div class="modal-footer border-0 justify-content-center pb-4">
-                  <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
-                  <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
-                </div>
-                </form>
+                <label class="support-field support-field-full">
+                  <span>Descripción del reporte (Opcional)</span>
+                  <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5" placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."></textarea>
+                </label>
+              </div>
+              <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div id="modalExitoReporte" class="modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
-        <h5 class="text-success fw-bold">¡Reporte Enviado!</h5>
-        <p class="mb-0">El usuario se reportó correctamente.</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn confirm-btn px-4" (click)="cerrarModalExitoReporte()">Aceptar</button>
+    <div id="modalExitoReporte" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
+            <h5 class="text-success fw-bold">¡Reporte Enviado!</h5>
+            <p class="mb-0">El usuario se reportó correctamente.</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn confirm-btn px-4" (click)="cerrarModalExitoReporte()">Aceptar</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div id="modalSaludo" class="modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">¡Atención!</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
-        <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
+    <div id="modalSaludo" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">¡Atención!</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
+            <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div id="modalAceptar" class="modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">Mensaje</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+    <div id="modalAceptar" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Mensaje</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal de Confirmación para Borrar (Admin) -->
-<div id="modalEliminarAdmin" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
-        <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminarAdmin()">Cancelar</button>
-        <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar Perfil</button>
+    <div id="modalEliminarAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
+            <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminarAdmin()">Cancelar</button>
+            <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar Perfil</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- NUEVO: Modal de Confirmación para Suspender (Admin) -->
-<div id="modalSuspenderAdmin" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-warning fw-bold">Suspender Perfil</h5>
-        <p class="mb-3">Selecciona el tiempo que deseas suspender a este postulante:</p>
-        <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
-          <option value="1">1 Día</option>
-          <option value="3">3 Días</option>
-          <option value="7">1 Semana</option>
-          <option value="30">1 Mes</option>
-          <option value="0">Permanente</option>
-        </select>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalSuspenderAdmin()">Cancelar</button>
-        <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;" (click)="ejecutarSuspensionAdmin()">Suspender</button>
+    <div id="modalSuspenderAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-warning fw-bold">Suspender Perfil</h5>
+            <p class="mb-3">Selecciona el tiempo que deseas suspender a este postulante:</p>
+            <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
+              <option value="1">1 Día</option>
+              <option value="3">3 Días</option>
+              <option value="7">1 Semana</option>
+              <option value="30">1 Mes</option>
+              <option value="0">Permanente</option>
+            </select>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalSuspenderAdmin()">Cancelar</button>
+            <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;" (click)="ejecutarSuspensionAdmin()">Suspender</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- NUEVO: Modal de Éxito para Admin (Abeja Feliz) -->
-<div id="modalExitoAdmin" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
-        <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
-        <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
+    <div id="modalExitoAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
+            <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
+            <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- NUEVO: Modal de Error para Admin (Abeja Alerta) -->
-<div id="modalErrorAdmin" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
-        <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalErrorAdmin()">Cerrar</button>
+    <div id="modalErrorAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
+            <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalErrorAdmin()">Cerrar</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-<<<<<<< HEAD
-      <div *ngIf="!isAdminView" class="notification-wrapper">
-=======
-      <!-- AQUÍ ESTÁ EL CAMBIO: Se oculta la campanita para el Admin -->
       <div class="notification-wrapper" *ngIf="!isAdminView">
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
         <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
           <i class="bi bi-bell-fill"></i>
           <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
@@ -183,25 +175,18 @@
         <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
           <div class="notifications-title">Notificaciones</div>
           <div class="notifications-list">
-            
             <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
-              <div *ngFor="let notif of notifications" 
-                   class="notification-item" 
-                   [class.unread]="!notif.read" 
-                   (click)="onNotificationClick(notif, $event)"
-                   style="cursor: pointer;">
+              <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read" (click)="onNotificationClick(notif, $event)" style="cursor: pointer;">
                 <span class="notif-header">{{ notif.title }}</span>
                 <span class="notif-message">{{ notif.message }}</span>
                 <span class="notif-time">{{ notif.time }}</span>
               </div>
             </ng-container>
-
             <ng-template #sinNotificaciones>
               <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
                 <small>No tienes notificaciones nuevas.</small>
               </div>
             </ng-template>
-
           </div>
         </div>
       </div>
@@ -278,8 +263,7 @@
         <div class="company-main">
           <div class="company-brand">
             <div class="company-logo-box" style="border-radius: 50%; overflow: hidden; background: transparent;">
-              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil"
-                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+              <img [src]="perfil.foto_perfil || 'assets/perfil-user.jpg'" alt="Foto de perfil" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
             </div>
             <div class="company-info">
               <h2>{{ perfil.nombre_postulante }} {{ perfil.apellido_paterno_postulante }}</h2>
@@ -304,93 +288,76 @@
         </div>
 
         <div class="company-details-grid">
-  <div class="detail-col">
-    <h3>Datos de contacto</h3>
-    <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
-    <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
-    <p *ngIf="!isEmployerView"><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
-  </div>
+          <div class="detail-col">
+            <h3>Datos de contacto</h3>
+            <p><strong>Teléfono:</strong><br />{{ perfil.telefono }}</p>
+            <p><strong>Correo electrónico:</strong><br />{{ perfil.correo_electronico }}</p>
+            <p *ngIf="!isEmployerView"><strong>CURP:</strong><br />{{ perfil.curp || 'No especificado' }}</p>
+          </div>
 
-  <div class="detail-col">
-    <h3>Gestión de C.V</h3>
+          <div class="detail-col">
+            <h3>Gestión de C.V</h3>
 
-    <div *ngIf="perfil?.archivo_cv; else noCvMessage" class="mt-2 cv-section">
-      <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
-        <span>Ver C.V. del postulante</span>
-        <i class="bi bi-file-earmark-text"></i>
-      </a>
-      <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
-    </div>
+            <div *ngIf="perfil?.archivo_cv; else noCvMessage" class="mt-2 cv-section">
+              <a [href]="perfil.archivo_cv" target="_blank" rel="noopener" class="cv-button">
+                <span>Ver C.V. del postulante</span>
+                <i class="bi bi-file-earmark-text"></i>
+              </a>
+              <p class="cv-note">Haz clic para abrir el curriculum del candidato en una nueva pestaña.</p>
+            </div>
 
-    <ng-template #noCvMessage>
-      <div class="mt-2 mb-3 cv-empty-section d-flex align-items-center gap-2 text-muted">
-        <i class="bi bi-file-earmark-x fs-5"></i>
-        <span style="font-size: 0.95rem; font-style: italic;">No hay ningún C.V. cargado</span>
-      </div>
-    </ng-template>
+            <ng-template #noCvMessage>
+              <div class="mt-2 mb-3 cv-empty-section d-flex align-items-center gap-2 text-muted">
+                <i class="bi bi-file-earmark-x fs-5"></i>
+                <span style="font-size: 0.95rem; font-style: italic;">No hay ningún C.V. cargado</span>
+              </div>
+            </ng-template>
 
-    <ng-container *ngIf="isOwnProfile">
-      <input type="file" #cvInput accept="application/pdf" style="display: none"
-        (change)="onCvSelected($event)" />
-      <button class="inline-create-btn mb-3"
-        style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);"
-        type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
-        {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
-      </button>
-      <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
-        {{ cvMensaje }}
-      </div>
-    </ng-container>
+            <ng-container *ngIf="isOwnProfile">
+              <input type="file" #cvInput accept="application/pdf" style="display: none" (change)="onCvSelected($event)" />
+              <button class="inline-create-btn mb-3" style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-soft);" type="button" (click)="cvInput.click()" [disabled]="subiendoCv">
+                {{ subiendoCv ? 'Subiendo...' : 'Subir / Actualizar C.V' }}
+              </button>
+              <div *ngIf="cvMensaje" class="mt-2" [style.color]="cvError ? 'red' : 'green'" style="font-size: 0.85rem;">
+                {{ cvMensaje }}
+              </div>
+            </ng-container>
 
-    <div *ngIf="isOwnProfile" class="cv-visibility-row">
-      <span class="cv-visibility-label">C.V. Público</span>
+            <div *ngIf="isOwnProfile" class="cv-visibility-row">
+              <span class="cv-visibility-label">C.V. Público</span>
+              <label class="cv-switch" [class.cv-switch--on]="cvPublico" [attr.aria-label]="cvPublico ? 'CV público, click para hacer privado' : 'CV privado, click para hacer público'" (click)="$event.preventDefault(); toggleCvVisibilidad()">
+                <input type="checkbox" [checked]="cvPublico" class="cv-switch__input" readonly>
+                <span class="cv-switch__track">
+                  <span class="cv-switch__thumb">
+                    <svg *ngIf="cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg *ngIf="!cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </span>
+                </span>
+              </label>
+              <span class="cv-visibility-status" [class.cv-visibility-status--on]="cvPublico">{{ cvPublico ? 'Activado' : 'Desactivado' }}</span>
+            </div>
+          </div>
 
-      <label class="cv-switch" 
-             [class.cv-switch--on]="cvPublico" 
-             [attr.aria-label]="cvPublico ? 'CV público, click para hacer privado' : 'CV privado, click para hacer público'"
-             (click)="$event.preventDefault(); toggleCvVisibilidad()">
-        <input type="checkbox"
-               [checked]="cvPublico"
-               class="cv-switch__input"
-               readonly>
-        <span class="cv-switch__track">
-          <span class="cv-switch__thumb">
-            <svg *ngIf="cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <svg *ngIf="!cvPublico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </span>
-        </span>
-      </label>
+          <div class="detail-col">
+            <h3>Información general</h3>
+            <p><strong>País:</strong> {{ perfil.pais }}</p>
+            <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
+            <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
+            <button *ngIf="isOwnProfile" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
+          </div>
+        </div>
 
-      <span class="cv-visibility-status" [class.cv-visibility-status--on]="cvPublico">
-        {{ cvPublico ? 'Activado' : 'Desactivado' }}
-      </span>
-    </div>
+        <div *ngIf="perfil.descripcion" class="profile-description" style="border-top: 1px solid var(--border-soft); padding: 18px 24px;">
+          <h3 style="margin: 0 0 8px; font-size: 1.1rem; color: var(--text-primary);">Sobre mí</h3>
+          <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">{{ perfil.descripcion }}</p>
+        </div>
 
-  </div>
-
-  <div class="detail-col">
-    <h3>Información general</h3>
-    <p><strong>País:</strong> {{ perfil.pais }}</p>
-    <p *ngIf="!isEmployerView"><strong>Dirección:</strong><br />{{ direccionCompleta }}</p>
-    <p><strong>Miembro desde:</strong><br />{{ perfil.fecha_registro | date:'longDate':'':'es-MX' }}</p>
-    <button *ngIf="isOwnProfile" class="delete-btn" type="button" (click)="abrirModalEliminar()">Eliminar cuenta</button>
-  </div>
-</div>
-
-<div *ngIf="perfil.descripcion" class="profile-description"
-  style="border-top: 1px solid var(--border-soft); padding: 18px 24px;">
-  <h3 style="margin: 0 0 8px; font-size: 1.1rem; color: var(--text-primary);">Sobre mí</h3>
-  <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;">
-    {{ perfil.descripcion }}</p>
-</div>
-
-<div *ngIf="misEtiquetas && misEtiquetas.length > 0" class="profile-tags">
-  <h3>Intereses y Habilidades</h3>
-  <div class="tags-container">
-    <span class="tag-chip" *ngFor="let tag of misEtiquetas">{{ tag }}</span>
-  </div>
-</div>
-
+        <div *ngIf="misEtiquetas && misEtiquetas.length > 0" class="profile-tags">
+          <h3>Intereses y Habilidades</h3>
+          <div class="tags-container">
+            <span class="tag-chip" *ngFor="let tag of misEtiquetas">{{ tag }}</span>
+          </div>
+        </div>
       </article>
 
       <article *ngIf="isEmployerView" class="rating-feedback-card mt-4">
@@ -402,15 +369,7 @@
           <div class="interactive-stars-row">
             <span class="rating-label">Tu Calificación:</span>
             <div class="stars-interactive d-flex gap-2">
-              <button 
-                *ngFor="let starIndex of [1, 2, 3, 4, 5]" 
-                type="button" 
-                class="star-btn" 
-                (click)="setRating(starIndex)"
-                (mouseenter)="setHover(starIndex)"
-                (mouseleave)="setHover(0)"
-                [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'"
-              >
+              <button *ngFor="let starIndex of [1, 2, 3, 4, 5]" type="button" class="star-btn" (click)="setRating(starIndex)" (mouseenter)="setHover(starIndex)" (mouseleave)="setHover(0)" [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'">
                 <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
               </button>
             </div>
@@ -418,25 +377,12 @@
               {{ ratingSeleccionado }} {{ ratingSeleccionado === 1 ? 'estrella' : 'estrellas' }}
             </span>
           </div>
-
           <div class="comment-field mt-3">
             <label for="comentario-empleador" class="form-label fw-medium">Escribe una opinión (opcional):</label>
-            <textarea 
-              id="comentario-empleador" 
-              class="form-control premium-textarea" 
-              rows="3" 
-              placeholder="Ej. Excelente comunicación, actitud proactiva y muy profesional en la entrevista..." 
-              [(ngModel)]="nuevoComentario"
-            ></textarea>
+            <textarea id="comentario-empleador" class="form-control premium-textarea" rows="3" placeholder="Ej. Excelente comunicación, actitud proactiva y muy profesional en la entrevista..." [(ngModel)]="nuevoComentario"></textarea>
           </div>
-
           <div class="actions-row mt-3 d-flex align-items-center gap-3">
-            <button 
-              type="button" 
-              class="btn btn-premium-submit" 
-              [disabled]="ratingEnviando || ratingSeleccionado === 0"
-              (click)="enviarCalificacion()"
-            >
+            <button type="button" class="btn btn-premium-submit" [disabled]="ratingEnviando || ratingSeleccionado === 0" (click)="enviarCalificacion()">
               {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
             </button>
             <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
@@ -469,11 +415,9 @@
                   </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                <div class="review-stars-display d-flex gap-1">
-                  <i *ngFor="let s of [1,2,3,4,5]" 
-                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
-                  ></i>
-                </div>
+                  <div class="review-stars-display d-flex gap-1">
+                    <i *ngFor="let s of [1,2,3,4,5]" [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"></i>
+                  </div>
                   <div *ngIf="!isEmployerView || (isEmployerView && usuarioActual?.id === rev.id_empleador)" class="review-menu-wrapper">
                     <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
                       <i class="bi bi-three-dots-vertical"></i>
@@ -484,7 +428,7 @@
                       </button>
                     </div>
                   </div> 
-                  </div>
+                </div>
               </div>
               <div *ngIf="rev.comentario" class="review-comment mt-2">
                 <p class="mb-0">{{ rev.comentario }}</p>
@@ -498,16 +442,13 @@
     <section *ngIf="!cargando && perfil && isOwnProfile" class="announcements-shell">
       <div class="tabs-ceja">
         <div class="tabs-bar">
-          <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'"
-            (click)="setActiveTab('postulaciones')">
+          <button class="tab" type="button" [class.active]="activeTab === 'postulaciones'" (click)="setActiveTab('postulaciones')">
             Mis postulaciones <span class="tab-count">{{ postulaciones.length || 0 }}</span>
           </button>
-          <button class="tab" type="button" [class.active]="activeTab === 'favoritos'"
-            (click)="setActiveTab('favoritos')">
+          <button class="tab" type="button" [class.active]="activeTab === 'favoritos'" (click)="setActiveTab('favoritos')">
             Mis favoritos <span class="tab-count">{{ favoritos.length || 0 }}</span>
           </button>
-          <button class="tab" type="button" [class.active]="activeTab === 'historial'"
-            (click)="setActiveTab('historial')">
+          <button class="tab" type="button" [class.active]="activeTab === 'historial'" (click)="setActiveTab('historial')">
             Historial <span class="tab-count">{{ vistosRecientemente.length || 0 }}</span>
           </button>
         </div>
@@ -515,18 +456,14 @@
 
       <div class="announcements-content">
         <ng-container [ngSwitch]="activeTab">
-
           <ng-container *ngSwitchCase="'postulaciones'">
             <div class="section-head">
               <h3>Postulaciones activas</h3>
               <button class="inline-create-btn" type="button" (click)="buscarEmpleos()">Buscar más empleos</button>
             </div>
-
-            <div *ngIf="!postulaciones || postulaciones.length === 0" class="alert alert-info"
-              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+            <div *ngIf="!postulaciones || postulaciones.length === 0" class="alert alert-info" style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
               Aún no tienes postulaciones realizadas. ¡Empieza a buscar empleo!
             </div>
-
             <div class="announcements-row" *ngIf="postulaciones.length > 0">
               <article class="announcement-card" *ngFor="let post of postulaciones">
                 <img [src]="post.imagen" alt="Empresa" />
@@ -551,15 +488,11 @@
             <div class="section-head">
               <h3>Vacantes guardadas</h3>
             </div>
-
-            <div *ngIf="!favoritos || favoritos.length === 0" class="alert alert-info"
-              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+            <div *ngIf="!favoritos || favoritos.length === 0" class="alert alert-info" style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
               No tienes vacantes guardadas en favoritos.
             </div>
-
             <div class="announcements-row" *ngIf="favoritos.length > 0">
-              <article class="announcement-card" *ngFor="let fav of favoritos" (click)="verVacante(fav.id)"
-                role="button" tabindex="0">
+              <article class="announcement-card" *ngFor="let fav of favoritos" (click)="verVacante(fav.id)" role="button" tabindex="0">
                 <img [src]="fav.imagen" alt="Cover" />
                 <div class="announcement-copy">
                   <div class="card-top">
@@ -580,15 +513,11 @@
             <div class="section-head">
               <h3>Historial de vacantes vistas</h3>
             </div>
-
-            <div *ngIf="vistosRecientemente.length === 0" class="alert alert-info"
-              style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
+            <div *ngIf="vistosRecientemente.length === 0" class="alert alert-info" style="border-radius: 12px; border: 1px solid var(--border-soft); padding: 20px;">
               Aún no tienes un historial de vacantes vistas recientemente.
             </div>
-
             <div class="announcements-row" *ngIf="vistosRecientemente.length > 0">
-              <article class="announcement-card" *ngFor="let job of vistosRecientemente" (click)="verVacante(job.id)"
-                role="button" tabindex="0">
+              <article class="announcement-card" *ngFor="let job of vistosRecientemente" (click)="verVacante(job.id)" role="button" tabindex="0">
                 <img [src]="job.imagen" alt="Cover" />
                 <div class="announcement-copy">
                   <div class="card-top">
@@ -601,37 +530,28 @@
               </article>
             </div>
           </ng-container>
-
         </ng-container>
       </div>
     </section>
   </main>
-  <button *ngIf="isOwnProfile" class="fab-create" type="button" (click)="buscarEmpleos()"
-    aria-label="Buscar empleos">
+  
+  <button *ngIf="isOwnProfile" class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
     <span class="fab-plus"><i class="bi bi-search"></i></span>
     <span class="fab-text">Buscar Empleos</span>
   </button>
 </div>
 
-<!-- Banner Original (Seguimiento de Empleador) -->
+<!-- Banner Seguimiento (Original) -->
 <div class="seguimiento-banner" *ngIf="mostrarBannerSeguimiento && !isAdminView">
   <div class="container banner-content">
     <span class="banner-text">¿Te gustaría darle seguimiento a este postulante?</span>
     <div class="banner-actions">
       <button class="btn btn-outline-danger" (click)="rechazarSeguimiento()">Rechazar</button>
-      <button class="btn btn-outline-success"  (click)="aceptarSeguimiento()">Aceptar</button>
+      <button class="btn btn-outline-success" (click)="aceptarSeguimiento()">Aceptar</button>
     </div>
   </div>
 </div>
 
-<<<<<<< HEAD
-<div class="seguimiento-banner" *ngIf="isAdminView" style="z-index: 1000; border-top: 3px solid #dc3545;">
-  <div class="container banner-content d-flex justify-content-between align-items-center">
-    <span class="banner-text fw-bold"><i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador</span>
-    <div class="banner-actions d-flex gap-2">
-      <button class="btn btn-secondary text-white fw-semibold" style="border: none;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
-      <button class="btn btn-danger text-white fw-semibold" style="border: none;" (click)="abrirModalEliminarAdmin()">Borrar Perfil</button>
-=======
 <!-- Banner Inferior Fijo de Administrador -->
 <div *ngIf="isAdminView" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; z-index: 1050; border-top: 3px solid #dc3545; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); padding: 15px 0;">
   <div class="container d-flex justify-content-between align-items-center">
@@ -641,7 +561,6 @@
     <div class="d-flex gap-2">
       <button class="btn btn-secondary text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
       <button class="btn btn-danger text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalEliminarAdmin()">Borrar Perfil</button>
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
     </div>
   </div>
 </div>
