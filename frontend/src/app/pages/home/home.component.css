@@ -41,7 +41,7 @@ body {
   border-radius: 18px;
   border: 1px solid var(--border-soft);
   background: var(--input-bg);
-  color: #111111;
+  color: #000000;
   font-size: 14px;
 }
 
@@ -81,10 +81,16 @@ body {
 }
 
 .register {
-  background: var(--button-primary-bg);
-  color: var(--button-primary-text);
+  background: #000000 !important;
+  color: #f5ebe2 !important;
   padding: 5px 12px;
   font-weight: 600;
+}
+
+/* El navbar siempre es amarillo: el botón Registrarse siempre es negro para contrastar */
+:host-context(body.dark-theme) .register {
+  background: #000000 !important;
+  color: #f5ebe2 !important;
 }
 
 .theme-toggle {
@@ -817,8 +823,8 @@ body {
 
 .login-required-submit {
   border: none;
-  background: #f59e0b;
-  color: #111111;
+  background: #fcce34;
+  color: #000000;
 }
 
 :host-context(body.dark-theme) .login-required-modal h5 {
@@ -1350,8 +1356,8 @@ width: 90%;
 /* ===== Estilo unificado para los 3 botones ===== */
 .btn-outline-warning,
 .chambee-filter-btn {
-  background-color: #111111 !important;
-  color: #ffffff !important;
+  background-color: #000000 !important;
+  color: #f5ebe2 !important;
   border: none !important;
   border-radius: 999px !important;
   padding: 8px 20px !important;
@@ -1365,13 +1371,13 @@ width: 90%;
 
 .btn-outline-warning i,
 .chambee-filter-btn i {
-  color: #ffffff !important;
+  color: #f5ebe2 !important;
 }
 
 .btn-outline-warning:hover,
 .chambee-filter-btn:hover {
-  background-color: #111111 !important;
-  color: #ffffff !important;
+  background-color: #000000 !important;
+  color: #f5ebe2 !important;
   transform: translateY(-2px) !important;
 }
 
@@ -1379,18 +1385,18 @@ width: 90%;
 :host-context(body.dark-theme) .btn-outline-warning,
 :host-context(body.dark-theme) .chambee-filter-btn {
   background-color: #fcce34 !important;
-  color: #111111 !important;
+  color: #000000 !important;
 }
 
 :host-context(body.dark-theme) .btn-outline-warning i,
 :host-context(body.dark-theme) .chambee-filter-btn i {
-  color: #111111 !important;
+  color: #000000 !important;
 }
 
 :host-context(body.dark-theme) .btn-outline-warning:hover,
 :host-context(body.dark-theme) .chambee-filter-btn:hover {
   background-color: #fcce34 !important;
-  color: #111111 !important;
+  color: #000000 !important;
   transform: translateY(-2px) !important;
 }
 

@@ -1,77 +1,75 @@
-<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4" style="background-color: #ffc107; border-bottom: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-  <div class="d-flex align-items-center gap-3">
+<nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+  <div class="d-flex align-items-center gap-2">
     <img src="assets/LogoChambee.png" alt="Chambee" height="48" style="cursor: pointer;" (click)="volverInicio()">
-    <span class="fs-5 fw-bold text-dark d-none d-md-block" style="color: #111 !important;" *ngIf="estaLogueado">Bienvenido, {{ nombre_postulante }}</span>
+    <span class="fs-5 fw-semibold d-none d-md-block" *ngIf="estaLogueado">Bienvenido, {{ nombre_postulante }}</span>
   </div>
-  
-  <div class="search-container flex-grow-1 mx-4" style="max-width: 500px;">
-    <input type="text" 
-           class="form-control" 
-           style="border-radius: 50px; padding: 10px 20px; border: none; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); color: #111; background: #fff;"
-           placeholder="Buscar categoría, puesto, ciudad y más..." 
+
+  <div class="search-container flex-grow-1 mx-4">
+    <input type="text"
+           class="form-control"
+           placeholder="Buscar categoría, puesto, ciudad y más..."
            [value]="query"
            (keydown.enter)="nuevaBusqueda($event)" />
   </div>
- 
+
   <div class="nav-buttons d-flex align-items-center gap-3">
-    <div class="notification-wrapper" style="position: relative;" *ngIf="estaLogueado">
-      <div class="notification-bell" style="cursor: pointer; color: #111;" (click)="toggleNotifications($event)">
+
+    <div class="notification-wrapper" *ngIf="estaLogueado">
+      <div class="notification-bell" (click)="toggleNotifications($event)">
         <i class="bi bi-bell-fill fs-5"></i>
         <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
       </div>
 
-      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
-        style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--surface-primary, #ffffff); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; display: flex; flex-direction: column;">
-        <div style="padding: 16px; border-bottom: 1px solid var(--border-soft);"><span style="font-weight: 700;">Notificaciones</span></div>
-        <div style="max-height: 350px; overflow-y: auto;">
-          <div *ngFor="let notif of notifications" style="padding: 16px; border-bottom: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 4px;" [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
-            <span style="font-size: 0.95rem; font-weight: 700;">{{ notif.title }}</span>
-            <span style="font-size: 0.85rem; opacity: 0.8;">{{ notif.message }}</span>
-            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
+        <div class="notif-header"><span>Notificaciones</span></div>
+        <div class="notif-list">
+          <div *ngFor="let notif of notifications" class="notif-item" [class.notif-unread]="!notif.read">
+            <span class="notif-title">{{ notif.title }}</span>
+            <span class="notif-msg">{{ notif.message }}</span>
+            <span class="notif-time">{{ notif.time }}</span>
           </div>
-          <div *ngIf="notifications.length === 0" style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">No tienes notificaciones nuevas</div>
+          <div *ngIf="notifications.length === 0" class="notif-empty">No tienes notificaciones nuevas</div>
         </div>
       </div>
     </div>
 
-    <button class="btn d-flex align-items-center gap-2"
+    <button class="btn btn-profile-navbar d-flex align-items-center gap-2"
       *ngIf="estaLogueado"
-      style="border-radius: 50px; background-color: #fff; color: #111; border: none; padding: 6px 16px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"
       (click)="irAlPerfil()">
-      <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+      <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto" />
       <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
       <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
-    <button *ngIf="!estaLogueado && !isMobile" class="btn d-flex align-items-center gap-2"
-      style="border-radius: 50px; background-color: #fff; color: #111; border: none; padding: 6px 16px; font-weight: 600;"
-      routerLink="/login">Iniciar Sesión</button>
-    <button *ngIf="!estaLogueado && !isMobile" class="btn d-flex align-items-center gap-2"
-      style="border-radius: 50px; background-color: #111; color: #fff; border: none; padding: 6px 16px; font-weight: 600;"
-      routerLink="/register">Registrarse</button>
+    <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
+    <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">Registrarse</button>
 
-    <button class="theme-toggle" (click)="toggleTheme()" style="background: rgba(255,255,255,0.5); border-radius: 50px; padding: 4px 12px; border: none; cursor: pointer;">
-      <i class="bi text-dark" [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+    <button class="theme-toggle" type="button" (click)="toggleTheme()"
+      [attr.aria-pressed]="isDarkMode"
+      [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+      <span class="theme-toggle-track">
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+      </span>
     </button>
 
-    <div class="menu fs-4 text-dark" style="cursor: pointer;" (click)="toggleMenu($event)"><i class="bi bi-list"></i></div>
+    <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
-    <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+    <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">
       <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
       <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
       <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
       <a routerLink="/services" class="desktop-menu-link">Servicios</a>
-      <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
-      <a routerLink="/crear-servicio" class="desktop-menu-link"> Crear servicio</a>
+      <a routerLink="/borrador-servicio" class="desktop-menu-link">Mis borradores</a>
+      <a routerLink="/crear-servicio" class="desktop-menu-link">Crear servicio</a>
       <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
-      <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+      <div class="desktop-menu-divider"></div>
       <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
     </div>
   </div>
 
-  <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
-    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
-      <button class="mobile-close" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+  <div *ngIf="menuOpen && isMobile && estaLogueado" class="mobile-menu-backdrop" (click)="toggleMenu()">
+    <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
         <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}</div>
         <hr />

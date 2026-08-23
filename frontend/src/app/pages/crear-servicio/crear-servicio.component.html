@@ -2,7 +2,7 @@
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3">
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo" role="button" (click)="volverPanel()" />
-      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, Mi perfil de servicios</span>
+      <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ nombre_postulante }}</span>
     </div>
 
     <!-- <div class="search-container flex-grow-1 mx-4">
@@ -17,9 +17,9 @@
         <span class="d-none d-md-block">Mi perfil</span>
       </button>
 
-      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
-          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
         </span>
       </button>
 
@@ -34,7 +34,6 @@
         <a routerLink="/services" class="desktop-menu-link">Servicios</a>
         <a routerLink="/borrador-servicio" class="desktop-menu-link"> Mis borradores</a>
         <a routerLink="/crear-servicio" class="desktop-menu-link active"> Crear servicio</a>
-        <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
         <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
         <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
       </div>

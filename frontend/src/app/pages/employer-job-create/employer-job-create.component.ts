@@ -92,6 +92,11 @@ export class EmployerJobCreateComponent implements OnInit {
   hasUnreadNotifications = true;
   isMobile = false;
   categoriasDisponibles: string[] = [];
+  foto_perfil = '';
+
+  irAlPerfil() {
+    this.router.navigate(['/perfil']);
+  }
 
   notifications: NotificationItem[] = [
     { id: 1, title: 'Consejo rápido', message: 'Agrega salario, modalidad y etiquetas para mejorar la conversión.', time: 'Hace 2 min', read: false },
@@ -227,6 +232,7 @@ export class EmployerJobCreateComponent implements OnInit {
       if (perfilLocalRaw) {
         const perfil = JSON.parse(perfilLocalRaw);
         this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
+        this.foto_perfil = perfil.foto_perfil || '';
         this.ofertaForm.patchValue({
           estado: perfil.estado || '',
           ciudad: perfil.ciudad || '',
@@ -272,6 +278,7 @@ export class EmployerJobCreateComponent implements OnInit {
     this.api.obtenerPerfilEmpleador(this.employerId).subscribe({
       next: (perfil) => {
         this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
+        this.foto_perfil = perfil.foto_perfil || '';
         this.ofertaForm.patchValue({
           estado: perfil.estado || '',
           ciudad: perfil.ciudad || '',

@@ -126,6 +126,7 @@
   color: var(--text-secondary);
 }
 
+/* Toggle de tema */
 .theme-toggle {
   border: none;
   background: transparent;
@@ -133,6 +134,7 @@
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .theme-toggle-track {
@@ -145,6 +147,7 @@
   align-items: center;
   justify-content: flex-start;
   padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .theme-toggle-icon {

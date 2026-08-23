@@ -61,33 +61,52 @@
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-      <div class="notification-wrapper">
-        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <i class="bi bi-bell-fill"></i>
-          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+      <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
+        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
+            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+          </svg>
+          <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+            <span class="visually-hidden">Nuevas notificaciones</span>
+          </span>
         </div>
 
-        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
-          <div class="notifications-title">Notificaciones</div>
-          <div class="notifications-list">
-            <div *ngFor="let notification of notifications" class="notification-item" [class.unread]="!notification.read">
-              <span class="notif-header">{{ notification.title }}</span>
-              <span class="notif-message">{{ notification.message }}</span>
-              <span class="notif-time">{{ notification.time }}</span>
-            </div>
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+          </div>
+          <div style="max-height: 350px; overflow-y: auto;">
+            <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
+              <div *ngFor="let notification of notifications" 
+                   class="notification-item" 
+                   [class.unread]="!notification.read" 
+                   style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;"
+                   [ngStyle]="{'background-color': notification.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+                <span class="notif-header" style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notification.title }}</span>
+                <span class="notif-message" style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notification.message }}</span>
+                <span class="notif-time" style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notification.time }}</span>
+              </div>
+            </ng-container>
+            <ng-template #sinNotificaciones>
+              <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
+                <small>No tienes notificaciones nuevas.</small>
+              </div>
+            </ng-template>
           </div>
         </div>
       </div>
 
-      <button class="profile-chip" type="button" (click)="irAlPerfil()">
-        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" />
-        <i *ngIf="!fotoPostulante" class="bi bi-person-circle"></i>
+      <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2"
+        style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
+        type="button" (click)="irAlPerfil()">
+        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+        <i *ngIf="!fotoPostulante" class="bi bi-person-circle fs-5"></i>
         <span class="d-none d-md-inline">Mi perfil</span>
       </button>
 
-      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
-          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
         </span>
       </button>
 
@@ -286,8 +305,8 @@
         </div>
         <div class="card-body-premium">
           <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
-            <i class="bi bi-chat-left-heart display-6 text-muted"></i>
-            <p class="mt-2 text-muted">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
+            <i class="bi bi-chat-left-heart display-6" style="color: var(--text-secondary); opacity: 0.6;"></i>
+            <p class="mt-2" style="color: var(--text-secondary); opacity: 0.8;">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
           </div>
 
           <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">

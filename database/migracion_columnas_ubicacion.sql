@@ -1,6 +1,5 @@
 -- =====================================================
 -- MIGRACION: Agregar columnas de ubicacion faltantes
--- Fecha: 2026-08-21
 -- Descripcion: Agrega numero_exterior, direccion_formateada,
 --              latitud y longitud a las tablas postulante y empleador,
 --              y a la tabla servicios.
