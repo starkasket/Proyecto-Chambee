@@ -22,6 +22,7 @@ interface PerfilReportado {
   
   // Datos si el reportado es una empresa
   id_empleador_reportado?: string;
+  id_empleador?: string; // Agregado por si el backend lo envía así
   nombre_empresa?: string;
   
   suspendido?: boolean;
@@ -304,12 +305,28 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // Método unificado para ver el perfil dependiendo de quién es reportado
+  // --- NUEVA VERSIÓN: DETECTANDO EMPLEADOR POR FALTA DE APELLIDOS ---
   verPerfilReportado(reporte: PerfilReportado) {
-    if (reporte.id_postulante_reportado) {
-      this.router.navigate(['/perfil-postulante', reporte.id_postulante_reportado]);
-    } else if (reporte.id_empleador_reportado) {
-      this.router.navigate(['/empresa', reporte.id_empleador_reportado]);
+    console.log('--- DATOS DEL REPORTE AL HACER CLIC ---', reporte);
+
+    // Si tiene un ID pero NO tiene apellidos, asumimos que es una EMPRESA 
+    // (ya que el backend manda el nombre de la empresa en 'nombre_postulante')
+    const tieneApellidos = (reporte.apellido_paterno_postulante && reporte.apellido_paterno_postulante.trim() !== '') || 
+                           (reporte.apellido_materno_postulante && reporte.apellido_materno_postulante.trim() !== '');
+
+    const idUsuario = reporte.id_empleador_reportado || reporte.id_empleador || reporte.id_postulante_reportado;
+
+    if (!idUsuario || idUsuario === 'null') {
+       this.abrirModalError('No se encontró información suficiente para abrir este perfil.');
+       return;
+    }
+
+    if (!tieneApellidos) {
+       // Es un empleador disfrazado de postulante (o uno real)
+       this.router.navigate(['/empresa', idUsuario]);
+    } else {
+       // Si tiene apellidos, sí es un postulante real
+       this.router.navigate(['/perfil-postulante', idUsuario]);
     }
   }
 
@@ -338,11 +355,14 @@ export class AdminDashboardComponent implements OnInit {
 
   // --- MÉTODOS PARA MODALES DE SUSPENDER CUENTA ---
   abrirModalSuspender(reporte: PerfilReportado) {
-    const idUsuario = reporte.id_postulante_reportado || reporte.id_empleador_reportado;
-    if(idUsuario) {
+    const idUsuario = reporte.id_empleador_reportado || reporte.id_empleador || reporte.id_postulante_reportado;
+
+    if (idUsuario && idUsuario !== 'null') {
       this.cuentaASuspender = idUsuario;
       this.tiempoSuspension = '7'; 
       this.mostrarModalSuspender = true;
+    } else {
+      this.abrirModalError('No se pudo identificar al usuario a suspender.');
     }
   }
 
@@ -365,7 +385,7 @@ export class AdminDashboardComponent implements OnInit {
       next: (res) => {
         // Actualizar estado visual
         this.reportesDePerfiles.forEach(p => {
-          if (p.id_postulante_reportado === idUsuario || p.id_empleador_reportado === idUsuario) {
+          if (p.id_postulante_reportado === idUsuario || p.id_empleador_reportado === idUsuario || p.id_empleador === idUsuario) {
             p.suspendido = true;
           }
         });
@@ -466,7 +486,6 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
   }
-  // --------------------------------------------------
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
