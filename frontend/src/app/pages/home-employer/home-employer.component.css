@@ -65,14 +65,7 @@ body {
   position: relative;
 }
 
-.btn {
-  border: 1px solid transparent;
-  padding: 4px 10px;
-  border-radius: 14px;
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
-}
+
 
 .login {
   background: var(--surface-primary);
@@ -81,10 +74,16 @@ body {
 }
 
 .register {
-  background: var(--button-primary-bg);
-  color: var(--button-primary-text);
+  background: #000000;
+  color: #f5ebe2;
   padding: 5px 12px;
   font-weight: 600;
+}
+
+/* El navbar siempre es amarillo: el botón Registrarse siempre es negro para contrastar */
+:host-context(body.dark-theme) .register {
+  background: #000000;
+  color: #f5ebe2;
 }
 
 .theme-toggle {

@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE
@@ -292,6 +292,10 @@ export class EmployerProfileComponent implements OnInit {
 
   editarPerfil() {
     this.router.navigate(['/perfil/editar']);
+  }
+
+  irAlPerfil() {
+    this.router.navigate(['/perfil']);
   }
 
   crearOferta() {

@@ -86,6 +86,7 @@ export class JobDetailComponent implements OnInit {
   notificationsOpen = false;
   hasUnreadNotifications = false;
   notifications: NotificationItem[] = [];
+  estaLogueado = false;
 
   // VARIABLES PARA COMENTARIOS
   usuarioActual: any = null;
@@ -138,6 +139,8 @@ export class JobDetailComponent implements OnInit {
   ngOnInit(): void {
     this.usuarioActual = this.api.getUsuario();
     this.isAdminView = this.usuarioActual?.rol === 'administrador';
+    this.estaLogueado = !!this.usuarioActual;
+    console.log(this.isAdminView);
 
     if (this.usuarioActual) {
       this.cargarNotificaciones();

@@ -293,7 +293,8 @@
     </div>
 
     <div class="nav-buttons">
-        <div class="notification-wrapper" style="position: relative; margin-right: 10px;">
+        <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL -->
+        <div *ngIf="estaLogueado" class="notification-wrapper" style="position: relative; margin-right: 10px;">
             <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
                 (click)="toggleNotifications($event)">
                 <i class="bi bi-bell-fill fs-5"></i>
@@ -336,24 +337,33 @@
             </div>
         </div>
 
-        <button class="btn-profile" (click)="irAlPerfil()">
+        <!-- Botón de perfil: condicional según sesión -->
+        <button *ngIf="estaLogueado" class="btn-profile" (click)="irAlPerfil()">
             <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
                 style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
             <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
             <span>Mi perfil</span>
         </button>
 
+        <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">
+            Iniciar Sesión
+        </button>
+        <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">
+            Registrarse
+        </button>
+
         <button class="theme-toggle" type="button" (click)="toggleTheme()"
-            style="border: none; background: transparent; padding: 0;">
+            [attr.aria-pressed]="isDarkMode"
+            [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
             <span class="theme-toggle-track">
-                <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
+                <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
             </span>
         </button>
 
-        <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
+        <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
                 class="bi bi-list"></i></div>
 
-        <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">
             <div *ngIf="!isAdminView">
                 <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
                 <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>

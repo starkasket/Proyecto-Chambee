@@ -1126,3 +1126,49 @@ width: 90%;
 .review-dropdown-item:hover {
   background: var(--surface-secondary);
 }
+.seguimiento-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--surface-primary, #ffffff);
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+  z-index: 1050;
+  padding: 16px 0;
+  border-top: 1px solid var(--border-soft, #e0e0e0);
+  animation: slideUp 0.4s ease-out;
+}
+
+:host-context(body.dark-theme) .seguimiento-banner {
+  background-color: #1e2330;
+  border-top: 3px solid #dc3545;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.banner-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary) !important;
+}
+
+:host-context(body.dark-theme) .banner-text {
+  color: #f5ebe2 !important;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 12px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

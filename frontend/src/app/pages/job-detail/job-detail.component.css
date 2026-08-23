@@ -1,6 +1,6 @@
 /* ===== NAVBAR FIJA SUPERIOR ===== */
 .navbar-chambee {
-  background-color: var(--navbar-bg);
+  background-color: var(--navbar-bg, #fcce34);
   width: 100%;
   height: 64px;
   display: flex;
@@ -27,42 +27,136 @@
   border-radius: 18px;
   border: 1px solid var(--border-soft);
   background: var(--input-bg);
-  color: #111111;
+  color: #000000;
   font-size: 14px;
 }
 
 .search-container input::placeholder {
-  color: rgba(17, 17, 17, 0.58);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 :host-context(body.dark-theme) .search-container input {
-  color: #ffffff;
+  color: #f5ebe2;
 }
 
 :host-context(body.dark-theme) .search-container input::placeholder {
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(245, 235, 226, 0.6);
 }
 
-/* Grupo de acciones de navbar: login, registro y hamburguesa. */
+/* Grupo de acciones de navbar */
 .nav-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   position: relative;
 }
 
+/* Botones base */
+.btn {
+  border: 1px solid transparent;
+  padding: 5px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
 
-.btn-profile {
+.login {
   background: var(--surface-primary);
   color: var(--text-primary);
-  border: 1px solid var(--border-soft);
-  border-radius: 25px;
-  padding: 5px 15px;
+  border-color: var(--border-soft);
+}
+
+.register {
+  background: #000000 !important;
+  color: #f5ebe2 !important;
+  padding: 5px 12px;
+  font-weight: 600;
+}
+
+:host-context(body.dark-theme) .register {
+  background: #000000 !important;
+  color: #f5ebe2 !important;
+}
+
+/* Botón de perfil */
+.btn-profile {
+  background: rgba(255, 255, 255, 0.78);
+  color: #000000;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 999px;
+  padding: 6px 16px;
+  min-height: 38px;
   font-weight: 700;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+}
+
+:host-context(body.dark-theme) .btn-profile {
+  background: #1a1a2e;
+  color: #f5ebe2;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Toggle de tema */
+.theme-toggle {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.theme-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--theme-toggle-bg);
+  border: 1px solid var(--theme-toggle-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob);
+  color: var(--theme-toggle-icon);
+  transform: translateX(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-size: 12px;
+}
+
+:host-context(body.dark-theme) .theme-toggle-icon {
+  transform: translateX(18px);
+}
+
+/* Hamburguesa */
+.menu {
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2300;
+  position: relative;
+  color: #000000;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 4px;
 }
 
 @media (max-width: 992px) {

@@ -14,7 +14,7 @@ body {
 
 /* ===== Navbar fija superior ===== */
 .navbar-chambee {
-  background-color: var(--navbar-bg, var(--surface-primary));
+  background-color: var(--navbar-bg, #fcce34);
   width: 100%;
   height: 64px;
   display: flex;
@@ -23,8 +23,199 @@ body {
   top: 0;
   left: 0;
   z-index: 1000;
-  box-shadow: var(--shadow-soft, 0 2px 8px rgba(0,0,0,0.05));
+  box-shadow: var(--shadow-soft);
   padding: 0 20px;
+  gap: 12px;
+}
+
+/* Buscador del navbar */
+.search-container {
+  flex: 1 1 420px;
+  max-width: 420px;
+  min-width: 180px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  background: var(--input-bg);
+  color: #000000;
+  font-size: 14px;
+}
+
+.search-container input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+:host-context(body.dark-theme) .search-container input {
+  color: #f5ebe2;
+}
+
+:host-context(body.dark-theme) .search-container input::placeholder {
+  color: rgba(245, 235, 226, 0.6);
+}
+
+/* Grupo de botones del navbar */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+/* Botones base */
+.btn {
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.login {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border-color: var(--border-soft);
+}
+
+.register {
+  background: #000000 !important;
+  color: #f5ebe2 !important;
+  padding: 5px 12px;
+  font-weight: 600;
+}
+
+:host-context(body.dark-theme) .register {
+  background: #000000 !important;
+  color: #f5ebe2 !important;
+}
+
+/* Toggle de tema */
+.theme-toggle {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.theme-toggle-track {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--theme-toggle-bg);
+  border: 1px solid var(--theme-toggle-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-toggle-knob);
+  color: var(--theme-toggle-icon);
+  transform: translateX(0);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-size: 12px;
+}
+
+:host-context(body.dark-theme) .theme-toggle-icon {
+  transform: translateX(18px);
+}
+
+/* Hamburguesa */
+.menu {
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 2300;
+  position: relative;
+  color: #000000;
+}
+
+/* Campana de notificaciones */
+.notification-wrapper {
+  position: relative;
+  color: #000000;
+}
+
+.notification-bell {
+  cursor: pointer;
+  color: #000000;
+}
+
+/* Dropdown de notificaciones */
+.notifications-dropdown {
+  position: absolute;
+  top: 45px;
+  right: -10px;
+  width: 320px;
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.notif-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notif-unread {
+  background-color: rgba(252, 206, 52, 0.12);
+}
+
+.notif-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.notif-msg {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  color: var(--text-secondary);
+}
+
+.notif-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.notif-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 /* ===== Layout principal desktop ===== */
@@ -290,8 +481,8 @@ body {
 }
 
 :host-context(body.dark-theme) .chambee-filter-btn.active {
-  background-color: #ffffff !important;
-  color: #111111 !important;
+  background-color: #fcce34 !important;
+  color: #000000 !important;
 }
 
 :host-context(body.dark-theme) .featured-chip {

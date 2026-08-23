@@ -92,52 +92,65 @@
   </div>
 </div>
 
-    <div class="search-container flex-grow-1 mx-4">
-      <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
+    <div class="search-container flex-grow-1 mx-4" style="visibility: hidden;">
+      <!-- Contenedor vacío para mantener el mismo ancho y acomodo que home-user -->
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-      <div class="notification-wrapper">
-        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <i class="bi bi-bell-fill"></i>
-          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+      <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
+        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
+            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+          </svg>
+          <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+            <span class="visually-hidden">Nuevas notificaciones</span>
+          </span>
         </div>
 
-        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
-          <div class="notifications-title">Notificaciones</div>
-          <div class="notifications-list">
-            
-            <!-- CONTENEDOR DE NOTIFICACIONES DINÁMICO -->
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+          </div>
+          <div style="max-height: 350px; overflow-y: auto;">
             <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
               <div *ngFor="let notif of notifications" 
                    class="notification-item" 
                    [class.unread]="!notif.read" 
                    (click)="onNotificationClick(notif, $event)"
-                   style="cursor: pointer;">
-                <span class="notif-header">{{ notif.title }}</span>
-                <span class="notif-message">{{ notif.message }}</span>
-                <span class="notif-time">{{ notif.time }}</span>
+                   style="cursor: pointer; padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;"
+                   [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
+                <span class="notif-header" style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+                <span class="notif-message" style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+                <span class="notif-time" style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
               </div>
             </ng-container>
-
             <ng-template #sinNotificaciones>
               <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
                 <small>No tienes notificaciones nuevas.</small>
               </div>
             </ng-template>
-
           </div>
         </div>
       </div>
 
+      <!-- Botón Mi perfil (Oculto para Admins) -->
+      <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2"
+        style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
+        (click)="irAlPerfil()" title="Ir a mi perfil">
+        <img *ngIf="perfil?.foto_perfil" [src]="perfil!.foto_perfil" alt="Foto de perfil"
+          style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
+        <i *ngIf="!perfil?.foto_perfil" class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">Mi perfil</span>
+      </button>
+
       <!-- Toggle de modo oscuro usando ThemeService global -->
-      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
-          <span class="theme-toggle-icon">{{ isDarkMode ? '☀' : '☾' }}</span>
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
         </span>
       </button>
 
-      <div class="menu fs-4" (click)="toggleMenu($event)" role="button">☰</div>
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
         <ng-container *ngIf="isAdminView">
@@ -384,7 +397,7 @@
 
 <div class="seguimiento-banner" *ngIf="isAdminView" style="z-index: 1000; border-top: 3px solid #dc3545;">
   <div class="container banner-content d-flex justify-content-between align-items-center">
-    <span class="banner-text fw-bold text-dark"><i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador</span>
+    <span class="banner-text fw-bold"><i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador</span>
     <div class="banner-actions d-flex gap-2">
       <button class="btn btn-secondary text-white fw-semibold" style="border: none;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
       <button class="btn btn-danger text-white fw-semibold" style="border: none;" (click)="abrirModalEliminarAdmin()">Borrar Empresa</button>

@@ -111,7 +111,7 @@ export class CrearServicioComponent implements OnInit {
       // Cargar perfil
       this.api.getMiPerfil().subscribe({
         next: (perfil: any) => {
-          this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
+          this.nombre_postulante = perfil?.nombre_postulante || perfil?.nombre_empresa || usuario?.nombre || 'Usuario';
           this.foto_perfil = perfil?.foto_perfil || '';
 
           this.servicioForm.patchValue({
