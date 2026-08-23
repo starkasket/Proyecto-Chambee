@@ -104,6 +104,10 @@ export class SearchResultsComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       this.query = (params['q'] || '').toLowerCase();
+      const tipoParam = params['tipo'] || '';
+      if (tipoParam === 'servicio' || tipoParam === 'empleo') {
+        this.filtros.tipo = tipoParam;
+      }
       this.cargarYFiltrar(this.query);
     });
   }

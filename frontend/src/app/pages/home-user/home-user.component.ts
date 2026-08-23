@@ -497,6 +497,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     return this.servicesOpen ? this.services : this.services.slice(0, 4);
   }
 
+  verTodosLosServicios() {
+  this.router.navigate(['/search'], { queryParams: { tipo: 'servicio' } });
+}
+
   toggleServices() {
     this.servicesOpen = !this.servicesOpen;
   }
