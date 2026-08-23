@@ -31,6 +31,9 @@ interface Job {
   company: string;
   title: string;
   salary: string;
+  salaryRaw?: number;
+  moneda?: string;
+  periodoPago?: string;
   img: string;
   images?: string[];
   urgency?: string;
@@ -98,82 +101,40 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     categoriaServicio: '',
     cobertura: '',
     ordenar: 'fecha',
+    moneda: '',
     salarioMin: null as number | null,
     salarioMax: null as number | null
+  };
+
+  readonly tasasCambio: { [key: string]: number } = {
+    'MXN': 1,
+    'USD': 20.0,
+    'EUR': 21.5
   };
 
   categoriasDisponibles: string[] = [];
 
   ciudades: string[] = [
-    'Abasolo',
-    'Acámbaro',
-    'Apaseo el Alto',
-    'Apaseo el Grande',
-    'Atarjea',
-    'Celaya',
-    'Comonfort',
-    'Coroneo',
-    'Cortazar',
-    'Doctor Mora',
-    'Dolores Hidalgo C.I.N.',
-    'Guanajuato',
-    'Huanímaro',
-    'Irapuato',
-    'Jaral del Progreso',
-    'Jerécuaro',
-    'León',
-    'Manuel Doblado',
-    'Moroleón',
-    'Ocampo',
-    'Pénjamo',
-    'Pueblo Nuevo',
-    'Purísima del Rincón',
-    'Romita',
-    'Salamanca',
-    'Salvatierra',
-    'San Diego de la Unión',
-    'San Felipe',
-    'San Francisco del Rincón',
-    'San José Iturbide',
-    'San Luis de la Paz',
-    'San Miguel de Allende',
-    'Santa Catarina',
-    'Santa Cruz de Juventino Rosas',
-    'Santiago Maravatío',
-    'Silao de la Victoria',
-    'Tarandacuao',
-    'Tarimoro',
-    'Tierra Blanca',
-    'Uriangato',
-    'Valle de Santiago',
-    'Victoria',
-    'Villagrán',
-    'Xichú',
-    'Yuriria'
+    'Abasolo', 'Acámbaro', 'Apaseo el Alto', 'Apaseo el Grande', 'Atarjea',
+    'Celaya', 'Comonfort', 'Coroneo', 'Cortazar', 'Doctor Mora',
+    'Dolores Hidalgo C.I.N.', 'Guanajuato', 'Huanímaro', 'Irapuato',
+    'Jaral del Progreso', 'Jerécuaro', 'León', 'Manuel Doblado', 'Moroleón',
+    'Ocampo', 'Pénjamo', 'Pueblo Nuevo', 'Purísima del Rincón', 'Romita',
+    'Salamanca', 'Salvatierra', 'San Diego de la Unión', 'San Felipe',
+    'San Francisco del Rincón', 'San José Iturbide', 'San Luis de la Paz',
+    'San Miguel de Allende', 'Santa Catarina', 'Santa Cruz de Juventino Rosas',
+    'Santiago Maravatío', 'Silao de la Victoria', 'Tarandacuao', 'Tarimoro',
+    'Tierra Blanca', 'Uriangato', 'Valle de Santiago', 'Victoria',
+    'Villagrán', 'Xichú', 'Yuriria'
   ];
 
   private categoriasPreDefinidas: string[] = [
-    'Administración / Oficina',
-    'Agricultura / Ganadería',
-    'Atención al cliente',
-    'Construcción / Obra',
-    'Diseño',
-    'Educación / Docencia',
-    'Finanzas / Contabilidad',
-    'Ingeniería',
-    'Legal / Derecho',
-    'Logística / Transporte',
-    'Manufactura / Producción',
-    'Marketing / Publicidad',
-    'Recursos Humanos',
-    'Restaurantes / Gastronomía',
-    'Salud / Medicina',
-    'Seguridad / Vigilancia',
-    'Servicios de limpieza',
-    'Servicios técnicos / Mantenimiento',
-    'Tecnología / TI',
-    'Turismo / Hotelería',
-    'Ventas'
+    'Administración / Oficina', 'Agricultura / Ganadería', 'Atención al cliente',
+    'Construcción / Obra', 'Diseño', 'Educación / Docencia', 'Finanzas / Contabilidad',
+    'Ingeniería', 'Legal / Derecho', 'Logística / Transporte', 'Manufactura / Producción',
+    'Marketing / Publicidad', 'Recursos Humanos', 'Restaurantes / Gastronomía',
+    'Salud / Medicina', 'Seguridad / Vigilancia', 'Servicios de limpieza',
+    'Servicios técnicos / Mantenimiento', 'Tecnología / TI', 'Turismo / Hotelería', 'Ventas'
   ];
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
@@ -339,38 +300,51 @@ export class HomeUserComponent implements OnInit, OnDestroy {
             return a.__index - b.__index;
           });
 
-        const ofertas = anunciosOrdenados.map((anuncio) => ({
-          id: anuncio.id_anuncio,
-          company: anuncio.nombre_empresa || 'Empresa Confidencial',
-          companyDescription: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
-          title: anuncio.titulo,
-          salary: this.formatearSalario(anuncio.salario),
-          location: `${anuncio.ciudad}, ${anuncio.estado}`,
-          mode: anuncio.modalidad,
-          urgency: anuncio.urgencia || 'Normal',
-          description: anuncio.descripcion,
-          img: anuncio.img || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=60',
-          tags: anuncio.categorias || [],
-          matchScore: anuncio.__score
-        }));
+        const ofertas = anunciosOrdenados.map((anuncio) => {
+          const monedaAnuncio = anuncio.moneda || anuncio.tipo_moneda || 'MXN';
+          const periodoAnuncio = anuncio.periodo_pago || anuncio.periodo || 'Mensual';
+
+          return {
+            id: anuncio.id_anuncio,
+            company: anuncio.nombre_empresa || 'Empresa Confidencial',
+            companyDescription: anuncio.descripcion_empresa || 'Empresa activa en Chambee.',
+            title: anuncio.titulo,
+            salary: this.formatearSalario(anuncio.salario, monedaAnuncio, periodoAnuncio),
+            location: `${anuncio.ciudad}, ${anuncio.estado}`,
+            mode: anuncio.modalidad,
+            urgency: anuncio.urgencia || 'Normal',
+            description: anuncio.descripcion,
+            img: anuncio.img || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=60',
+            tags: anuncio.categorias || [],
+            matchScore: anuncio.__score
+          };
+        });
 
         this.slides = ofertas.slice(0, Math.min(5, ofertas.length));
 
-        this.jobs = anunciosOrdenados.map((anuncio) => ({
-          id: anuncio.id_anuncio,
-          company: anuncio.nombre_empresa || 'Empresa Confidencial',
-          title: anuncio.titulo,
-          salary: this.formatearSalario(anuncio.salario),
-          img: anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
-          images: anuncio.images?.length ? anuncio.images : [anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'],
-          urgency: anuncio.urgencia || 'Normal',
-          rating: anuncio.modalidad || 'Empleo',
-          applicants: parseInt(anuncio.postulaciones_count) || 0,
-          tags: anuncio.categorias || [],
-          matchScore: anuncio.__score,
-          tipoAnuncio: anuncio.tipo_anuncio || 'Empleo',
-          modalidad: anuncio.modalidad || 'Presencial'
-        }));
+        this.jobs = anunciosOrdenados.map((anuncio) => {
+          const monedaAnuncio = anuncio.moneda || anuncio.tipo_moneda || 'MXN';
+          const periodoAnuncio = anuncio.periodo_pago || anuncio.periodo || 'Mensual';
+
+          return {
+            id: anuncio.id_anuncio,
+            company: anuncio.nombre_empresa || 'Empresa Confidencial',
+            title: anuncio.titulo,
+            salary: this.formatearSalario(anuncio.salario, monedaAnuncio, periodoAnuncio),
+            salaryRaw: anuncio.salario ? parseFloat(anuncio.salario) : 0,
+            moneda: monedaAnuncio,
+            periodoPago: periodoAnuncio,
+            img: anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60',
+            images: anuncio.images?.length ? anuncio.images : [anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60'],
+            urgency: anuncio.urgencia || 'Normal',
+            rating: anuncio.modalidad || 'Empleo',
+            applicants: parseInt(anuncio.postulaciones_count) || 0,
+            tags: anuncio.categorias || [],
+            matchScore: anuncio.__score,
+            tipoAnuncio: anuncio.tipo_anuncio || 'Empleo',
+            modalidad: anuncio.modalidad || 'Presencial'
+          };
+        });
 
         this.categoriasDisponibles = this.extraerCategorias(this.jobs);
         this.currentSlide = 0;
@@ -399,16 +373,27 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     return categorias.filter((categoria) => intereses.has(String(categoria).toLowerCase())).length;
   }
 
-  private formatearSalario(salario: string | number): string {
-    const numero = Number(salario);
-    if (Number.isNaN(numero) || numero === 0) {
-      return 'Salario a convenir';
-    }
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      maximumFractionDigits: 0
-    }).format(numero);
+  formatearSalario(monto: any, moneda: string = 'MXN', periodo: string = 'Mensual'): string {
+    if (!monto) return 'Salario no especificado';
+    const num = parseFloat(monto);
+    if (isNaN(num) || num === 0) return 'Salario a convenir';
+
+    const divisa = (moneda || 'MXN').toUpperCase();
+    const frecuencia = (periodo || 'Mensual').toLowerCase();
+    return `${divisa} $${num.toLocaleString('es-MX')} / ${frecuencia}`;
+  }
+
+  private obtenerSalarioEnMXN(job: Job): number {
+    const salarioBase = job.salaryRaw || parseFloat(String(job.salary || '').replace(/[^0-9.]/g, '')) || 0;
+    const tasa = this.tasasCambio[job.moneda || 'MXN'] || 1;
+    let salarioMxn = salarioBase * tasa;
+
+    const periodo = (job.periodoPago || 'Mensual').toLowerCase();
+    if (periodo === 'diario') salarioMxn *= 30;
+    else if (periodo === 'semanal') salarioMxn *= 4;
+    else if (periodo === 'quincenal') salarioMxn *= 2;
+
+    return salarioMxn;
   }
 
   private cargarFavoritosGuardados() {
@@ -540,8 +525,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   verTodosLosServicios() {
-  this.router.navigate(['/search'], { queryParams: { tipo: 'servicio' } });
-}
+    this.router.navigate(['/search'], { queryParams: { tipo: 'servicio' } });
+  }
 
   toggleServices() {
     this.servicesOpen = !this.servicesOpen;
@@ -621,17 +606,23 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         ? true
         : this.normalizarTexto(job.modalidad) === this.normalizarTexto(this.filtros.modalidad);
 
-      const salarioNumerico = parseFloat(String(job.salary || '').replace(/[^0-9.]/g, '')) || 0;
+      const coincideMoneda = !this.filtros.moneda
+        ? true
+        : (job.moneda || 'MXN').toUpperCase() === this.filtros.moneda.toUpperCase();
+
+      const salarioAComparar = this.filtros.moneda
+        ? (job.salaryRaw || parseFloat(String(job.salary || '').replace(/[^0-9.]/g, '')) || 0)
+        : this.obtenerSalarioEnMXN(job);
 
       const coincideSalarioMin = this.filtros.salarioMin == null || this.filtros.salarioMin === 0
         ? true
-        : salarioNumerico >= this.filtros.salarioMin;
+        : salarioAComparar >= this.filtros.salarioMin;
 
       const coincideSalarioMax = this.filtros.salarioMax == null || this.filtros.salarioMax === 0
         ? true
-        : salarioNumerico <= this.filtros.salarioMax;
+        : salarioAComparar <= this.filtros.salarioMax;
 
-      return coincideCategoria && coincideModalidad && coincideSalarioMin && coincideSalarioMax;
+      return coincideCategoria && coincideModalidad && coincideMoneda && coincideSalarioMin && coincideSalarioMax;
     });
   }
 
@@ -643,7 +634,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     return this.filteredJobs.length;
   }
 
-  // --- MÉTODOS DEL PANEL DE FILTROS ---
   toggleFiltros(): void {
     this.mostrarFiltros = !this.mostrarFiltros;
   }
@@ -656,6 +646,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       categoriaServicio: '',
       cobertura: '',
       ordenar: 'fecha',
+      moneda: '',
       salarioMin: null,
       salarioMax: null
     };
@@ -664,7 +655,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   aplicarFiltros(): void {
     this.visibleCount = Math.min(8, this.maxJobsToShow);
-    console.log('Filtros aplicados:', this.filtros);
   }
 
   private extraerCategorias(jobs: Job[]): string[] {

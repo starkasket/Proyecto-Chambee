@@ -6,10 +6,6 @@
       <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ empresaNombre }}</span>
     </div>
 
-    <!--  <div class="search-container flex-grow-1 mx-4">
-      <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
-    </div> -->
-
     <div class="nav-buttons d-flex align-items-center gap-3">
       <div class="notification-wrapper">
         <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
@@ -179,11 +175,23 @@
             </select>
           </label>
 
-          <label class="field">
-            <span>Salario</span>
-            <input type="number" formControlName="salario" placeholder="12000" />
-            <small *ngIf="campoInvalido('salario')">Ingresa un salario mayor a 0.</small>
-          </label>
+          <div class="field">
+            <span>Salario y esquema de pago</span>
+            <div class="d-flex gap-2 flex-wrap">
+              <select formControlName="moneda" style="width: 90px;" class="form-select">
+                <option *ngFor="let m of opcionesMoneda" [value]="m">{{ m }}</option>
+              </select>
+
+              <input type="number" formControlName="salario" placeholder="Ej. 2500" class="form-control flex-grow-1" />
+
+              <select formControlName="periodo_pago" style="width: 130px;" class="form-select notranslate" translate="no">
+              <option *ngFor="let p of opcionesPeriodoPago" [value]="p" class="notranslate" translate="no">{{ p }}</option>
+              </select>
+            </div>
+            <small *ngIf="campoInvalido('salario')">
+              El salario mínimo para pago {{ ofertaForm.value.periodo_pago | lowercase }} es de {{ salarioMinimoActual | number:'1.0-0' }} {{ ofertaForm.value.moneda }}.
+            </small>
+          </div>
 
           <label class="field">
             <span>Rango de edad</span>
@@ -223,14 +231,10 @@
               {{ ofertaForm.get('direccion_formateada')?.value }}
             </p>
 
-
             <app-mapa-ubicacion [latitudInicial]="ofertaForm.value.latitud ?? null"
               [longitudInicial]="ofertaForm.value.longitud ?? null"
               (ubicacionSeleccionada)="ubicacionSeleccionada($event)">
             </app-mapa-ubicacion>
-
-
-
 
             <input type="text" class="form-control-custom" placeholder="C.P." formControlName="codigo_postal"
               readonly />
@@ -241,15 +245,7 @@
 
             <input type="text" class="form-control-custom" placeholder="Colonia" formControlName="colonia" readonly />
 
-
-
-            <!--        <select class="form-control-custom" formControlName="colonia">
-              <option value="" disabled selected>Colonia</option>
-              <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
-            </select> -->
-
             <input type="text" class="form-control-custom" placeholder="Calle" formControlName="calle" readonly />
-
 
             <input type="text" class="form-control-custom" placeholder="Número exterior"
               formControlName="numero_exterior" readonly />
@@ -277,11 +273,6 @@
                 [disabled]="urlsImagenesSubidas.length + archivosSeleccionados.length >= MAX_IMAGENES">
                 Agregar imágenes
               </button>
-              <button type="button" class="btn-primary-img" (click)="subirImagenManual()"
-                [disabled]="archivosSeleccionados.length === 0 || subiendoImagen">
-                <span class="loading" [class.visible]="subiendoImagen"></span>
-                <span>{{ subiendoImagen ? 'Subiendo...' : 'Subir imágenes' }}</span>
-              </button>
             </div>
           </div>
 
@@ -295,6 +286,7 @@
               <div class="gallery-carousel" style="--carousel-height: 220px;">
                 <app-carousel [images]="imagenesCarruselPreview" [autoplay]="true" [interval]="3000"></app-carousel>
               </div>
+
               <!-- Imágenes subidas -->
               <div *ngFor="let img of urlsImagenesSubidas; let i = index" class="gallery-item">
                 <img [src]="img" [alt]="'Imagen ' + (i + 1)" />
@@ -327,7 +319,8 @@
           <div class="preview-tags" *ngIf="etiquetasSeleccionadas.length">
             <span class="preview-tag" *ngFor="let etiqueta of etiquetasSeleccionadas">{{ etiqueta }}</span>
           </div>
-          <p class="salary-preview" *ngIf="ofertaForm.value.salario">MXN {{ ofertaForm.value.salario | number:'1.0-0' }}
+          <p class="salary-preview" *ngIf="ofertaForm.value.salario">
+            {{ ofertaForm.value.moneda }} {{ ofertaForm.value.salario | number:'1.0-0' }} / {{ ofertaForm.value.periodo_pago | lowercase }}
           </p>
         </div>
 

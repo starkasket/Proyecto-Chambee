@@ -11,7 +11,7 @@ import { CarouselComponent } from '../../components/carousel/carousel.component'
 import { ThemeService } from '../../services/theme.service';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
+import { GoogleMapsService } from '../../services/google-maps.service';
 import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
 
 interface NotificationItem {
@@ -53,7 +53,6 @@ interface Job {
   matchScore: number;
 }
 
-
 @Component({
   selector: 'app-job-detail',
   standalone: true,
@@ -70,6 +69,7 @@ export class JobDetailComponent implements OnInit {
   mostrarMapa = false;
   esFavorito = false;
   guardandoFavorito = false;
+  yaPostulado = false;
   isAdminView = false;
   isMobile = false;
   servicesOpen = false;
@@ -133,20 +133,12 @@ export class JobDetailComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  constructor(private googleMaps: GoogleMapsService) {
-
-  }
+  constructor(private googleMaps: GoogleMapsService) {}
 
   ngOnInit(): void {
-    // Obtenemos el usuario para validar su rol
     this.usuarioActual = this.api.getUsuario();
-
     this.isAdminView = this.usuarioActual?.rol === 'administrador';
-    console.log(this.isAdminView);
 
-
-
-    // Cargar notificaciones al iniciar
     if (this.usuarioActual) {
       this.cargarNotificaciones();
     }
@@ -155,9 +147,12 @@ export class JobDetailComponent implements OnInit {
       this.jobId = params.get('id');
       this.mostrarMapa = false;
       this.esFavorito = false;
+      this.yaPostulado = false;
       this.cargarDetalles(this.jobId);
       this.cargarComentarios(this.jobId);
+      this.verificarEstadoPostulacion(this.jobId);
     });
+
     this.cargarBusquedasRecientes();
 
     this.api.obtenerServiciosPublicos().subscribe({
@@ -179,7 +174,6 @@ export class JobDetailComponent implements OnInit {
     });
   }
 
-  // ================= NOTIFICACIONES =================
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({
       next: (notifs) => {
@@ -250,7 +244,6 @@ export class JobDetailComponent implements OnInit {
     }
   }
 
-  // ================= MODAL GALERÍA DE IMÁGENES =================
   abrirModalGaleria(imagenes?: string[], index: number = 0): void {
     const rawImages = (imagenes && imagenes.length ? imagenes : (this.jobData?.companyImages || []));
     const validImages = rawImages
@@ -291,9 +284,6 @@ export class JobDetailComponent implements OnInit {
     this.modalGaleriaIndex = index;
   }
 
-  // ==================================================
-
-  // Cargar comentarios desde el backend
   cargarComentarios(id: string | null) {
     if (!id) return;
 
@@ -316,7 +306,6 @@ export class JobDetailComponent implements OnInit {
     });
   }
 
-  // Enviar nuevo comentario al backend
   agregarComentario() {
     if (!this.nuevoComentario.trim() || !this.jobId) return;
 
@@ -345,8 +334,6 @@ export class JobDetailComponent implements OnInit {
       }
     });
   }
-
-  // ================= METODOS DE EDICIÓN Y ELIMINACIÓN =================
 
   toggleDropdown(index: number) {
     this.dropdownOpenIndex = this.dropdownOpenIndex === index ? null : index;
@@ -397,8 +384,6 @@ export class JobDetailComponent implements OnInit {
     });
   }
 
-  // ================= METODOS DE REPORTE ==============================
-
   abrirModalReporte(): void {
     this.motivoReporte = '';
     this.detalleReporte = '';
@@ -422,7 +407,6 @@ export class JobDetailComponent implements OnInit {
 
     this.enviandoReporte = true;
 
-    // Construimos el objeto que se enviará al backend
     const payload = {
       id_anuncio: this.jobId,
       id_postulante: this.usuarioActual?.id || this.usuarioActual?.id_postulante,
@@ -430,29 +414,40 @@ export class JobDetailComponent implements OnInit {
       detalle: this.detalleReporte
     };
 
-    // Llamada real al servicio
     this.api.reportarAnuncio(payload).subscribe({
       next: () => {
         this.enviandoReporte = false;
         this.cerrarModalReporte();
-        this.mostrarModalExito('El anuncio ha sido reportado exitosamente. Nuestro equipo lo revisará a la brevedad para garantizar la seguridad.');
+        this.mostrarModalExito('El anuncio ha sido reportado exitosamente.');
       },
       error: (err) => {
         this.enviandoReporte = false;
         console.error('Error al enviar el reporte:', err);
-        this.mostrarModal('Hubo un error al enviar tu reporte. Por favor, inténtalo de nuevo.');
+        this.mostrarModal('Hubo un error al enviar tu reporte.');
       }
     });
   }
 
-  // ====================================================================
+  private verificarEstadoPostulacion(id: string | null) {
+    if (!id || this.usuarioActual?.rol !== 'postulante') return;
+
+    this.api.obtenerPostulacionesPostulante(this.usuarioActual.id).subscribe({
+      next: (postulaciones: any[]) => {
+        this.yaPostulado = postulaciones.some((p: any) => String(p.id_anuncio) === String(id));
+      },
+      error: () => {
+        this.yaPostulado = false;
+      }
+    });
+  }
 
   postular(): void {
-    if (!this.jobId) return;
+    if (!this.jobId || this.yaPostulado) return;
 
     this.api.postularAAnuncio(this.jobId).subscribe({
       next: () => {
-        this.mostrarModalExito('Postulación enviada con éxito. El empleador revisará tu perfil pronto.');
+        this.yaPostulado = true;
+        this.mostrarModalExito('Postulación enviada con éxito.');
       },
       error: (err) => {
         console.error('Error al postular:', err);
@@ -493,7 +488,6 @@ export class JobDetailComponent implements OnInit {
   get isDarkMode(): boolean {
     return this.themeService.isDarkMode();
   }
-
 
   openService(index: number) {
     const servicio = this.services[index];
@@ -579,13 +573,15 @@ export class JobDetailComponent implements OnInit {
 
   verOtroEmpleo(id: string): void {
     this.router.navigate(['/job', id]);
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   verPerfilEmpresa(): void {
     if (!this.jobData?.employerId) {
       return;
     }
-
     this.router.navigate(['/empresa', this.jobData.employerId]);
   }
 
@@ -625,6 +621,8 @@ export class JobDetailComponent implements OnInit {
 
         const categoriasActuales = anuncio.categorias || [];
         const ubicacion = this.formatearDireccion(anuncio);
+        const monedaAnuncio = anuncio.moneda || anuncio.tipo_moneda || 'MXN';
+        const periodoAnuncio = anuncio.periodo_pago || anuncio.periodo || 'Mensual';
 
         this.jobData = {
           id: anuncio.id_anuncio,
@@ -641,6 +639,9 @@ export class JobDetailComponent implements OnInit {
           disponibilidad: anuncio.modalidad || 'Presencial',
           higiene: anuncio.descripcion || 'Consulta la publicacion para conocer mas detalles.',
           salario: anuncio.salario,
+          moneda: monedaAnuncio,
+          periodoPago: periodoAnuncio,
+          salarioFormateado: this.formatearSalario(anuncio.salario, monedaAnuncio, periodoAnuncio),
           vistas: anuncio.vistas || 0,
           applicants: parseInt(anuncio.postulaciones_count) || 0,
           direccion: ubicacion,
@@ -662,19 +663,20 @@ export class JobDetailComponent implements OnInit {
           });
         }
 
-        this.jobs = anuncios.map((anuncio: any) => ({
-          id: anuncio.id_anuncio,
-          company: anuncio.nombre_empresa || 'Empresa',
-          title: anuncio.titulo,
-          salary: this.formatearSalario(anuncio.salario),
-          img: anuncio.img || '',
-          urgency: anuncio.urgencia || 'Normal',
-          rating: anuncio.modalidad || 'Empleo',
-          applicants: parseInt(anuncio.postulaciones_count) || 0,
-          applicantsFotos: anuncio.postulantes_fotos || [],
-          tags: anuncio.categorias || [],
+        this.jobs = anuncios.map((a: any) => ({
+          id: a.id_anuncio,
+          company: a.nombre_empresa || 'Empresa',
+          title: a.titulo,
+          salary: this.formatearSalario(a.salario, a.moneda || 'MXN', a.periodo_pago || 'Mensual'),
+          img: a.img || '',
+          urgency: a.urgencia || 'Normal',
+          rating: a.modalidad || 'Empleo',
+          applicants: parseInt(a.postulaciones_count) || 0,
+          applicantsFotos: a.postulantes_fotos || [],
+          tags: a.categorias || [],
           matchScore: 0
         }));
+
         this.relatedJobs = anuncios
           .filter((item: any) => String(item.id_anuncio) !== String(id))
           .map((item: any) => {
@@ -685,7 +687,7 @@ export class JobDetailComponent implements OnInit {
               id: item.id_anuncio,
               company: item.nombre_empresa || 'Empresa',
               title: item.titulo || 'Vacante',
-              salary: this.formatearSalario(item.salario),
+              salary: this.formatearSalario(item.salario, item.moneda || 'MXN', item.periodo_pago || 'Mensual'),
               img: fotos[0] || 'assets/LogoChambee.png',
               images: fotos,
               rating: item.modalidad || 'Empleo',
@@ -721,7 +723,6 @@ export class JobDetailComponent implements OnInit {
       },
       error: (err) => {
         this.nombre_postulante = usuario?.nombre || 'Usuario';
-        console.log('No se pudo cargar la foto de perfil:', err);
       }
     });
   }
@@ -806,6 +807,7 @@ export class JobDetailComponent implements OnInit {
       disponibilidad: 'Sin especificar',
       higiene: 'No fue posible cargar los detalles.',
       salario: null,
+      salarioFormateado: 'Salario a convenir',
       vistas: 0,
       direccion: 'Ubicacion no disponible',
       ubicacion: 'Ubicacion no disponible',
@@ -834,21 +836,20 @@ export class JobDetailComponent implements OnInit {
     return origen.filter((item) => base.has(String(item).toLowerCase())).length;
   }
 
-  private formatearSalario(salario: string | number): string {
-    const numero = Number(salario);
-    if (Number.isNaN(numero) || numero === 0) return 'Salario a convenir';
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      maximumFractionDigits: 0
-    }).format(numero);
+  formatearSalario(monto: any, moneda: string = 'MXN', periodo: string = 'Mensual'): string {
+    if (!monto) return 'Salario no especificado';
+    const num = parseFloat(monto);
+    if (isNaN(num) || num === 0) return 'Salario a convenir';
+
+    const divisa = (moneda || 'MXN').toUpperCase();
+    const frecuencia = (periodo || 'Mensual').toLowerCase();
+    return `${divisa} $${num.toLocaleString('es-MX')} / ${frecuencia}`;
   }
 
-  // Modales
   modalMensaje = '';
 
   abrirModal() {
-    this.mostrarModal("¿Estás seguro de querer eliminar esta publicación?")
+    this.mostrarModal("¿Estás seguro de querer eliminar esta publicación?");
   }
 
   mostrarModal(mensaje: string) {
@@ -886,8 +887,6 @@ export class JobDetailComponent implements OnInit {
   }
 
   onSearchInput(value: string) {
-
-
     this.showSearchDropdown = true;
     if (value && value.trim().length > 0) {
       this.searchSubject.next(value);
@@ -896,17 +895,14 @@ export class JobDetailComponent implements OnInit {
     }
   }
 
-  // --- BUSCADOR INTELIGENTE Y COMPATIBLE CON SERVICIOS ---
   ejecutarBusqueda(query: string) {
     const tokens = this.normalizarTexto(query).split(/\s+/).filter(t => t.length > 0);
 
-    // Busca en empleos
     const jobsResults = this.jobs.filter(job => {
       const textoCompleto = this.normalizarTexto(`${job.title} ${job.company} ${job.tags.join(' ')}`);
       return tokens.every(token => textoCompleto.includes(token));
     }).map(j => ({ ...j, tipo: 'empleo' }));
 
-    // Busca en servicios (soportando 'titulo' además de 'title')
     const servicesResults = this.services.filter(service => {
       const titulo = service.title || service.titulo || '';
       const desc = service.description || service.descripcion || '';
@@ -924,7 +920,6 @@ export class JobDetailComponent implements OnInit {
     }, 200);
   }
 
-  // --- SE CORRIGIÓ EL CLIC EN UN RESULTADO ---
   irAResultado(resultado: any) {
     const titleToSave = resultado.title || resultado.titulo || resultado.categoria || '';
     this.guardarBusquedaReciente(this.searchTerm || titleToSave);
@@ -960,20 +955,16 @@ export class JobDetailComponent implements OnInit {
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
 
-  // --- SE CORRIGIÓ EL CLIC EN EL HISTORIAL ---
   seleccionarBusquedaReciente(term: string) {
     this.searchTerm = term;
-    this.showSearchDropdown = false; // Cerramos el menú
-    // Forzamos la navegación al panel de resultados
+    this.showSearchDropdown = false;
     this.router.navigate(['/search'], { queryParams: { q: term } });
   }
 
-  // --- AL DAR ENTER O CLIC EN "VER TODOS LOS RESULTADOS" ---
   verTodosResultados() {
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       this.guardarBusquedaReciente(this.searchTerm);
-      this.showSearchDropdown = false; // Cerramos el menú
-      // Forzamos la navegación al panel de resultados
+      this.showSearchDropdown = false;
       this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
     }
   }
@@ -992,7 +983,4 @@ export class JobDetailComponent implements OnInit {
     if (typeof value === 'object') return JSON.stringify(value).toLowerCase().trim();
     return String(value).toLowerCase().trim();
   }
-
-
-
 }

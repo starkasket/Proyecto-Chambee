@@ -28,6 +28,8 @@ interface EmployerJobFormValue {
   longitud: number | null;
   direccion_formateada: string;
   salario: number;
+  moneda: string;
+  periodo_pago: string;
   modalidad: string;
   etiquetas: string[];
   estado_anuncio?: string;
@@ -80,7 +82,6 @@ export class EmployerJobCreateComponent implements OnInit {
   previewUrls: string[] = [];
   archivosSeleccionados: File[] = [];
   fileNames: string[] = [];
-  subiendoImagen = false;
   urlsImagenesSubidas: string[] = [];
   readonly MAX_IMAGENES = 5;
   readonly MAX_TAMAÑO_MB = 2;
@@ -96,6 +97,22 @@ export class EmployerJobCreateComponent implements OnInit {
     { id: 1, title: 'Consejo rápido', message: 'Agrega salario, modalidad y etiquetas para mejorar la conversión.', time: 'Hace 2 min', read: false },
     { id: 2, title: 'Perfil actualizado', message: 'Tu empresa ya puede publicar nuevas ofertas.', time: 'Hace 1 hora', read: true }
   ];
+
+  readonly opcionesMoneda = ['MXN', 'USD', 'EUR'];
+  readonly opcionesPeriodoPago = ['Diario', 'Semanal', 'Quincenal', 'Mensual'];
+
+  readonly minimosPorPeriodo: { [key: string]: number } = {
+    'Diario': 278,
+    'Semanal': 1950,
+    'Quincenal': 4182,
+    'Mensual': 8364
+  };
+
+  readonly tasasCambio: { [key: string]: number } = {
+    'MXN': 1,
+    'USD': 20.0,
+    'EUR': 21.5
+  };
 
   readonly opcionesEdad = [
     'Sin especificar',
@@ -148,7 +165,9 @@ export class EmployerJobCreateComponent implements OnInit {
     latitud: [null as number | null],
     longitud: [null as number | null],
     direccion_formateada: ['', Validators.maxLength(300)],
-    salario: [null as number | null, [Validators.required, Validators.min(1)]],
+    salario: [null as number | null, [Validators.required, Validators.min(8364)]],
+    moneda: ['MXN', [Validators.required]],
+    periodo_pago: ['Mensual', [Validators.required]],
     modalidad: ['Presencial', [Validators.required]],
     etiquetas: this.fb.nonNullable.control<string[]>([], [Validators.required])
   });
@@ -175,6 +194,14 @@ export class EmployerJobCreateComponent implements OnInit {
       error: () => {
         this.categoriasDisponibles = [];
       }
+    });
+
+    this.ofertaForm.get('periodo_pago')?.valueChanges.subscribe(() => {
+      this.actualizarValidacionSalario();
+    });
+
+    this.ofertaForm.get('moneda')?.valueChanges.subscribe(() => {
+      this.actualizarValidacionSalario();
     });
 
     this.api.getSepomex().subscribe(data => {
@@ -222,9 +249,22 @@ export class EmployerJobCreateComponent implements OnInit {
     });
 
     this.checkMobile();
+  }
 
+  get salarioMinimoActual(): number {
+    const periodo = this.ofertaForm.get('periodo_pago')?.value || 'Mensual';
+    const moneda = this.ofertaForm.get('moneda')?.value || 'MXN';
+    const minMxn = this.minimosPorPeriodo[periodo] || 8364;
+    const tasa = this.tasasCambio[moneda] || 1;
 
+    return Math.ceil(minMxn / tasa);
+  }
 
+  actualizarValidacionSalario(): void {
+    const minEnMoneda = this.salarioMinimoActual;
+    const salarioControl = this.ofertaForm.get('salario');
+    salarioControl?.setValidators([Validators.required, Validators.min(minEnMoneda)]);
+    salarioControl?.updateValueAndValidity();
   }
 
   cargarPerfilBase() {
@@ -280,6 +320,7 @@ export class EmployerJobCreateComponent implements OnInit {
     this.guardando = true;
     this.publicarConImagen('ACTIVO', 'Publicado', false);
   }
+
   guardarBorrador() {
     this.error = '';
     this.exito = '';
@@ -339,8 +380,6 @@ export class EmployerJobCreateComponent implements OnInit {
       return;
     }
 
-    this.subiendoImagen = true;
-
     try {
       for (let i = 0; i < this.archivosSeleccionados.length; i++) {
         const archivo = this.archivosSeleccionados[i];
@@ -368,18 +407,8 @@ export class EmployerJobCreateComponent implements OnInit {
       this.archivosSeleccionados = [];
       this.fileNames = [];
       this.previewUrls = [];
-      this.subiendoImagen = false;
     } catch (err: any) {
-      this.subiendoImagen = false;
       throw err;
-    }
-  }
-
-  async subirImagenManual(): Promise<void> {
-    try {
-      await this.subirImagen();
-    } catch (err: any) {
-      this.mostrarModal(err?.message || 'Error al subir la imagen.');
     }
   }
 
@@ -510,6 +539,8 @@ export class EmployerJobCreateComponent implements OnInit {
             calle: payloadBase.calle,
             codigo_postal: payloadBase.codigo_postal,
             salario: null,
+            moneda: 'MXN',
+            periodo_pago: 'Mensual',
             modalidad: 'Presencial',
             etiquetas: []
           });
@@ -609,10 +640,7 @@ export class EmployerJobCreateComponent implements OnInit {
     this.router.navigate(['/home-employer']);
   }
 
-
-
   ubicacionSeleccionada(direccion: DireccionCompleta) {
-
     this.ofertaForm.patchValue({
       estado: direccion.estado,
       ciudad: direccion.ciudad,
@@ -623,13 +651,10 @@ export class EmployerJobCreateComponent implements OnInit {
       latitud: direccion.latitud,
       longitud: direccion.longitud,
       direccion_formateada: direccion.direccionFormateada
-
     });
-
   }
 
   private buscarColoniasPorCP(cp: string) {
-
     if (!cp) {
       this.colonias = [];
       return;

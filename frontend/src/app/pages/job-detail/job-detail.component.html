@@ -43,8 +43,7 @@
                 <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalReporte()"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small mb-3">Ayúdanos a mantener Chambee seguro. Selecciona el motivo principal de
-                    tu reporte.</p>
+                <p class="text-muted small mb-3">Ayúdanos a mantener Chambee seguro. Selecciona el motivo principal de tu reporte.</p>
 
                 <div class="mb-3">
                     <label class="fw-bold mb-2 d-block">Motivo del reporte:</label>
@@ -60,7 +59,7 @@
                 <div class="mb-2">
                     <label for="detalleReporte" class="fw-bold mb-2">Detalles adicionales (opcional):</label>
                     <textarea class="form-control" id="detalleReporte" rows="3"
-                        placeholder="Escribe más detalles sobre el problema para ayudar a nuestro equipo..."
+                        placeholder="Escribe más detalles sobre el problema..."
                         [(ngModel)]="detalleReporte" style="resize: none;"></textarea>
                 </div>
             </div>
@@ -81,7 +80,6 @@
     aria-modal="true" aria-labelledby="galleryModalTitle">
     <div class="gallery-modal-content" (click)="$event.stopPropagation()">
 
-        <!-- Encabezado del modal -->
         <div class="gallery-modal-header">
             <div class="gallery-modal-info">
                 <h5 id="galleryModalTitle" class="gallery-modal-title">
@@ -96,7 +94,6 @@
             </button>
         </div>
 
-        <!-- Visor de imagen principal -->
         <div class="gallery-main-viewer">
             <button *ngIf="modalGaleriaImagenes.length > 1" type="button" class="gallery-nav-btn gallery-nav-prev"
                 (click)="anteriorImagenGaleria($event)" aria-label="Imagen anterior">
@@ -114,7 +111,6 @@
             </button>
         </div>
 
-        <!-- Tira de miniaturas (thumbnails) si hay más de 1 imagen -->
         <div class="gallery-thumbnails" *ngIf="modalGaleriaImagenes.length > 1">
             <button type="button" *ngFor="let thumb of modalGaleriaImagenes; let idx = index" class="gallery-thumb-item"
                 [class.active]="idx === modalGaleriaIndex" (click)="seleccionarImagenGaleria(idx, $event)"
@@ -125,7 +121,6 @@
 
     </div>
 </div>
-
 
 <div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
     <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
@@ -167,7 +162,7 @@
                     </span>
                     <span class="job-urgency-badge" [ngClass]="{ 'job-urgency-badge-normal': servicioDetalle.urgencia === 'Normal',
           'job-urgency-badge-urgent': servicioDetalle.urgencia === 'Urgente', 'job-urgency-badge-very-urgent': servicioDetalle.urgencia === 'Muy urgente'}" *ngIf="servicioDetalle.urgencia">
-                        <i class="bi bi-lightning-fill"></i> {{ servicioDetalle.urgencia }} Lorem ipsum dolor, sit amet consectetur adipisicing elit. Amet, animi velit impedit, soluta hic id aliquam unde dolorum cupiditate, exercitationem laborum itaque eum! Saepe voluptates, autem aliquid corrupti ullam fuga.
+                        <i class="bi bi-lightning-fill"></i> {{ servicioDetalle.urgencia }}
                     </span>
                 </div>
 
@@ -246,8 +241,6 @@
         <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
     </div>
 
-
-
     <div class="search-container flex-grow-1 mx-4" style="position: relative;">
         <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..."
             [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" (keydown.enter)="verTodosResultados()"
@@ -258,7 +251,6 @@
             <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
                 <div class="search-dropdown-header">Búsquedas recientes</div>
 
-                <!-- SE CORRIGIÓ EL CLIC DEL HISTORIAL AQUÍ -->
                 <div *ngFor="let term of recentSearches" class="search-item"
                     (mousedown)="seleccionarBusquedaReciente(term)">
                     <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
@@ -276,14 +268,12 @@
                     No se encontraron resultados para "{{ searchTerm }}"
                 </div>
 
-                <!-- SE CORRIGIÓ EL CLIC DE RESULTADOS VIVOS AQUÍ -->
                 <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()"
                     (click)="irAResultado(result)">
                     <div class="search-item-icon">
                         <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
                     </div>
                     <div class="search-item-content">
-                        <!-- SOPORTE PARA TITLE Y TITULO -->
                         <div class="search-item-title"
                             [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
                         <div class="search-item-subtitle">
@@ -303,7 +293,6 @@
     </div>
 
     <div class="nav-buttons">
-        <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL -->
         <div class="notification-wrapper" style="position: relative; margin-right: 10px;">
             <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
                 (click)="toggleNotifications($event)">
@@ -327,9 +316,7 @@
                         <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read"
                             (click)="onNotificationClick(notif, $event)"
                             style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
-                            [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
-                            onmouseover="this.style.backgroundColor='var(--hover-bg, rgba(0,0,0,0.05))'"
-                            onmouseout="this.style.backgroundColor=this.getAttribute('data-bg') || 'transparent'">
+                            [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
                             <span class="notif-header"
                                 style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{
                                 notif.title }}</span>
@@ -362,7 +349,6 @@
                 <span class="theme-toggle-icon">{{ isDarkMode ? '☾' : '☀' }}</span>
             </span>
         </button>
-
 
         <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
                 class="bi bi-list"></i></div>
@@ -406,8 +392,6 @@
             </nav>
         </aside>
     </div>
-
-
 </nav>
 
 <div class="detail-page-wrapper">
@@ -424,8 +408,7 @@
                     <div class="job-image-container" (click)="abrirModalGaleria(jobData.companyImages)" role="button"
                         tabindex="0">
                         <app-carousel
-                            [images]="jobData.companyImages ? jobData.companyImages : [jobData.companyLogo || 'assets/LogoChambee.png']"
-                            (imageClick)="abrirModalGaleria(jobData.companyImages, $event.index)"></app-carousel>
+                            [images]="jobData.companyImages ? jobData.companyImages : [jobData.companyLogo || 'assets/LogoChambee.png']"></app-carousel>
                     </div>
                     <h3 class="company-name">{{ jobData.companyName }}</h3>
                     <p class="company-desc">{{ jobData.companyDesc }}</p>
@@ -438,14 +421,11 @@
                 <div class="ubicacion-section" *ngIf="mostrarMapa">
                     <h4 class="ubicacion-titulo">Ubicación</h4>
                     <p class="ubicacion-direccion">{{ jobData.ubicacion }}</p>
-    
 
                     <app-mapa-ubicacion [latitudInicial]="jobData?.latitud ?? null"
                         [longitudInicial]="jobData?.longitud ?? null"
                         [soloLectura]="true">
                     </app-mapa-ubicacion>
-                    
-                   <!--  <div id="map"></div> -->
                 </div>
             </div>
 
@@ -458,6 +438,12 @@
           'job-urgency-badge-urgent': jobData.urgency === 'Urgente', 'job-urgency-badge-very-urgent': jobData.urgency === 'Muy urgente'}" *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
                         <span class="job-match-badge" *ngIf="jobData.interesMatch">Coincide con tus intereses</span>
                         <h2>{{ jobData.title }}</h2>
+                        
+                        <!-- MUESTRA EL SUELDO COMPLETO -->
+                        <h4 class="text-success fw-bold mt-2" *ngIf="jobData.salarioFormateado">
+                          <i class="bi bi-cash-stack me-1"></i> {{ jobData.salarioFormateado }}
+                        </h4>
+
                         <div class="job-tags" *ngIf="jobData.tags?.length">
                             <span class="job-tag" *ngFor="let tag of jobData.tags">{{ tag }}</span>
                         </div>
@@ -473,9 +459,6 @@
                 </div>
 
                 <div class="job-requirements">
-
-
-                    
                     <h4>Perfil básico:</h4>
                     <ul>
                         <li><strong>Edad:</strong> {{ jobData.edad }}</li>
@@ -485,6 +468,7 @@
 
                     <h4>Disponibilidad y detalles:</h4>
                     <ul>
+                        <li><strong>Sueldo:</strong> {{ jobData.salarioFormateado }}</li>
                         <li><strong>Modalidad:</strong> {{ jobData.disponibilidad }}</li>
                         <li>
                             <strong>Detalles del puesto:</strong><br>
@@ -504,7 +488,6 @@
                         </span>
                     </div>
                     <div class="actions d-flex align-items-center gap-2">
-                        <!-- BOTÓN DE REPORTAR -->
                         <button *ngIf="usuarioActual?.rol === 'postulante'"
                             class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"
                             (click)="abrirModalReporte()" title="Reportar este anuncio">
@@ -514,19 +497,25 @@
                         <button class="btn-ver-mas" (click)="toggleVerMas()">
                             {{ mostrarMapa ? 'Ver menos' : 'Ver ubicación' }}
                         </button>
-                        <button *ngIf="!isAdminView" class="btn-postular" (click)="postular()">Postular</button>
+
+                        <button *ngIf="!isAdminView" 
+                                class="btn-postular" 
+                                [disabled]="yaPostulado" 
+                                [class.btn-secondary]="yaPostulado"
+                                (click)="postular()">
+                            {{ yaPostulado ? 'Postulado' : 'Postular' }}
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== SECCIÓN DE COMENTARIOS CON EDICIÓN/ELIMINACIÓN ===== -->
+    <!-- COMENTARIOS -->
     <div class="container mt-4" *ngIf="jobData">
         <div class="chambee-card flex-column comments-section">
             <h3 class="fw-bold mb-4">Comentarios y Reseñas</h3>
 
-            <!-- Caja de texto SOLO para Postulantes -->
             <div class="comment-form mb-4" *ngIf="usuarioActual?.rol === 'postulante'">
                 <textarea class="form-control mb-3 comment-input" rows="3"
                     placeholder="Escribe un comentario o duda sobre esta vacante/empresa..."
@@ -540,18 +529,15 @@
                 </div>
             </div>
 
-            <!-- Aviso para quienes no son postulantes -->
             <div class="alert alert-warning mb-4 text-center rounded-4 border-0"
                 *ngIf="usuarioActual?.rol !== 'postulante' && !isAdminView ">
                 <i class="bi bi-info-circle me-2"></i> Solo los postulantes pueden dejar comentarios en esta sección.
             </div>
 
-            <!-- Lista de Comentarios -->
             <p *ngIf="comentarios.length === 0" class="text-center text-muted my-4">
                 Aún no hay comentarios. ¡Sé el primero en opinar!
             </p>
 
-            <!-- Overlay invisible para cerrar el menú desplegable al hacer clic afuera -->
             <div class="dropdown-overlay" *ngIf="dropdownOpenIndex !== null" (click)="dropdownOpenIndex = null"></div>
 
             <div class="comments-list">
@@ -565,13 +551,11 @@
                         <div class="d-flex align-items-center gap-3">
                             <small class="text-muted">{{ com.fecha }}</small>
 
-                            <!-- Menú de 3 puntos (Solo visible si el comentario es mío) -->
                             <div class="dropdown-container" *ngIf="com.esMio">
                                 <button class="btn btn-link text-secondary p-0 border-0" (click)="toggleDropdown(i)">
                                     <i class="bi bi-three-dots-vertical fs-5"></i>
                                 </button>
 
-                                <!-- Dropdown Menu Flotante -->
                                 <div class="custom-dropdown-menu" *ngIf="dropdownOpenIndex === i">
                                     <button class="dropdown-item" (click)="editarComentario(i)">
                                         <i class="bi bi-pencil me-2"></i> Editar
@@ -584,10 +568,8 @@
                         </div>
                     </div>
 
-                    <!-- Vista normal (Lectura) -->
                     <p class="mb-0 text-secondary-custom" *ngIf="!com.editando">{{ com.texto }}</p>
 
-                    <!-- Vista de Edición en línea -->
                     <div *ngIf="com.editando" class="mt-2 position-relative" style="z-index: 2;">
                         <textarea class="form-control mb-2 comment-input" rows="2"
                             [(ngModel)]="com.textoEditado"></textarea>
@@ -602,7 +584,6 @@
             </div>
         </div>
     </div>
-    <!-- ======================================================== -->
 
     <div *ngIf="!isAdminView" class="container mt-4">
         <div class="ad-banner">
@@ -614,13 +595,15 @@
     <div *ngIf="!isAdminView" class="container related-section mt-5">
         <h3 class="mb-4 fw-bold">Empleos similares</h3>
         <div class="jobs-grid">
-            <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)">
+            <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)" style="cursor: pointer;">
                 <app-carousel [images]="relJob.images ? relJob.images : [relJob.img || 'assets/LogoChambee.png']"
                     [jobId]="relJob.id"></app-carousel>
                 <div class="job-content">
                     <h4>{{ relJob.company }}</h4>
                     <p class="job-title">{{ relJob.title }}</p>
-                    <p class="salary">{{ relJob.salary }}</p>
+
+                    <p class="salary fw-bold text-success">{{ relJob.salary }}</p>
+
                     <div class="job-tags" *ngIf="relJob.tags?.length">
                         <span class="job-tag" *ngFor="let tag of relJob.tags | slice:0:2">{{ tag }}</span>
                     </div>
@@ -628,10 +611,6 @@
                         ★ {{ relJob.rating }}
 
                         <div class="applicants-info">
-                            <div class="applicants-avatars" *ngIf="relJob.applicantsFotos?.length">
-                               <!--  <img *ngFor="let foto of relJob.applicantsFotos" [src]="foto" alt="postulante"
-                                    class="applicant-avatar"> -->
-                            </div>
                             <span>{{ relJob.applicants }} postulados</span>
                         </div>
                     </div>
