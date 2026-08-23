@@ -1,4 +1,4 @@
-<div class="company-public-page">
+<div class="company-public-page" [ngStyle]="{'padding-bottom': isAdminView ? '90px' : '0'}">
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3" routerLink="/home-user" style="cursor: pointer;">
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
@@ -47,13 +47,27 @@
       </div>
     </div>
 
+    <div id="modalAceptar" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Adiós</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Se oculta la barra de búsqueda para el Admin -->
     <div class="search-container flex-grow-1 mx-4" *ngIf="!isAdminView">
-      <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
+      <input type="text" class="form-control" placeholder="Buscar, categoría, puesto, ciudad y más..." />
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-      <!-- Se oculta la campanita para el Admin, pero con tu diseño -->
       <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
         <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
@@ -85,13 +99,14 @@
         </div>
       </div>
 
-      <!-- Botón Perfil oculto para Admin -->
+      <!-- Botón Mi perfil (Oculto para Admins) -->
       <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2" style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);" type="button" (click)="irAlPerfil()">
         <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
         <i *ngIf="!fotoPostulante" class="bi bi-person-circle fs-5"></i>
         <span class="d-none d-md-inline">Mi perfil</span>
       </button>
 
+      <!-- Toggle de modo oscuro -->
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
           <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
@@ -165,7 +180,7 @@
               <p class="subtitle">Empresa registrada en Chambee</p>
               <p class="location">
                 <i class="bi bi-geo-alt"></i>
-                {{ ubicacionGeneral || 'Ubicacion no disponible' }}
+                {{ ubicacionGeneral || 'Ubicación no disponible' }}
               </p>
             </div>
           </div>
@@ -182,20 +197,20 @@
             <h3>Acerca de la empresa</h3>
             <p>{{ descripcionVisible }}</p>
             <button type="button" class="link-btn" *ngIf="(perfil.descripcion || '').length > 220" (click)="toggleDescripcion()">
-              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver mas' }}
+              {{ mostrarDescripcionCompleta ? 'Ver menos' : 'Ver más' }}
             </button>
           </div>
 
           <div class="detail-col">
-            <h3>Direccion</h3>
-            <p><strong>Direccion:</strong><br />{{ direccionVisible || 'Sin especificar' }}</p>
+            <h3>Dirección</h3>
+            <p><strong>Dirección:</strong><br />{{ direccionVisible || 'Sin especificar' }}</p>
             <p><strong>Ciudad:</strong> {{ perfil.ciudad || 'Sin especificar' }}</p>
             <p><strong>Estado:</strong> {{ perfil.estado || 'Sin especificar' }}</p>
           </div>
 
           <div class="detail-col">
-            <h3>Informacion visible</h3>
-            <p>Este perfil muestra solo datos publicos de la empresa y sus vacantes activas.</p>
+            <h3>Información visible</h3>
+            <p>Este perfil muestra solo datos públicos de la empresa y sus vacantes activas.</p>
           </div>
         </div>
       </article>
@@ -235,7 +250,6 @@
       </div>
     </section>
 
-    <!-- Sección para calificar al empleador y opiniones -->
     <section *ngIf="!cargando && perfil" class="rating-section-shell">
       <div class="yellow-shell" *ngIf="usuarioActual?.rol === 'postulante'">
         <article class="rating-feedback-card">
@@ -272,7 +286,6 @@
         </article>
       </div>
 
-      <!-- Opiniones de postulantes con tu diseño premium conservado -->
       <div class="yellow-shell mt-4">
         <article class="reviews-list-card">
           <div class="card-header-premium">
@@ -297,7 +310,6 @@
                       <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
                     </div>
                   </div>
-                  <!-- Menú 3 puntos -->
                   <div class="review-menu-wrapper" *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
                     <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
                       <i class="bi bi-three-dots-vertical"></i>
@@ -326,7 +338,7 @@
   </main>
 </div>
 
-<!-- Modales Admin -->
+<!-- Modales Inferiores (Fuera del Main) -->
 <div id="modalEliminarAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
