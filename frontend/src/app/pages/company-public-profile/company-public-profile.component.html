@@ -2,65 +2,59 @@
   <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div class="d-flex align-items-center gap-3" routerLink="/home-user" style="cursor: pointer;">
       <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
-      <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span> <!-- , {{ nombrePostulante }} -->
+      <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
     </div>
 
-<div id="modalAlerta" class="modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">¡Atención!</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
+    <!-- Modales de Reporte y Alertas Generales -->
+    <div id="modalAlerta" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">¡Atención!</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div>
+            <form class="support-form" #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+              <div class="support-grid">
+                <label class="support-field support-field-span-2">
+                  <span>Motivo</span>
+                  <select name="motivo" ngModel #motivo="ngModel" required>
+                    <option value="" disabled>Selecciona un motivo</option>
+                    <option value="perfil_falso">Perfil falso o suplantación</option>
+                    <option value="fraude">Posible fraude o estafa</option>
+                    <option value="contenido_inapropiado">Contenido inapropiado</option>
+                    <option value="acoso">Acoso o comportamiento ofensivo</option>
+                    <option value="spam">Spam</option>
+                    <option value="oferta_engañosa">Oferta de empleo engañosa</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                  <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es obligatorio.</small>
+                </label>
+                <label class="support-field support-field-full">
+                  <span>Descripción del reporte.</span>
+                  <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
+                    placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo." required></textarea>
+                  <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es obligatorio.</small>
+                </label>
+              </div>
+              <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-
-      <div>
-        <form class="support-form"  #form="ngForm" (ngSubmit)="reportarPerfil(form)">
-                <div class="support-grid">
-                
-                  <label class="support-field support-field-span-2">
-                    <span>Motivo</span>
-                    <select name="motivo" ngModel #motivo="ngModel" required>
-                      <option value="" disabled>Selecciona un motivo</option>
-                      <option value="perfil_falso">Perfil falso o suplantación</option>
-                      <option value="fraude">Posible fraude o estafa</option>
-                      <option value="contenido_inapropiado">Contenido inapropiado</option>
-                      <option value="acoso">Acoso o comportamiento ofensivo</option>
-                      <option value="spam">Spam</option>
-                      <option value="oferta_engañosa">Oferta de empleo engañosa</option>
-                      <option value="otro">Otro</option>
-                    </select>
-                    <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es
-                      obligatorio.</small>
-                  </label>
-
-                  <label class="support-field support-field-full">
-                    <span>Descripción del reporte.</span>
-                    <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5"
-                      placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."
-                      required></textarea>
-                    <small *ngIf="descripcion.invalid && descripcion.touched" class="support-error">Este campo es
-                      obligatorio.</small>
-                  </label>
-                </div>
-
-                <div class="modal-footer border-0 justify-content-center pb-4">
-                  <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
-                  <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
-                </div>
-                </form>
-      </div>
-    
     </div>
-  </div>
-</div>
 
-
-    <div class="search-container flex-grow-1 mx-4">
+    <!-- Se oculta la barra de búsqueda para el Admin -->
+    <div class="search-container flex-grow-1 mx-4" *ngIf="!isAdminView">
       <input type="text" class="form-control" placeholder="Buscar, categoria, puesto, ciudad y mas..." />
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
+<<<<<<< HEAD
       <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
         <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
@@ -69,6 +63,13 @@
           <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
             <span class="visually-hidden">Nuevas notificaciones</span>
           </span>
+=======
+      <!-- Se oculta la campanita para el Admin -->
+      <div class="notification-wrapper" *ngIf="!isAdminView">
+        <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
+          <i class="bi bi-bell-fill"></i>
+          <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
+>>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
         </div>
 
         <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
@@ -96,11 +97,18 @@
         </div>
       </div>
 
+<<<<<<< HEAD
       <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2"
         style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
         type="button" (click)="irAlPerfil()">
         <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
         <i *ngIf="!fotoPostulante" class="bi bi-person-circle fs-5"></i>
+=======
+      <!-- Se oculta el botón de perfil para el Admin -->
+      <button class="profile-chip" type="button" (click)="irAlPerfil()" *ngIf="!isAdminView">
+        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" />
+        <i *ngIf="!fotoPostulante" class="bi bi-person-circle"></i>
+>>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
         <span class="d-none d-md-inline">Mi perfil</span>
       </button>
 
@@ -112,35 +120,44 @@
 
       <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menu" role="button">☰</div>
 
+      <!-- Menú de Escritorio -->
       <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
         <ng-container *ngIf="isAdminView">
           <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
           <hr />
-          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+          <a (click)="abrirModalSuspenderAdmin()" class="desktop-menu-link text-warning" style="cursor: pointer;">Suspender Empresa</a>
+          <a (click)="abrirModalEliminarAdmin()" class="desktop-menu-link text-danger" style="cursor: pointer;">Eliminar Empresa</a>
+          <hr />
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
+        
         <ng-container *ngIf="!isAdminView">
           <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
           <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
           <a (click)="irAFavoritos()" class="desktop-menu-link" style="cursor: pointer;">Mis favoritos</a>
           <hr />
-          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+          <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
       </div>
     </div>
 
+    <!-- Menú Móvil -->
     <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
       <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-        <button class="mobile-close" aria-label="Cerrar menu" (click)="toggleMenu()">x</button>
+        <button class="mobile-close" aria-label="Cerrar menu" (click)="toggleMenu()">✕</button>
         <nav class="mobile-nav">
           <ng-container *ngIf="isAdminView">
             <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
-            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+            <a class="mobile-nav-link text-warning" (click)="abrirModalSuspenderAdmin(); toggleMenu()" style="cursor: pointer;">Suspender Empresa</a>
+            <a class="mobile-nav-link text-danger" (click)="abrirModalEliminarAdmin(); toggleMenu()" style="cursor: pointer;">Eliminar Empresa</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
+          
           <ng-container *ngIf="!isAdminView">
             <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
-            <a class="mobile-nav-link" (click)="irAlPerfil()" style="cursor: pointer;">Mi perfil</a>
-            <a class="mobile-nav-link" (click)="irAFavoritos()" style="cursor: pointer;">Mis favoritos</a>
-            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+            <a class="mobile-nav-link" (click)="irAlPerfil(); toggleMenu()" style="cursor: pointer;">Mi perfil</a>
+            <a class="mobile-nav-link" (click)="irAFavoritos(); toggleMenu()" style="cursor: pointer;">Mis favoritos</a>
+            <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
         </nav>
       </aside>
@@ -170,10 +187,9 @@
                 <i class="bi bi-geo-alt"></i>
                 {{ ubicacionGeneral || 'Ubicacion no disponible' }}
               </p>
-              
             </div>
           </div>
-          <button *ngIf="usuarioActual?.rol === 'postulante'" class="report-btn" type="button"  (click)="abrirModal()" >Reportar cuenta</button> <!-- (click)="" -->
+          <button *ngIf="usuarioActual?.rol === 'postulante'" class="report-btn" type="button" (click)="abrirModal()">Reportar cuenta</button>
 
           <div class="company-stat">
             <strong>{{ perfil.vacantes_activas || anuncios.length }}</strong>
@@ -239,65 +255,52 @@
       </div>
     </section>
 
-
     <!-- Sección para calificar al empleador y opiniones -->
     <section *ngIf="!cargando && perfil" class="rating-section-shell">
       <div class="yellow-shell" *ngIf="usuarioActual?.rol === 'postulante'">
-      <article class="rating-feedback-card">
-        <div class="card-header-premium">
-          <h3>Calificar a esta Empresa</h3>
-          <p class="subtitle-premium">Comparte tu experiencia con esta empresa para ayudar a otros postulantes.</p>
-        </div>
-        <div class="card-body-premium">
-          <div class="interactive-stars-row">
-            <span class="rating-label">Tu Calificación:</span>
-            <div class="stars-interactive d-flex gap-2">
-              <button
-                *ngFor="let starIndex of [1, 2, 3, 4, 5]"
-                type="button"
-                class="star-btn"
-                (click)="setRating(starIndex)"
-                (mouseenter)="setHover(starIndex)"
-                (mouseleave)="setHover(0)"
-                [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'"
-              >
-                <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
-              </button>
+        <article class="rating-feedback-card">
+          <div class="card-header-premium">
+            <h3>Calificar a esta Empresa</h3>
+            <p class="subtitle-premium">Comparte tu experiencia con esta empresa para ayudar a otros postulantes.</p>
+          </div>
+          <div class="card-body-premium">
+            <div class="interactive-stars-row">
+              <span class="rating-label">Tu Calificación:</span>
+              <div class="stars-interactive d-flex gap-2">
+                <button *ngFor="let starIndex of [1, 2, 3, 4, 5]" type="button" class="star-btn"
+                  (click)="setRating(starIndex)" (mouseenter)="setHover(starIndex)" (mouseleave)="setHover(0)"
+                  [attr.aria-label]="'Calificar con ' + starIndex + ' estrellas'">
+                  <i [class]="(starIndex <= (ratingHover || ratingSeleccionado)) ? 'bi bi-star-fill active-star' : 'bi bi-star inactive-star'"></i>
+                </button>
+              </div>
+              <span *ngIf="ratingSeleccionado > 0" class="rating-text fw-semibold ms-2">
+                {{ ratingSeleccionado }} {{ ratingSeleccionado === 1 ? 'estrella' : 'estrellas' }}
+              </span>
             </div>
-            <span *ngIf="ratingSeleccionado > 0" class="rating-text fw-semibold ms-2">
-              {{ ratingSeleccionado }} {{ ratingSeleccionado === 1 ? 'estrella' : 'estrellas' }}
-            </span>
-          </div>
 
-          <div class="comment-field mt-3">
-            <label for="comentario-postulante" class="form-label fw-medium">Escribe una opinión (opcional):</label>
-            <textarea
-              id="comentario-postulante"
-              class="form-control premium-textarea"
-              rows="3"
-              placeholder="Ej. Proceso de selección transparente, buen ambiente de trabajo, comunicación profesional..."
-              [(ngModel)]="nuevoComentario"
-            ></textarea>
-          </div>
+            <div class="comment-field mt-3">
+              <label for="comentario-postulante" class="form-label fw-medium">Escribe una opinión (opcional):</label>
+              <textarea id="comentario-postulante" class="form-control premium-textarea" rows="3"
+                placeholder="Ej. Proceso de selección transparente, buen ambiente de trabajo, comunicación profesional..."
+                [(ngModel)]="nuevoComentario"></textarea>
+            </div>
 
-          <div class="actions-row mt-3 d-flex align-items-center gap-3">
-            <button
-              type="button"
-              class="btn btn-premium-submit"
-              [disabled]="ratingEnviando || (ratingSeleccionado === 0 && !nuevoComentario.trim())"
-              (click)="enviarCalificacion()"
-            >
-              {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
-            </button>
-            <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
-            <span *ngIf="ratingError" class="text-danger small">{{ ratingError }}</span>
+            <div class="actions-row mt-3 d-flex align-items-center gap-3">
+              <button type="button" class="btn btn-premium-submit"
+                [disabled]="ratingEnviando || (ratingSeleccionado === 0 && !nuevoComentario.trim())"
+                (click)="enviarCalificacion()">
+                {{ ratingEnviando ? 'Guardando...' : (perfil.valoracion_propia ? 'Actualizar Calificación' : 'Guardar Calificación') }}
+              </button>
+              <span *ngIf="ratingExito" class="text-success small">{{ ratingExito }}</span>
+              <span *ngIf="ratingError" class="text-danger small">{{ ratingError }}</span>
+            </div>
           </div>
-        </div>
-      </article>
+        </article>
       </div>
 
       <!-- Opiniones de postulantes -->
       <div class="yellow-shell mt-4">
+<<<<<<< HEAD
       <article class="reviews-list-card">
         <div class="card-header-premium">
           <h3>Opiniones de Postulantes</h3>
@@ -307,49 +310,140 @@
           <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
             <i class="bi bi-chat-left-heart display-6" style="color: var(--text-secondary); opacity: 0.6;"></i>
             <p class="mt-2" style="color: var(--text-secondary); opacity: 0.8;">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
+=======
+        <article class="reviews-list-card">
+          <div class="card-header-premium">
+            <h3>Opiniones de Postulantes</h3>
+            <p class="subtitle-premium">Calificaciones y comentarios de candidatos que interactuaron con esta empresa.</p>
+>>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
           </div>
+          <div class="card-body-premium">
+            <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
+              <i class="bi bi-chat-left-heart display-6 text-muted"></i>
+              <p class="mt-2 text-muted">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
+            </div>
 
-          <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
-            <div *ngFor="let rev of valoraciones_recibidas" class="review-item-premium p-3">
-              <div class="review-header d-flex justify-content-between align-items-start">
-                <div class="reviewer-info d-flex align-items-center gap-2">
-                  <div class="reviewer-logo-box">
-                    <img [src]="rev.foto_postulante || 'assets/LogoChambee.png'" alt="Foto Postulante" class="reviewer-logo" />
+            <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
+              <div *ngFor="let rev of valoraciones_recibidas" class="review-item-premium p-3">
+                <div class="review-header d-flex justify-content-between align-items-start">
+                  <div class="reviewer-info d-flex align-items-center gap-2">
+                    <div class="reviewer-logo-box">
+                      <img [src]="rev.foto_postulante || 'assets/LogoChambee.png'" alt="Foto Postulante" class="reviewer-logo" />
+                    </div>
+                    <div>
+                      <h4 class="reviewer-name mb-0">{{ rev.nombre_postulante }}</h4>
+                      <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 class="reviewer-name mb-0">{{ rev.nombre_postulante }}</h4>
-                    <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
-                  </div>
-                </div>
-                <!-- Menú 3 puntos: creador del comentario o dueño del perfil -->
-                <div class="review-menu-wrapper"
-                     *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
-                  <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
-                    <i class="bi bi-three-dots-vertical"></i>
-                  </button>
-                  <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
-                    <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
-                      <i class="bi bi-trash3"></i> Eliminar
+                  <!-- Menú 3 puntos: creador del comentario o dueño del perfil -->
+                  <div class="review-menu-wrapper" *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
+                    <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
+                      <i class="bi bi-three-dots-vertical"></i>
                     </button>
+                    <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
+                      <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
+                        <i class="bi bi-trash3"></i> Eliminar
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <!-- Estrellas y comentario unidos en un bloque visual -->
-              <div class="review-body mt-2">
-                <div class="review-stars-display d-flex gap-1 mb-1">
-                  <i *ngFor="let s of [1,2,3,4,5]"
-                     [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"
-                  ></i>
-                </div>
-                <div *ngIf="rev.comentario" class="review-comment">
-                  <p class="mb-0">{{ rev.comentario }}</p>
+                <div class="review-body mt-2">
+                  <div class="review-stars-display d-flex gap-1 mb-1">
+                    <i *ngFor="let s of [1,2,3,4,5]"
+                      [class]="s <= rev.puntuacion ? 'bi bi-star-fill star-icon yellow-star' : 'bi bi-star star-icon empty-star'"></i>
+                  </div>
+                  <div *ngIf="rev.comentario" class="review-comment">
+                    <p class="mb-0">{{ rev.comentario }}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </article>
+        </article>
       </div>
     </section>
   </main>
+</div>
+
+<!-- Modal de Confirmación para Borrar (Admin) -->
+<div id="modalEliminarAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
+        <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminarAdmin()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar Perfil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación para Suspender (Admin) -->
+<div id="modalSuspenderAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-warning fw-bold">Suspender Perfil</h5>
+        <p class="mb-3">Selecciona el tiempo que deseas suspender a esta empresa:</p>
+        <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
+          <option value="1">1 Día</option>
+          <option value="3">3 Días</option>
+          <option value="7">1 Semana</option>
+          <option value="30">1 Mes</option>
+          <option value="0">Permanente</option>
+        </select>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalSuspenderAdmin()">Cancelar</button>
+        <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;" (click)="ejecutarSuspensionAdmin()">Suspender</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Éxito para Admin -->
+<div id="modalExitoAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
+        <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
+        <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Error para Admin -->
+<div id="modalErrorAdmin" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
+        <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalErrorAdmin()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Banner Inferior Fijo de Administrador -->
+<div *ngIf="isAdminView" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; z-index: 1050; border-top: 3px solid #dc3545; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); padding: 15px 0;">
+  <div class="container d-flex justify-content-between align-items-center">
+    <span class="fw-bold text-dark" style="font-size: 1.1rem;">
+      <i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador
+    </span>
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
+      <button class="btn btn-danger text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalEliminarAdmin()">Borrar Perfil</button>
+    </div>
+  </div>
 </div>

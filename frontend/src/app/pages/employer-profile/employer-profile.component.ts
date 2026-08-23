@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // <-- IMPORTANTE
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms'; 
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
@@ -51,7 +51,7 @@ interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
-  applicantId?: string; // Para redirigir al postulante
+  applicantId?: string; 
 }
 
 type ProfileSectionTab = 'anuncios' | 'postulaciones';
@@ -59,7 +59,7 @@ type ProfileSectionTab = 'anuncios' | 'postulaciones';
 @Component({
   selector: 'app-employer-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule], // <-- AGREGADO FormsModule
+  imports: [CommonModule, RouterModule, FormsModule], 
   templateUrl: './employer-profile.component.html',
   styleUrl: './employer-profile.component.css'
 })
@@ -76,9 +76,13 @@ export class EmployerProfileComponent implements OnInit {
   activeTab: ProfileSectionTab = 'anuncios';
   modalMensaje = '';
 
+  usuarioActual: any = null;
+  isOwnProfile = false;
   isAdminView = false;
-  tiempoSuspensionAdmin: string = '7'; // Variable para el modal
-  modalMensajeExitoAdmin: string = ''; // Mensaje para la abeja feliz
+  isEmployerView = false; // Agregado para controlar el menú
+  
+  tiempoSuspensionAdmin: string = '7'; 
+  modalMensajeExitoAdmin: string = ''; 
 
   anuncios: EmployerAnnouncement[] = [];
   resenas: any[] = [];
@@ -88,6 +92,7 @@ export class EmployerProfileComponent implements OnInit {
   constructor(
     private api: ApiService,
     private router: Router,
+    private route: ActivatedRoute, 
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService,
     private cdr: ChangeDetectorRef 
@@ -95,27 +100,48 @@ export class EmployerProfileComponent implements OnInit {
 
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
-    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
+    
+    // TRUCO INFALIBLE: Obtenemos el primer parámetro de la URL, sin importar si se llama 'id' o 'empleadorId'
+    const paramKeys = this.route.snapshot.paramMap.keys;
+    const perfilRouteId = paramKeys.length > 0 ? this.route.snapshot.paramMap.get(paramKeys[0])?.trim() : null;
 
     if (!usuario) {
-      this.error = 'No hay sesion activa. Inicia sesion para ver tu perfil.';
+      this.error = 'No hay sesión activa. Inicia sesión para ver tu perfil.';
       this.cargando = false;
       return;
     }
 
-    this.isAdminView = usuario.rol === 'administrador' || usuario.rol === 'admin';
+    this.usuarioActual = usuario;
+    
+    // Verificación de Roles robusta
+    const rol = (usuario.rol || usuario.role || usuario.tipo || '').toLowerCase();
+    this.isAdminView = rol === 'administrador' || rol === 'admin' || rol.includes('admin');
+    this.isEmployerView = rol === 'empleador';
 
-    // Evitar que el admin cargue notificaciones (Previene el error 403)
     if (!this.isAdminView) {
       this.cargarNotificaciones();
     }
 
-    if (usuario.rol !== 'empleador' && !this.isAdminView) {
-      this.error = 'Esta seccion es solo para empleadores.';
+    // SI HAY UN ID EN LA RUTA, ESTAMOS VIENDO EL PERFIL DE ALGUIEN MÁS (Admin o Postulante)
+    if (perfilRouteId) {
+      this.employerId = perfilRouteId;
+      this.isOwnProfile = false;
+      this.cargarPerfilPorId(perfilRouteId);
+      this.checkMobile();
+      return;
+    }
+
+    // SI NO HAY ID, VERIFICA QUE SEA EMPLEADOR PARA VER "MI PERFIL"
+    if (!this.isEmployerView && !this.isAdminView) {
+      this.error = 'Esta sección es solo para empleadores.';
       this.cargando = false;
       return;
     }
 
+    this.isOwnProfile = true;
+
+    // Cargar Mi Perfil
+    const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
     if (perfilLocalRaw) {
       this.perfil = JSON.parse(perfilLocalRaw);
     }
@@ -145,7 +171,26 @@ export class EmployerProfileComponent implements OnInit {
     });
 
     this.checkMobile();
-  };
+  }
+
+  cargarPerfilPorId(id: string) {
+    this.api.obtenerPerfilEmpleador(id).subscribe({
+      next: (perfil: any) => {
+        this.perfil = perfil;
+        this.resenas = perfil.valoraciones_recibidas || [];
+        this.cargarAnuncios(id);
+        
+        // Solo el admin o el dueño deberían ver las postulaciones, pero si es requerimiento, las cargamos.
+        this.cargarPostulacionesRecibidas(id);
+        
+        this.cargando = false;
+      },
+      error: (err) => {
+        this.cargando = false;
+        this.error = "No fue posible cargar el perfil de esta empresa.";
+      }
+    });
+  }
 
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({
@@ -187,7 +232,6 @@ export class EmployerProfileComponent implements OnInit {
       this.hasUnreadNotifications = false;
       this.notifications.forEach(n => n.read = true);
 
-      // Llamar a la API para marcarlas como leídas en PostgreSQL
       this.api.marcarNotificacionesLeidas().subscribe({
         error: (err) => console.error('Error al actualizar estado de notificaciones', err)
       });
@@ -198,9 +242,7 @@ export class EmployerProfileComponent implements OnInit {
   cargarAnuncios(idEmpleador: string) {
     this.api.obtenerAnunciosEmpleador(idEmpleador).subscribe({
       next: (anunciosDb) => {
-        if (!anunciosDb.length) {
-          return;
-        }
+        if (!anunciosDb.length) return;
 
         this.anuncios = anunciosDb.map((anuncio) => ({
           id: anuncio.id_anuncio,
@@ -230,28 +272,22 @@ export class EmployerProfileComponent implements OnInit {
         }));
       },
       error: (err) => {
-        console.error('Error al cargar postulaciones recibidas:', err);
         this.postulacionesRecibidas = [];
       }
     });
   }
 
   get direccionCompleta(): string {
-    if (!this.perfil) {
-      return '';
-    }
+    if (!this.perfil) return '';
     return `${this.perfil.calle}, ${this.perfil.colonia}, ${this.perfil.ciudad}, ${this.perfil.estado}, ${this.perfil.pais}`;
   }
 
   get descripcionVisible(): string {
-    if (!this.perfil?.descripcion) {
-      return '';
-    }
+    if (!this.perfil?.descripcion) return '';
     const limite = 100;
     if (this.mostrarDescripcionCompleta || this.perfil.descripcion.length <= limite) {
       return this.perfil.descripcion;
     }
-
     return `${this.perfil.descripcion.slice(0, limite)}...`;
   }
 
@@ -279,13 +315,9 @@ export class EmployerProfileComponent implements OnInit {
   getStarsArray(promedio: number): string[] {
     const stars: string[] = [];
     for (let i = 1; i <= 5; i++) {
-      if (promedio >= i) {
-        stars.push('full');
-      } else if (promedio >= i - 0.5) {
-        stars.push('half');
-      } else {
-        stars.push('empty');
-      }
+      if (promedio >= i) stars.push('full');
+      else if (promedio >= i - 0.5) stars.push('half');
+      else stars.push('empty');
     }
     return stars;
   }
@@ -315,9 +347,7 @@ export class EmployerProfileComponent implements OnInit {
   }
 
   toggleMenu(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
+    if (event) event.stopPropagation();
     this.menuOpen = !this.menuOpen;
     this.notificationsOpen = false;
   }
@@ -328,15 +358,9 @@ export class EmployerProfileComponent implements OnInit {
 
   @HostListener('document:click')
   onDocumentClick() {
-    if (this.notificationsOpen) {
-      this.notificationsOpen = false;
-    }
-    if (this.menuOpen) {
-      this.menuOpen = false;
-    }
-    if (this.menuAbiertoId) {
-      this.menuAbiertoId = null;
-    }
+    if (this.notificationsOpen) this.notificationsOpen = false;
+    if (this.menuOpen) this.menuOpen = false;
+    if (this.menuAbiertoId) this.menuAbiertoId = null;
   }
 
   @HostListener('window:resize')
@@ -353,10 +377,12 @@ export class EmployerProfileComponent implements OnInit {
   }
 
   volverPanel() {
-    if(this.isAdminView){
+    if(this.isAdminView) {
       this.router.navigate(['/admin-dashboard']);
-    } else {
+    } else if (this.isEmployerView) {
       this.router.navigate(['/home-employer']);
+    } else {
+      this.router.navigate(['/home-user']);
     }
   }
 
@@ -367,30 +393,22 @@ export class EmployerProfileComponent implements OnInit {
   }
 
   private formatearFecha(fecha: string | null): string {
-    if (!fecha) {
-      return 'Recien publicada';
-    }
-
+    if (!fecha) return 'Recién publicada';
     const date = new Date(fecha);
-    return date.toLocaleDateString('es-MX', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-   eliminarCuenta(){
-     this.api.eliminarEmpleador().subscribe({
-    next: () => {
-      localStorage.removeItem('token');
-      this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.")
-      this.router.navigate(['/login']);
-    },
-    error: (err) => {
-      console.error(err);
-      alert('Ocurrió un error');
-    }
-  });
+  eliminarCuenta(){
+    this.api.eliminarEmpleador().subscribe({
+      next: () => {
+        localStorage.removeItem('token');
+        this.mostrarModalAceptar("Esperamos que hayas disfrutado el tiempo que pasaste en Chambee.")
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        alert('Ocurrió un error');
+      }
+    });
   }
 
   abrirModalEliminar(){
@@ -413,6 +431,7 @@ export class EmployerProfileComponent implements OnInit {
       modal.style.display = 'none';
     }
   }
+  
   cerrarModalAceptar() {
     const modal = document.getElementById('modalAceptar');
     if (modal) {
@@ -449,24 +468,24 @@ export class EmployerProfileComponent implements OnInit {
     this.menuAbiertoId = null;
     this.api.eliminarValoracion(idValoracion).subscribe({
       next: () => {
-        this.api.getMiPerfil().subscribe({
-          next: (perfil: any) => {
-            this.perfil = perfil;
-            this.resenas = perfil.valoraciones_recibidas || [];
-          }
-        });
-      },
-      error: (err) => {
-        console.error('Error al eliminar valoración:', err);
+        if(this.employerId) {
+           this.cargarPerfilPorId(this.employerId);
+        } else {
+           this.api.getMiPerfil().subscribe({
+             next: (perfil: any) => {
+               this.perfil = perfil;
+               this.resenas = perfil.valoraciones_recibidas || [];
+             }
+           });
+        }
       }
     });
   }
 
   // ==========================================
-  // FUNCIONES NUEVAS DE ADMIN: ELIMINAR Y SUSPENDER
+  // FUNCIONES DE ADMIN: ELIMINAR Y SUSPENDER
   // ==========================================
   
-  // MODALES BORRAR
   abrirModalEliminarAdmin() {
     const modal = document.getElementById('modalEliminarAdmin');
     if (modal) {
@@ -484,7 +503,7 @@ export class EmployerProfileComponent implements OnInit {
   }
 
   ejecutarEliminarAdmin() {
-    const id = this.perfil?.id_empleador;
+    const id = this.perfil?.id_empleador || this.employerId;
     
     if (!id) {
       alert("No se pudo obtener el ID de la empresa.");
@@ -497,17 +516,15 @@ export class EmployerProfileComponent implements OnInit {
         this.mostrarModalExitoAdmin("El perfil de la empresa ha sido borrado permanentemente.");
       },
       error: (err) => {
-        console.error('Error al eliminar perfil:', err);
         alert('Hubo un problema al intentar borrar este perfil desde la base de datos.');
         this.cerrarModalEliminarAdmin();
       }
     });
   }
 
-  // MODALES SUSPENDER
   abrirModalSuspenderAdmin() {
     const modal = document.getElementById('modalSuspenderAdmin');
-    this.tiempoSuspensionAdmin = '7'; // Valor predeterminado
+    this.tiempoSuspensionAdmin = '7'; 
     if (modal) {
       modal.classList.add('show');
       modal.style.display = 'flex';
@@ -523,7 +540,7 @@ export class EmployerProfileComponent implements OnInit {
   }
 
   ejecutarSuspensionAdmin() {
-    const id = this.perfil?.id_empleador;
+    const id = this.perfil?.id_empleador || this.employerId;
     if (!id) return;
 
     const dias = parseInt(this.tiempoSuspensionAdmin, 10);
@@ -534,14 +551,12 @@ export class EmployerProfileComponent implements OnInit {
         this.mostrarModalExitoAdmin(dias === 0 ? "La empresa ha sido suspendida permanentemente." : `La empresa ha sido suspendida por ${dias} días.`);
       },
       error: (err) => {
-        console.error('Error al suspender empresa:', err);
         alert('Hubo un problema al suspender la empresa.');
         this.cerrarModalSuspenderAdmin();
       }
     });
   }
 
-  // MODAL DE ÉXITO FELIZ Y REDIRECCIÓN
   mostrarModalExitoAdmin(mensaje: string) {
     this.modalMensajeExitoAdmin = mensaje;
     const modal = document.getElementById('modalExitoAdmin');
@@ -549,7 +564,6 @@ export class EmployerProfileComponent implements OnInit {
       modal.classList.add('show');
       modal.style.display = 'flex';
 
-      // Esperamos 2.5 segundos para que la abeja feliz se luzca, y luego redirigimos al dashboard
       setTimeout(() => {
         modal.classList.remove('show');
         modal.style.display = 'none';

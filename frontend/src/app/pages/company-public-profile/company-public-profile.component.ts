@@ -71,6 +71,11 @@ export class CompanyPublicProfileComponent implements OnInit {
   ratingExito = '';
   ratingError = '';
 
+  // Variables para los modales de Admin
+  tiempoSuspensionAdmin: string = '7';
+  modalMensajeExitoAdmin = '';
+  modalMensajeErrorAdmin = '';
+
   notifications = [
     { id: 1, title: 'Vacantes activas', message: 'Revisa el perfil de la empresa antes de postularte.', time: 'Ahora', read: false },
     { id: 2, title: 'Chambee', message: 'Tu sesion sigue en modo postulante.', time: 'Hace 1 min', read: true }
@@ -150,13 +155,11 @@ export class CompanyPublicProfileComponent implements OnInit {
         return;
       }
       
-  
       const reporte = {
       motivo: form.value.motivo,
       descripcion: form.value.descripcion,
       id_empleador_reportado: this.selectedPerfilId
       };
-  
   
       console.log(reporte);
   
@@ -169,8 +172,6 @@ export class CompanyPublicProfileComponent implements OnInit {
         console.error(err);
       }
       });
-      
-  
     }
 
   cargarPerfilEmpresa(id: string): void {
@@ -324,8 +325,8 @@ export class CompanyPublicProfileComponent implements OnInit {
     this.ratingHover = puntuacion;
   }
 
-   abrirModal(){
-      this.mostrarModal("¿Estás seguro de querer reportar este perfil?")        
+  abrirModal(){
+    this.mostrarModal("¿Estás seguro de querer reportar este perfil?")        
   }
  
   getStarsArray(promedio: number): string[] {
@@ -405,6 +406,7 @@ export class CompanyPublicProfileComponent implements OnInit {
       modal.style.display = 'flex';
     }
   }
+  
   mostrarModalAceptar(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalAceptar');
@@ -421,8 +423,112 @@ export class CompanyPublicProfileComponent implements OnInit {
       modal.style.display = 'none';
     }
   }
+  
   cerrarModalAceptar() {
     const modal = document.getElementById('modalAceptar');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  // ==========================================
+  // MÉTODOS DE ADMINISTRADOR
+  // ==========================================
+
+  abrirModalEliminarAdmin() {
+    const modal = document.getElementById('modalEliminarAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalEliminarAdmin() {
+    const modal = document.getElementById('modalEliminarAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  ejecutarEliminarAdmin() {
+    const id = this.perfil?.id_empleador || this.selectedPerfilId;
+    if (!id) return;
+
+    this.api.eliminarUsuario(id).subscribe({
+      next: () => {
+        this.cerrarModalEliminarAdmin();
+        this.mostrarModalExitoAdmin("El perfil de la empresa ha sido borrado permanentemente.");
+      },
+      error: (err) => {
+        this.cerrarModalEliminarAdmin();
+        this.mostrarModalErrorAdmin('Hubo un problema al intentar borrar este perfil de la base de datos.');
+      }
+    });
+  }
+
+  abrirModalSuspenderAdmin() {
+    const modal = document.getElementById('modalSuspenderAdmin');
+    this.tiempoSuspensionAdmin = '7'; // Default a 1 Semana
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalSuspenderAdmin() {
+    const modal = document.getElementById('modalSuspenderAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  ejecutarSuspensionAdmin() {
+    const id = this.perfil?.id_empleador || this.selectedPerfilId;
+    if (!id) return;
+
+    const dias = parseInt(this.tiempoSuspensionAdmin, 10);
+
+    this.api.suspenderUsuario(id, dias).subscribe({
+      next: () => {
+        this.cerrarModalSuspenderAdmin();
+        this.mostrarModalExitoAdmin(dias === 0 ? "La empresa ha sido suspendida permanentemente." : `La empresa ha sido suspendida por ${dias} días.`);
+      },
+      error: (err) => {
+        this.cerrarModalSuspenderAdmin();
+        this.mostrarModalErrorAdmin('Hubo un problema al suspender el perfil.');
+      }
+    });
+  }
+
+  mostrarModalExitoAdmin(mensaje: string) {
+    this.modalMensajeExitoAdmin = mensaje;
+    const modal = document.getElementById('modalExitoAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+
+      setTimeout(() => {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        this.router.navigate(['/admin']);
+      }, 2500);
+    }
+  }
+
+  mostrarModalErrorAdmin(mensaje: string) {
+    this.modalMensajeErrorAdmin = mensaje;
+    const modal = document.getElementById('modalErrorAdmin');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalErrorAdmin() {
+    const modal = document.getElementById('modalErrorAdmin');
     if (modal) {
       modal.classList.remove('show');
       modal.style.display = 'none';
