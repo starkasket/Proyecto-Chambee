@@ -170,37 +170,124 @@
       </div>
     </ng-template>
 
-    <div class="filter-section mt-5">
-      <div class="d-flex flex-wrap gap-3 align-items-start">
-        <div class="filter-dropdown" style="position: relative; display: inline-block;">
-          <button class="btn btn-outline-warning" type="button" (click)="toggleCategorias()">
-            <i class="bi bi-funnel-fill me-2"></i> Categorías
-          </button>
+<div class="filter-section mt-5">
+  <!-- BOTÓN ÚNICO DE FILTRAR Y ORDENAR -->
+  <div class="d-flex flex-wrap gap-3 align-items-center">
+    <button class="chambee-filter-btn" type="button" (click)="toggleFiltros()">
+      <i class="bi bi-sliders me-2"></i> Filtrar y ordenar
+    </button>
+  </div>
 
-          <div *ngIf="categoriasOpen" class="filter-menu" style="position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 220px; background: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-float); padding: 8px 0;">
-            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" (click)="seleccionarCategoria('Todas')">Todas</button>
-            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" *ngFor="let categoria of categoriasDisponibles" (click)="seleccionarCategoria(categoria)">{{ categoria }}</button>
-          </div>
-        </div>
+  <!-- CHIPS DE FILTROS SELECCIONADOS -->
+  <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="filtros.categoriaEmpleo || filtros.modalidad || filtros.ciudad">
+    <span class="featured-chip" *ngIf="filtros.categoriaEmpleo">Categoría: {{ filtros.categoriaEmpleo }}</span>
+    <span class="featured-chip" *ngIf="filtros.modalidad">Modalidad: {{ filtros.modalidad }}</span>
+    <span class="featured-chip" *ngIf="filtros.ciudad">Ciudad: {{ filtros.ciudad }}</span>
+  </div>
 
-        <div class="filter-dropdown" style="position: relative; display: inline-block;">
-          <button class="btn btn-outline-warning" type="button" (click)="toggleTipos()">
-            <i class="bi bi-briefcase-fill me-2"></i> Tipo
-          </button>
+  <!-- PANEL DESPLEGABLE COMPLETO -->
+  <div class="filter-panel mt-3" *ngIf="mostrarFiltros">
+    <div class="row">
 
-          <div *ngIf="tiposOpen" class="filter-menu" style="position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 220px; background: var(--surface-primary); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: var(--shadow-float); padding: 8px 0;">
-            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" (click)="seleccionarTipo('Todos')">Todos</button>
-            <button class="w-100 text-start px-3 py-2 border-0 bg-transparent" style="color: var(--text-primary);" *ngFor="let tipo of tiposDisponibles" (click)="seleccionarTipo(tipo)">{{ tipo }}</button>
-          </div>
-        </div>
+      <!-- Modalidad -->
+      <div class="col-md-4">
+        <label for="select-modalidad" class="form-label">Modalidad</label>
+        <select id="select-modalidad" class="form-select" [(ngModel)]="filtros.modalidad">
+          <option value="">Todas</option>
+          <option value="Presencial">Presencial</option>
+          <option value="Remoto">Remoto</option>
+          <option value="Hibrido">Híbrido</option>
+        </select>
       </div>
 
-      <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="categoriaSeleccionada !== 'Todas' || tipoSeleccionado !== 'Todos'">
-        <span class="featured-chip" *ngIf="categoriaSeleccionada !== 'Todas'">Categoría: {{ categoriaSeleccionada }}</span>
-        <span class="featured-chip" *ngIf="tipoSeleccionado !== 'Todos'">Tipo: {{ tipoSeleccionado }}</span>
+      <!-- Cobertura -->
+      <div class="col-md-4">
+        <label for="select-cobertura" class="form-label">Cobertura</label>
+        <select id="select-cobertura" class="form-select" [(ngModel)]="filtros.cobertura">
+          <option value="">Todas</option>
+          <option value="Colonia">Solo mi colonia</option>
+          <option value="Ciudad">Toda la ciudad</option>
+          <option value="Municipios cercanos">Municipios cercanos</option>
+        </select>
       </div>
+
+      <!-- Estado -->
+      <div class="col-md-4">
+        <label for="select-estado" class="form-label">Estado</label>
+        <select id="select-estado" class="form-select" disabled>
+          <option value="">Guanajuato</option>
+        </select>
+      </div>
+
+      <!-- Ciudad -->
+      <div class="col-md-4 mt-3">
+        <label for="select-ciudad" class="form-label">Ciudad</label>
+        <select id="select-ciudad" class="form-select" [(ngModel)]="filtros.ciudad">
+          <option value="">Todas</option>
+          <option *ngFor="let ciudad of ciudades" [value]="ciudad">
+            {{ ciudad }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Categoría -->
+      <div class="col-md-4 mt-3">
+        <label for="select-cat-empleo" class="form-label">Categoría</label>
+        <select id="select-cat-empleo" class="form-select" [(ngModel)]="filtros.categoriaEmpleo">
+          <option value="">Todas</option>
+          <option *ngFor="let categoria of categoriasDisponibles" [value]="categoria">
+            {{ categoria }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Ordenar -->
+      <div class="col-md-4 mt-3">
+        <label for="select-ordenar" class="form-label">Ordenar por</label>
+        <select id="select-ordenar" class="form-select" [(ngModel)]="filtros.ordenar">
+          <option value="fecha">Más recientes</option>
+          <option value="salario">Mayor salario</option>
+        </select>
+      </div>
+
+      <!-- Rango de Salario -->
+      <div class="col-md-6 mt-3">
+        <label for="input-salario-min" class="form-label">Salario Mínimo ($ MXN)</label>
+        <input
+          id="input-salario-min"
+          type="number"
+          class="form-control"
+          placeholder="Ej. 5000"
+          [(ngModel)]="filtros.salarioMin"
+          min="0"
+        />
+      </div>
+
+      <div class="col-md-6 mt-3">
+        <label for="input-salario-max" class="form-label">Salario Máximo ($ MXN)</label>
+        <input
+          id="input-salario-max"
+          type="number"
+          class="form-control"
+          placeholder="Ej. 25000"
+          [(ngModel)]="filtros.salarioMax"
+          min="0"
+        />
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">
+          Limpiar
+        </button>
+        <button type="button" class="btn btn-warning" (click)="aplicarFiltros()">
+          Aplicar filtros
+        </button>
+      </div>
+
     </div>
-
+  </div>
+</div>
     <!-- SECCIÓN DE CUADRÍCULA DE EMPLEOS CON EL CAMBIO APLICADO -->
     <div class="jobs-grid mt-4" *ngIf="filteredJobs.length; else noJobsGrid">
       <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button" tabindex="0">

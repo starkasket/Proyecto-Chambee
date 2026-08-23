@@ -50,16 +50,6 @@ interface NotificationItem {
   read: boolean;
 }
 
-interface SearchResult {
-  id?: string | number;
-  id_servicio?: string | number;
-  title?: string;
-  company?: string;
-  categoria?: string;
-  tipo: 'empleo' | 'servicio';
-  [key: string]: any;
-}
-
 @Component({
   selector: 'app-home-user',
   standalone: true,
@@ -87,7 +77,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   favoriteJobIds = new Set<string>();
   savingFavoriteId: string | null = null;
 
-  // Estado del modal de detalle de servicio
   servicioDetalle: any = null;
   servicioDetalleOpen = false;
   servicioDetalleCargando = false;
@@ -99,12 +88,69 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   searchResults: any[] = [];
   showSearchDropdown = false;
   recentSearches: string[] = [];
-  categoriaSeleccionada = 'Todas';
+
+  // --- PANEL ÚNICO DE FILTROS ---
+  mostrarFiltros: boolean = false;
+  filtros = {
+    modalidad: '',
+    ciudad: '',
+    categoriaEmpleo: '',
+    categoriaServicio: '',
+    cobertura: '',
+    ordenar: 'fecha',
+    salarioMin: null as number | null,
+    salarioMax: null as number | null
+  };
+
   categoriasDisponibles: string[] = [];
-  categoriasOpen = false;
-  tipoSeleccionado = 'Todos';
-  tiposDisponibles: string[] = [];
-  tiposOpen = false;
+
+  ciudades: string[] = [
+    'Abasolo',
+    'Acámbaro',
+    'Apaseo el Alto',
+    'Apaseo el Grande',
+    'Atarjea',
+    'Celaya',
+    'Comonfort',
+    'Coroneo',
+    'Cortazar',
+    'Doctor Mora',
+    'Dolores Hidalgo C.I.N.',
+    'Guanajuato',
+    'Huanímaro',
+    'Irapuato',
+    'Jaral del Progreso',
+    'Jerécuaro',
+    'León',
+    'Manuel Doblado',
+    'Moroleón',
+    'Ocampo',
+    'Pénjamo',
+    'Pueblo Nuevo',
+    'Purísima del Rincón',
+    'Romita',
+    'Salamanca',
+    'Salvatierra',
+    'San Diego de la Unión',
+    'San Felipe',
+    'San Francisco del Rincón',
+    'San José Iturbide',
+    'San Luis de la Paz',
+    'San Miguel de Allende',
+    'Santa Catarina',
+    'Santa Cruz de Juventino Rosas',
+    'Santiago Maravatío',
+    'Silao de la Victoria',
+    'Tarandacuao',
+    'Tarimoro',
+    'Tierra Blanca',
+    'Uriangato',
+    'Valle de Santiago',
+    'Victoria',
+    'Villagrán',
+    'Xichú',
+    'Yuriria'
+  ];
 
   private categoriasPreDefinidas: string[] = [
     'Administración / Oficina',
@@ -133,7 +179,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
   notifications: NotificationItem[] = [];
- 
   slides: Slide[] = [];
   jobs: Job[] = [];
   services: any[] = [];
@@ -328,9 +373,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         }));
 
         this.categoriasDisponibles = this.extraerCategorias(this.jobs);
-        this.tiposDisponibles = this.extraerTipos(this.jobs);
-        this.categoriaSeleccionada = 'Todas';
-        this.tipoSeleccionado = 'Todos';
         this.currentSlide = 0;
         this.maxVisible = Math.max(8, this.jobs.length);
         this.visibleCount = Math.min(8, this.maxVisible);
@@ -571,15 +613,25 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   get filteredJobs(): Job[] {
     return this.jobs.filter((job) => {
-      const coincideCategoria = !this.categoriaSeleccionada || this.categoriaSeleccionada === 'Todas'
+      const coincideCategoria = !this.filtros.categoriaEmpleo
         ? true
-        : (job.tags || []).some((tag) => this.normalizarTexto(tag) === this.normalizarTexto(this.categoriaSeleccionada));
+        : (job.tags || []).some((tag) => this.normalizarTexto(tag) === this.normalizarTexto(this.filtros.categoriaEmpleo));
 
-      const coincideTipo = this.tipoSeleccionado === 'Todos'
+      const coincideModalidad = !this.filtros.modalidad
         ? true
-        : [job.tipoAnuncio, job.modalidad].some((valor) => this.normalizarTexto(valor) === this.normalizarTexto(this.tipoSeleccionado));
+        : this.normalizarTexto(job.modalidad) === this.normalizarTexto(this.filtros.modalidad);
 
-      return coincideCategoria && coincideTipo;
+      const salarioNumerico = parseFloat(String(job.salary || '').replace(/[^0-9.]/g, '')) || 0;
+
+      const coincideSalarioMin = this.filtros.salarioMin == null || this.filtros.salarioMin === 0
+        ? true
+        : salarioNumerico >= this.filtros.salarioMin;
+
+      const coincideSalarioMax = this.filtros.salarioMax == null || this.filtros.salarioMax === 0
+        ? true
+        : salarioNumerico <= this.filtros.salarioMax;
+
+      return coincideCategoria && coincideModalidad && coincideSalarioMin && coincideSalarioMax;
     });
   }
 
@@ -591,26 +643,28 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     return this.filteredJobs.length;
   }
 
-  toggleCategorias() {
-    this.categoriasOpen = !this.categoriasOpen;
-    this.tiposOpen = false;
+  // --- MÉTODOS DEL PANEL DE FILTROS ---
+  toggleFiltros(): void {
+    this.mostrarFiltros = !this.mostrarFiltros;
   }
 
-  toggleTipos() {
-    this.tiposOpen = !this.tiposOpen;
-    this.categoriasOpen = false;
+  limpiarFiltros(): void {
+    this.filtros = {
+      modalidad: '',
+      ciudad: '',
+      categoriaEmpleo: '',
+      categoriaServicio: '',
+      cobertura: '',
+      ordenar: 'fecha',
+      salarioMin: null,
+      salarioMax: null
+    };
+    this.aplicarFiltros();
   }
 
-  seleccionarCategoria(categoria: string) {
-    this.categoriaSeleccionada = categoria;
-    this.categoriasOpen = false;
+  aplicarFiltros(): void {
     this.visibleCount = Math.min(8, this.maxJobsToShow);
-  }
-
-  seleccionarTipo(tipo: string) {
-    this.tipoSeleccionado = tipo;
-    this.tiposOpen = false;
-    this.visibleCount = Math.min(8, this.maxJobsToShow);
+    console.log('Filtros aplicados:', this.filtros);
   }
 
   private extraerCategorias(jobs: Job[]): string[] {
@@ -625,20 +679,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
 
     return Array.from(categorias).sort((a, b) => a.localeCompare(b));
-  }
-
-  private extraerTipos(jobs: Job[]): string[] {
-    const tipos = new Set<string>();
-    jobs.forEach((job) => {
-      [job.tipoAnuncio, job.modalidad].forEach((valor) => {
-        const tipo = String(valor || '').trim();
-        if (tipo) {
-          tipos.add(tipo);
-        }
-      });
-    });
-
-    return Array.from(tipos).sort((a, b) => a.localeCompare(b));
   }
 
   nextSlide() {
@@ -746,7 +786,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- SE CORRIGIÓ LA BÚSQUEDA EN TIEMPO REAL ---
   onSearchInput(value: string) {
     this.showSearchDropdown = true;
     if (value && value.trim().length > 0) {
@@ -756,17 +795,14 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- BUSCADOR INTELIGENTE Y COMPATIBLE CON SERVICIOS ---
   ejecutarBusqueda(query: string) {
     const tokens = this.normalizarTexto(query).split(/\s+/).filter(t => t.length > 0);
     
-    // Busca en empleos
     const jobsResults = this.jobs.filter(job => {
       const textoCompleto = this.normalizarTexto(`${job.title} ${job.company} ${job.tags.join(' ')}`);
       return tokens.every(token => textoCompleto.includes(token));
     }).map(j => ({ ...j, tipo: 'empleo' }));
 
-    // Busca en servicios (soportando 'titulo' además de 'title')
     const servicesResults = this.services.filter(service => {
       const titulo = service.title || service.titulo || '';
       const desc = service.description || service.descripcion || '';
@@ -784,7 +820,6 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
-  // --- SE CORRIGIÓ EL CLIC EN UN RESULTADO ---
   irAResultado(resultado: any) {
     const titleToSave = resultado.title || resultado.titulo || resultado.categoria || '';
     this.guardarBusquedaReciente(this.searchTerm || titleToSave);
@@ -820,20 +855,16 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
 
-  // --- SE CORRIGIÓ EL CLIC EN EL HISTORIAL ---
   seleccionarBusquedaReciente(term: string) {
     this.searchTerm = term;
-    this.showSearchDropdown = false; // Cerramos el menú
-    // Forzamos la navegación al panel de resultados
+    this.showSearchDropdown = false;
     this.router.navigate(['/search'], { queryParams: { q: term } });
   }
-  
-  // --- AL DAR ENTER O CLIC EN "VER TODOS LOS RESULTADOS" ---
+
   verTodosResultados() {
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       this.guardarBusquedaReciente(this.searchTerm);
-      this.showSearchDropdown = false; // Cerramos el menú
-      // Forzamos la navegación al panel de resultados
+      this.showSearchDropdown = false;
       this.router.navigate(['/search'], { queryParams: { q: this.searchTerm } });
     }
   }

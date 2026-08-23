@@ -63,20 +63,76 @@ export class HomeComponent implements OnInit, OnDestroy {
   isMobile = false;
   modalLoginVisible = false;
 
-  // Variables para el buscador estilo Coursera (Pro)
+  // Buscador estilo Coursera (Pro)
   searchTerm = '';
   readonly searchSubject = new Subject<string>();
   searchResults: any[] = [];
   showSearchDropdown = false;
   recentSearches: string[] = [];
 
-  // Variables para filtros
-  categoriaSeleccionada = 'Todas';
+  // Categorías predefinidas para llenar el dropdown
   categoriasDisponibles: string[] = [];
-  categoriasOpen = false;
-  tipoSeleccionado = 'Todos';
-  tiposDisponibles: string[] = [];
-  tiposOpen = false;
+
+  // Panel Único de Filtros
+  mostrarFiltros: boolean = false;
+  filtros = {
+    modalidad: '',
+    ciudad: '',
+    categoriaEmpleo: '',
+    categoriaServicio: '',
+    cobertura: '',
+    ordenar: 'fecha',
+    salarioMin: null as number | null,
+    salarioMax: null as number | null
+  };
+
+  ciudades: string[] = [
+    'Abasolo',
+    'Acámbaro',
+    'Apaseo el Alto',
+    'Apaseo el Grande',
+    'Atarjea',
+    'Celaya',
+    'Comonfort',
+    'Coroneo',
+    'Cortazar',
+    'Doctor Mora',
+    'Dolores Hidalgo C.I.N.',
+    'Guanajuato',
+    'Huanímaro',
+    'Irapuato',
+    'Jaral del Progreso',
+    'Jerécuaro',
+    'León',
+    'Manuel Doblado',
+    'Moroleón',
+    'Ocampo',
+    'Pénjamo',
+    'Pueblo Nuevo',
+    'Purísima del Rincón',
+    'Romita',
+    'Salamanca',
+    'Salvatierra',
+    'San Diego de la Unión',
+    'San Felipe',
+    'San Francisco del Rincón',
+    'San José Iturbide',
+    'San Luis de la Paz',
+    'San Miguel de Allende',
+    'Santa Catarina',
+    'Santa Cruz de Juventino Rosas',
+    'Santiago Maravatío',
+    'Silao de la Victoria',
+    'Tarandacuao',
+    'Tarimoro',
+    'Tierra Blanca',
+    'Uriangato',
+    'Valle de Santiago',
+    'Victoria',
+    'Villagrán',
+    'Xichú',
+    'Yuriria'
+  ];
 
   private readonly categoriasPreDefinidas: string[] = [
     'Administración / Oficina',
@@ -113,7 +169,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.checkMobile();
     this.cargarBusquedasRecientes();
 
-    // Cargar servicios públicos desde la BD
     this.api.obtenerServiciosPublicos().subscribe({
       next: (servicios) => {
         this.services = servicios;
@@ -164,12 +219,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             modalidad: anuncio.modalidad || 'Presencial'
           }));
 
-          
-           
           this.categoriasDisponibles = this.extraerCategorias(this.jobs);
-          this.tiposDisponibles = this.extraerTipos(this.jobs);
-          this.categoriaSeleccionada = 'Todas';
-          this.tipoSeleccionado = 'Todos';
         }
 
         this.maxVisible = Math.max(8, this.jobs.length);
@@ -185,7 +235,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Escuchar el buscador con RxJS
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
@@ -207,7 +256,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleTheme() { this.themeService.toggleTheme(); }
   get isDarkMode(): boolean { return this.themeService.isDarkMode(); }
 
-  // Abrir un servicio (desde el panel lateral) requiere sesión.
   openService(_i: number) {
     const token = this.authApi.getToken();
     if (token) {
@@ -217,17 +265,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  cerrarModalLogin() {
-    this.modalLoginVisible = false;
-  }
-
+  cerrarModalLogin() { this.modalLoginVisible = false; }
   irAlLogin() {
     this.modalLoginVisible = false;
     this.router.navigate(['/login']);
   }
 
-  // Ver el detalle de un empleo SÍ está permitido sin sesión (solo postularse
-  // requiere login, y eso se valida dentro de job-detail.component).
   openJob(id?: string | number) {
     if (id) {
       this.router.navigate(['/job', id]);
@@ -236,60 +279,63 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  openFeaturedJob(id?: string | number) {
-    // Reutiliza la lógica de openJob para evitar duplicación
-    this.openJob(id);
-  }
+  openFeaturedJob(id?: string | number) { this.openJob(id); }
 
   @HostListener('window:resize')
   onResize() { this.checkMobile(); }
-
   checkMobile() { this.isMobile = window.innerWidth <= 768; }
 
   showMoreJobs() { this.visibleCount = Math.min(this.visibleCount + 8, this.maxJobsToShow); }
 
   get filteredJobs(): Job[] {
     return this.jobs.filter((job) => {
-      const coincideCategoria = !this.categoriaSeleccionada || this.categoriaSeleccionada === 'Todas'
+      const coincideCategoria = !this.filtros.categoriaEmpleo
         ? true
-        : (job.tags || []).some((tag) => this.normalizarTexto(tag) === this.normalizarTexto(this.categoriaSeleccionada));
+        : (job.tags || []).some((tag) => this.normalizarTexto(tag) === this.normalizarTexto(this.filtros.categoriaEmpleo));
 
-      const coincideTipo = this.tipoSeleccionado === 'Todos'
+      const coincideModalidad = !this.filtros.modalidad
         ? true
-        : [job.tipoAnuncio, job.modalidad].some((valor) => this.normalizarTexto(valor) === this.normalizarTexto(this.tipoSeleccionado));
+        : this.normalizarTexto(job.modalidad) === this.normalizarTexto(this.filtros.modalidad);
 
-      return coincideCategoria && coincideTipo;
+      const salarioNumerico = parseFloat(String(job.salary || '').replace(/[^0-9.]/g, '')) || 0;
+
+      const coincideSalarioMin = this.filtros.salarioMin == null || this.filtros.salarioMin === 0
+        ? true
+        : salarioNumerico >= this.filtros.salarioMin;
+
+      const coincideSalarioMax = this.filtros.salarioMax == null || this.filtros.salarioMax === 0
+        ? true
+        : salarioNumerico <= this.filtros.salarioMax;
+
+      return coincideCategoria && coincideModalidad && coincideSalarioMin && coincideSalarioMax;
     });
   }
 
-  get jobsToShow(): Job[] {
-    return this.filteredJobs.slice(0, this.visibleCount);
+  get jobsToShow(): Job[] { return this.filteredJobs.slice(0, this.visibleCount); }
+  get maxJobsToShow(): number { return this.filteredJobs.length; }
+
+  // --- LÓGICA DEL PANEL DE FILTROS ---
+  toggleFiltros(): void {
+    this.mostrarFiltros = !this.mostrarFiltros;
   }
 
-  get maxJobsToShow(): number {
-    return this.filteredJobs.length;
+  limpiarFiltros(): void {
+    this.filtros = {
+      modalidad: '',
+      ciudad: '',
+      categoriaEmpleo: '',
+      categoriaServicio: '',
+      cobertura: '',
+      ordenar: 'fecha',
+      salarioMin: null,
+      salarioMax: null
+    };
+    this.aplicarFiltros();
   }
 
-  toggleCategorias() {
-    this.categoriasOpen = !this.categoriasOpen;
-    this.tiposOpen = false;
-  }
-
-  toggleTipos() {
-    this.tiposOpen = !this.tiposOpen;
-    this.categoriasOpen = false;
-  }
-
-  seleccionarCategoria(categoria: string) {
-    this.categoriaSeleccionada = categoria;
-    this.categoriasOpen = false;
+  aplicarFiltros(): void {
     this.visibleCount = Math.min(8, this.maxJobsToShow);
-  }
-
-  seleccionarTipo(tipo: string) {
-    this.tipoSeleccionado = tipo;
-    this.tiposOpen = false;
-    this.visibleCount = Math.min(8, this.maxJobsToShow);
+    console.log('Filtros aplicados:', this.filtros);
   }
 
   private extraerCategorias(jobs: Job[]): string[] {
@@ -297,27 +343,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     jobs.forEach((job) => {
       (job.tags || []).forEach((tag) => {
         const categoria = String(tag || '').trim();
-        if (categoria) {
-          categorias.add(categoria);
-        }
+        if (categoria) categorias.add(categoria);
       });
     });
-
     return Array.from(categorias).sort((a, b) => a.localeCompare(b));
-  }
-
-  private extraerTipos(jobs: Job[]): string[] {
-    const tipos = new Set<string>();
-    jobs.forEach((job) => {
-      [job.tipoAnuncio, job.modalidad].forEach((valor) => {
-        const tipo = String(valor || '').trim();
-        if (tipo) {
-          tipos.add(tipo);
-        }
-      });
-    });
-
-    return Array.from(tipos).sort((a, b) => a.localeCompare(b));
   }
 
   private normalizarTexto(value: unknown): string {
@@ -331,10 +360,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!this.slides.length) return;
     this.currentSlide = (this.currentSlide + 1) % this.slides.length;
   }
+
   prevSlide() {
     if (!this.slides.length) return;
     this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
   }
+
   goToSlide(i: number) {
     if (!this.slides.length) return;
     this.currentSlide = i;
@@ -365,8 +396,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         error: () => alert("Error al enviar")
       });
   }
-
-  // --- LÓGICA DEL BUSCADOR ESTILO COURSERA (PRO) ---
 
   onSearchInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
@@ -402,17 +431,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
-  // Clic en un resultado del dropdown en vivo.
   irAResultado(resultado: any) {
     this.guardarBusquedaReciente(this.searchTerm || resultado.title);
     this.showSearchDropdown = false;
     this.searchTerm = '';
 
     if (resultado.tipo === 'empleo') {
-      // Ver el empleo NO requiere sesión.
       this.router.navigate(['/job', resultado.id]);
     } else {
-      // Interactuar con un servicio SÍ requiere sesión (misma regla que openService).
       const token = this.authApi.getToken();
       if (token) {
         this.router.navigate(['/home-user']);
@@ -440,7 +466,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     localStorage.setItem('chambee_busquedas_recientes', JSON.stringify(searches));
   }
 
-  // Clic en un ítem del historial: manda directo a la página de resultados.
   seleccionarBusquedaReciente(term: string) {
     this.searchTerm = term;
     this.showSearchDropdown = false;
@@ -457,7 +482,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   highlightText(text: string, query: string): string {
     if (!query || !text) return text;
-      const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${safeQuery})`, 'gi');
     return text.replace(regex, '<span class="text-highlight">$1</span>');
   }

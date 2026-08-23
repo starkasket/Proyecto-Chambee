@@ -299,8 +299,8 @@ export class SearchResultsComponent implements OnInit {
     }
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick() {
+ @HostListener('document:click', ['$event'])
+  onDocumentClick(_event: Event) {
     if (this.notificationsOpen) this.notificationsOpen = false;
     if (this.menuOpen && !this.isMobile) this.menuOpen = false;
   }

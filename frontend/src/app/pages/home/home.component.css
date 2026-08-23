@@ -1346,3 +1346,59 @@ width: 90%;
 :host-context(body.dark-theme) .search-see-all:hover {
   background: rgba(243, 156, 18, 0.15);
 }
+
+/* ===== Estilo unificado para los 3 botones ===== */
+.btn-outline-warning,
+.chambee-filter-btn {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 8px 20px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  transition: transform 0.2s ease !important;
+}
+
+.btn-outline-warning i,
+.chambee-filter-btn i {
+  color: #ffffff !important;
+}
+
+.btn-outline-warning:hover,
+.chambee-filter-btn:hover {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ===== Modo Oscuro ===== */
+:host-context(body.dark-theme) .btn-outline-warning,
+:host-context(body.dark-theme) .chambee-filter-btn {
+  background-color: #fcce34 !important;
+  color: #111111 !important;
+}
+
+:host-context(body.dark-theme) .btn-outline-warning i,
+:host-context(body.dark-theme) .chambee-filter-btn i {
+  color: #111111 !important;
+}
+
+:host-context(body.dark-theme) .btn-outline-warning:hover,
+:host-context(body.dark-theme) .chambee-filter-btn:hover {
+  background-color: #fcce34 !important;
+  color: #111111 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ===== Panel Desplegable ===== */
+.filter-panel {
+  background: var(--surface-primary, #ffffff);
+  border: 1px solid var(--border-soft, #e0e0e0);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}

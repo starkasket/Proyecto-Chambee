@@ -1958,3 +1958,58 @@ width: 100%;
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== BOTÓN FILTRAR Y ORDENAR ===== */
+
+/* Modo Claro: Fondo negro, texto e ícono blanco */
+.chambee-filter-btn {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 8px 20px !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: transform 0.2s ease !important;
+}
+
+.chambee-filter-btn i {
+  color: #ffffff !important;
+}
+
+/* Hover Modo Claro: Mantiene color y aplica elevación sutil */
+.chambee-filter-btn:hover {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Modo Oscuro: Fondo amarillo vibrante, texto e ícono negro */
+:host-context(body.dark-theme) .chambee-filter-btn {
+  background-color: #fcce34 !important;
+  color: #111111 !important;
+}
+
+:host-context(body.dark-theme) .chambee-filter-btn i {
+  color: #111111 !important;
+}
+
+/* Hover Modo Oscuro: Mantiene color y aplica elevación sutil */
+:host-context(body.dark-theme) .chambee-filter-btn:hover {
+  background-color: #fcce34 !important;
+  color: #111111 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ===== PANEL DESPLEGABLE DE FILTROS ===== */
+.filter-panel {
+  background: var(--surface-primary, #ffffff);
+  border: 1px solid var(--border-soft, #e0e0e0);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-card, 0 4px 12px rgba(0, 0, 0, 0.05));
+}
