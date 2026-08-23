@@ -131,10 +131,30 @@ body {
 .job-card img {
   width: 100%;
   height: 180px;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
+  background-color: var(--surface-secondary, #f0f0f0);
   border-bottom: 1px solid var(--border-soft, #f0f0f0);
+}
+
+/* Wrapper de imagen para destacados: altura fija para uniformidad */
+.job-card-img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background-color: var(--surface-secondary, #f0f0f0);
+  flex-shrink: 0;
+}
+
+.job-card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  border-bottom: none;
 }
 
 .job-card app-carousel {
@@ -413,10 +433,19 @@ body {
   width: 100%;
   max-width: 580px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06);
   position: relative;
   animation: sdModalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.service-detail-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
 @keyframes sdModalIn {
@@ -500,14 +529,14 @@ body {
   width: 100%;
   height: 240px;
   overflow: hidden;
-  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
   background: var(--surface-secondary, #f5f5f5);
 }
 
 .service-detail-hero img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   transition: transform 0.4s ease;
 }
@@ -549,6 +578,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .service-detail-title {
