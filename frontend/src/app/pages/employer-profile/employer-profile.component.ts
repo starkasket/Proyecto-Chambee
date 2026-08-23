@@ -23,18 +23,30 @@ interface EmployerProfile {
   promedio_valoracion?: number;
   total_valoraciones?: number;
   valoraciones_recibidas?: any[];
+  valoracion_propia?: any; // Para saber si el usuario ya calificó
 }
 
 interface EmployerAnnouncement {
   id: string;
+  id_anuncio?: string;
+  titulo?: string;
   empresa: string;
   estado: 'Activa' | 'Borrador' | 'Oculta';
   ubicacion: string;
   fecha: string;
+  fecha_publicacion?: string;
   candidatos: number;
   vacante: string;
   resumen: string;
+  descripcion?: string;
   imagen: string;
+  img?: string;
+  images?: string[];
+  salario?: string | number;
+  categorias?: string[];
+  urgencia?: string;
+  calle?: string;
+  ciudad?: string;
 }
 
 interface ReceivedApplication {
@@ -79,15 +91,30 @@ export class EmployerProfileComponent implements OnInit {
   usuarioActual: any = null;
   isOwnProfile = false;
   isAdminView = false;
-  isEmployerView = false; // Agregado para controlar el menú
+  isEmployerView = false;
   
   tiempoSuspensionAdmin: string = '7'; 
   modalMensajeExitoAdmin: string = ''; 
+
+  // --- VARIABLES AGREGADAS PARA EVITAR ERRORES EN EL HTML ---
+  fotoPostulante: string | null = null;
+  modalMensajeErrorAdmin: string = '';
+  valoraciones_recibidas: any[] = [];
+  
+  // Variables del sistema de calificación
+  ratingSeleccionado: number = 0;
+  ratingHover: number = 0;
+  nuevoComentario: string = '';
+  ratingEnviando: boolean = false;
+  ratingExito: string = '';
+  ratingError: string = '';
+  // ----------------------------------------------------------
 
   anuncios: EmployerAnnouncement[] = [];
   resenas: any[] = [];
   postulacionesRecibidas: ReceivedApplication[] = [];
   notifications: NotificationItem[] = []; 
+  menuAbiertoId: string | null = null;
 
   constructor(
     private api: ApiService,
@@ -101,7 +128,6 @@ export class EmployerProfileComponent implements OnInit {
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
     
-    // TRUCO INFALIBLE: Obtenemos el primer parámetro de la URL, sin importar si se llama 'id' o 'empleadorId'
     const paramKeys = this.route.snapshot.paramMap.keys;
     const perfilRouteId = paramKeys.length > 0 ? this.route.snapshot.paramMap.get(paramKeys[0])?.trim() : null;
 
@@ -112,8 +138,9 @@ export class EmployerProfileComponent implements OnInit {
     }
 
     this.usuarioActual = usuario;
+    // Si el usuario es postulante, asignamos su foto (si existe) para el navbar
+    this.fotoPostulante = usuario.foto_perfil || null;
     
-    // Verificación de Roles robusta
     const rol = (usuario.rol || usuario.role || usuario.tipo || '').toLowerCase();
     this.isAdminView = rol === 'administrador' || rol === 'admin' || rol.includes('admin');
     this.isEmployerView = rol === 'empleador';
@@ -122,7 +149,6 @@ export class EmployerProfileComponent implements OnInit {
       this.cargarNotificaciones();
     }
 
-    // SI HAY UN ID EN LA RUTA, ESTAMOS VIENDO EL PERFIL DE ALGUIEN MÁS (Admin o Postulante)
     if (perfilRouteId) {
       this.employerId = perfilRouteId;
       this.isOwnProfile = false;
@@ -131,7 +157,6 @@ export class EmployerProfileComponent implements OnInit {
       return;
     }
 
-    // SI NO HAY ID, VERIFICA QUE SEA EMPLEADOR PARA VER "MI PERFIL"
     if (!this.isEmployerView && !this.isAdminView) {
       this.error = 'Esta sección es solo para empleadores.';
       this.cargando = false;
@@ -140,7 +165,6 @@ export class EmployerProfileComponent implements OnInit {
 
     this.isOwnProfile = true;
 
-    // Cargar Mi Perfil
     const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
     if (perfilLocalRaw) {
       this.perfil = JSON.parse(perfilLocalRaw);
@@ -150,6 +174,7 @@ export class EmployerProfileComponent implements OnInit {
       next: (perfil: any) => {
         this.perfil = perfil;
         this.resenas = perfil.valoraciones_recibidas || [];
+        this.valoraciones_recibidas = perfil.valoraciones_recibidas || []; // Sincronizado para el HTML
 
         if (localStorage.getItem('token')) {
           localStorage.setItem("perfilEmpleador", JSON.stringify(perfil));
@@ -159,13 +184,12 @@ export class EmployerProfileComponent implements OnInit {
 
         this.cargarAnuncios(perfil.id_empleador);
         this.cargarPostulacionesRecibidas(perfil.id_empleador);
-
         this.cargando = false;
       },
       error: () => {
         this.cargando = false;
         if (!this.perfil) {
-          this.error = "No fue posible cargar tu perfil en este momento."
+          this.error = "No fue posible cargar tu perfil en este momento.";
         }
       }
     });
@@ -178,11 +202,9 @@ export class EmployerProfileComponent implements OnInit {
       next: (perfil: any) => {
         this.perfil = perfil;
         this.resenas = perfil.valoraciones_recibidas || [];
+        this.valoraciones_recibidas = perfil.valoraciones_recibidas || []; // Sincronizado para el HTML
         this.cargarAnuncios(id);
-        
-        // Solo el admin o el dueño deberían ver las postulaciones, pero si es requerimiento, las cargamos.
         this.cargarPostulacionesRecibidas(id);
-        
         this.cargando = false;
       },
       error: (err) => {
@@ -241,10 +263,12 @@ export class EmployerProfileComponent implements OnInit {
 
   cargarAnuncios(idEmpleador: string) {
     this.api.obtenerAnunciosEmpleador(idEmpleador).subscribe({
-      next: (anunciosDb) => {
+      next: (anunciosDb: any[]) => {
         if (!anunciosDb.length) return;
 
+        // Se usa ...anuncio para conservar salario, categorias, etc que vienen de la DB
         this.anuncios = anunciosDb.map((anuncio) => ({
+          ...anuncio, 
           id: anuncio.id_anuncio,
           empresa: this.perfil?.nombre_empresa || 'Mi empresa',
           estado: this.mapAnnouncementState(anuncio.estado_anuncio),
@@ -277,9 +301,19 @@ export class EmployerProfileComponent implements OnInit {
     });
   }
 
+  // --- GETTERS ---
   get direccionCompleta(): string {
     if (!this.perfil) return '';
     return `${this.perfil.calle}, ${this.perfil.colonia}, ${this.perfil.ciudad}, ${this.perfil.estado}, ${this.perfil.pais}`;
+  }
+
+  get direccionVisible(): string {
+    return this.direccionCompleta;
+  }
+
+  get ubicacionGeneral(): string {
+    if (!this.perfil) return '';
+    return `${this.perfil.ciudad || ''}, ${this.perfil.estado || ''}`.replace(/^, | , $/g, '').trim();
   }
 
   get descripcionVisible(): string {
@@ -290,6 +324,7 @@ export class EmployerProfileComponent implements OnInit {
     }
     return `${this.perfil.descripcion.slice(0, limite)}...`;
   }
+  // --------------
 
   toggleDescripcion() {
     this.mostrarDescripcionCompleta = !this.mostrarDescripcionCompleta;
@@ -322,6 +357,7 @@ export class EmployerProfileComponent implements OnInit {
     return stars;
   }
 
+  // --- RUTAS Y NAVEGACIÓN ---
   editarPerfil() {
     this.router.navigate(['/perfil/editar']);
   }
@@ -337,6 +373,19 @@ export class EmployerProfileComponent implements OnInit {
   administrarVacantes() {
     this.router.navigate(['/mis-vacantes']);
   }
+  
+  irAFavoritos() {
+    this.router.navigate(['/favoritos']); // Ajusta si la ruta en tu app es diferente
+  }
+
+  verVacante(id: string) {
+    this.router.navigate(['/vacante', id]); // Ajusta según tus rutas
+  }
+
+  goBack() {
+    window.history.back();
+  }
+  // --------------------------
 
   toggleTheme() {
     this.themeService.toggleTheme();
@@ -392,10 +441,78 @@ export class EmployerProfileComponent implements OnInit {
     return 'Oculta';
   }
 
-  private formatearFecha(fecha: string | null): string {
+  // Hecho público quitando "private" para que el HTML acceda sin advertencias en versiones estrictas
+  formatearFecha(fecha: string | null | undefined): string {
     if (!fecha) return 'Recién publicada';
     const date = new Date(fecha);
     return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  formatearSalario(salario: any): string {
+    if (!salario) return 'No especificado';
+    return `$${salario}`;
+  }
+
+  // --- MÉTODOS DEL SISTEMA DE CALIFICACIONES ---
+  setRating(rating: number) {
+    this.ratingSeleccionado = rating;
+  }
+
+  setHover(rating: number) {
+    this.ratingHover = rating;
+  }
+
+  enviarCalificacion() {
+    if (this.ratingSeleccionado === 0 && !this.nuevoComentario.trim()) return;
+    
+    this.ratingEnviando = true;
+    this.ratingError = '';
+    this.ratingExito = '';
+
+    // AQUÍ DEBERÍAS LLAMAR A TU SERVICIO API PARA GUARDAR LA RESEÑA
+    /* Ejemplo:
+    this.api.enviarValoracion(this.perfil.id_empleador, this.ratingSeleccionado, this.nuevoComentario).subscribe({
+      next: () => { ... },
+      error: () => { ... }
+    });
+    */
+
+    // Simulador para que la UI funcione por ahora:
+    setTimeout(() => {
+      this.ratingEnviando = false;
+      this.ratingExito = '¡Calificación enviada correctamente!';
+      // Opcional: limpiar los campos tras enviarlo
+      // this.ratingSeleccionado = 0;
+      // this.nuevoComentario = '';
+    }, 1500);
+  }
+  // ---------------------------------------------
+
+  // --- MODALES Y ACCIONES GENERALES ---
+  abrirModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  reportarPerfil(form: any) {
+    if (form.invalid) return;
+    
+    // Lógica para enviar el reporte a la base de datos
+    console.log('Reportando perfil con motivos:', form.value);
+    
+    this.cerrarModal();
+    // Podrías mostrar un SweetAlert o un mensaje de éxito aquí
   }
 
   eliminarCuenta(){
@@ -424,14 +541,6 @@ export class EmployerProfileComponent implements OnInit {
     }
   }
 
-  cerrarModal() {
-    const modal = document.getElementById('modalAlerta');
-    if (modal) {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
-  }
-  
   cerrarModalAceptar() {
     const modal = document.getElementById('modalAceptar');
     if (modal) {
@@ -457,8 +566,6 @@ export class EmployerProfileComponent implements OnInit {
     }
   }
 
-  menuAbiertoId: string | null = null;
-
   toggleMenuValoracion(id: string, event: Event): void {
     event.stopPropagation();
     this.menuAbiertoId = this.menuAbiertoId === id ? null : id;
@@ -475,6 +582,7 @@ export class EmployerProfileComponent implements OnInit {
              next: (perfil: any) => {
                this.perfil = perfil;
                this.resenas = perfil.valoraciones_recibidas || [];
+               this.valoraciones_recibidas = perfil.valoraciones_recibidas || [];
              }
            });
         }
@@ -485,7 +593,6 @@ export class EmployerProfileComponent implements OnInit {
   // ==========================================
   // FUNCIONES DE ADMIN: ELIMINAR Y SUSPENDER
   // ==========================================
-  
   abrirModalEliminarAdmin() {
     const modal = document.getElementById('modalEliminarAdmin');
     if (modal) {
@@ -516,8 +623,13 @@ export class EmployerProfileComponent implements OnInit {
         this.mostrarModalExitoAdmin("El perfil de la empresa ha sido borrado permanentemente.");
       },
       error: (err) => {
-        alert('Hubo un problema al intentar borrar este perfil desde la base de datos.');
         this.cerrarModalEliminarAdmin();
+        this.modalMensajeErrorAdmin = 'Hubo un problema al intentar borrar este perfil desde la base de datos.';
+        const modal = document.getElementById('modalErrorAdmin');
+        if (modal) {
+          modal.classList.add('show');
+          modal.style.display = 'flex';
+        }
       }
     });
   }
@@ -551,8 +663,13 @@ export class EmployerProfileComponent implements OnInit {
         this.mostrarModalExitoAdmin(dias === 0 ? "La empresa ha sido suspendida permanentemente." : `La empresa ha sido suspendida por ${dias} días.`);
       },
       error: (err) => {
-        alert('Hubo un problema al suspender la empresa.');
         this.cerrarModalSuspenderAdmin();
+        this.modalMensajeErrorAdmin = 'Hubo un problema al suspender la empresa.';
+        const modal = document.getElementById('modalErrorAdmin');
+        if (modal) {
+          modal.classList.add('show');
+          modal.style.display = 'flex';
+        }
       }
     });
   }
@@ -569,6 +686,14 @@ export class EmployerProfileComponent implements OnInit {
         modal.style.display = 'none';
         this.router.navigate(['/admin-dashboard']);
       }, 2500);
+    }
+  }
+
+  cerrarModalErrorAdmin() {
+    const modal = document.getElementById('modalErrorAdmin');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
     }
   }
 }

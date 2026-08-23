@@ -54,22 +54,11 @@
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-<<<<<<< HEAD
-      <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
-        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
-            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
-          </svg>
-          <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
-            <span class="visually-hidden">Nuevas notificaciones</span>
-          </span>
-=======
       <!-- Se oculta la campanita para el Admin -->
       <div class="notification-wrapper" *ngIf="!isAdminView">
         <div class="notification-bell" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
           <i class="bi bi-bell-fill"></i>
           <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
         </div>
 
         <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
@@ -97,18 +86,10 @@
         </div>
       </div>
 
-<<<<<<< HEAD
-      <button *ngIf="!isAdminView" class="btn d-flex align-items-center gap-2"
-        style="border-radius: 50px; background-color: var(--surface-primary); color: var(--text-color); border: 1px solid var(--border-soft); padding: 6px 16px; font-weight: 600; box-shadow: var(--shadow-soft);"
-        type="button" (click)="irAlPerfil()">
-        <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
-        <i *ngIf="!fotoPostulante" class="bi bi-person-circle fs-5"></i>
-=======
       <!-- Se oculta el botón de perfil para el Admin -->
       <button class="profile-chip" type="button" (click)="irAlPerfil()" *ngIf="!isAdminView">
         <img *ngIf="fotoPostulante" [src]="fotoPostulante" alt="Foto de perfil" />
         <i *ngIf="!fotoPostulante" class="bi bi-person-circle"></i>
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
         <span class="d-none d-md-inline">Mi perfil</span>
       </button>
 
@@ -300,22 +281,10 @@
 
       <!-- Opiniones de postulantes -->
       <div class="yellow-shell mt-4">
-<<<<<<< HEAD
-      <article class="reviews-list-card">
-        <div class="card-header-premium">
-          <h3>Opiniones de Postulantes</h3>
-          <p class="subtitle-premium">Calificaciones y comentarios de candidatos que interactuaron con esta empresa.</p>
-        </div>
-        <div class="card-body-premium">
-          <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
-            <i class="bi bi-chat-left-heart display-6" style="color: var(--text-secondary); opacity: 0.6;"></i>
-            <p class="mt-2" style="color: var(--text-secondary); opacity: 0.8;">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
-=======
         <article class="reviews-list-card">
           <div class="card-header-premium">
             <h3>Opiniones de Postulantes</h3>
             <p class="subtitle-premium">Calificaciones y comentarios de candidatos que interactuaron con esta empresa.</p>
->>>>>>> 48c1bdb (Se agrega configuracion para el perfil de empleador cuando se mira desde el perfil de admin)
           </div>
           <div class="card-body-premium">
             <div *ngIf="!valoraciones_recibidas || valoraciones_recibidas.length === 0" class="no-reviews-state text-center py-4">
