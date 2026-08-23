@@ -1,4 +1,3 @@
-<!-- MODAL ERROR GENÉRICO -->
 <div class="modal" tabindex="-1" [class.show]="mostrarModalError" [style.display]="mostrarModalError ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -200,26 +199,33 @@
   <div class="admin-body">
     <aside class="admin-sidebar">
       <nav class="sidebar-nav">
-        <a href="#" class="sidebar-link active">
+        <!-- Reemplazamos los routerLink por eventos (click) para cambiar la sección -->
+        <a href="#" (click)="cambiarSeccion('principal', $event)" class="sidebar-link" [class.active]="seccionActual === 'principal'">
+          <i class="bi bi-house-door-fill"></i> Principal
+        </a>
+        <a href="#" (click)="cambiarSeccion('usuarios', $event)" class="sidebar-link" [class.active]="seccionActual === 'usuarios'">
           <i class="bi bi-people-fill"></i> Usuarios
         </a>
-        <a href="#" class="sidebar-link">
-          <i class="bi bi-briefcase"></i> Empleos
+        <a href="#" (click)="cambiarSeccion('anuncios', $event)" class="sidebar-link" [class.active]="seccionActual === 'anuncios'">
+          <i class="bi bi-briefcase"></i> Anuncios
         </a>
-        <a href="#" class="sidebar-link">
+        <a href="#" (click)="cambiarSeccion('reportes', $event)" class="sidebar-link" [class.active]="seccionActual === 'reportes'">
           <i class="bi bi-file-earmark-text"></i> Reportes
-        </a>
-        <a href="#" class="sidebar-link">
-          <i class="bi bi-gear"></i> Configuracion
         </a>
       </nav>
     </aside>
 
     <main class="admin-content">
-      <h2 class="page-title mb-4">Vista General</h2>
+      <!-- Cambia el título dependiendo de la sección -->
+      <h2 class="page-title mb-4">
+        <span *ngIf="seccionActual === 'principal'">Vista General</span>
+        <span *ngIf="seccionActual === 'usuarios'">Gestión de Usuarios</span>
+        <span *ngIf="seccionActual === 'anuncios'">Gestión de Anuncios</span>
+        <span *ngIf="seccionActual === 'reportes'">Gestión de Reportes</span>
+      </h2>
 
       <!-- TABLA GENERAL: REPORTES A PERFILES -->
-      <div class="admin-card mb-4">
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'reportes'">
         <h4 class="card-title">Perfiles Reportados</h4>
         <div *ngIf="cargandoReportes" class="text-center my-3">
           <span>Cargando reportes...</span>
@@ -242,7 +248,6 @@
             <tbody>
               <tr *ngFor="let reporte of reportesDePerfiles">
                 <td>
-                  <!-- Muestra el nombre dependiendo de si es empresa o postulante -->
                   <ng-container *ngIf="reporte.id_postulante_reportado">
                     <i class="bi bi-person me-1 text-muted"></i>
                     {{ reporte.nombre_postulante || 'Desconocido' }} {{ reporte.apellido_paterno_postulante || '' }}
@@ -277,7 +282,8 @@
         </div>
       </div>
 
-      <div class="admin-card mb-4">
+      <!-- TABLA DE POSTULANTES REGISTRADOS -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'usuarios'">
         <h4 class="card-title">Postulantes Registrados</h4>
         <div *ngIf="cargandoPostulantes" class="text-center my-3">
           <span>Cargando postulantes...</span>
@@ -312,7 +318,8 @@
         </div>
       </div>
 
-      <div class="admin-card mb-4">
+      <!-- TABLA DE EMPRESAS REGISTRADAS -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'usuarios'">
         <h4 class="card-title">Empresas Registradas</h4>
         <div *ngIf="cargandoEmpresas" class="text-center my-3">
           <span>Cargando empresas...</span>
@@ -357,7 +364,8 @@
         </div>
       </div>
 
-      <div class="admin-card mb-4">
+      <!-- TABLA DE ANUNCIOS REPORTADOS -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'anuncios' || seccionActual === 'reportes'">
         <h4 class="card-title">Anuncios Reportados</h4>
         <div *ngIf="cargandoReportesAnuncios" class="text-center my-3">
           <span>Cargando reportes de anuncios...</span>
@@ -396,16 +404,6 @@
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div class="admin-card">
-        <h4 class="card-title">Notificaciones de reporte recientes</h4>
-        <ul class="notification-list">
-          <li *ngFor="let notif of notificaciones">
-            <i class="bi bi-bell"></i>
-            <span>{{ notif.mensaje }}</span>
-          </li>
-        </ul>
       </div>
 
     </main>
