@@ -630,7 +630,7 @@
     </section>
   </main>
 
-  <button *ngIf="isOwnProfile" class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
+  <button *ngIf="isOwnProfile && !isAdminView" class="fab-create" type="button" (click)="buscarEmpleos()" aria-label="Buscar empleos">
     <span class="fab-plus"><i class="bi bi-search"></i></span>
     <span class="fab-text">Buscar Empleos</span>
   </button>
