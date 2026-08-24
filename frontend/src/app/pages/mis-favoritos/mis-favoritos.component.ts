@@ -4,6 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
+
 
 interface FavoriteJob {
   id_favoritos: string;
@@ -42,13 +44,19 @@ export class MisFavoritosComponent implements OnInit {
   isMobile = false;
   quitandoId: string | null = null;
 
+  notifications: NotificationItem[] = [];
+  hasUnreadNotifications = false;
+  notificationsOpen = false;
+
+
   constructor(
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly router: Router,
     private readonly location: Location,
+    private readonly notificacionService: NotificacionService,
     private readonly themeService: ThemeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
@@ -58,6 +66,18 @@ export class MisFavoritosComponent implements OnInit {
       this.cargando = false;
       return;
     }
+
+    this.notificacionService.notifications$.subscribe(
+        notifications => {
+          this.notifications = notifications;
+        }
+      );
+
+      this.notificacionService.hasUnreadNotifications$.subscribe(
+        hasUnread => {
+          this.hasUnreadNotifications = hasUnread;
+        }
+      );
 
     this.nombrePostulante = usuario.nombre || 'Usuario';
     this.checkMobile();
@@ -101,6 +121,27 @@ export class MisFavoritosComponent implements OnInit {
         this.quitandoId = null;
       }
     });
+  }
+
+    toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
   }
 
   abrirDetalle(id: string): void {

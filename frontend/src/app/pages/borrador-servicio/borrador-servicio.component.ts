@@ -4,6 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
+
 
 interface ServiceDraft {
   id_servicio: string;
@@ -41,6 +43,9 @@ export class BorradorServicioComponent implements OnInit {
   menuOpen = false;
   isMobile = false;
 
+  notificationsOpen = false;
+
+
   // Variables para control de modales
   modalMensaje = '';
   modalConfirmacionAbierto = false;
@@ -50,13 +55,17 @@ export class BorradorServicioComponent implements OnInit {
   eliminandoId: string | null = null;
   publicandoId: string | null = null;
 
+  notifications: NotificationItem[] = [];
+  hasUnreadNotifications = false;
+
   constructor(
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly router: Router,
     private readonly location: Location,
+    private readonly notificacionService: NotificacionService,
     private readonly themeService: ThemeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const usuario = this.api.getUsuario();
@@ -82,6 +91,7 @@ export class BorradorServicioComponent implements OnInit {
     }
 
     this.cargando = true;
+    
 
     this.api.obtenerMisServicios(String(usuario.id)).subscribe({
       next: (servicios) => {
@@ -95,6 +105,39 @@ export class BorradorServicioComponent implements OnInit {
         this.cargando = false;
       }
     });
+
+       this.notificacionService.notifications$.subscribe(
+        notifications => {
+          this.notifications = notifications;
+        }
+      );
+
+      this.notificacionService.hasUnreadNotifications$.subscribe(
+        hasUnread => {
+          this.hasUnreadNotifications = hasUnread;
+        }
+      );
+  }
+
+   toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
   }
 
   // Abre el modal de confirmación antes de eliminar
