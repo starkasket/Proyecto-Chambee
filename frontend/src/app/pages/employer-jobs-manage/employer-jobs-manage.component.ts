@@ -27,6 +27,8 @@ interface JobManageItem {
   calle: string;
   codigo_postal: string;
   salario: number;
+  tipo_moneda: string;
+  periodo_pago: string;
 }
 
 interface NotificationItem {
@@ -95,6 +97,55 @@ export class EmployerJobsManageComponent implements OnInit {
     'Maestría'
   ];
 
+// Periodicidad del pago
+  readonly opcionesPeriodo = [
+    'Por día',
+    'Semanal',
+    'Quincenal',
+    'Mensual'
+  ];
+
+  // Opciones de moneda según tu select
+  readonly opcionesMoneda = ['Peso mexicano', 'Dólar estadounidense', 'Euro'];
+
+  // Salarios mínimos de referencia en México (MXN)
+  readonly salariosMinimosMXN: Record<string, number> = {
+    'Por día': 278.00,
+    'Semanal': 1950.00,
+    'Quincenal': 4182.00,
+    'Mensual': 8364.00
+  };
+
+  // Mapeo a códigos de moneda cortos
+  readonly codigosMoneda: Record<string, string> = {
+    'Peso mexicano': 'MXN',
+    'Dólar estadounidense': 'USD',
+    'Euro': 'EUR'
+  };
+
+  // Tipos de cambio aproximados frente al Peso Mexicano (MXN)
+  readonly tiposCambio: Record<string, number> = {
+    'Peso mexicano': 1,
+    'Dólar estadounidense': 20.00,
+    'Euro': 20.5
+  };
+
+  // Getter del equivalente en la moneda seleccionada
+  get salarioMinimoSugerido(): number {
+    const periodo = this.form.get('periodo_pago')?.value || 'Mensual';
+    const moneda = this.form.get('tipo_moneda')?.value || 'Peso mexicano';
+    const minimoMXN = this.salariosMinimosMXN[periodo] || 0;
+    const tasa = this.tiposCambio[moneda] || 1;
+
+    return minimoMXN / tasa;
+  }
+
+  // Getter del código de moneda (MXN, USD, EUR)
+  get codigoMonedaActivo(): string {
+    const moneda = this.form.get('tipo_moneda')?.value || 'Peso mexicano';
+    return this.codigosMoneda[moneda] || 'MXN';
+  }
+  
   readonly form = this.fb.group({
     titulo: ['', [Validators.required, Validators.maxLength(160)]],
     descripcion: ['', [Validators.required, Validators.maxLength(400)]],
@@ -108,6 +159,8 @@ export class EmployerJobsManageComponent implements OnInit {
     calle: ['', [Validators.required]],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
     salario: [null as number | null, [Validators.required, Validators.min(1)]],
+    tipo_moneda: ['MXN', [Validators.required]],
+    periodo_pago: ['Mensual', [Validators.required]],
     modalidad: ['Presencial', [Validators.required]],
     etiquetas: this.fb.nonNullable.control<string[]>([], [Validators.required])
   });
@@ -175,7 +228,9 @@ export class EmployerJobsManageComponent implements OnInit {
           colonia: anuncio.colonia || '',
           calle: anuncio.calle || '',
           codigo_postal: anuncio.codigo_postal || '',
-          salario: Number(anuncio.salario) || 0
+          salario: Number(anuncio.salario) || 0,
+          tipo_moneda: anuncio.tipo_moneda || 'MXN',
+          periodo_pago: anuncio.periodo_pago || 'Mensual'
         }));
 
         if (this.vacantes.length) {
@@ -197,6 +252,8 @@ export class EmployerJobsManageComponent implements OnInit {
             calle: '',
             codigo_postal: '',
             salario: null,
+            tipo_moneda: 'MXN',
+            periodo_pago: 'Mensual',
             modalidad: 'Presencial',
             etiquetas: []
           });
@@ -205,7 +262,6 @@ export class EmployerJobsManageComponent implements OnInit {
 
         this.cargando = false;
 
-        // Si hay un mensaje pendiente, mostrarlo después de cargar
         if (this.modalMensajePendiente) {
           setTimeout(() => {
             this.mostrarModalExito(this.modalMensajePendiente);
@@ -230,7 +286,6 @@ export class EmployerJobsManageComponent implements OnInit {
       return;
     }
 
-    // Asegurar que etiquetas siempre tiene un array válido
     const etiquetas = Array.isArray(vacante.categorias) && vacante.categorias.length > 0
       ? vacante.categorias
       : [];
@@ -248,6 +303,8 @@ export class EmployerJobsManageComponent implements OnInit {
       calle: vacante.calle || '',
       codigo_postal: vacante.codigo_postal || '',
       salario: vacante.salario || null,
+      tipo_moneda: vacante.tipo_moneda || 'MXN',
+      periodo_pago: vacante.periodo_pago || 'Mensual',
       modalidad: vacante.modalidad || 'Presencial',
       etiquetas: etiquetas
     });
@@ -346,7 +403,7 @@ export class EmployerJobsManageComponent implements OnInit {
       return;
     }
 
-    if (this.guardando) return; // Prevenir múltiples clics
+    if (this.guardando) return;
 
     this.guardando = true;
     this.cerrarModal();
@@ -392,7 +449,7 @@ export class EmployerJobsManageComponent implements OnInit {
     this.cambiarEstado('OCULTO', 'La vacante fue ocultada. Ya no aparecerá públicamente.');
   }
 
-   eliminarVacante() {
+  eliminarVacante() {
     if (this.actualizandoEstado) return;
     this.cambiarEstado('ELIMINADO', 'Se ha eliminado tu vacante.');
   }
@@ -407,7 +464,7 @@ export class EmployerJobsManageComponent implements OnInit {
       return;
     }
 
-    if (this.actualizandoEstado) return; // Prevenir múltiples clics
+    if (this.actualizandoEstado) return;
 
     this.actualizandoEstado = true;
     this.cerrarModal();
@@ -416,14 +473,13 @@ export class EmployerJobsManageComponent implements OnInit {
     this.api.actualizarEstadoAnuncioEmpleador(this.employerId, this.vacanteSeleccionadaId, estado).subscribe({
       next: () => {
         this.actualizandoEstado = false;
-          if (estado === 'ELIMINADO') {
-        this.vacanteSeleccionadaId = '';
-      }
+        if (estado === 'ELIMINADO') {
+          this.vacanteSeleccionadaId = '';
+        }
         this.cargarVacantes();
       },
       error: (err) => {
         this.actualizandoEstado = false;
-        
         this.modalMensajePendiente = '';
         const errorMsg = err?.error?.detail || err?.error?.error || 'No fue posible cambiar el estado de la vacante.';
         this.mostrarModal(`❌ Error: ${errorMsg}`);
@@ -598,9 +654,6 @@ export class EmployerJobsManageComponent implements OnInit {
     });
   }
 
-
-
-
   private resetImageState(vacante: JobManageItem | null) {
     this.previewUrl = vacante?.img || null;
     this.archivoSeleccionado = null;
@@ -624,6 +677,5 @@ export class EmployerJobsManageComponent implements OnInit {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
-
   }
 }

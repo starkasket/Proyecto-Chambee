@@ -1120,4 +1120,23 @@ width: 85%;
   .next {
     right: 2px;
   }
+  /* ===== Flexbox Global para empujar el Footer al fondo ===== */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-layout {
+  flex: 1 0 auto; 
+}
+
+.home-footer {
+  margin-top: auto;
+}
+
+/* Ajuste de altura mínima cuando no existen postulaciones */
+.no-applicants-card {
+  min-height: 420px;
+}
 }

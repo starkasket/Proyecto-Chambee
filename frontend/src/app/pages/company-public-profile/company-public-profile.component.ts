@@ -33,6 +33,8 @@ interface PublicCompanyJob {
   img?: string | null;
   images?: string[];
   salario: string | number;
+  tipo_moneda?: string;
+  periodo_pago?: string;
   modalidad: string;
   fecha_publicacion: string | null;
   vistas: number;
@@ -80,6 +82,15 @@ export class CompanyPublicProfileComponent implements OnInit {
     { id: 1, title: 'Vacantes activas', message: 'Revisa el perfil de la empresa antes de postularte.', time: 'Ahora', read: false },
     { id: 2, title: 'Chambee', message: 'Tu sesion sigue en modo postulante.', time: 'Hace 1 min', read: true }
   ];
+
+  readonly codigosMoneda: Record<string, string> = {
+    'Peso mexicano': 'MXN',
+    'Dólar estadounidense': 'USD',
+    'Euro': 'EUR',
+    'MXN': 'MXN',
+    'USD': 'USD',
+    'EUR': 'EUR'
+  };
 
   constructor(
     private readonly api: ApiService,
@@ -151,28 +162,25 @@ export class CompanyPublicProfileComponent implements OnInit {
   }
 
   reportarPerfil(form: NgForm){
-      if (form.invalid) {
-        return;
-      }
-      
-      const reporte = {
+    if (form.invalid) {
+      return;
+    }
+    
+    const reporte = {
       motivo: form.value.motivo,
       descripcion: form.value.descripcion,
       id_empleador_reportado: this.selectedPerfilId
-      };
-  
-      console.log(reporte);
-  
-      this.api.crearReporteEmpleador(reporte).subscribe({
-        next: (resp) => {
-        console.log('Reporte enviado', resp);
+    };
+
+    this.api.crearReporteEmpleador(reporte).subscribe({
+      next: (resp) => {
         this.cerrarModal();
       },
       error: (err) => {
         console.error(err);
       }
-      });
-    }
+    });
+  }
 
   cargarPerfilEmpresa(id: string): void {
     this.cargando = true;
@@ -215,20 +223,38 @@ export class CompanyPublicProfileComponent implements OnInit {
     });
   }
 
-  formatearSalario(salario: string | number): string {
+ formatearSalario(salario: string | number, monedaRaw?: string, periodo?: string): string {
     const numero = Number(salario);
 
     if (Number.isNaN(numero) || numero === 0) {
       return 'Salario a convenir';
     }
 
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      maximumFractionDigits: 0
-    }).format(numero);
-  }
+    // Normaliza el texto quitando espacios extra y pasándolo a minúsculas para evaluar mejor
+    const valorMoneda = (monedaRaw || '').toString().toLowerCase().trim();
 
+    let codigoIso = 'MXN';
+    let simboloMoneda = 'MXN';
+
+    if (valorMoneda.includes('dólar') || valorMoneda.includes('dolar') || valorMoneda.includes('usd')) {
+      codigoIso = 'USD';
+      simboloMoneda = 'USD';
+    } else if (valorMoneda.includes('euro') || valorMoneda.includes('eur')) {
+      codigoIso = 'EUR';
+      simboloMoneda = 'EUR';
+    }
+
+    const periodoTexto = periodo ? ` / ${periodo.toLowerCase()}` : '';
+
+    const salarioFormateado = new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: codigoIso,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(numero);
+
+    return `${salarioFormateado} ${simboloMoneda}${periodoTexto}`;
+  }
   formatearFecha(fecha: string | null): string {
     if (!fecha) {
       return 'Recien publicada';

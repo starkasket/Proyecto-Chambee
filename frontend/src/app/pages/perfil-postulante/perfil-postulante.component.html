@@ -5,8 +5,164 @@
       <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ navbarWelcomeName }}</span>
     </div>
 
-    <div class="search-container flex-grow-1 mx-4">
-      <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
+    <!-- Modales -->
+    <div id="modalAlerta" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">¡Atención!</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div>
+            <form class="support-form" #form="ngForm" (ngSubmit)="reportarPerfil(form)">
+              <div class="support-grid">
+                <label class="support-field support-field-span-2">
+                  <span>Motivo</span>
+                  <select name="motivo" ngModel #motivo="ngModel" required>
+                    <option value="" disabled>Selecciona un motivo</option>
+                    <option value="perfil_falso">Perfil falso o suplantación</option>
+                    <option value="fraude">Posible fraude o estafa</option>
+                    <option value="contenido_inapropiado">Contenido inapropiado</option>
+                    <option value="acoso">Acoso o comportamiento ofensivo</option>
+                    <option value="spam">Spam</option>
+                    <option value="informacion_falsa">Información falsa en el perfil</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                  <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es obligatorio.</small>
+                </label>
+
+                <label class="support-field support-field-span-2" *ngIf="motivo.value === 'otro'">
+                  <span>Especifica el motivo</span>
+                  <input type="text" name="motivoCustom" ngModel #motivoCustom="ngModel" placeholder="Escribe la razón del reporte" required />
+                  <small *ngIf="motivoCustom.invalid && motivoCustom.touched" class="support-error">Este campo es obligatorio.</small>
+                </label>
+
+                <label class="support-field support-field-full">
+                  <span>Descripción del reporte (Opcional)</span>
+                  <textarea name="descripcion" ngModel #descripcion="ngModel" rows="5" placeholder="Describe lo que ocurre y cualquier dato útil para revisarlo."></textarea>
+                </label>
+              </div>
+              <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn cancel-btn px-4" (click)="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn confirm-btn px-4" [disabled]="form.invalid">Confirmar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalExitoReporte" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
+            <h5 class="text-success fw-bold">¡Reporte Enviado!</h5>
+            <p class="mb-0">El usuario se reportó correctamente.</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn confirm-btn px-4" (click)="cerrarModalExitoReporte()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalSaludo" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">¡Atención!</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
+            <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalAceptar" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Mensaje</h5>
+            <p class="mb-0">{{ modalMensaje }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalEliminarAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
+            <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminarAdmin()">Cancelar</button>
+            <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar Perfil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalSuspenderAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+            <h5 class="text-warning fw-bold">Suspender Perfil</h5>
+            <p class="mb-3">Selecciona el tiempo que deseas suspender a este postulante:</p>
+            <select class="form-select w-75 mx-auto" [(ngModel)]="tiempoSuspensionAdmin">
+              <option value="1">1 Día</option>
+              <option value="3">3 Días</option>
+              <option value="7">1 Semana</option>
+              <option value="30">1 Mes</option>
+              <option value="0">Permanente</option>
+            </select>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalSuspenderAdmin()">Cancelar</button>
+            <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;" (click)="ejecutarSuspensionAdmin()">Suspender</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalExitoAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaExito.png" alt="éxito" height="200" class="mb-3"/>
+            <h5 class="text-success fw-bold">¡Operación Exitosa!</h5>
+            <p class="mb-0">{{ modalMensajeExitoAdmin }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalErrorAdmin" class="modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-body pt-4">
+            <img src="assets/abejaAlerta.png" alt="error" height="200" class="mb-3"/>
+            <h5 class="text-danger fw-bold">Ocurrió un problema</h5>
+            <p class="mb-0">{{ modalMensajeErrorAdmin }}</p>
+          </div>
+          <div class="modal-footer border-0 justify-content-center pb-4">
+            <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalErrorAdmin()">Cerrar</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="nav-buttons d-flex align-items-center gap-3">
