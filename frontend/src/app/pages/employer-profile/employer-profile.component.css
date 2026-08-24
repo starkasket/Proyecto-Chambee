@@ -1172,3 +1172,43 @@ width: 90%;
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+/* Truncado exacto del nombre en la Navbar */
+.brand-greeting-container {
+  min-width: 0 !important;
+  max-width: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.user-greeting-text {
+  max-width: 320px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: inline-block !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  vertical-align: middle !important;
+}
+
+/* Estilo del botón Mi Perfil */
+.btn-mi-perfil {
+  border-radius: 50px !important;
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 6px 16px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-mi-perfil i {
+  color: #ffffff !important;
+}
+
+/* Fija la altura de la navbar */
+.navbar-chambee {
+  height: 64px !important;
+  overflow: hidden !important;
+}

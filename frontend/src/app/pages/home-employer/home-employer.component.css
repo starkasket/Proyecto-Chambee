@@ -1135,8 +1135,19 @@ width: 85%;
   margin-top: auto;
 }
 
-/* Ajuste de altura mínima cuando no existen postulaciones */
 .no-applicants-card {
   min-height: 420px;
 }
+}
+
+.brand-greeting-container {
+  min-width: 0;
+  max-width: 480px; 
+}
+
+.user-greeting-text {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block;
 }
