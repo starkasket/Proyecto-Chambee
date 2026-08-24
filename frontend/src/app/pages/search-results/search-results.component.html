@@ -65,7 +65,8 @@
       <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
-    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
+    <button class="theme-toggle" type="button" (click)="toggleTheme()"
+      [attr.aria-pressed]="isDarkMode"
       [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
       <span class="theme-toggle-track">
         <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
@@ -76,8 +77,7 @@
     <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
     <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">Registrarse</button>
 
-    <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
-        class="bi bi-list"></i></div>
+    <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
     <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">
       <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
@@ -251,14 +251,7 @@
       </button>
     </div>
 
-    <div class="mt-3 d-flex flex-wrap gap-2"
-      *ngIf="filtros.categoriaEmpleo || filtros.modalidad || filtros.ciudad || filtros.moneda">
-      <span class="featured-chip" *ngIf="filtros.categoriaEmpleo">Categoría: {{ filtros.categoriaEmpleo }}</span>
-      <span class="featured-chip" *ngIf="filtros.modalidad">Modalidad: {{ filtros.modalidad }}</span>
-      <span class="featured-chip" *ngIf="filtros.ciudad">Ciudad: {{ filtros.ciudad }}</span>
-      <span class="featured-chip" *ngIf="filtros.moneda">Moneda: {{ filtros.moneda }}</span>
-    </div>
-
+    
     <div class="filter-panel" *ngIf="mostrarFiltros">
 
       <div class="row">
@@ -331,17 +324,8 @@
 
           </select>
         </div>
-        <div class="col-md-4 mt-3">
-          <label for="select-cat-empleo" class="form-label">Distancia</label>
-          <select id="select-cat-empleo" class="form-select" [(ngModel)]="filtros.distancia">
-            <option value="">Cualquier distancia</option>
-            <option value="10">Menos de 10 km</option>
-            <option value="25">10 - 25 km</option>
-            <option value="50">25 - 50 km</option>
-            <option value="100">50 - 100 km</option>
-            <option value="100+">Más de 100 km</option>
-          </select>
-        </div>
+
+
 
         <div class="col-md-4 mt-3">
           <label>Ordenar</label>
@@ -349,36 +333,8 @@
             <option value="fecha">Más recientes</option>
             <option value="salario">Mayor salario</option>
             <option value="vistas">Más vistas</option>
-            <option value="distancia">Más cercanos</option>
           </select>
         </div>
-
-          <div class="col-md-4 mt-3">
-            <label for="select-moneda-filtro" class="form-label">Moneda</label>
-            <select id="select-moneda-filtro" class="form-select" [(ngModel)]="filtros.moneda">
-              <option value="">Todas (Convierte a MXN)</option>
-              <option value="MXN">Pesos Mexicanos (MXN)</option>
-              <option value="USD">Dólares (USD)</option>
-              <option value="EUR">Euros (EUR)</option>
-            </select>
-          </div>
-
-          <div class="col-md-4 mt-3">
-            <label for="input-salario-min" class="form-label">
-              Salario Mínimo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
-            </label>
-            <input id="input-salario-min" type="number" class="form-control" placeholder="Ej. 5000"
-              [(ngModel)]="filtros.salarioMin" min="0" />
-          </div>
-
-          <div class="col-md-4 mt-3">
-            <label for="input-salario-max" class="form-label">
-              Salario Máximo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
-            </label>
-            <input id="input-salario-max" type="number" class="form-control" placeholder="Ej. 25000"
-              [(ngModel)]="filtros.salarioMax" min="0" />
-          </div>
-
         <div class="col-12 mt-4 d-flex justify-content-end gap-2">
           <button class="btn btn-outline-secondary"
             (click)="filtros={tipo:'',modalidad:'',ciudad:'',categoriaEmpleo:'',categoriaServicio:'',cobertura:'',ordenar:'fecha'}">
