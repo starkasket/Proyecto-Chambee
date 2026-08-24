@@ -35,6 +35,7 @@ export class SearchResultsComponent implements OnInit {
   // Si no hay sesión, mostramos el navbar público (login/registrar)
   // en vez del navbar de usuario logueado.
   estaLogueado = false;
+  isAdminView = false;
 
   // Estado del modal de detalle de servicio (igual que en home-user.component)
   servicioDetalle: any = null;
@@ -89,6 +90,7 @@ export class SearchResultsComponent implements OnInit {
 
     const usuario = this.api.getUsuario();
     this.estaLogueado = !!this.authApi.getToken();
+    this.isAdminView = usuario?.rol === 'administrador' || usuario?.rol === 'admin';
 
     // Las notificaciones y el perfil SOLO se cargan si hay sesión activa,
     // de lo contrario el backend responde 401 y el interceptor te manda a /login.
@@ -112,7 +114,7 @@ export class SearchResultsComponent implements OnInit {
         this.nombre_postulante = usuario.nombre || 'Usuario';
         this.api.getMiPerfil().subscribe({
           next: (perfil: any) => {
-            this.nombre_postulante = perfil?.nombre_postulante || this.nombre_postulante;
+            this.nombre_postulante = perfil?.nombre || perfil?.nombre_postulante || perfil?.nombre_empresa || this.nombre_postulante;
             this.foto_perfil = perfil?.foto_perfil || '';
           },
           error: () => { }

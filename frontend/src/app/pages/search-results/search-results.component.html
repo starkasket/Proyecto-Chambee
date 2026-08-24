@@ -1,7 +1,8 @@
 <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
   <div class="d-flex align-items-center gap-2">
     <img src="assets/LogoChambee.png" alt="Chambee" height="48" style="cursor: pointer;" (click)="volverInicio()">
-    <span class="fs-5 fw-semibold d-none d-md-block" *ngIf="estaLogueado">Bienvenido, {{ nombre_postulante }}</span>
+    <span class="fs-5 fw-semibold d-none d-md-block" *ngIf="estaLogueado && !isAdminView">Bienvenido, {{ nombre_postulante }}</span>
+    <span class="fs-5 fw-semibold d-none d-md-block" *ngIf="estaLogueado && isAdminView">Panel Administrador, {{ nombre_postulante }}</span>
   </div>
 
   <div class="search-container flex-grow-1 mx-4">
@@ -11,8 +12,18 @@
 
   <div class="nav-buttons d-flex align-items-center gap-3">
 
-    <div class="notification-wrapper" style="position: relative;">
+    <!-- Toggle de tema: SIEMPRE VISIBLE -->
+    <button class="theme-toggle" type="button" (click)="toggleTheme()"
+      [attr.aria-pressed]="isDarkMode"
+      [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+      <span class="theme-toggle-track">
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+            class="bi bi-moon-fill"></i></span>
+      </span>
+    </button>
 
+    <!-- Notificaciones (Oculto para Admins) -->
+    <div *ngIf="estaLogueado && !isAdminView" class="notification-wrapper" style="position: relative;">
       <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
         (click)="toggleNotifications($event)">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
@@ -29,12 +40,10 @@
 
       <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
         style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
-
         <div
           style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
           <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
         </div>
-
         <div style="max-height: 350px; overflow-y: auto;">
           <div *ngFor="let notif of notifications"
             style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
@@ -44,66 +53,70 @@
             <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
             <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
           </div>
-
           <div *ngIf="notifications.length === 0"
             style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
             No tienes notificaciones nuevas
           </div>
         </div>
-
-     <!--    <div
-          style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
-          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas las
-            notificaciones</a>
-        </div> -->
       </div>
     </div>
 
-    <button class="btn btn-profile-navbar d-flex align-items-center gap-2" *ngIf="estaLogueado" (click)="irAlPerfil()">
+    <!-- Botón de perfil (Oculto para Admins)  -->
+    <button class="btn btn-profile-navbar d-flex align-items-center gap-2" *ngIf="estaLogueado && !isAdminView" (click)="irAlPerfil()">
       <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto" />
       <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
       <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
-    <button class="theme-toggle" type="button" (click)="toggleTheme()"
-      [attr.aria-pressed]="isDarkMode"
-      [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
-      <span class="theme-toggle-track">
-        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
-            class="bi bi-moon-fill"></i></span>
-      </span>
-    </button>
+    <!-- Botón de perfil del admin (Visible solo para Admins)
+    <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" *ngIf="estaLogueado && isAdminView" title="Administrador">
+      <i class="bi bi-person-circle fs-5"></i>
+      <span class="d-none d-md-block">{{ nombre_postulante }}</span>
+    </button> -->
 
     <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
     <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">Registrarse</button>
 
     <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
 
+    <!-- Menú Desktop -->
     <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">
-      <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
-      <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
-      <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
-      <a routerLink="/services" class="desktop-menu-link">Servicios</a>
-      <a routerLink="/borrador-servicio" class="desktop-menu-link">Mis borradores</a>
-      <a routerLink="/crear-servicio" class="desktop-menu-link">Crear servicio</a>
-      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <ng-container *ngIf="!isAdminView">
+        <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
+        <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
+        <a routerLink="/mis-favoritos" class="desktop-menu-link">Mis favoritos</a>
+        <a routerLink="/services" class="desktop-menu-link">Servicios</a>
+        <a routerLink="/borrador-servicio" class="desktop-menu-link">Mis borradores</a>
+        <a routerLink="/crear-servicio" class="desktop-menu-link">Crear servicio</a>
+        <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      </ng-container>
+      <ng-container *ngIf="isAdminView">
+        <a routerLink="/admin" class="desktop-menu-link">Panel principal</a>
+      </ng-container>
       <div class="desktop-menu-divider"></div>
       <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
     </div>
   </div>
 
+  <!-- Menú Móvil -->
   <div *ngIf="menuOpen && isMobile && estaLogueado" class="mobile-menu-backdrop" (click)="toggleMenu()">
     <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
       <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
-        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">
+          {{ isAdminView ? 'Panel Administrador, ' : 'Bienvenido, ' }}{{ nombre_postulante }}
         </div>
         <hr />
-        <a class="mobile-nav-link" (click)="irAlPerfil()">Mi perfil</a>
-        <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
-        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
-        <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
-        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <ng-container *ngIf="!isAdminView">
+          <a class="mobile-nav-link" (click)="irAlPerfil()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
+          <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+          <a class="mobile-nav-link" routerLink="/borrador-servicio" (click)="toggleMenu()">Mis borradores</a>
+          <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        </ng-container>
+        <ng-container *ngIf="isAdminView">
+          <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel principal</a>
+        </ng-container>
         <hr />
         <a class="mobile-nav-link text-danger" (click)="logout()">Cerrar Sesión</a>
       </nav>
