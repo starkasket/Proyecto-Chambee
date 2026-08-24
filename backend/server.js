@@ -1384,7 +1384,7 @@ function normalizarResultados(empleos, servicios) {
     salario: s.presupuesto,
     nombre_empresa:
       `${s.nombre_postulante} ${s.apellido_paterno_postulante}`,
-    img: s.img || s.foto_perfil || null // ← Corrección aplicada aquí
+    img: s.foto_perfil
   }));
 
   return [
@@ -2209,6 +2209,15 @@ async function ensureDatabaseSchema() {
   try {
     await pool.query("ALTER TABLE valoracion ALTER COLUMN comentario DROP NOT NULL");
 
+    // ---> AGREGA ESTO AQUÍ <---
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reporte_a_anuncio (
+        id_reporte INT,
+        id_anuncio VARCHAR(255)
+      );
+    `);
+    // --------------------------
+
     try {
       await pool.query(`ALTER TABLE reporte DROP CONSTRAINT IF EXISTS fk_reporte_postulante`);
       await pool.query(`ALTER TABLE reporte DROP CONSTRAINT IF EXISTS fk_reporte_empleador`);
@@ -2312,7 +2321,7 @@ async function ensureDatabaseSchema() {
   }
 }
 
-app.post('/reportes/anuncios', async (req, res) => {
+app.post('/reportes/anuncios', verifyToken, async (req, res) => {
   try {
     const { id_anuncio, id_postulante, motivo, detalle } = req.body;
 
@@ -2338,12 +2347,12 @@ app.post('/reportes/anuncios', async (req, res) => {
     res.status(200).json({ mensaje: 'Reporte creado con éxito', reporte: nuevoReporte });
   } catch (error) {
     await pool.query('ROLLBACK');
-    console.error('Error al crear reporte:', error);
+    console.error('Error al crear reporte:', error.message);
     res.status(500).json({ error: 'Error interno al guardar el reporte' });
   }
 });
 
-app.get('/reportes/anuncios', async (req, res) => {
+app.get('/reportes/anuncios', verifyToken, authorizeRoles('administrador'), async (req, res) => {
   try {
     const query = `
             SELECT 
@@ -2361,8 +2370,8 @@ app.get('/reportes/anuncios', async (req, res) => {
     const result = await pool.query(query);
     res.status(200).json(result.rows);
   } catch (error) {
-    console.error('Error al obtener reportes de anuncios:', error);
-    res.status(500).json({ error: 'Error interno al obtener los reportes' });
+    console.error('Error SQL al obtener reportes de anuncios:', error.message);
+    res.status(500).json({ error: 'Error interno al obtener los reportes', detalle: error.message });
   }
 });
 
