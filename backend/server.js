@@ -1384,7 +1384,7 @@ function normalizarResultados(empleos, servicios) {
     salario: s.presupuesto,
     nombre_empresa:
       `${s.nombre_postulante} ${s.apellido_paterno_postulante}`,
-    img: s.foto_perfil
+    img: s.img || s.foto_perfil
   }));
 
   return [
