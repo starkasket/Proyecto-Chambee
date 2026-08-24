@@ -65,34 +65,41 @@ body {
   position: relative;
 }
 
+/* ===== Botones Iniciar Sesión y Registrarse ===== */
 .btn {
   border: 1px solid transparent;
-  padding: 4px 10px;
-  border-radius: 14px;
+  padding: 10px 22px;
+  border-radius: 999px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
-.login {
-  background: var(--surface-primary);
-  color: var(--text-primary);
-  border-color: var(--border-soft);
+.login,
+:host-context(body.dark-theme) .login {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: transparent !important;
 }
 
-.register {
-  background: #000000 !important;
-  color: #f5ebe2 !important;
-  padding: 5px 12px;
-  font-weight: 600;
-}
-
-/* El navbar siempre es amarillo: el botón Registrarse siempre es negro para contrastar */
+.register,
 :host-context(body.dark-theme) .register {
   background: #000000 !important;
-  color: #f5ebe2 !important;
+  color: #ffffff !important;
 }
 
+/* Iniciar sesión en MODO OSCURO */
+:host-context(body.dark-theme) .login {
+  background: #000000 !important; /* Un gris oscuro */
+  color: #ffffff !important; /* Texto blanco */
+  border-color: #000000 !important;
+}
+
+/* ===== Switch de Tema (Sol / Luna) ===== */
 .theme-toggle {
   border: none;
   background: transparent;
@@ -103,34 +110,40 @@ body {
 }
 
 .theme-toggle-track {
-  width: 48px;
-  height: 28px;
+  width: 52px;
+  height: 30px;
   border-radius: 999px;
-  background: var(--theme-toggle-bg);
-  border: 1px solid var(--theme-toggle-border);
+  background-color: #f6e6aa;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   padding: 3px;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.3s ease;
 }
 
 .theme-toggle-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--theme-toggle-knob);
-  color: var(--theme-toggle-icon);
+  background-color: #ffffff;
+  color: #000000;
   transform: translateX(0);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  font-size: 12px;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  font-size: 13px;
+}
+
+:host-context(body.dark-theme) .theme-toggle-track {
+  background-color: #c9a41e;
 }
 
 :host-context(body.dark-theme) .theme-toggle-icon {
-  transform: translateX(18px);
+  background-color: #000000;
+  color: #f7ca18;
+  transform: translateX(22px);
 }
 
 .menu {
@@ -252,7 +265,6 @@ body {
 .featured-company-copy {
   padding: 18px 20px 22px;
   color: var(--accent-text);
-
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -265,7 +277,6 @@ body {
 .featured-job p {
   margin: 0;
 }
-
 
 .featured-job p, .featured-job h3{
    display: -webkit-box;
@@ -347,13 +358,10 @@ body {
 .job-urgency-badge-normal {
   background: rgba(81, 220, 38, 0.12);
   color: #35a313;
-
 }
 .job-urgency-badge-urgent {
-
   background: rgba(220, 153, 38, 0.12);
   color: #cd9300;
-
 }
 .job-urgency-badge-very-urgent {
   background: rgba(220, 38, 38, 0.12);
