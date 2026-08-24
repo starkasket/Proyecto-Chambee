@@ -1091,8 +1091,9 @@ body {
 }
 
 .footer-brand img {
-  width: 60px;
-  height: 60px;
+  width: auto;          /* Permite que el ancho se ajuste proporcionalmente */
+  height: 90px;         /* Aumentamos la altura (antes 60px) */
+  max-width: 200px;     /* Límite por si la pantalla es muy pequeña */
   object-fit: contain;
 }
 

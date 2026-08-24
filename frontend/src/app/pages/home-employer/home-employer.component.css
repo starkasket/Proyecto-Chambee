@@ -900,8 +900,9 @@ width: 85%;
 }
 
 .footer-brand img {
-  width: 60px;
-  height: 60px;
+  width: auto;
+  height: 90px;
+  max-width: 200px;
   object-fit: contain;
 }
 
