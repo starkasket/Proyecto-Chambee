@@ -9,28 +9,64 @@ export class SocketService {
   private socket: Socket;
 
   constructor() {
-    // Asegúrate de que esta URL coincida con el puerto de tu backend en Node
-    this.socket = io('http://localhost:3000'); 
+    this.socket = io('http://localhost:3000');
   }
 
-  // El empleador se conecta a su sala usando su ID
   conectarEmpleador(idEmpleador: string) {
     this.socket.emit('joinRoom', idEmpleador);
   }
 
-  // Escuchamos el evento que envía el backend
+  conectarPostulante(idPostulante: string) {
+    this.socket.emit('joinRoom', idPostulante);
+  }
+
+  conectarUsuario(idUsuario: string) {
+    this.socket.emit('joinRoom', idUsuario);
+  }
+
   escucharNuevasPostulaciones(): Observable<any> {
     return new Observable((observer) => {
-      // AQUÍ ESTÁ EL CAMBIO IMPORTANTE: (data: any)
       this.socket.on('new_application', (data: any) => {
         observer.next(data);
       });
     });
   }
-  
-  escucharRespuestasPostulante(): Observable<any> {
+
+  escucharAnunciosCercanos(): Observable<any> {
     return new Observable((observer) => {
+
+      this.socket.on('nearby_job', (data: any) => {
+        observer.next(data);
+      });
+
+    });
+  }
+
+  escucharRespuestasPostulante(): Observable<any> {
+    /*   return new Observable((observer) => {
+        this.socket.on('application_accepted', (data: any) => {
+          observer.next(data);
+        });
+      }); */
+
+
+    return new Observable((observer) => {
+
       this.socket.on('application_accepted', (data: any) => {
+
+        observer.next({
+          ...data,
+          tipo: 'SEGUIMIENTO_ACEPTADO'
+        });
+
+      });
+
+    });
+  }
+
+  escucharRechazosPostulante(): Observable<any> {
+    return new Observable(observer => {
+      this.socket.on('application_rejected', (data: any) => {
         observer.next(data);
       });
     });

@@ -79,6 +79,23 @@ if (!hasEmailConfig) {
   });
 }
 
+function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
 
@@ -280,7 +297,7 @@ app.post("/postulantes/registro", async (req, res) => {
     const rfcCheck = await pool.query(
       `SELECT 'postulante' AS tipo FROM postulante WHERE rfc = $1
        UNION SELECT 'empleador' FROM empleador WHERE rfc = $1`,
-       [rfc]
+      [rfc]
     );
     if (rfcCheck.rows.length > 0) {
       return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
@@ -288,7 +305,7 @@ app.post("/postulantes/registro", async (req, res) => {
 
     const curpCheck = await pool.query(
       `SELECT 'postulante' AS tipo FROM postulante WHERE curp = $1`,
-       [curp]
+      [curp]
     );
     if (curpCheck.rows.length > 0) {
       return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "curp" });
@@ -432,7 +449,7 @@ app.post("/empleadores/registro", async (req, res) => {
     const rfcCheck = await pool.query(
       `SELECT 'postulante' AS tipo FROM postulante WHERE rfc = $1
        UNION SELECT 'empleador' FROM empleador WHERE rfc = $1`,
-       [rfc]
+      [rfc]
     );
     if (rfcCheck.rows.length > 0) {
       return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "rfc" });
@@ -440,7 +457,7 @@ app.post("/empleadores/registro", async (req, res) => {
 
     const empresaCheck = await pool.query(
       `SELECT 'empleador' AS tipo FROM empleador WHERE nombre_empresa = $1`,
-       [nombre_empresa]
+      [nombre_empresa]
     );
     if (empresaCheck.rows.length > 0) {
       return res.status(400).json({ error: "No se pudo crear la cuenta. Revisa tus datos.", duplicateField: "nombre_empresa" });
@@ -591,9 +608,12 @@ app.get("/mi-perfil", verifyToken, async (req, res) => {
     let query = "";
 
     if (rol === "empleador") {
-      query = `SELECT id_empleador, nombre_empresa, correo_electronico, pais, estado, ciudad,
-        colonia, calle, codigo_postal, telefono, rfc, descripcion, foto_perfil
-      FROM empleador WHERE id_empleador = $1`;
+      query = `SELECT
+        id_empleador, nombre_empresa, correo_electronico, pais, estado, ciudad,
+        colonia, calle, numero_exterior, codigo_postal, latitud, longitud, direccion_formateada,
+        telefono, rfc, descripcion, foto_perfil
+      FROM empleador
+      WHERE id_empleador = $1`;
     } else if (rol === "postulante") {
       query = `SELECT 
         p.id_postulante, p.nombre_postulante, p.apellido_paterno_postulante, p.apellido_materno_postulante, 
@@ -916,13 +936,13 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
     if (rol === "empleador") {
       query = `UPDATE empleador
         SET nombre_empresa = $1, correo_electronico = $2, pais = $3, estado = $4,
-            ciudad = $5, colonia = $6, calle = $7, codigo_postal = $8,
-            telefono = $9, rfc = $10, descripcion = $11, foto_perfil = $12
-        WHERE id_empleador = $13 RETURNING *`;
+            ciudad = $5, colonia = $6, calle = $7, numero_exterior = $8, codigo_postal = $9,
+            latitud = $10, longitud = $11, direccion_formateada = $12, telefono = $13, rfc = $14, descripcion = $15, foto_perfil = $16
+        WHERE id_empleador = $17 RETURNING *`;
       values = [
         datos.nombre_empresa, datos.correo_electronico, datos.pais, datos.estado,
-        datos.ciudad, datos.colonia, datos.calle, datos.codigo_postal,
-        datos.telefono, datos.rfc, datos.descripcion, datos.foto_perfil, id
+        datos.ciudad, datos.colonia, datos.calle, datos.numero_exterior, datos.codigo_postal,
+        datos.latitud, datos.longitud, datos.direccion_formateada, datos.telefono, datos.rfc, datos.descripcion, datos.foto_perfil, id
       ];
     } else if (rol === "postulante") {
       const actual = await pool.query("SELECT * FROM postulante WHERE id_postulante = $1", [id]);
@@ -950,19 +970,24 @@ app.put("/mi-perfil", verifyToken, async (req, res) => {
             ciudad = COALESCE($9, ciudad),
             colonia = COALESCE($10, colonia),
             calle = COALESCE($11, calle),
-            codigo_postal = COALESCE($12, codigo_postal),
-            telefono = COALESCE($13, telefono),
-            curp = COALESCE($14, curp),
-            rfc = COALESCE($15, rfc),
-            foto_perfil = COALESCE($16, foto_perfil),
-            descripcion = COALESCE($17, descripcion)
-        WHERE id_postulante = $18 RETURNING *`;
+            numero_exterior = COALESCE($12, numero_exterior),
+            codigo_postal = COALESCE($13, codigo_postal),
+            latitud = COALESCE($14, latitud),
+            longitud = COALESCE($15, longitud),
+            direccion_formateada = COALESCE($16, direccion_formateada),
+            telefono = COALESCE($17, telefono),
+            curp = COALESCE($18, curp),
+            rfc = COALESCE($19, rfc),
+            foto_perfil = COALESCE($20, foto_perfil),
+            descripcion = COALESCE($21, descripcion)
+        WHERE id_postulante = $22 RETURNING *`;
 
       values = [
         datos.nombre_postulante || null, datos.apellido_paterno_postulante || null, datos.apellido_materno_postulante || null,
         datos.correo_electronico || null, datos.fecha_nacimiento || null, datos.sexo || null,
         datos.pais || null, datos.estado || null, datos.ciudad || null, datos.colonia || null,
-        datos.calle || null, datos.codigo_postal || null, datos.telefono || null,
+        datos.calle || null, datos.numero_exterior || null, datos.codigo_postal || null, datos.latitud || null,
+        datos.longitud || null, datos.direccion_formateada || null, datos.telefono || null,
         datos.curp || null, datos.rfc || null, datos.foto_perfil || null, datos.descripcion || null, id
       ];
 
@@ -1005,7 +1030,7 @@ app.get("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), a
       a.id_anuncio, a.titulo, a.descripcion, a.tipo_anuncio, a.urgencia, a.edad, a.educacion,
       (SELECT i.url_imagen FROM imagenes i WHERE i.id_anuncio = a.id_anuncio LIMIT 1) AS img,
       (SELECT COALESCE(ARRAY_AGG(i2.url_imagen ORDER BY i2.id_imagen), ARRAY[]::VARCHAR[]) FROM imagenes i2 WHERE i2.id_anuncio = a.id_anuncio) AS images,
-      a.estado, a.ciudad, a.colonia, a.calle, a.codigo_postal, a.salario, a.moneda, a.periodo_pago, a.modalidad, a.fecha_publicacion,
+      a.estado, a.ciudad, a.colonia, a.calle, a.numero_exterior, a.latitud, a.longitud, a.direccion_formateada, a.codigo_postal, a.salario, a.modalidad, a.fecha_publicacion,
       a.estado_anuncio, a.vistas, a.id_empleador, COUNT(DISTINCT po.id_postulacion) AS postulaciones_count,
       COALESCE(ARRAY_AGG(DISTINCT c.nombre) FILTER (WHERE c.nombre IS NOT NULL), ARRAY[]::VARCHAR[]) AS categorias
     FROM anuncios a
@@ -1039,7 +1064,7 @@ app.get("/empleadores/:id/postulaciones", verifyToken, authorizeRoles("empleador
     INNER JOIN postulante p ON p.id_postulante = po.id_postulante
     INNER JOIN anuncios a ON a.id_anuncio = po.id_anuncio
     LEFT JOIN cv c ON c.id_postulante = p.id_postulante
-    WHERE a.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA'
+    WHERE a.id_empleador = $1 AND p.estado_cuenta = 'ACTIVA' AND po.estado = 'En revisión'
     ORDER BY po.fecha_postulacion DESC`;
 
     const result = await pool.query(query, [id]);
@@ -1089,11 +1114,11 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     const query = `INSERT INTO anuncios (
       titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, latitud, longitud, direccion_formateada, salario, moneda, periodo_pago, modalidad, estado_anuncio, id_empleador, vistas
     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,0) RETURNING *`;
-    
+
     const values = [
       titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia || null, calle || null, numero_exterior || null, codigo_postal || null, latitudNumero, longitudNumero, direccion_formateada, salarioNumero, moneda, periodo_pago, modalidad, estado_anuncio, id
     ];
-    
+
     const result = await client.query(query, values);
     const anuncio = result.rows[0];
     const imagenesPayload = Array.isArray(imgs) && imgs.length ? imgs : imagesBody;
@@ -1104,6 +1129,10 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
         .filter(Boolean)
     )];
 
+    /*   await pool.query(
+      `INSERT INTO notificaciones (id_postulante, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4)`,
+      [idPostulante, titulo, mensaje, 'SEGUIMIENTO_ACEPTADO']
+    ); */
     for (const url of imagenesNormalizadas) {
       await client.query(`INSERT INTO imagenes (id_anuncio, url_imagen) VALUES ($1, $2)`, [anuncio.id_anuncio, url]);
     }
@@ -1111,6 +1140,47 @@ app.post("/empleadores/:id/anuncios", verifyToken, authorizeRoles("empleador"), 
     for (const categoria of categorias) await client.query(`INSERT INTO categoriaAnuncio (id_categoria, id_anuncio) VALUES ($1, $2)`, [categoria.id_categoria, anuncio.id_anuncio]);
 
     await client.query("COMMIT");
+
+    const io = req.app.get('io');
+
+
+    try {
+      const postulantesResult = await pool.query(` SELECT id_postulante, latitud, longitud FROM postulante WHERE latitud IS NOT NULL AND longitud IS NOT NULL AND estado_cuenta = 'ACTIVA'`);
+
+      for (const postulante of postulantesResult.rows) {
+        const latPostulante = parseFloat(postulante.latitud);
+        const lonPostulante = parseFloat(postulante.longitud);
+        if (isNaN(latPostulante) || isNaN(lonPostulante)) {
+          continue;
+        }
+
+
+        const distanciaKm = calcularDistanciaKm(latitudNumero, longitudNumero, latPostulante, lonPostulante);
+
+        if (distanciaKm <= 10) {
+          const distanciaTexto = distanciaKm < 1 ? `${Math.round(distanciaKm * 1000)} m` : `${distanciaKm.toFixed(1)} km`;
+          const tituloNotificacion = "Nuevo anuncio cerca de ti";
+          const mensajeNotificacion =
+            `Se publicó "${titulo}" a ${distanciaTexto} de tu ubicación.`;
+          await pool.query(`INSERT INTO notificaciones (id_postulante, id_anuncio, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4, $5)`,
+            [postulante.id_postulante, anuncio.id_anuncio, tituloNotificacion, mensajeNotificacion, "ANUNCIO_CERCANO"]);
+
+          io.to(String(postulante.id_postulante)).emit("nearby_job",
+            {
+              titulo: tituloNotificacion,
+              mensaje: mensajeNotificacion,
+              idAnuncio: anuncio.id_anuncio,
+              distanciaKm: distanciaKm,
+              tipo: "ANUNCIO_CERCANO"
+            }
+          );
+        }
+      }
+
+    } catch (errorNotificaciones) {
+      console.error("Error al generar notificaciones de anuncios cercanos:", errorNotificaciones);
+    }
+
     const imagenesRows = await client.query(`SELECT url_imagen FROM imagenes WHERE id_anuncio = $1 ORDER BY id_imagen`, [anuncio.id_anuncio]);
     const images = imagenesRows.rows.map(r => r.url_imagen);
     res.status(201).json({ message: "Oferta creada", anuncio: { ...anuncio, img: images[0] || null, images, categorias: categorias.map(c => c.nombre) } });
@@ -1147,12 +1217,7 @@ app.get("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
 app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("empleador"), async (req, res) => {
   const { id, anuncioId } = req.params;
   if (String(req.user.id) !== String(id)) return res.status(403).json({ error: "No autorizado" });
-  
-  const {
-    titulo, descripcion, tipo_anuncio, urgencia = 'Normal', edad = 'Sin especificar',
-    educacion = 'Sin especificar', img, estado, ciudad, colonia, calle, codigo_postal,
-    salario, moneda = 'MXN', periodo_pago = 'Mensual', modalidad, etiquetas = []
-  } = req.body;
+  const { titulo, descripcion, tipo_anuncio, urgencia = 'Normal', edad = 'Sin especificar', educacion = 'Sin especificar', img, estado, ciudad, colonia, calle, numero_exterior, latitud, longitud, direccion_formateada, codigo_postal, salario, modalidad, etiquetas = [] } = req.body;
 
   if (!titulo || !descripcion || !estado || !ciudad || !colonia || !calle || !codigo_postal || salario === null || salario === undefined || !modalidad) return res.status(400).json({ error: "Faltan campos" });
   const salarioNumero = parseFloat(salario);
@@ -1164,8 +1229,8 @@ app.put("/empleadores/:id/anuncios/:anuncioId", verifyToken, authorizeRoles("emp
     await ensureCategoriasBase(client);
 
     const updateResult = await client.query(`UPDATE anuncios
-       SET titulo = $1, descripcion = $2, tipo_anuncio = $3, urgencia = $4, edad = $5, educacion = $6, estado = $7, ciudad = $8, colonia = $9, calle = $10, codigo_postal = $11, salario = $12, moneda = $13, periodo_pago = $14, modalidad = $15
-       WHERE id_empleador = $16 AND id_anuncio = $17 RETURNING *`, [titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, codigo_postal, salarioNumero, moneda, periodo_pago, modalidad, id, anuncioId]);
+       SET titulo = $1, descripcion = $2, tipo_anuncio = $3, urgencia = $4, edad = $5, educacion = $6, estado = $7, ciudad = $8, colonia = $9, calle = $10, numero_exterior = $11, latitud = $12, longitud = $13, direccion_formateada = $14, codigo_postal = $15, salario = $16, modalidad = $17
+       WHERE id_empleador = $18 AND id_anuncio = $19 RETURNING *`, [titulo, descripcion, tipo_anuncio, urgencia, edad, educacion, estado, ciudad, colonia, calle, numero_exterior, latitud, longitud, direccion_formateada, codigo_postal, salarioNumero, modalidad, id, anuncioId]);
 
     if (!updateResult.rows.length) {
       await client.query("ROLLBACK");
@@ -1221,7 +1286,7 @@ app.get("/anuncios", async (_req, res) => {
     LEFT JOIN postulacion po ON po.id_anuncio = a.id_anuncio
     LEFT JOIN categoriaAnuncio ca ON ca.id_anuncio = a.id_anuncio
     LEFT JOIN categorias c ON c.id_categoria = ca.id_categoria
-    WHERE a.estado_anuncio = 'ACTIVO' AND e.estado_cuenta = 'ACTIVA'
+    WHERE a.estado_anuncio IN ('ACTIVO', 'CERRADO') AND e.estado_cuenta = 'ACTIVA'
     GROUP BY a.id_anuncio, e.nombre_empresa, e.descripcion, e.foto_perfil
     ORDER BY a.fecha_publicacion DESC NULLS LAST`;
 
@@ -1582,12 +1647,12 @@ app.post("/anuncios/:idAnuncio/postular", verifyToken, authorizeRoles("postulant
     const mensajePostulacion = `${nombrePostulante} acaba de aplicar a tu vacante: ${tituloVacante}`;
 
     await pool.query(
-      `INSERT INTO notificaciones (id_empleador, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4)`,
-      [idEmpleador, tituloPostulacion, mensajePostulacion, 'NUEVA_POSTULACION']
+      `INSERT INTO notificaciones (id_empleador, id_postulante, id_anuncio, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4, $5, $6)`,
+      [idEmpleador, idPostulante, idAnuncio, tituloPostulacion, mensajePostulacion, 'NUEVA_POSTULACION']
     );
 
     const io = req.app.get('io');
-    io.to(idEmpleador).emit('new_application', { titulo: tituloPostulacion, mensaje: mensajePostulacion, id_postulante: idPostulante });
+    io.to(String(idEmpleador)).emit('new_application', { titulo: tituloPostulacion, mensaje: mensajePostulacion, id_postulante: idPostulante, idAnuncio: idAnuncio, tipo: 'NUEVA_POSTULACION' });
 
     res.status(201).json({ message: "Postulacion enviada", postulacion: result.rows[0] });
   } catch (err) {
@@ -1880,11 +1945,11 @@ app.patch("/mi-perfil/cv/visibilidad", verifyToken, authorizeRoles("postulante")
 
 /* ===== SERVICIOS (OFICIOS) ===== */
 app.post("/servicios", verifyToken, authorizeRoles("postulante"), async (req, res) => {
-  const { title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, cobertura, disponibilidad, img, esBorrador, autorId } = req.body;
+  const { title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, mostrar_direccion_completa, cobertura, disponibilidad, img, esBorrador, autorId } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO servicios (title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, modalidad, urgencia, img, es_borrador, autor_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`,
-      [title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, cobertura, disponibilidad, img, esBorrador, autorId]
+      `INSERT INTO servicios (title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, mostrar_direccion_completa, modalidad, urgencia, img, es_borrador, autor_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
+      [title, description, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, direccion_formateada, latitud, longitud, mostrar_direccion_completa, cobertura, disponibilidad, img, esBorrador, autorId]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -1939,10 +2004,10 @@ app.delete("/servicios/:id", verifyToken, async (req, res) => {
 
 app.put("/servicios/:id", verifyToken, async (req, res) => {
   try {
-    const { title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, codigo_postal, img } = req.body;
+    const { title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, latitud, longitud, direccion_formateada, img } = req.body;
     const result = await pool.query(
-      `UPDATE servicios SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7, estado = $8, ciudad = $9, colonia = $10, calle = $11, codigo_postal = $12, img = $13 WHERE id_servicio = $14 RETURNING *`,
-      [title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, codigo_postal, img, req.params.id]
+      `UPDATE servicios SET title = $1, description = $2, modalidad = $3, urgencia = $4, categoria = $5, presupuesto = $6, ubicacion = $7, estado = $8, ciudad = $9, colonia = $10, calle = $11, numero_exterior = $12, codigo_postal = $13, latitud = $14, longitud = $15, direccion_formateada = $16, img = $17 WHERE id_servicio = $18 RETURNING *`,
+      [title, description, cobertura, disponibilidad, categoria, presupuesto, ubicacion, estado, ciudad, colonia, calle, numero_exterior, codigo_postal, latitud, longitud, direccion_formateada, img, req.params.id]
     );
     if (result.rowCount === 0) return res.status(404).json({ error: 'Servicio no encontrado' });
     res.json(result.rows[0]);
@@ -1962,33 +2027,221 @@ app.patch("/servicios/:id/publicar", verifyToken, authorizeRoles("postulante"), 
 });
 
 /* ===== ACEPTAR POSTULANTE ===== */
-app.patch("/empleadores/postulantes/:idPostulante/aceptar", verifyToken, authorizeRoles("empleador"), async (req, res) => {
-  const { idPostulante } = req.params;
+app.patch("/empleadores/postulantes/:idPostulante/anuncio/:idAnuncio/aceptar", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+  const { idPostulante, idAnuncio } = req.params;
+  const idEmpleador = req.user.id;
+
+  const client = await pool.connect();
+
+  try {
+
+    await client.query("BEGIN");
+
+    const anuncioResult = await client.query(
+      `SELECT id_anuncio, titulo FROM anuncios
+        WHERE id_anuncio = $1 AND id_empleador = $2`,
+      [idAnuncio, idEmpleador]
+    );
+
+    if (anuncioResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+
+      return res.status(404).json({ error: "Anuncio no encontrado o no pertenece al empleador" });
+    }
+
+
+    /* const postulacionResult = await pool.query(`
+      UPDATE postulacion SET estado = 'Aceptado' WHERE id_postulante = $1 AND id_anuncio = $2 AND estado = 'En revisión' AND id_anuncio IN (SELECT id_anuncio FROM anuncios WHERE id_empleador = $3)
+      RETURNING id_anuncio `,
+      [idPostulante, idAnuncio, idEmpleador]);
+ */
+    const postulacionResult = await client.query(
+      `UPDATE postulacion SET estado = 'Aceptado'
+        WHERE id_postulante = $1 AND id_anuncio = $2 AND estado = 'En revisión'
+        RETURNING id_postulacion`,
+      [idPostulante, idAnuncio]
+    );
+
+
+
+    if (postulacionResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "No se enocntró una postulación válida" })
+    }
+
+    await client.query(
+      `UPDATE anuncios SET estado_anuncio = 'CERRADO'
+        WHERE id_anuncio = $1`,
+      [idAnuncio]
+    );
+
+    const otrosPostulantesResult = await client.query(
+      `SELECT id_postulante FROM postulacion
+        WHERE id_anuncio = $1 AND id_postulante <> $2 AND estado = 'En revisión'`,
+      [idAnuncio, idPostulante]
+    );
+
+    await client.query(
+      `UPDATE postulacion SET estado = 'Rechazado'
+        WHERE id_anuncio = $1 AND id_postulante <> $2 AND estado = 'En revisión'`,
+      [idAnuncio, idPostulante]
+    );
+
+    await client.query(
+      `DELETE FROM notificaciones
+        WHERE id_anuncio = $1 AND tipo = 'NUEVA_POSTULACION' AND id_postulante <> $2`,
+      [idAnuncio, idPostulante]
+    );
+
+
+
+    const empresaQuery = await client.query("SELECT nombre_empresa FROM empleador WHERE id_empleador = $1", [idEmpleador]);
+    const nombreEmpresa = empresaQuery.rows[0]?.nombre_empresa || 'Una empresa';
+
+    const tituloAceptado = '¡Felicidades!';
+    const mensajeAceptado = `La empresa ${nombreEmpresa} ha aceptado tu perfil y quiere darle seguimiento a tu postulación.`;
+
+    await client.query(
+      `INSERT INTO notificaciones (id_postulante, id_anuncio ,titulo, mensaje, tipo) VALUES ($1, $2, $3, $4, $5)`,
+      [idPostulante, idAnuncio, tituloAceptado, mensajeAceptado, 'SEGUIMIENTO_ACEPTADO']
+    );
+
+    const tituloRechazado = 'Actualización de tu postulación';
+
+    const mensajeRechazado = `La empresa ${nombreEmpresa} ha decidido no continuar con tu postulación.`;
+
+    for (const postulante of otrosPostulantesResult.rows) {
+
+      await client.query(
+        `INSERT INTO notificaciones (
+            id_postulante,
+            id_anuncio,
+            titulo,
+            mensaje,
+            tipo
+          )
+          VALUES ($1, $2, $3, $4, $5)`,
+        [
+          postulante.id_postulante,
+          idAnuncio,
+          tituloRechazado,
+          mensajeRechazado,
+          'SEGUIMIENTO_RECHAZADO'
+        ]
+      );
+    }
+
+     await client.query("COMMIT");
+
+    const io = req.app.get('io');
+
+    io.to(String(idPostulante)).emit('application_accepted', { tituloAceptado, mensajeAceptado, idAnuncio, tipo: "SEGUIMIENTO_ACEPTADO" });
+    
+       for (const postulante of otrosPostulantesResult.rows) {
+
+        io.to(String(postulante.id_postulante)).emit(
+          'application_rejected',
+          {
+            titulo: tituloRechazado,
+            mensaje: mensajeRechazado,
+            idAnuncio,
+            tipo: 'SEGUIMIENTO_RECHAZADO'
+          }
+        );
+      }
+    
+    res.json({ message: "Postulante aceptado, anuncio cerrado y demás postulantes rechazados" });
+
+
+  } catch (err) {
+
+    await client.query("ROLLBACK");
+
+    console.error("ERROR AL ACEPTAR POSTULANTE:", err);
+
+    res.status(500).json({
+      error: "Error interno al aceptar al postulante",
+      detail: err.message
+    });
+
+  } finally {
+    client.release();
+  }
+});
+
+/* ===== RECHAZAR POSTULANTE ===== */
+app.patch("/empleadores/postulantes/:idPostulante/anuncio/:idAnuncio/rechazar", verifyToken, authorizeRoles("empleador"), async (req, res) => {
+
+  const { idPostulante, idAnuncio } = req.params;
   const idEmpleador = req.user.id;
 
   try {
-    await pool.query(`
-      UPDATE postulacion SET estado = 'Aceptado' WHERE id_postulante = $1 AND id_anuncio IN (SELECT id_anuncio FROM anuncios WHERE id_empleador = $2)
-    `, [idPostulante, idEmpleador]);
 
-    const empresaQuery = await pool.query("SELECT nombre_empresa FROM empleador WHERE id_empleador = $1", [idEmpleador]);
+    const anuncioQuery = await pool.query(
+      `SELECT id_anuncio, titulo FROM anuncios
+         WHERE id_anuncio = $1 AND id_empleador = $2`, [idAnuncio, idEmpleador]
+    );
+
+    if (anuncioQuery.rows.length === 0) {
+      return res.status(404).json({
+        error: "Anuncio no encontrado o no pertenece al empleador"
+      });
+    }
+
+
+    const postulacionResult = await pool.query(` UPDATE postulacion SET estado = 'Rechazado' 
+        WHERE id_postulante = $1 AND id_anuncio = $2 AND estado = 'En revisión' AND id_anuncio IN (
+            SELECT id_anuncio
+            FROM anuncios
+            WHERE id_empleador = $3) RETURNING id_anuncio`,
+      [idPostulante, idAnuncio, idEmpleador]);
+
+    if (postulacionResult.rows.length === 0) {
+      return res.status(404).json({ error: "No se encontró una postulación válida" });
+    }
+
+    await pool.query(`
+        DELETE FROM notificaciones
+        WHERE id_postulante = $1
+          AND id_anuncio = $2
+          AND tipo = 'NUEVA_POSTULACION'
+      `, [idPostulante, idAnuncio]);
+
+    const empresaQuery = await pool.query(`SELECT nombre_empresa FROM empleador
+         WHERE id_empleador = $1`,
+      [idEmpleador]
+    );
+
     const nombreEmpresa = empresaQuery.rows[0]?.nombre_empresa || 'Una empresa';
 
-    const titulo = '¡Felicidades!';
-    const mensaje = `La empresa ${nombreEmpresa} ha aceptado tu perfil y quiere darle seguimiento a tu postulación.`;
+    const titulo = 'Actualización de tu postulación';
+
+    const mensaje = `La empresa ${nombreEmpresa} ha decidido no continuar con tu postulación.`;
 
     await pool.query(
-      `INSERT INTO notificaciones (id_postulante, titulo, mensaje, tipo) VALUES ($1, $2, $3, $4)`,
-      [idPostulante, titulo, mensaje, 'SEGUIMIENTO_ACEPTADO']
+      `INSERT INTO notificaciones (id_postulante, id_anuncio, titulo, mensaje, tipo) VALUES
+          ($1, $2, $3, $4, $5)`,
+      [
+        idPostulante, idAnuncio, titulo, mensaje, 'SEGUIMIENTO_RECHAZADO'
+      ]
     );
 
     const io = req.app.get('io');
-    io.to(idPostulante).emit('application_accepted', { titulo, mensaje });
-    res.json({ message: "Postulante aceptado y notificado" });
+
+    io.to(String(idPostulante)).emit(
+      'application_rejected', { titulo, mensaje, idAnuncio, tipo: 'SEGUIMIENTO_RECHAZADO' }
+    );
+
+    res.json({ message: "Postulante rechazado y notificado" });
+
   } catch (err) {
-    res.status(500).json({ error: "Error interno al aceptar al postulante" });
+
+    console.error("Error al rechazar al postulante:", err);
+
+    res.status(500).json({ error: "Error interno al rechazar al postulante" });
   }
-});
+}
+);
 
 app.post('/reportes', verifyToken, async (req, res) => {
   const { motivo, descripcion, id_postulante_reportado } = req.body;
@@ -2095,7 +2348,7 @@ app.get("/notificaciones", verifyToken, async (req, res) => {
     let query = "";
 
     if (rol === "postulante") {
-      query = `SELECT * FROM notificaciones WHERE id_postulante = $1 ORDER BY fecha_creacion DESC LIMIT 50`;
+      query = `SELECT * FROM notificaciones WHERE id_postulante = $1 AND id_empleador IS NULL ORDER BY fecha_creacion DESC LIMIT 50`;
     } else if (rol === "empleador") {
       query = `SELECT * FROM notificaciones WHERE id_empleador = $1 ORDER BY fecha_creacion DESC LIMIT 50`;
     } else {
@@ -2111,7 +2364,8 @@ app.get("/notificaciones", verifyToken, async (req, res) => {
       time: n.fecha_creacion,
       read: n.leida,
       tipo: n.tipo,
-      applicantId: n.id_postulante
+      applicantId: n.id_postulante,
+      idAnuncio: n.id_anuncio
     }));
 
     res.json(notificacionesFormateadas);
@@ -2432,86 +2686,86 @@ app.get('/reportes/perfiles', async (req, res) => {
 });
 
 app.delete('/admin/usuarios/:id', verifyToken, authorizeRoles('administrador'), async (req, res) => {
-    const { id } = req.params;
-    const client = await pool.connect();
-    
-    const borrarSeguro = async (query, params) => {
-        try { 
-            await client.query('SAVEPOINT sp_borrar');
-            await client.query(query, params); 
-            await client.query('RELEASE SAVEPOINT sp_borrar');
-        } catch (error) { 
-            await client.query('ROLLBACK TO SAVEPOINT sp_borrar');
-            console.warn(`[Aviso] Omitiendo tabla inexistente:`, error.message); 
-        }
-    };
+  const { id } = req.params;
+  const client = await pool.connect();
 
+  const borrarSeguro = async (query, params) => {
     try {
-        await client.query('BEGIN');
-
-        const checkPostulante = await client.query('SELECT id_postulante FROM postulante WHERE id_postulante = $1', [id]);
-        
-        if (checkPostulante.rowCount > 0) {
-            await borrarSeguro('DELETE FROM notificaciones WHERE id_postulante = $1', [id]);
-            await borrarSeguro('DELETE FROM cv WHERE id_postulante = $1', [id]);
-            await borrarSeguro('DELETE FROM favoritos WHERE id_postulante = $1', [id]);
-            await borrarSeguro('DELETE FROM postulacion WHERE id_postulante = $1', [id]);
-            await borrarSeguro('DELETE FROM servicios WHERE autor_id = $1', [id]);
-            await borrarSeguro('DELETE FROM historial_cambios WHERE id_postulante = $1', [id]);
-            await borrarSeguro('DELETE FROM seguimiento WHERE id_postulante = $1', [id]);
-            
-            await borrarSeguro('DELETE FROM reporte_a_postulante WHERE id_postulante_reportado = $1', [id]);
-            await borrarSeguro('DELETE FROM reporte_a_empleador WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_postulante = $1)', [id]);
-            await borrarSeguro('DELETE FROM reporte_a_anuncio WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_postulante = $1)', [id]);
-            await borrarSeguro('DELETE FROM reporte WHERE id_postulante = $1', [id]);
-            
-            await borrarSeguro('DELETE FROM postulante_valoracion WHERE id_postulante = $1', [id]);
-            await borrarSeguro('DELETE FROM empleador_valoracion WHERE id_postulante = $1', [id]);
-            
-            await client.query('DELETE FROM postulante WHERE id_postulante = $1', [id]);
-            
-            await client.query('COMMIT');
-            return res.status(200).json({ mensaje: 'Perfil de postulante eliminado permanentemente.' });
-        }
-
-        const checkEmpleador = await client.query('SELECT id_empleador FROM empleador WHERE id_empleador = $1', [id]);
-        
-        if (checkEmpleador.rowCount > 0) {
-            await borrarSeguro('DELETE FROM notificaciones WHERE id_empleador = $1', [id]);
-
-            const anuncios = await client.query('SELECT id_anuncio FROM anuncios WHERE id_empleador = $1', [id]);
-            for (const anuncio of anuncios.rows) {
-                await borrarSeguro('DELETE FROM imagenes WHERE id_anuncio = $1', [anuncio.id_anuncio]);
-                await borrarSeguro('DELETE FROM categoriaAnuncio WHERE id_anuncio = $1', [anuncio.id_anuncio]);
-                await borrarSeguro('DELETE FROM favoritos WHERE id_anuncio = $1', [anuncio.id_anuncio]);
-                await borrarSeguro('DELETE FROM postulacion WHERE id_anuncio = $1', [anuncio.id_anuncio]);
-                await borrarSeguro('DELETE FROM reporte_a_anuncio WHERE id_anuncio = $1', [anuncio.id_anuncio]);
-            }
-            await borrarSeguro('DELETE FROM anuncios WHERE id_empleador = $1', [id]);
-            
-            await borrarSeguro('DELETE FROM reporte_a_empleador WHERE id_empleador_reportado = $1', [id]);
-            await borrarSeguro('DELETE FROM reporte_a_postulante WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_empleador = $1)', [id]);
-            await borrarSeguro('DELETE FROM reporte WHERE id_empleador = $1', [id]);
-            
-            await borrarSeguro('DELETE FROM empleador_valoracion WHERE id_empleador = $1', [id]);
-            await borrarSeguro('DELETE FROM postulante_valoracion WHERE id_empleador = $1', [id]);
-            
-            await client.query('DELETE FROM empleador WHERE id_empleador = $1', [id]);
-
-            await client.query('COMMIT');
-            return res.status(200).json({ mensaje: 'Perfil de empresa eliminado permanentemente.' });
-        }
-
-        await client.query('ROLLBACK');
-        return res.status(404).json({ error: 'No se encontró ningún usuario con ese ID.' });
-
+      await client.query('SAVEPOINT sp_borrar');
+      await client.query(query, params);
+      await client.query('RELEASE SAVEPOINT sp_borrar');
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Error al eliminar usuario de la BD:', error);
-        res.status(500).json({ error: 'Hubo un error interno al intentar borrar la cuenta.' });
-    } finally {
-        client.release();
+      await client.query('ROLLBACK TO SAVEPOINT sp_borrar');
+      console.warn(`[Aviso] Omitiendo tabla inexistente:`, error.message);
     }
+  };
+
+  try {
+    await client.query('BEGIN');
+
+    const checkPostulante = await client.query('SELECT id_postulante FROM postulante WHERE id_postulante = $1', [id]);
+
+    if (checkPostulante.rowCount > 0) {
+      await borrarSeguro('DELETE FROM notificaciones WHERE id_postulante = $1', [id]);
+      await borrarSeguro('DELETE FROM cv WHERE id_postulante = $1', [id]);
+      await borrarSeguro('DELETE FROM favoritos WHERE id_postulante = $1', [id]);
+      await borrarSeguro('DELETE FROM postulacion WHERE id_postulante = $1', [id]);
+      await borrarSeguro('DELETE FROM servicios WHERE autor_id = $1', [id]);
+      await borrarSeguro('DELETE FROM historial_cambios WHERE id_postulante = $1', [id]);
+      await borrarSeguro('DELETE FROM seguimiento WHERE id_postulante = $1', [id]);
+
+      await borrarSeguro('DELETE FROM reporte_a_postulante WHERE id_postulante_reportado = $1', [id]);
+      await borrarSeguro('DELETE FROM reporte_a_empleador WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_postulante = $1)', [id]);
+      await borrarSeguro('DELETE FROM reporte_a_anuncio WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_postulante = $1)', [id]);
+      await borrarSeguro('DELETE FROM reporte WHERE id_postulante = $1', [id]);
+
+      await borrarSeguro('DELETE FROM postulante_valoracion WHERE id_postulante = $1', [id]);
+      await borrarSeguro('DELETE FROM empleador_valoracion WHERE id_postulante = $1', [id]);
+
+      await client.query('DELETE FROM postulante WHERE id_postulante = $1', [id]);
+
+      await client.query('COMMIT');
+      return res.status(200).json({ mensaje: 'Perfil de postulante eliminado permanentemente.' });
+    }
+
+    const checkEmpleador = await client.query('SELECT id_empleador FROM empleador WHERE id_empleador = $1', [id]);
+
+    if (checkEmpleador.rowCount > 0) {
+      await borrarSeguro('DELETE FROM notificaciones WHERE id_empleador = $1', [id]);
+
+      const anuncios = await client.query('SELECT id_anuncio FROM anuncios WHERE id_empleador = $1', [id]);
+      for (const anuncio of anuncios.rows) {
+        await borrarSeguro('DELETE FROM imagenes WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+        await borrarSeguro('DELETE FROM categoriaAnuncio WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+        await borrarSeguro('DELETE FROM favoritos WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+        await borrarSeguro('DELETE FROM postulacion WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+        await borrarSeguro('DELETE FROM reporte_a_anuncio WHERE id_anuncio = $1', [anuncio.id_anuncio]);
+      }
+      await borrarSeguro('DELETE FROM anuncios WHERE id_empleador = $1', [id]);
+
+      await borrarSeguro('DELETE FROM reporte_a_empleador WHERE id_empleador_reportado = $1', [id]);
+      await borrarSeguro('DELETE FROM reporte_a_postulante WHERE id_reporte IN (SELECT id_reporte FROM reporte WHERE id_empleador = $1)', [id]);
+      await borrarSeguro('DELETE FROM reporte WHERE id_empleador = $1', [id]);
+
+      await borrarSeguro('DELETE FROM empleador_valoracion WHERE id_empleador = $1', [id]);
+      await borrarSeguro('DELETE FROM postulante_valoracion WHERE id_empleador = $1', [id]);
+
+      await client.query('DELETE FROM empleador WHERE id_empleador = $1', [id]);
+
+      await client.query('COMMIT');
+      return res.status(200).json({ mensaje: 'Perfil de empresa eliminado permanentemente.' });
+    }
+
+    await client.query('ROLLBACK');
+    return res.status(404).json({ error: 'No se encontró ningún usuario con ese ID.' });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al eliminar usuario de la BD:', error);
+    res.status(500).json({ error: 'Hubo un error interno al intentar borrar la cuenta.' });
+  } finally {
+    client.release();
+  }
 });
 
 /* ===== COMENTARIOS DE ANUNCIOS ===== */

@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { CarouselComponent } from '../../components/carousel/carousel.component';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
 interface PublicCompanyProfile {
   id_empleador: string;
@@ -78,10 +79,8 @@ export class CompanyPublicProfileComponent implements OnInit {
   modalMensajeExitoAdmin = '';
   modalMensajeErrorAdmin = '';
 
-  notifications = [
-    { id: 1, title: 'Vacantes activas', message: 'Revisa el perfil de la empresa antes de postularte.', time: 'Ahora', read: false },
-    { id: 2, title: 'Chambee', message: 'Tu sesion sigue en modo postulante.', time: 'Hace 1 min', read: true }
-  ];
+  notifications: NotificationItem[] = [];
+
 
   readonly codigosMoneda: Record<string, string> = {
     'Peso mexicano': 'MXN',
@@ -98,8 +97,9 @@ export class CompanyPublicProfileComponent implements OnInit {
     private readonly location: Location,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private notificacionService: NotificacionService,
     private readonly themeService: ThemeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.checkMobile();
@@ -112,6 +112,18 @@ export class CompanyPublicProfileComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+
+    this.notificacionService.notifications$.subscribe(
+      notifications => {
+        this.notifications = notifications;
+      }
+    );
+
+    this.notificacionService.hasUnreadNotifications$.subscribe(
+      hasUnread => {
+        this.hasUnreadNotifications = hasUnread;
+      }
+    );
 
     const esAdmin = usuario.rol === 'administrador' || usuario.rol === 'admin';
     this.isAdminView = esAdmin;
@@ -180,6 +192,29 @@ export class CompanyPublicProfileComponent implements OnInit {
         console.error(err);
       }
     });
+  }
+
+
+
+  toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
   }
 
   cargarPerfilEmpresa(id: string): void {
@@ -297,18 +332,7 @@ export class CompanyPublicProfileComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
-  toggleNotifications(event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.notificationsOpen = !this.notificationsOpen;
-    this.menuOpen = false;
-
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach((notification) => notification.read = true);
-    }
-  }
+ 
 
   toggleMenu(event?: Event): void {
     if (event) {
@@ -351,10 +375,10 @@ export class CompanyPublicProfileComponent implements OnInit {
     this.ratingHover = puntuacion;
   }
 
-  abrirModal(){
-    this.mostrarModal("¿Estás seguro de querer reportar este perfil?")        
+  abrirModal() {
+    this.mostrarModal("¿Estás seguro de querer reportar este perfil?")
   }
- 
+
   getStarsArray(promedio: number): string[] {
     const stars: string[] = [];
     for (let i = 1; i <= 5; i++) {
@@ -432,7 +456,7 @@ export class CompanyPublicProfileComponent implements OnInit {
       modal.style.display = 'flex';
     }
   }
-  
+
   mostrarModalAceptar(mensaje: string) {
     this.modalMensaje = mensaje;
     const modal = document.getElementById('modalAceptar');
@@ -449,7 +473,7 @@ export class CompanyPublicProfileComponent implements OnInit {
       modal.style.display = 'none';
     }
   }
-  
+
   cerrarModalAceptar() {
     const modal = document.getElementById('modalAceptar');
     if (modal) {

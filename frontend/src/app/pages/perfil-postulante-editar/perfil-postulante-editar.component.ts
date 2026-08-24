@@ -5,6 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
 interface PostulanteProfileFormValue {
   nombre_postulante: string;
@@ -25,18 +28,12 @@ interface PostulanteProfileFormValue {
   descripcion: string;
 }
 
-interface NotificationItem {
-  id: number;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-}
+
 
 @Component({
   selector: 'app-perfil-postulante-editar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, MapaUbicacionComponent],
   templateUrl: './perfil-postulante-editar.component.html',
   styleUrls: ['./perfil-postulante-editar.component.css']
 })
@@ -82,9 +79,7 @@ export class PerfilPostulanteEditarComponent implements OnInit {
   mostrarEliminar = false;
   categoriasUsuario: string[] = [];
 
-  notifications: NotificationItem[] = [
-    { id: 1, title: 'Perfil personal', message: 'Recuerda guardar tus cambios antes de salir.', time: 'Ahora', read: false }
-  ];
+  notifications: NotificationItem[] = [];
 
   readonly perfilForm = this.fb.group({
     nombre_postulante: ['', [Validators.required, Validators.maxLength(100)]],
@@ -98,7 +93,11 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     ciudad: ['', [Validators.required, Validators.maxLength(100)]],
     colonia: ['', [Validators.required, Validators.maxLength(100)]],
     calle: ['', [Validators.required, Validators.maxLength(150)]],
+    numero_exterior: ['', [Validators.maxLength(20)]],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
+    latitud: [null as number | null],
+    longitud: [null as number | null],
+    direccion_formateada: ['', Validators.maxLength(300)],
     telefono: ['', [Validators.required, Validators.maxLength(20)]],
     curp: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(18)]],
     rfc: [{ value: '', disabled: false }, [Validators.required, Validators.maxLength(13)]],
@@ -110,7 +109,9 @@ export class PerfilPostulanteEditarComponent implements OnInit {
     private readonly api: ApiService,
     private readonly router: Router,
     private readonly themeService: ThemeService,
-    private readonly authApi: AuthService
+    private readonly authApi: AuthService,
+    private notificacionService: NotificacionService,
+    private googleMaps: GoogleMapsService
   ) { }
 
   ngOnInit(): void {
@@ -174,7 +175,11 @@ export class PerfilPostulanteEditarComponent implements OnInit {
           ciudad: perfil.ciudad || '',
           colonia: perfil.colonia || '',
           calle: perfil.calle || '',
+          numero_exterior: perfil.numero_exterior || '',
           codigo_postal: perfil.codigo_postal || '',
+          latitud: perfil.latitud || '',
+          longitud: perfil.longitud || '',
+          direccion_formateada: perfil.direccion_formateada || '',
           telefono: perfil.telefono || '',
           curp: perfil.curp || '',
           rfc: perfil.rfc || '',
@@ -202,6 +207,20 @@ export class PerfilPostulanteEditarComponent implements OnInit {
         this.cargando = false;
       }
     });
+
+
+    this.notificacionService.notifications$.subscribe(
+      notifications => {
+        this.notifications = notifications;
+      }
+    );
+
+    this.notificacionService.hasUnreadNotifications$.subscribe(
+      hasUnread => {
+        this.hasUnreadNotifications = hasUnread;
+      }
+    );
+
   }
 
   onArchivoSeleccionado(event: Event): void {
@@ -321,13 +340,24 @@ export class PerfilPostulanteEditarComponent implements OnInit {
   }
 
   toggleNotifications(event?: Event) {
-    if (event) event.stopPropagation();
+
+    if (event) {
+      event.stopPropagation();
+    }
     this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
     }
     this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
   }
 
   toggleMenu(event?: Event) {
@@ -431,6 +461,24 @@ export class PerfilPostulanteEditarComponent implements OnInit {
       this.colonias = [];
       this.mostrarModal('Código postal no encontrado');
     }
+  }
+
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    this.perfilForm.patchValue({
+      estado: direccion.estado,
+      ciudad: direccion.ciudad,
+      colonia: direccion.colonia || '',
+      calle: direccion.calle || '',
+      numero_exterior: direccion.numero || '',
+      codigo_postal: direccion.codigoPostal || '',
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      direccion_formateada: direccion.direccionFormateada
+
+    });
+
   }
 
 }

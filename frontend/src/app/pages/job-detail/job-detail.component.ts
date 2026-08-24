@@ -13,15 +13,16 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { GoogleMapsService } from '../../services/google-maps.service';
 import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
-interface NotificationItem {
+/* interface NotificationItem {
   id: number;
   title: string;
   message: string;
   time: string;
   read: boolean;
   applicantId?: string;
-}
+} */
 
 interface Slide {
   id?: string | number;
@@ -73,6 +74,8 @@ export class JobDetailComponent implements OnInit {
   isAdminView = false;
   isMobile = false;
   servicesOpen = false;
+
+  estadoPostulacion: 'En revisión' | 'Aceptado' | 'Rechazado' | null = null;
 
   // SEARCH BAR
   searchTerm = '';
@@ -133,8 +136,9 @@ export class JobDetailComponent implements OnInit {
   private readonly authApi = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly notificationService = inject(NotificacionService);
 
-  constructor(private googleMaps: GoogleMapsService) {}
+  constructor(private googleMaps: GoogleMapsService) { }
 
   ngOnInit(): void {
     this.usuarioActual = this.api.getUsuario();
@@ -143,7 +147,15 @@ export class JobDetailComponent implements OnInit {
     console.log(this.isAdminView);
 
     if (this.usuarioActual) {
-      this.cargarNotificaciones();
+      this.notificationService.notifications$
+        .subscribe((notifications) => {
+          this.notifications = notifications;
+        });
+
+      this.notificationService.hasUnreadNotifications$
+        .subscribe((hasUnread) => {
+          this.hasUnreadNotifications = hasUnread;
+        });
     }
 
     this.route.paramMap.subscribe((params) => {
@@ -151,6 +163,7 @@ export class JobDetailComponent implements OnInit {
       this.mostrarMapa = false;
       this.esFavorito = false;
       this.yaPostulado = false;
+      this.estadoPostulacion = null;
       this.cargarDetalles(this.jobId);
       this.cargarComentarios(this.jobId);
       this.verificarEstadoPostulacion(this.jobId);
@@ -177,49 +190,34 @@ export class JobDetailComponent implements OnInit {
     });
   }
 
-  cargarNotificaciones() {
-    this.api.obtenerNotificaciones().subscribe({
-      next: (notifs) => {
-        this.notifications = notifs.map(n => ({
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
-          read: n.read,
-          applicantId: n.applicantId
-        }));
-        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
-      },
-      error: (err) => console.error('Error al obtener notificaciones', err)
-    });
-  }
+
 
   toggleNotifications(event?: Event) {
-    if (event) event.stopPropagation();
+
+
+    if (event) {
+      event.stopPropagation();
+    }
+
     this.notificationsOpen = !this.notificationsOpen;
 
-    if (this.notificationsOpen && this.hasUnreadNotifications) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-
-      this.api.marcarNotificacionesLeidas().subscribe({
-        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
-      });
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificationService.marcarTodasComoLeidas();
     }
+
     this.menuOpen = false;
   }
 
   onNotificationClick(notif: NotificationItem, event: Event) {
+
     event.stopPropagation();
-    notif.read = true;
+
     this.notificationsOpen = false;
 
-    if (notif.applicantId) {
-      this.router.navigate(['/perfil-postulante', notif.applicantId], {
-        queryParams: { seguimiento: 'true' }
-      });
-    }
-    this.cdr.detectChanges();
+    this.notificationService.abrirNotificacion(notif);
   }
 
   toggleMenu(event?: Event) {
@@ -436,7 +434,21 @@ export class JobDetailComponent implements OnInit {
 
     this.api.obtenerPostulacionesPostulante(this.usuarioActual.id).subscribe({
       next: (postulaciones: any[]) => {
-        this.yaPostulado = postulaciones.some((p: any) => String(p.id_anuncio) === String(id));
+
+        const postulacion = postulaciones.find(
+          (p: any) => String(p.id_anuncio) === String(id)
+        );
+
+        if (postulacion) {
+          this.yaPostulado = true;
+          this.estadoPostulacion = postulacion.estado_postulacion;
+        } else {
+          this.yaPostulado = false;
+          this.estadoPostulacion = null;
+        }
+
+
+        // this.yaPostulado = postulaciones.some((p: any) => String(p.id_anuncio) === String(id));
       },
       error: () => {
         this.yaPostulado = false;
@@ -456,6 +468,7 @@ export class JobDetailComponent implements OnInit {
     this.api.postularAAnuncio(this.jobId).subscribe({
       next: () => {
         this.yaPostulado = true;
+        this.estadoPostulacion = 'En revisión';
         this.mostrarModalExito('Postulación enviada con éxito.');
       },
       error: (err) => {

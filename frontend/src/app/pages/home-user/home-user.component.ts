@@ -1,7 +1,7 @@
 import { Subject, forkJoin, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; 
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,6 +10,8 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { SocketService } from '../../services/socket.service';
 import { CarouselComponent } from '../../components/carousel/carousel.component';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
 interface Slide {
   id?: string | number;
@@ -43,20 +45,23 @@ interface Job {
   matchScore: number;
   tipoAnuncio?: string;
   modalidad?: string;
+  distanciaKm?: number;
+  estado: string;
 }
 
-interface NotificationItem {
+/* interface NotificationItem {
   id: number;
   title: string;
   message: string;
   time: string;
   read: boolean;
-}
+  anuncioId?: string | number;
+} */
 
 @Component({
   selector: 'app-home-user',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent],
+  imports: [CommonModule, RouterModule, FormsModule, CarouselComponent, MapaUbicacionComponent],
   templateUrl: './home-user.component.html',
   styleUrl: './home-user.component.css'
 })
@@ -67,9 +72,12 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   servicesOpen = false;
   menuOpen = false;
   notificationsOpen = false;
-  
-  hasUnreadNotifications = false; 
-  
+
+  notifications: NotificationItem[] = [];
+  hasUnreadNotifications = false;
+
+  // hasUnreadNotifications = false;
+
   currentSlide = 0;
   visibleCount = 8;
   maxVisible = 8;
@@ -86,6 +94,9 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   usuarioActualId: string | null = null;
 
+  private latitudUsuario: number | null = null;
+  private longitudUsuario: number | null = null;
+
   searchTerm = '';
   searchSubject = new Subject<string>();
   searchResults: any[] = [];
@@ -100,6 +111,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     categoriaEmpleo: '',
     categoriaServicio: '',
     cobertura: '',
+    distancia: '',
     ordenar: 'fecha',
     moneda: '',
     salarioMin: null as number | null,
@@ -139,7 +151,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   private slideIntervalId?: ReturnType<typeof setInterval>;
 
-  notifications: NotificationItem[] = [];
+  // notifications: NotificationItem[] = [];
   slides: Slide[] = [];
   jobs: Job[] = [];
   services: any[] = [];
@@ -152,41 +164,69 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly socketService: SocketService,
-    private cdr: ChangeDetectorRef 
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private readonly notificationService: NotificacionService
+  ) { }
 
   ngOnInit() {
-    this.cargarNotificaciones(); 
+    this.notificationService.cargarNotificaciones();
 
     this.slideIntervalId = setInterval(() => {
       this.nextSlide();
     }, 9000);
 
+
+
     this.checkMobile();
-    this.cargarOfertasPublicas();
+
     this.cargarFavoritosGuardados();
-    this.cargarBusquedasRecientes(); 
+    this.cargarBusquedasRecientes();
 
     const usuario = this.api.getUsuario();
     if (usuario?.id) {
 
-      this.socketService.conectarEmpleador(usuario.id); 
-      
+      this.notificationService.notifications$
+        .subscribe((notifications) => {
+          this.notifications = notifications;
+        });
+
+      this.notificationService.hasUnreadNotifications$
+        .subscribe((hasUnread) => {
+          this.hasUnreadNotifications = hasUnread;
+        });
+      this.socketService.conectarUsuario(usuario.id);
+
       this.socketService.escucharRespuestasPostulante().subscribe((datosAlerta) => {
         this.agregarNotificacion(datosAlerta);
       });
+
+      this.socketService.escucharRechazosPostulante().subscribe((datosAlerta) => {
+        this.agregarNotificacion(datosAlerta);
+      });
+
+      this.socketService.escucharAnunciosCercanos().subscribe((datosAlerta) => {
+        this.agregarNotificacion(datosAlerta);
+      });
+
 
       this.api.getMiPerfil().subscribe({
         next: (perfil: any) => {
           this.nombre_postulante = perfil?.nombre_postulante || 'Usuario';
           this.foto_perfil = perfil?.foto_perfil || '';
+          this.latitudUsuario = perfil?.latitud != null ? Number(perfil.latitud) : null;
+
+          this.longitudUsuario = perfil?.longitud != null ? Number(perfil.longitud) : null;
+
+          this.cargarOfertasPublicas();
         },
         error: () => {
           this.nombre_postulante = usuario?.nombre || 'Usuario';
         }
       });
+    } else {
+      this.cargarOfertasPublicas();
     }
-    
+
     this.api.obtenerServiciosPublicos().subscribe({
       next: (servicios) => {
         this.services = servicios || [];
@@ -206,64 +246,115 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     });
   }
 
+  private calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371;
+
+    const dLat = this.gradosARadianes(lat2 - lat1);
+    const dLon = this.gradosARadianes(lon2 - lon1);
+
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(this.gradosARadianes(lat1)) *
+      Math.cos(this.gradosARadianes(lat2)) * Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  }
+
+  private gradosARadianes(grados: number): number {
+    return grados * Math.PI / 180;
+  }
+
   ngOnDestroy() {
     if (this.slideIntervalId) {
       clearInterval(this.slideIntervalId);
     }
   }
 
-  cargarNotificaciones() {
-    this.api.obtenerNotificaciones().subscribe({
-      next: (notifs) => {
-        this.notifications = notifs.map(n => ({
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
-          read: n.read
-        }));
-        this.hasUnreadNotifications = this.notifications.some(n => !n.read);
-      },
-      error: (err) => console.error('Error al obtener notificaciones', err)
-    });
-  }
+  /*  cargarNotificaciones() {
+     this.api.obtenerNotificaciones().subscribe({
+       next: (notifs) => {
+         this.notifications = notifs.map(n => ({
+           id: n.id,
+           title: n.title,
+           message: n.message,
+           time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
+           read: n.read,
+           anuncioId: n.anuncioId
+         }));
+         this.hasUnreadNotifications = this.notifications.some(n => !n.read);
+       },
+       error: (err) => console.error('Error al obtener notificaciones', err)
+     });
+   } */
 
   toggleNotifications(event?: Event) {
     if (event) {
       event.stopPropagation();
     }
     this.notificationsOpen = !this.notificationsOpen;
-    
+
     if (this.notificationsOpen && this.hasUnreadNotifications) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach((n) => n.read = true);
-      
-      this.api.marcarNotificacionesLeidas().subscribe({
-        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
-      });
+      this.notificationService.marcarTodasComoLeidas();
     }
     this.menuOpen = false;
   }
 
-  agregarNotificacion(datos: any) {
-    const nuevaNotificacion: NotificationItem = {
-      id: Date.now(),
-      title: datos.titulo,
-      message: datos.mensaje,
-      time: 'Hace un momento',
-      read: false
-    };
+  /*  agregarNotificacion(datos: any) {
+     const nuevaNotificacion: NotificationItem = {
+       id: Date.now(),
+       title: datos.titulo,
+       message: datos.mensaje,
+       time: 'Hace un momento',
+       read: false,
+       anuncioId: datos.idAnuncio
+     };
+ 
+     this.notifications.unshift(nuevaNotificacion);
+     this.hasUnreadNotifications = true;
+     this.cdr.detectChanges();
+   } */
 
-    this.notifications.unshift(nuevaNotificacion);
-    this.hasUnreadNotifications = true;
-    this.cdr.detectChanges(); 
-  }
+  /*   onNotificationClick(notif: NotificationItem, event: Event) {
+      event.stopPropagation();
+      notif.read = true;
+      this.notificationsOpen = false;
+      this.cdr.detectChanges();
+      if (notif.anuncioId) {
+  
+        this.router.navigate(['/job', notif.anuncioId]);
+      }
+    } */
 
   onNotificationClick(notif: NotificationItem, event: Event) {
     event.stopPropagation();
     notif.read = true;
     this.notificationsOpen = false;
+
+    console.log('NOTIFICACIÓN CLICKEADA:', notif);
+    console.log('ID ANUNCIO:', notif.idAnuncio);
+    console.log('TIPO:', notif.tipo);
+
+
+
+    switch (notif.tipo) {
+
+      case 'ANUNCIO_CERCANO':
+        if (notif.idAnuncio) {
+          this.router.navigate(['/job', notif.idAnuncio]);
+        }
+        break;
+
+      case 'SEGUIMIENTO_ACEPTADO':
+      case 'SEGUIMIENTO_RECHAZADO':
+        if (notif.idAnuncio) {
+          this.router.navigate(['/job', notif.idAnuncio]);
+        }
+        break;
+    }
+
+
     this.cdr.detectChanges();
+
   }
 
   private cargarOfertasPublicas() {
@@ -288,17 +379,40 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         }
 
         const anunciosOrdenados = [...anuncios]
-          .map((anuncio, index) => ({
-            ...anuncio,
-            __score: this.calcularMatch(anuncio.categorias || [], etiquetas),
-            __index: index
-          }))
-          .sort((a, b) => {
+          .map((anuncio, index) => {
+            let distanciaKm: number | null = null;
+
+            const latAnuncio = anuncio.latitud != null ? Number(anuncio.latitud) : null;
+
+            const lonAnuncio = anuncio.longitud != null ? Number(anuncio.longitud) : null;
+
+            if (this.latitudUsuario != null && this.longitudUsuario != null &&
+              latAnuncio != null && lonAnuncio != null && !isNaN(latAnuncio) && !isNaN(lonAnuncio)) {
+              distanciaKm = this.calcularDistanciaKm(this.latitudUsuario, this.longitudUsuario, latAnuncio, lonAnuncio);
+            }
+
+            return {
+              ...anuncio,
+              __score: this.calcularMatch(anuncio.categorias || [], etiquetas),
+              __distancia: distanciaKm,
+              __index: index
+            };
+          }).sort((a, b) => {
             if (b.__score !== a.__score) {
               return b.__score - a.__score;
             }
+
+            if (a.__distancia != null && b.__distancia != null) {
+              return a.__distancia - b.__distancia;
+            }
+
+            if (a.__distancia != null) return -1;
+            if (b.__distancia != null) return 1;
+
             return a.__index - b.__index;
           });
+
+
 
         const ofertas = anunciosOrdenados.map((anuncio) => {
           const monedaAnuncio = anuncio.moneda || anuncio.tipo_moneda || 'MXN';
@@ -341,8 +455,10 @@ export class HomeUserComponent implements OnInit, OnDestroy {
             applicants: parseInt(anuncio.postulaciones_count) || 0,
             tags: anuncio.categorias || [],
             matchScore: anuncio.__score,
+            distanciaKm: anuncio.__distancia,
             tipoAnuncio: anuncio.tipo_anuncio || 'Empleo',
-            modalidad: anuncio.modalidad || 'Presencial'
+            modalidad: anuncio.modalidad || 'Presencial',
+            estado: anuncio.estado_anuncio
           };
         });
 
@@ -597,7 +713,13 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   get filteredJobs(): Job[] {
-    return this.jobs.filter((job) => {
+
+    const filtrados = this.jobs.filter((job) => {
+
+      if (job.estado?.toUpperCase() !== 'ACTIVO') {
+        return false;
+      }
+      
       const coincideCategoria = !this.filtros.categoriaEmpleo
         ? true
         : (job.tags || []).some((tag) => this.normalizarTexto(tag) === this.normalizarTexto(this.filtros.categoriaEmpleo));
@@ -622,8 +744,63 @@ export class HomeUserComponent implements OnInit, OnDestroy {
         ? true
         : salarioAComparar <= this.filtros.salarioMax;
 
-      return coincideCategoria && coincideModalidad && coincideMoneda && coincideSalarioMin && coincideSalarioMax;
+      let coincideDistancia = true;
+
+
+      if (this.filtros.distancia) {
+        const distancia = job.distanciaKm;
+
+        if (distancia == null) {
+          coincideDistancia = false;
+        } else {
+          switch (this.filtros.distancia) {
+            case '10':
+              coincideDistancia = distancia < 10;
+              break;
+
+            case '25':
+              coincideDistancia = distancia >= 10 && distancia < 25;
+              break;
+
+            case '50':
+              coincideDistancia = distancia >= 25 && distancia < 50;
+              break;
+
+            case '100':
+              coincideDistancia = distancia >= 50 && distancia < 100;
+              break;
+
+            case '100+':
+              coincideDistancia = distancia >= 100;
+              break;
+          }
+        }
+      }
+
+      return coincideCategoria && coincideModalidad && coincideMoneda && coincideSalarioMin && coincideSalarioMax && coincideDistancia;
     });
+
+    if (this.filtros.ordenar === 'distancia') {
+
+      return [...filtrados].sort((a, b) => {
+
+        // Anuncios sin ubicación al final
+        if (a.distanciaKm == null && b.distanciaKm == null) {
+          return 0;
+        }
+
+        if (a.distanciaKm == null) {
+          return 1;
+        }
+
+        if (b.distanciaKm == null) {
+          return -1;
+        }
+
+        return a.distanciaKm - b.distanciaKm;
+      });
+    }
+    return filtrados;
   }
 
   get jobsToShow(): Job[] {
@@ -632,6 +809,23 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   get maxJobsToShow(): number {
     return this.filteredJobs.length;
+  }
+
+  agregarNotificacion(datos: any) {
+    const nuevaNotificacion: NotificationItem = {
+      id: Date.now(),
+      title: datos.titulo,
+      message: datos.mensaje,
+      time: 'Hace un momento',
+      read: false,
+      idAnuncio: datos.idAnuncio,
+      tipo: datos.tipo
+    };
+
+    this.notifications.unshift(nuevaNotificacion);
+    this.hasUnreadNotifications = true;
+
+    this.cdr.detectChanges();
   }
 
   toggleFiltros(): void {
@@ -645,6 +839,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       categoriaEmpleo: '',
       categoriaServicio: '',
       cobertura: '',
+      distancia: '',
       ordenar: 'fecha',
       moneda: '',
       salarioMin: null,
@@ -742,7 +937,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   }
 
   toggleMenuServicio(index: number, event: Event) {
-    event.stopPropagation(); 
+    event.stopPropagation();
     this.menuServicioAbierto = this.menuServicioAbierto === index ? null : index;
   }
 
@@ -766,7 +961,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
     this.http.delete(`http://localhost:3000/servicios/${id}`, { headers }).subscribe({
       next: () => {
         this.services = this.services.filter(s => (s.id_servicio || s.id) !== id);
-        this.menuServicioAbierto = null; 
+        this.menuServicioAbierto = null;
         this.mostrarModalExito('El servicio ha sido eliminado correctamente.');
       },
       error: (err) => {
@@ -787,8 +982,11 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
   ejecutarBusqueda(query: string) {
     const tokens = this.normalizarTexto(query).split(/\s+/).filter(t => t.length > 0);
-    
+
     const jobsResults = this.jobs.filter(job => {
+      if (job.estado?.toLowerCase() === 'cerrado') {
+        return false;
+      }
       const textoCompleto = this.normalizarTexto(`${job.title} ${job.company} ${job.tags.join(' ')}`);
       return tokens.every(token => textoCompleto.includes(token));
     }).map(j => ({ ...j, tipo: 'empleo' }));

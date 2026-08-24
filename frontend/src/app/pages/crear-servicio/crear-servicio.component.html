@@ -10,6 +10,55 @@
     </div>
  -->
     <div class="nav-buttons d-flex align-items-center gap-3">
+    <div class="notification-wrapper" style="position: relative;">
+
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
+        (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
+          viewBox="0 0 16 16" style="color: var(--text-color);">
+          <path
+            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+        </svg>
+        <span *ngIf="hasUnreadNotifications"
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+          style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+          <span class="visually-hidden">Nuevas alertas</span>
+        </span>
+      </div>
+
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+        style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+
+        <div
+          style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+        </div>
+
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications"
+            style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+            [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+            (click)="onNotificationClick(notif, $event)">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+          </div>
+
+          <div *ngIf="notifications.length === 0"
+            style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+            No tienes notificaciones nuevas
+          </div>
+        </div>
+
+        <div
+          style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas las
+            notificaciones</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
       <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" (click)="irAlPerfil()">
         <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto de perfil"
           style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" />
@@ -17,9 +66,11 @@
         <span class="d-none d-md-block">Mi perfil</span>
       </button>
 
-      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
+        [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
-          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+              class="bi bi-moon-fill"></i></span>
         </span>
       </button>
 
@@ -37,6 +88,7 @@
         <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
         <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
       </div>
+    </div>
     </div>
 
     <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
@@ -184,13 +236,27 @@
           <h2>Dirección del servicio</h2>
         </div>
 
+
+
         <div class="form-grid single-col">
           <div class="field">
-            <p class="dir-label">Dirección Completa (Guanajuato)</p>
 
-   
+
+            <small style="color: #a6a6a6;">
+              <i> Esta opción determina qué tan precisa será la ubicación que otros usuarios podrán ver.
+                Si eliges una dirección completa, se mostrará la calle y número exterior junto con el mapa.
+                Si la desactivas, solo se mostrará la ubicación general.</i>
+            </small>
+
+            <button type="button" class="toggle-opcionales-btn" (click)="toggleDireccionCompleta()">
+              <i class="bi" [ngClass]="mostrarDireccionCompleta ? 'bi-eye-slash' : 'bi-eye'"></i>
+              {{ mostrarDireccionCompleta
+              ? 'Usar solo ubicación general'
+              : 'Mostrar dirección completa' }}
+            </button>
+
             <p>
-              {{ servicioForm.get('direccion_formateada')?.value }}
+              {{ obtenerDireccionMostrar() }}
             </p>
 
 
@@ -207,14 +273,16 @@
 
             <input type="text" class="form-control-custom" placeholder="Ciudad" formControlName="ciudad" readonly />
 
-            <input type="text" class="form-control-custom" placeholder="Colonia" formControlName="colonia" readonly />
+            <div *ngIf="mostrarDireccionCompleta">
+              <input type="text" class="form-control-custom" placeholder="Colonia" formControlName="colonia" readonly />
 
-            <input type="text" class="form-control-custom" placeholder="Calle" formControlName="calle" readonly />
+              <input type="text" class="form-control-custom" placeholder="Calle" formControlName="calle" readonly />
 
 
-            <input type="text" class="form-control-custom" placeholder="Número exterior"
-              formControlName="numero_exterior" readonly />
+              <input type="text" class="form-control-custom" placeholder="Número exterior"
+                formControlName="numero_exterior" readonly />
 
+            </div>
             <!--             
             <input type="text" class="form-control-custom" placeholder="Código Postal (C.P.)" formControlName="codigo_postal"
               (blur)="buscarCP()" maxlength="5" />

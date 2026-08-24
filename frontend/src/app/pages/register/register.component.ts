@@ -46,8 +46,8 @@ export class RegisterComponent {
     rfc: false
   };
 
-  esMayorDeEdad(fecha: string): boolean {
-    if (!fecha) return false;
+  calcularEdad(fecha: string): number {
+    if (!fecha) return -1;
 
     const hoy = new Date();
     const nacimiento = new Date(fecha);
@@ -59,7 +59,18 @@ export class RegisterComponent {
       edad--;
     }
 
-    return edad >= 18;
+    return edad;
+
+  }
+
+  esMayorDeEdad(fecha: string): boolean {
+   const edad = this.calcularEdad(fecha);
+   return edad >= 18;
+  }
+
+  esEdadValida(fecha: string): boolean {
+  const edad = this.calcularEdad(fecha);
+    return edad >= 0 && edad < 80;
   }
 
   mostrarPassword = false;
@@ -78,9 +89,9 @@ export class RegisterComponent {
   modalExitoVisible = false;
 
   // --- FLAGS ---
-/*   autocompleteListo = false;
-  private autocompleteInicializado = false;
-  direccionValidada = false; */
+  /*   autocompleteListo = false;
+    private autocompleteInicializado = false;
+    direccionValidada = false; */
 
 
   constructor(private api: ApiService, private router: Router, private googleMaps: GoogleMapsService) { }
@@ -146,7 +157,7 @@ export class RegisterComponent {
     }
   }
  */
- 
+
 
   registrar() {
     // Validar campos vacíos y específicos con mensajes claros
@@ -250,7 +261,7 @@ export class RegisterComponent {
       );
       return;
     }
-    
+
     this.erroresDuplicados = {
       correo_electronico: false,
       curp: false,

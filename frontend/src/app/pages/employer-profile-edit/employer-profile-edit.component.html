@@ -1,7 +1,8 @@
 <div class="edit-page">
 
   <!-- MODAL DE ERROR (Código postal no encontrado) -->
-  <div id="modalAlerta" class="modal" tabindex="-1" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+  <div id="modalAlerta" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content text-center">
         <div class="modal-body pt-4">
@@ -31,25 +32,51 @@
           <span *ngIf="hasUnreadNotifications" class="notification-dot"></span>
         </div>
 
-        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
-          <div class="notifications-title">Notificaciones</div>
-          <div class="notifications-list">
-            <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
-              <span class="notif-header">{{ notif.title }}</span>
-              <span class="notif-message">{{ notif.message }}</span>
-              <span class="notif-time">{{ notif.time }}</span>
-            </div>
-          </div>
-        </div>
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
+        (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
+          viewBox="0 0 16 16" style="color: var(--text-color);">
+          <path
+            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+        </svg>
+        <span *ngIf="hasUnreadNotifications"
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+          style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+          <span class="visually-hidden">Nuevas alertas</span>
+        </span>
       </div>
 
-      <!-- Botón Mi Perfil (Pill) -->
-      <button class="btn d-flex align-items-center gap-2 btn-mi-perfil" (click)="volverPerfil()" title="Ir a mi perfil">
-        <i class="bi bi-person-circle fs-5"></i>
-        <span class="d-none d-md-block">Mi perfil</span>
-      </button>
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+        style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
 
-      <!-- Switch Modo Oscuro -->
+        <div
+          style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+        </div>
+
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications"
+            style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+            [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+            (click)="onNotificationClick(notif, $event)">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+          </div>
+
+          <div *ngIf="notifications.length === 0"
+            style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+            No tienes notificaciones nuevas
+          </div>
+        </div>
+
+        <div
+          style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas las
+            notificaciones</a>
+        </div>
+      </div>
+    </div>
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode">
         <span class="theme-toggle-track">
           <span class="theme-toggle-icon">
@@ -206,10 +233,18 @@
           </div>
         </div>
 
+        <p>
+          {{ perfilForm.get('direccion_formateada')?.value }}
+        </p>
+
+        <app-mapa-ubicacion [latitudInicial]="perfilForm.value.latitud ?? null"
+          [longitudInicial]="perfilForm.value.longitud ?? null" (ubicacionSeleccionada)="ubicacionSeleccionada($event)">
+        </app-mapa-ubicacion>
+
         <div class="form-grid">
           <label class="field field-locked">
             <span>País</span>
-            <input type="text" formControlName="pais" placeholder="Ej. México" readonly />
+            <input type="text" formControlName="pais" placeholder="País" readonly />
             <small *ngIf="campoInvalido('pais')">Ingresa tu país.</small>
           </label>
 
@@ -221,11 +256,16 @@
 
           <label class="field field-locked">
             <span>Ciudad</span>
-            <input type="text" formControlName="ciudad" placeholder="Ej. San Miguel de Allende" readonly />
+            <input type="text" formControlName="ciudad" placeholder="Ciudad o localidad" readonly />
             <small *ngIf="campoInvalido('ciudad')">Ingresa tu ciudad.</small>
           </label>
 
-          <label class="field">
+          <label class="field field-locked">
+            <span>Colonia</span>
+            <input type="text" class="form-control-custom" placeholder="Colonia" formControlName="colonia" readonly />
+          </label>
+
+          <!-- <label class="field">
             <span>Colonia</span>
             <select formControlName="colonia"
               style="border-radius: 16px; border: 1px solid var(--border-soft); background: var(--input-bg); color: var(--text-primary); padding: 14px 16px; width: 100%;">
@@ -233,18 +273,25 @@
               <option *ngFor="let c of colonias" [value]="c">{{c}}</option>
             </select>
             <small *ngIf="campoInvalido('colonia')">Selecciona tu colonia.</small>
+          </label> -->
+
+          <label class="field field-locked">
+            <span>Calle</span>
+            <input type="text" formControlName="calle" placeholder="Calle" />
           </label>
 
-          <label class="field field-wide">
-            <span>Calle y número</span>
-            <input type="text" formControlName="calle" placeholder="Ej. Calle Hidalgo #123" />
-            <small *ngIf="campoInvalido('calle')">Ingresa tu calle.</small>
+          <label class="field field-locked">
+            <span>Número exterior</span>
+            <input type="text" class="form-control-custom" placeholder="Número exterior"
+              formControlName="numero_exterior" readonly />
           </label>
 
-          <label class="field">
+
+       
+          <label class="field field-locked">
             <span>Código postal</span>
-            <input type="text" formControlName="codigo_postal" placeholder="C.P." (blur)="buscarCP()" maxlength="5" />
-            <small *ngIf="campoInvalido('codigo_postal')">Ingresa tu código postal.</small>
+            <input type="text" class="form-control-custom" placeholder="C.P." formControlName="codigo_postal"
+              readonly />
           </label>
         </div>
       </article>

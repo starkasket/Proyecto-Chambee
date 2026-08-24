@@ -114,7 +114,7 @@
             <app-mapa-ubicacion (ubicacionSeleccionada)="ubicacionSeleccionada($event)">
             </app-mapa-ubicacion>
 
-            <div *ngIf="ubicacionSeleccionadaFlag" class="direccion-detectada">
+            <div *ngIf="ubicacionSeleccionadaFlag" class="direccion-detectada" >
               <strong>✓ Dirección detectada</strong>
 
               <p>
@@ -127,7 +127,7 @@
               </small>
             </div>
 
-            <div *ngIf="ubicacionSeleccionadaFlag">
+            <div *ngIf="ubicacionSeleccionadaFlag" style="margin-top: 10px;">
               <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" name="calle"
                 readonly />
 

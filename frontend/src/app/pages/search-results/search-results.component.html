@@ -5,54 +5,79 @@
   </div>
 
   <div class="search-container flex-grow-1 mx-4">
-    <input type="text"
-           class="form-control"
-           placeholder="Buscar categoría, puesto, ciudad y más..."
-           [value]="query"
-           (keydown.enter)="nuevaBusqueda($event)" />
+    <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..." [value]="query"
+      (keydown.enter)="nuevaBusqueda($event)" />
   </div>
 
   <div class="nav-buttons d-flex align-items-center gap-3">
 
-    <div class="notification-wrapper" *ngIf="estaLogueado">
-      <div class="notification-bell" (click)="toggleNotifications($event)">
-        <i class="bi bi-bell-fill fs-5"></i>
-        <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
+    <div class="notification-wrapper" style="position: relative;">
+
+      <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
+        (click)="toggleNotifications($event)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
+          viewBox="0 0 16 16" style="color: var(--text-color);">
+          <path
+            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+        </svg>
+        <span *ngIf="hasUnreadNotifications"
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+          style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+          <span class="visually-hidden">Nuevas alertas</span>
+        </span>
       </div>
 
-      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()">
-        <div class="notif-header"><span>Notificaciones</span></div>
-        <div class="notif-list">
-          <div *ngFor="let notif of notifications" class="notif-item" [class.notif-unread]="!notif.read">
-            <span class="notif-title">{{ notif.title }}</span>
-            <span class="notif-msg">{{ notif.message }}</span>
-            <span class="notif-time">{{ notif.time }}</span>
+      <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+        style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+
+        <div
+          style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+        </div>
+
+        <div style="max-height: 350px; overflow-y: auto;">
+          <div *ngFor="let notif of notifications"
+            style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+            [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+            (click)="onNotificationClick(notif, $event)">
+            <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title }}</span>
+            <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+            <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
           </div>
-          <div *ngIf="notifications.length === 0" class="notif-empty">No tienes notificaciones nuevas</div>
+
+          <div *ngIf="notifications.length === 0"
+            style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+            No tienes notificaciones nuevas
+          </div>
+        </div>
+
+        <div
+          style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+          <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas las
+            notificaciones</a>
         </div>
       </div>
     </div>
 
-    <button class="btn btn-profile-navbar d-flex align-items-center gap-2"
-      *ngIf="estaLogueado"
-      (click)="irAlPerfil()">
+    <button class="btn btn-profile-navbar d-flex align-items-center gap-2" *ngIf="estaLogueado" (click)="irAlPerfil()">
       <img *ngIf="foto_perfil" [src]="foto_perfil" alt="Foto" />
       <i *ngIf="!foto_perfil" class="bi bi-person-circle fs-5"></i>
       <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
-    <button class="theme-toggle" type="button" (click)="toggleTheme()"
-      [attr.aria-pressed]="isDarkMode"
+    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
       [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
       <span class="theme-toggle-track">
-        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+            class="bi bi-moon-fill"></i></span>
       </span>
     </button>
 
     <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
     <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">Registrarse</button>
 
-    <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
+    <div *ngIf="estaLogueado" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
+        class="bi bi-list"></i></div>
 
     <div *ngIf="menuOpen && !isMobile && estaLogueado" class="desktop-menu" (click)="$event.stopPropagation()">
       <a routerLink="/jobs" class="desktop-menu-link">Inicio</a>
@@ -71,7 +96,8 @@
     <aside class="mobile-menu-panel" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
       <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
-        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}</div>
+        <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">Bienvenido, {{ nombre_postulante }}
+        </div>
         <hr />
         <a class="mobile-nav-link" (click)="irAlPerfil()">Mi perfil</a>
         <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
@@ -130,7 +156,8 @@
           <p>{{ servicioDetalle.description || 'Sin descripción disponible.' }}</p>
         </div>
 
-        <div class="service-detail-section" *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
+        <div class="service-detail-section"
+          *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
           <h4><i class="bi bi-geo-alt-fill"></i> Ubicación</h4>
           <div class="service-detail-location-grid">
             <div *ngIf="servicioDetalle.calle" class="location-item">
@@ -162,12 +189,14 @@
 
         <div class="service-detail-author" *ngIf="servicioDetalle.nombre_postulante || servicioDetalle.autor_id">
           <div class="service-detail-author-card">
-            <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor" class="author-avatar" />
+            <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor"
+              class="author-avatar" />
             <div class="author-info">
               <span class="author-label">Publicado por</span>
               <span class="author-name">
                 {{ servicioDetalle.nombre_postulante || 'Usuario' }}
-                {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : '' }}
+                {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : ''
+                }}
               </span>
             </div>
           </div>
@@ -198,7 +227,7 @@
 
 <!-- CONTENIDO DE BÚSQUEDA -->
 <div class="container main-layout mb-5" style="min-height: 80vh;">
-  
+
   <div class="left" style="grid-column: 1 / -1;">
     <div class="d-flex align-items-center mb-5 gap-3">
       <button class="btn return-btn" (click)="volverInicio()">
@@ -214,127 +243,152 @@
       </div>
     </div>
 
-        <!-- FILTRADO DE BÚSQUEDA -->
-        <div class="filtros-bar d-flex gap-2 mb-3">
-          <button
-          class="chambee-filter-btn active"
-          (click)="toggleFiltros()">
-          <i class="bi bi-sliders me-2"></i>
-          Filtrar y ordenar
-        </button>
-      </div>
+    <!-- FILTRADO DE BÚSQUEDA -->
+    <div class="filtros-bar d-flex gap-2 mb-3">
+      <button class="chambee-filter-btn active" (click)="toggleFiltros()">
+        <i class="bi bi-sliders me-2"></i>
+        Filtrar y ordenar
+      </button>
+    </div>
 
-      <div
-      class="filter-panel"
-      *ngIf="mostrarFiltros">
-      
+    <div class="mt-3 d-flex flex-wrap gap-2"
+      *ngIf="filtros.categoriaEmpleo || filtros.modalidad || filtros.ciudad || filtros.moneda">
+      <span class="featured-chip" *ngIf="filtros.categoriaEmpleo">Categoría: {{ filtros.categoriaEmpleo }}</span>
+      <span class="featured-chip" *ngIf="filtros.modalidad">Modalidad: {{ filtros.modalidad }}</span>
+      <span class="featured-chip" *ngIf="filtros.ciudad">Ciudad: {{ filtros.ciudad }}</span>
+      <span class="featured-chip" *ngIf="filtros.moneda">Moneda: {{ filtros.moneda }}</span>
+    </div>
+
+    <div class="filter-panel" *ngIf="mostrarFiltros">
+
       <div class="row">
         <div class="col-md-4">
           <label class="form-label">Tipo</label>
-          <select
-          class="form-select"
-          [(ngModel)]="filtros.tipo" 
-          (change)="onTipoChange()">
-          <option value="">Todos</option>
-          <option value="empleo">Empleos</option>
-          <option value="servicio">Servicios</option>
-        </select>
-      </div>
-      <div class="col-md-4" *ngIf="filtros.tipo === 'empleo'">
-        <label class="form-label">Modalidad</label>
-        <select
-        class="form-select"
-        [(ngModel)]="filtros.modalidad">
-        <option value="">Todas</option>
-        <option value="Presencial">Presencial</option>
-        <option value="Remoto">Remoto</option>
-        <option value="Hibrido">Híbrido</option>
-      </select>
-    </div>
-      <div class="col-md-4" *ngIf="filtros.tipo === 'servicio'">
-        <label class="form-label">Cobertura</label>
-        <select
-        class="form-select"
-        [(ngModel)]="filtros.cobertura">
-        <option value="">Todas</option>
-        <option value="Colonia">Solo mi colonia</option>
-        <option value="Ciudad">Toda la ciudad</option>
-        <option value="Municipios cercanos">Municipios cercanos</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-       <label class="form-label">Estado</label>
-        <select  class="form-select" disabled>
-        <option value="">Guanajuato</option>
-    </select>
+          <select class="form-select" [(ngModel)]="filtros.tipo" (change)="onTipoChange()">
+            <option value="">Todos</option>
+            <option value="empleo">Empleos</option>
+            <option value="servicio">Servicios</option>
+          </select>
+        </div>
+        <div class="col-md-4" *ngIf="filtros.tipo === 'empleo'">
+          <label class="form-label">Modalidad</label>
+          <select class="form-select" [(ngModel)]="filtros.modalidad">
+            <option value="">Todas</option>
+            <option value="Presencial">Presencial</option>
+            <option value="Remoto">Remoto</option>
+            <option value="Hibrido">Híbrido</option>
+          </select>
+        </div>
+        <div class="col-md-4" *ngIf="filtros.tipo === 'servicio'">
+          <label class="form-label">Cobertura</label>
+          <select class="form-select" [(ngModel)]="filtros.cobertura">
+            <option value="">Todas</option>
+            <option value="Colonia">Solo mi colonia</option>
+            <option value="Ciudad">Toda la ciudad</option>
+            <option value="Municipios cercanos">Municipios cercanos</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Estado</label>
+          <select class="form-select" disabled>
+            <option value="">Guanajuato</option>
+          </select>
 
-    </div>
-    <div class="col-md-4 mt-3">
-      <label>Ciudad</label>
-      
+        </div>
+        <div class="col-md-4 mt-3">
+          <label>Ciudad</label>
 
-    <select
-        class="form-select"
-        [(ngModel)]="filtros.ciudad">
-        <option value="">Todas</option>
-        <option
-            *ngFor="let ciudad of ciudades"
-            [value]="ciudad">
-            {{ ciudad }}
-        </option>
-    </select>
-  </div>
-    <div class="col-md-4 mt-3" *ngIf="filtros.tipo === 'empleo'">
-      <label>Categoría</label>
-        <select
-        class="form-select"
-        [(ngModel)]="filtros.categoriaEmpleo">
-        <option value="">Todas</option>
-        <option *ngFor="let categoria of categorias" [value]="categoria.nombre">
-        {{categoria.nombre}}
-        </option>
-        </select>
-    </div>
-    <div class="col-md-4 mt-3" *ngIf="filtros.tipo === 'servicio'">
-      <label>Categoría</label>
-        <select
-        class="form-select"
-        [(ngModel)]="filtros.categoriaServicio">
-        <option value="">Todas</option>
-      
-        <option value="Plomería">Plomería</option>
-        <option value="Electricidad">Electricidad</option>
-        <option value="Carpintería">Carpintería</option>
-        <option value="Limpieza">Limpieza</option>
-        <option value="Pintura">Pintura</option>
-        <option value="Jardinería">Jardinería</option>
-        <option value="Cerrajería">Cerrajería</option>
-        <option value="Mudanzas">Mudanzas</option>
 
-        </select>
-    </div>
+          <select class="form-select" [(ngModel)]="filtros.ciudad">
+            <option value="">Todas</option>
+            <option *ngFor="let ciudad of ciudades" [value]="ciudad">
+              {{ ciudad }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4 mt-3" *ngIf="filtros.tipo === 'empleo'">
+          <label>Categoría</label>
+          <select class="form-select" [(ngModel)]="filtros.categoriaEmpleo">
+            <option value="">Todas</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria.nombre">
+              {{categoria.nombre}}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4 mt-3" *ngIf="filtros.tipo === 'servicio'">
+          <label>Categoría</label>
+          <select class="form-select" [(ngModel)]="filtros.categoriaServicio">
+            <option value="">Todas</option>
 
-    
-    
-          <div class="col-md-4 mt-3">    
-  <label>Ordenar</label>
-  <select
-    class="form-select"
-    [(ngModel)]="filtros.ordenar">            
-    <option value="fecha">Más recientes</option>
-    <option value="salario">Mayor salario</option>
-    <option value="vistas">Más vistas</option>
-  </select>
-</div>
-            <div class="col-12 mt-4 d-flex justify-content-end gap-2">            
-            <button class="btn btn-outline-secondary" (click)="filtros={tipo:'',modalidad:'',ciudad:'',categoriaEmpleo:'',categoriaServicio:'',cobertura:'',ordenar:'fecha'}">
+            <option value="Plomería">Plomería</option>
+            <option value="Electricidad">Electricidad</option>
+            <option value="Carpintería">Carpintería</option>
+            <option value="Limpieza">Limpieza</option>
+            <option value="Pintura">Pintura</option>
+            <option value="Jardinería">Jardinería</option>
+            <option value="Cerrajería">Cerrajería</option>
+            <option value="Mudanzas">Mudanzas</option>
+
+          </select>
+        </div>
+        <div class="col-md-4 mt-3">
+          <label for="select-cat-empleo" class="form-label">Distancia</label>
+          <select id="select-cat-empleo" class="form-select" [(ngModel)]="filtros.distancia">
+            <option value="">Cualquier distancia</option>
+            <option value="10">Menos de 10 km</option>
+            <option value="25">10 - 25 km</option>
+            <option value="50">25 - 50 km</option>
+            <option value="100">50 - 100 km</option>
+            <option value="100+">Más de 100 km</option>
+          </select>
+        </div>
+
+        <div class="col-md-4 mt-3">
+          <label>Ordenar</label>
+          <select class="form-select" [(ngModel)]="filtros.ordenar">
+            <option value="fecha">Más recientes</option>
+            <option value="salario">Mayor salario</option>
+            <option value="vistas">Más vistas</option>
+            <option value="distancia">Más cercanos</option>
+          </select>
+        </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="select-moneda-filtro" class="form-label">Moneda</label>
+            <select id="select-moneda-filtro" class="form-select" [(ngModel)]="filtros.moneda">
+              <option value="">Todas (Convierte a MXN)</option>
+              <option value="MXN">Pesos Mexicanos (MXN)</option>
+              <option value="USD">Dólares (USD)</option>
+              <option value="EUR">Euros (EUR)</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="input-salario-min" class="form-label">
+              Salario Mínimo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
+            </label>
+            <input id="input-salario-min" type="number" class="form-control" placeholder="Ej. 5000"
+              [(ngModel)]="filtros.salarioMin" min="0" />
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="input-salario-max" class="form-label">
+              Salario Máximo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
+            </label>
+            <input id="input-salario-max" type="number" class="form-control" placeholder="Ej. 25000"
+              [(ngModel)]="filtros.salarioMax" min="0" />
+          </div>
+
+        <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+          <button class="btn btn-outline-secondary"
+            (click)="filtros={tipo:'',modalidad:'',ciudad:'',categoriaEmpleo:'',categoriaServicio:'',cobertura:'',ordenar:'fecha'}">
             Limpiar
-            </button>
-            <button class="btn btn-warning" (click)="aplicarFiltros()">            
-            Aplicar filtros            
+          </button>
+          <button class="btn btn-warning" (click)="aplicarFiltros()">
+            Aplicar filtros
           </button>
         </div>
-        
+
       </div>
     </div>
 
@@ -344,31 +398,33 @@
       <p class="text-muted">Intenta usar otras palabras clave o revisa la ortografía.</p>
     </div>
 
-    
+
 
     <ng-container *ngIf="!cargando && todosLosResultados.length > 0">
-      
+
       <!-- SECCIÓN DESTACADOS -->
       <section class="destacados-section mb-5" *ngIf="destacados.length > 0">
         <h3 class="section-subtitle mb-4">Los mejores resultados para empezar</h3>
-        
+
         <div class="jobs-grid">
-          <div class="job-card featured-result-card" *ngFor="let item of destacados" tabindex="0" (click)="irAlDetalle(item)">
-            
+          <div class="job-card featured-result-card" *ngFor="let item of destacados" tabindex="0"
+            (click)="irAlDetalle(item)">
+
             <div class="job-card-img-wrapper">
               <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
               <span class="type-badge" [ngClass]="item.tipo === 'empleo' ? 'badge-empleo' : 'badge-servicio'">
-                <i class="bi" [ngClass]="item.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i> {{ item.tipo | titlecase }}
+                <i class="bi" [ngClass]="item.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i> {{ item.tipo |
+                titlecase }}
               </span>
             </div>
-            
+
             <div class="job-content">
               <h4 class="job-company">{{ item.nombre_empresa || item.company || 'Servicio Independiente' }}</h4>
               <p class="job-title">{{ item.titulo || item.title }}</p>
-              
+
               <p class="salary" *ngIf="item.salario || item.salary">{{ item.salario || item.salary }}</p>
               <p class="salary" *ngIf="!(item.salario || item.salary)">A convenir</p>
-              
+
               <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
                 <span class="featured-chip" *ngIf="item.modalidad || item.mode">
                   <i class="bi bi-geo-alt-fill me-1 opacity-50"></i>{{ item.modalidad || item.mode }}
@@ -387,23 +443,25 @@
       </section>
 
       <!-- SECCIÓN TODOS LOS RESULTADOS -->
-      <section class="todos-resultados-section mt-5 pt-4 border-top" style="border-color: var(--border-soft) !important;">
+      <section class="todos-resultados-section mt-5 pt-4 border-top"
+        style="border-color: var(--border-soft) !important;">
         <h3 class="section-subtitle mb-4">Todos los resultados</h3>
 
         <div class="jobs-grid mt-4">
           <div class="job-card" *ngFor="let item of todosLosResultados" tabindex="0" (click)="irAlDetalle(item)">
             <img [src]="item.img || 'assets/LogoChambee.png'" [alt]="item.titulo || item.title" />
             <div class="job-content">
-              
+
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <h4 class="job-company m-0">{{ item.nombre_empresa || item.company || 'Independiente' }}</h4>
-                <span class="job-urgency-badge m-0" [ngClass]="item.tipo === 'empleo' ? 'bg-empleo-soft text-empleo' : 'bg-servicio-soft text-servicio'">
+                <span class="job-urgency-badge m-0"
+                  [ngClass]="item.tipo === 'empleo' ? 'bg-empleo-soft text-empleo' : 'bg-servicio-soft text-servicio'">
                   {{ item.tipo | titlecase }}
                 </span>
               </div>
 
               <p class="job-title m-0 mb-3">{{ item.titulo || item.title }}</p>
-              
+
               <div class="mt-auto">
                 <p class="salary mb-2">{{ item.salario || item.salary || 'A convenir' }}</p>
                 <div class="d-flex flex-wrap gap-2">
@@ -415,7 +473,7 @@
           </div>
         </div>
       </section>
-      
+
     </ng-container>
   </div>
 </div>

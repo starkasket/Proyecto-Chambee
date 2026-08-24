@@ -43,7 +43,8 @@
                 <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalReporte()"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small mb-3">Ayúdanos a mantener Chambee seguro. Selecciona el motivo principal de tu reporte.</p>
+                <p class="text-muted small mb-3">Ayúdanos a mantener Chambee seguro. Selecciona el motivo principal de
+                    tu reporte.</p>
 
                 <div class="mb-3">
                     <label class="fw-bold mb-2 d-block">Motivo del reporte:</label>
@@ -59,8 +60,8 @@
                 <div class="mb-2">
                     <label for="detalleReporte" class="fw-bold mb-2">Detalles adicionales (opcional):</label>
                     <textarea class="form-control" id="detalleReporte" rows="3"
-                        placeholder="Escribe más detalles sobre el problema..."
-                        [(ngModel)]="detalleReporte" style="resize: none;"></textarea>
+                        placeholder="Escribe más detalles sobre el problema..." [(ngModel)]="detalleReporte"
+                        style="resize: none;"></textarea>
                 </div>
             </div>
             <div class="modal-footer border-0 pt-0">
@@ -161,8 +162,10 @@
                     <span class="service-detail-badge badge-modality" *ngIf="servicioDetalle.modalidad">
                         <i class="bi bi-globe2"></i> {{ servicioDetalle.modalidad }}
                     </span>
-                    <span class="job-urgency-badge" [ngClass]="{ 'job-urgency-badge-normal': servicioDetalle.urgencia === 'Normal',
-          'job-urgency-badge-urgent': servicioDetalle.urgencia === 'Urgente', 'job-urgency-badge-very-urgent': servicioDetalle.urgencia === 'Muy urgente'}" *ngIf="servicioDetalle.urgencia">
+                    <span class="job-urgency-badge"
+                        [ngClass]="{ 'job-urgency-badge-normal': servicioDetalle.urgencia === 'Normal',
+          'job-urgency-badge-urgent': servicioDetalle.urgencia === 'Urgente', 'job-urgency-badge-very-urgent': servicioDetalle.urgencia === 'Muy urgente'}"
+                        *ngIf="servicioDetalle.urgencia">
                         <i class="bi bi-lightning-fill"></i> {{ servicioDetalle.urgencia }}
                     </span>
                 </div>
@@ -232,8 +235,7 @@
 
 <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
     <div *ngIf="!isAdminView" class="d-flex align-items-center gap-3"
-        [routerLink]="estaLogueado ? '/home-user' : '/home'"
-        style="cursor: pointer; text-decoration: none;">
+        [routerLink]="estaLogueado ? '/home-user' : '/home'" style="cursor: pointer; text-decoration: none;">
         <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
         <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
     </div>
@@ -297,10 +299,15 @@
 
     <div class="nav-buttons">
         <!-- CONTENEDOR DE NOTIFICACIONES FUNCIONAL: SE OCULTA AL ADMIN -->
-        <div *ngIf="estaLogueado && !isAdminView" class="notification-wrapper" style="position: relative; margin-right: 10px;">
+        <div *ngIf="estaLogueado && !isAdminView" class="notification-wrapper"
+            style="position: relative; margin-right: 10px;">
             <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
                 (click)="toggleNotifications($event)">
-                <i class="bi bi-bell-fill fs-5"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                    class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
+                    <path
+                        d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+                </svg>
                 <span *ngIf="hasUnreadNotifications"
                     class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
                     style="width: 10px; height: 10px; margin-top: 5px;">
@@ -349,11 +356,11 @@
         </button>
 
         <!-- Toggle de tema: SIEMPRE VISIBLE -->
-        <button class="theme-toggle" type="button" (click)="toggleTheme()"
-            [attr.aria-pressed]="isDarkMode"
+        <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
             [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
             <span class="theme-toggle-track">
-                <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+                <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+                        class="bi bi-moon-fill"></i></span>
             </span>
         </button>
 
@@ -365,11 +372,12 @@
         </button>
 
         <!-- Menú Hamburguesa: SE OCULTA AL ADMIN -->
-        <div *ngIf="estaLogueado && !isAdminView" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
-                class="bi bi-list"></i></div>
+        <div *ngIf="estaLogueado && !isAdminView" class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú"
+            role="button"><i class="bi bi-list"></i></div>
 
         <!-- Desktop Menu: SE OCULTA AL ADMIN -->
-        <div *ngIf="menuOpen && !isMobile && estaLogueado && !isAdminView" class="desktop-menu" (click)="$event.stopPropagation()">
+        <div *ngIf="menuOpen && !isMobile && estaLogueado && !isAdminView" class="desktop-menu"
+            (click)="$event.stopPropagation()">
             <div *ngIf="!isAdminView">
                 <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
                 <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
@@ -435,8 +443,7 @@
                     <p class="ubicacion-direccion">{{ jobData.ubicacion }}</p>
 
                     <app-mapa-ubicacion [latitudInicial]="jobData?.latitud ?? null"
-                        [longitudInicial]="jobData?.longitud ?? null"
-                        [soloLectura]="true">
+                        [longitudInicial]="jobData?.longitud ?? null" [soloLectura]="true">
                     </app-mapa-ubicacion>
                 </div>
             </div>
@@ -446,14 +453,16 @@
             <div class="job-col">
                 <div class="job-header">
                     <div class="job-title-block">
-                        <span class="job-urgency-badge" [ngClass]="{ 'job-urgency-badge-normal': jobData.urgency === 'Normal',
-          'job-urgency-badge-urgent': jobData.urgency === 'Urgente', 'job-urgency-badge-very-urgent': jobData.urgency === 'Muy urgente'}" *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
+                        <span class="job-urgency-badge"
+                            [ngClass]="{ 'job-urgency-badge-normal': jobData.urgency === 'Normal',
+          'job-urgency-badge-urgent': jobData.urgency === 'Urgente', 'job-urgency-badge-very-urgent': jobData.urgency === 'Muy urgente'}"
+                            *ngIf="jobData.urgency">{{ jobData.urgency }}</span>
                         <span class="job-match-badge" *ngIf="jobData.interesMatch">Coincide con tus intereses</span>
                         <h2>{{ jobData.title }}</h2>
-                        
+
                         <!-- MUESTRA EL SUELDO COMPLETO -->
                         <h4 class="text-success fw-bold mt-2" *ngIf="jobData.salarioFormateado">
-                          <i class="bi bi-cash-stack me-1"></i> {{ jobData.salarioFormateado }}
+                            <i class="bi bi-cash-stack me-1"></i> {{ jobData.salarioFormateado }}
                         </h4>
 
                         <div class="job-tags" *ngIf="jobData.tags?.length">
@@ -510,12 +519,27 @@
                             {{ mostrarMapa ? 'Ver menos' : 'Ver ubicación' }}
                         </button>
 
-                        <button *ngIf="!isAdminView" 
-                                class="btn-postular" 
-                                [disabled]="yaPostulado" 
-                                [class.btn-secondary]="yaPostulado"
-                                (click)="postular()">
+                        <!--    <button *ngIf="!isAdminView" class="btn-postular" [disabled]="yaPostulado"
+                            [class.btn-secondary]="yaPostulado" (click)="postular()">
                             {{ yaPostulado ? 'Postulado' : 'Postular' }}
+                        </button> -->
+
+                        <button *ngIf="!isAdminView" class="btn-postular" [disabled]="yaPostulado"
+                            [class.btn-secondary]="yaPostulado"
+                            [class.postulacion-aceptada]="estadoPostulacion === 'Aceptado'"
+                            [class.postulacion-rechazada]="estadoPostulacion === 'Rechazado'"
+                            [class.postulacion-revision]="estadoPostulacion === 'En revisión'" (click)="postular()">
+
+                            {{
+                            estadoPostulacion === 'Aceptado'
+                            ? '✓ Aceptado'
+                            : estadoPostulacion === 'Rechazado'
+                            ? '✕ Rechazado'
+                            : estadoPostulacion === 'En revisión'
+                            ? 'Postulado'
+                            : 'Postular'
+                            }}
+
                         </button>
                     </div>
                 </div>
@@ -607,7 +631,8 @@
     <div *ngIf="!isAdminView" class="container related-section mt-5">
         <h3 class="mb-4 fw-bold">Empleos similares</h3>
         <div class="jobs-grid">
-            <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)" style="cursor: pointer;">
+            <div class="job-card-relacionado" *ngFor="let relJob of relatedJobs" (click)="verOtroEmpleo(relJob.id)"
+                style="cursor: pointer;">
                 <app-carousel [images]="relJob.images ? relJob.images : [relJob.img || 'assets/LogoChambee.png']"
                     [jobId]="relJob.id"></app-carousel>
                 <div class="job-content">

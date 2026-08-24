@@ -5,6 +5,10 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { DireccionCompleta, GoogleMapsService } from '../../services/google-maps.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
+
 
 interface JobManageItem {
   id: string;
@@ -14,7 +18,7 @@ interface JobManageItem {
   ubicacion: string;
   fecha: string;
   candidatos: number;
-  estado: 'Activa' | 'Borrador' | 'Oculta';
+  estado: 'Activa' | 'Borrador' | 'Oculta' | 'Cerrada';
   modalidad: string;
   categorias: string[];
   tipo_anuncio: string;
@@ -25,24 +29,28 @@ interface JobManageItem {
   ciudad: string;
   colonia: string;
   calle: string;
+  numero_exterior: string;
+  latitud: number;
+  longitud: number;
+  direccion_formateada: string;
   codigo_postal: string;
   salario: number;
   tipo_moneda: string;
   periodo_pago: string;
 }
 
-interface NotificationItem {
+/* interface NotificationItem {
   id: number;
   title: string;
   message: string;
   time: string;
   read: boolean;
-}
+} */
 
 @Component({
   selector: 'app-employer-jobs-manage',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, MapaUbicacionComponent],
   templateUrl: './employer-jobs-manage.component.html',
   styleUrl: './employer-jobs-manage.component.css'
 })
@@ -58,7 +66,7 @@ export class EmployerJobsManageComponent implements OnInit {
   modalMensaje = '';
   menuOpen = false;
   notificationsOpen = false;
-  hasUnreadNotifications = true;
+  hasUnreadNotifications = false;
   isMobile = false;
   categoriasDisponibles: string[] = [];
   colonias: string[] = [];
@@ -72,10 +80,9 @@ export class EmployerJobsManageComponent implements OnInit {
   urlImagenSubida = '';
   mostrarEliminarImagen = false;
 
-  notifications: NotificationItem[] = [
-    { id: 1, title: 'Tip de publicación', message: 'Mantén tus vacantes actualizadas para recibir mejores candidatos.', time: 'Hace 12 min', read: false },
-    { id: 2, title: 'Chambee', message: 'Puedes mover una vacante a borrador si aún no está lista.', time: 'Hace 1 hora', read: true }
-  ];
+  notifications: NotificationItem[] = [];
+
+
 
   readonly opcionesEdad = [
     'Sin especificar',
@@ -157,6 +164,10 @@ export class EmployerJobsManageComponent implements OnInit {
     ciudad: ['', [Validators.required]],
     colonia: ['', [Validators.required]],
     calle: ['', [Validators.required]],
+    numero_exterior: ['', [Validators.maxLength(20)]],
+    latitud: [null as number | null],
+    longitud: [null as number | null],
+    direccion_formateada: ['', Validators.maxLength(300)],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
     salario: [null as number | null, [Validators.required, Validators.min(1)]],
     tipo_moneda: ['MXN', [Validators.required]],
@@ -170,7 +181,9 @@ export class EmployerJobsManageComponent implements OnInit {
     private readonly api: ApiService,
     private readonly router: Router,
     private readonly themeService: ThemeService,
-    private readonly authApi: AuthService
+    private readonly authApi: AuthService,
+    private notificacionService: NotificacionService,
+    private googleMaps: GoogleMapsService
   ) { }
 
   ngOnInit(): void {
@@ -182,8 +195,11 @@ export class EmployerJobsManageComponent implements OnInit {
       return;
     }
 
+    
     this.employerId = usuario.id;
     this.empresaNombre = usuario.nombre || this.empresaNombre;
+
+    this.notificacionService.inicializar(usuario.id, usuario.rol);
 
     this.api.obtenerCategorias().subscribe({
       next: (categorias) => {
@@ -199,11 +215,43 @@ export class EmployerJobsManageComponent implements OnInit {
         this.sepomex = data;
       }
     });
+    this.notificacionService.notifications$.subscribe(
+      notifications => {
+        this.notifications = notifications;
+      }
+    );
+
+    this.notificacionService.hasUnreadNotifications$.subscribe(
+      hasUnread => {
+        this.hasUnreadNotifications = hasUnread;
+      }
+    );
+
 
     this.cargarVacantes();
     this.checkMobile();
   }
 
+   toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick( notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
+  }
   cargarVacantes() {
     this.cargando = true;
     this.api.obtenerAnunciosEmpleador(this.employerId).subscribe({
@@ -227,6 +275,10 @@ export class EmployerJobsManageComponent implements OnInit {
           ciudad: anuncio.ciudad || '',
           colonia: anuncio.colonia || '',
           calle: anuncio.calle || '',
+          numero_exterior: anuncio.numero_exterior || '',
+          latitud: anuncio?.latitud ?? null,
+          longitud: anuncio?.longitud ?? null,
+          direccion_formateada: anuncio?.direccion_formateada || '',
           codigo_postal: anuncio.codigo_postal || '',
           salario: Number(anuncio.salario) || 0,
           tipo_moneda: anuncio.tipo_moneda || 'MXN',
@@ -250,6 +302,10 @@ export class EmployerJobsManageComponent implements OnInit {
             ciudad: '',
             colonia: '',
             calle: '',
+            numero_exterior: '',
+            latitud: null,
+            longitud: null,
+            direccion_formateada: '',
             codigo_postal: '',
             salario: null,
             tipo_moneda: 'MXN',
@@ -301,6 +357,10 @@ export class EmployerJobsManageComponent implements OnInit {
       ciudad: vacante.ciudad || '',
       colonia: vacante.colonia || '',
       calle: vacante.calle || '',
+      numero_exterior: vacante.numero_exterior || '',
+      latitud: vacante?.latitud ?? null,
+      longitud: vacante?.longitud ?? null,
+      direccion_formateada: vacante?.direccion_formateada || '',
       codigo_postal: vacante.codigo_postal || '',
       salario: vacante.salario || null,
       tipo_moneda: vacante.tipo_moneda || 'MXN',
@@ -567,17 +627,7 @@ export class EmployerJobsManageComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
-  toggleNotifications(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach((notification) => notification.read = true);
-    }
-    this.menuOpen = false;
-  }
+
 
   toggleMenu(event?: Event) {
     if (event) {
@@ -638,6 +688,7 @@ export class EmployerJobsManageComponent implements OnInit {
   private mapAnnouncementState(estado: string): JobManageItem['estado'] {
     if (estado === 'ACTIVO') return 'Activa';
     if (estado === 'BORRADOR') return 'Borrador';
+    if (estado === 'CERRADO') return 'Cerrada';
     return 'Oculta';
   }
 
@@ -677,5 +728,32 @@ export class EmployerJobsManageComponent implements OnInit {
       modal.classList.remove('show');
       modal.style.display = 'none';
     }
+  }
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    if (
+      this.googleMaps.normalizar(direccion.estado || '') !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+      return;
+    }
+
+    this.form.patchValue({
+      estado: direccion.estado,
+      ciudad: direccion.ciudad,
+      colonia: direccion.colonia || '',
+      calle: direccion.calle || '',
+      numero_exterior: direccion.numero || '',
+      codigo_postal: direccion.codigoPostal || '',
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      direccion_formateada: direccion.direccionFormateada
+
+    });
+
   }
 }

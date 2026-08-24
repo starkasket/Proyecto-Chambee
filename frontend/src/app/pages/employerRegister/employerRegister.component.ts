@@ -196,6 +196,17 @@ export class EmployerRegisterComponent {
       return;
     }
 
+       if (
+      this.googleMaps.normalizar(this.form.estado) !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+      return;
+    }
+
+
     this.erroresDuplicados = { correo_electronico: false, rfc: false, nombre_empresa: false };
 
     const { contrasena_verificar, ...datos } = this.form;

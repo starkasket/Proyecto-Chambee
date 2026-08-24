@@ -5,6 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { DireccionCompleta } from '../../services/google-maps.service';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
 interface EmployerProfileFormValue {
   nombre_empresa: string;
@@ -20,18 +23,18 @@ interface EmployerProfileFormValue {
   descripcion: string;
 }
 
-interface NotificationItem {
+/* interface NotificationItem {
   id: number;
   title: string;
   message: string;
   time: string;
   read: boolean;
 }
-
+ */
 @Component({
   selector: 'app-employer-profile-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, MapaUbicacionComponent],
   templateUrl: './employer-profile-edit.component.html',
   styleUrl: './employer-profile-edit.component.css'
 })
@@ -55,10 +58,8 @@ export class EmployerProfileEditComponent implements OnInit {
   urlImagenSubida = '';
   mostrarEliminar = false;
 
-  notifications: NotificationItem[] = [
-    { id: 1, title: 'Perfil de empresa', message: 'Recuerda guardar tus cambios antes de salir.', time: 'Ahora', read: false },
-    { id: 2, title: 'Consejo', message: 'Mantener tu informacion actualizada mejora la confianza de los candidatos.', time: 'Hace 20 min', read: true }
-  ];
+  notifications: NotificationItem[] = [];
+
 
   readonly perfilForm = this.fb.group({
     nombre_empresa: ['', [Validators.required, Validators.maxLength(150)]],
@@ -68,7 +69,11 @@ export class EmployerProfileEditComponent implements OnInit {
     ciudad: ['', [Validators.required, Validators.maxLength(100)]],
     colonia: ['', [Validators.required, Validators.maxLength(100)]],
     calle: ['', [Validators.required, Validators.maxLength(150)]],
+    numero_exterior: ['', [Validators.maxLength(20)]],
     codigo_postal: ['', [Validators.required, Validators.maxLength(10)]],
+    latitud: [null as number | null],
+    longitud: [null as number | null],
+    direccion_formateada: ['', Validators.maxLength(300)],
     telefono: ['', [Validators.required, Validators.maxLength(20)]],
     rfc: ['', [Validators.required, Validators.maxLength(20)]],
     descripcion: ['', [Validators.maxLength(500)]]
@@ -79,6 +84,7 @@ export class EmployerProfileEditComponent implements OnInit {
     private readonly api: ApiService,
     private readonly router: Router,
     private readonly themeService: ThemeService,
+    private notificacionService: NotificacionService,
     private readonly authApi: AuthService
   ) { }
 
@@ -97,6 +103,7 @@ export class EmployerProfileEditComponent implements OnInit {
       this.cargando = false;
       return;
     }
+    this.notificacionService.inicializar(usuario.id, usuario.rol);
 
     this.employerId = usuario.id;
     this.empresaNombre = usuario.nombre || this.empresaNombre;
@@ -107,6 +114,38 @@ export class EmployerProfileEditComponent implements OnInit {
       this.sepomex = data;
       this.cargarPerfil();
     });
+
+     this.notificacionService.notifications$.subscribe(
+      notifications => {
+        this.notifications = notifications;
+      }
+    );
+
+    this.notificacionService.hasUnreadNotifications$.subscribe(
+      hasUnread => {
+        this.hasUnreadNotifications = hasUnread;
+      }
+    );
+  }
+  toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
   }
 
   cargarPerfil() {
@@ -122,7 +161,11 @@ export class EmployerProfileEditComponent implements OnInit {
           ciudad: perfil.ciudad || '',
           colonia: perfil.colonia || '',
           calle: perfil.calle || '',
+          numero_exterior: perfil.numero_exterior || '',
           codigo_postal: perfil.codigo_postal || '',
+          latitud: perfil.latitud || '',
+          longitud: perfil.longitud || '',
+          direccion_formateada: perfil.direccion_formateada || '',
           telefono: perfil.telefono || '',
           rfc: perfil.rfc || '',
           descripcion: perfil.descripcion || ''
@@ -279,15 +322,7 @@ export class EmployerProfileEditComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
-  toggleNotifications(event?: Event) {
-    if (event) event.stopPropagation();
-    this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-    }
-    this.menuOpen = false;
-  }
+
 
   toggleMenu(event?: Event) {
     if (event) event.stopPropagation();
@@ -388,6 +423,24 @@ export class EmployerProfileEditComponent implements OnInit {
       this.colonias = [];
       this.mostrarModal('Código postal no encontrado');
     }
+  }
+
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    this.perfilForm.patchValue({
+      estado: direccion.estado,
+      ciudad: direccion.ciudad,
+      colonia: direccion.colonia || '',
+      calle: direccion.calle || '',
+      numero_exterior: direccion.numero || '',
+      codigo_postal: direccion.codigoPostal || '',
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      direccion_formateada: direccion.direccionFormateada
+
+    });
+
   }
 
 }

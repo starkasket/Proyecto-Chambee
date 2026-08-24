@@ -5,6 +5,8 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { NotificationItem, NotificacionService } from '../../services/notificacion.service';
+import { SocketService } from '../../services/socket.service';
 
 interface PostulanteProfile {
   id_postulante?: string;
@@ -37,7 +39,7 @@ interface PostulanteProfile {
 interface PostulanteApplication {
   id: string;
   empresa: string;
-  estado: 'Nueva' | 'En revision' | 'En revisión' | 'Entrevista' | 'Descartada';
+  estado: 'Aceptado' | 'En revision' | 'En revisión' | 'Entrevista' | 'Rechazado';
   ubicacion: string;
   fecha: string;
   candidatos: number;
@@ -58,7 +60,7 @@ interface PostulanteFavorites {
   imagen: string;
 }
 
-interface NotificationItem {
+/* interface NotificationItem {
   id: number;
   title: string;
   message: string;
@@ -66,7 +68,7 @@ interface NotificationItem {
   read: boolean;
   applicantId?: string;
 }
-
+ */
 type ProfileSectionTab = 'postulaciones' | 'favoritos' | 'historial';
 
 @Component({
@@ -119,7 +121,7 @@ export class PerfilPostulanteComponent implements OnInit {
 
   notifications: NotificationItem[] = [];
   mostrarBannerSeguimiento: boolean = false;
-  
+
   tiempoSuspensionAdmin: string = '7';
 
   constructor(
@@ -128,7 +130,9 @@ export class PerfilPostulanteComponent implements OnInit {
     private authApi: AuthService,
     private readonly api: ApiService,
     private readonly themeService: ThemeService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificacionService,
+    private socketService: SocketService
   ) { }
 
   ngOnInit(): void {
@@ -139,8 +143,40 @@ export class PerfilPostulanteComponent implements OnInit {
     });
 
     const usuario = this.api.getUsuario();
-    const perfilRouteId = this.route.snapshot.paramMap.get('id')?.trim();
+    //    const perfilRouteId = this.route.snapshot.paramMap.get('id')?.trim();
 
+    this.route.paramMap.subscribe(params => {
+
+      const perfilRouteId = params.get('id')?.trim();
+
+      if (!perfilRouteId) {
+        return;
+      }
+
+      this.selectedPerfilId = perfilRouteId;
+
+      this.isEmployerView = usuario.rol === 'empleador';
+      this.isOwnProfile =
+        usuario.rol === 'postulante' &&
+        usuario.id === perfilRouteId;
+
+      if (
+        usuario.rol === 'postulante' &&
+        usuario.id !== perfilRouteId &&
+        !this.isAdminView
+      ) {
+        this.error = 'No estás autorizado para ver este perfil.';
+        this.cargando = false;
+        return;
+      }
+
+      this.cargando = true;
+      this.error = '';
+
+      // Aquí vuelve a cargar el perfil correspondiente
+      this.loadPerfilById(perfilRouteId);
+
+    });
     if (!usuario) {
       this.error = 'No hay sesión activa. Inicia sesión para ver tu perfil.';
       this.cargando = false;
@@ -151,24 +187,39 @@ export class PerfilPostulanteComponent implements OnInit {
     this.isAdminView = usuario.rol === 'administrador' || usuario.rol === 'admin';
 
     if (!this.isAdminView) {
-      this.cargarNotificaciones();
+      this.notificationService.inicializar(
+        usuario.id,
+        usuario.rol
+      );
+
+      this.notificationService.notifications$
+        .subscribe((notifications) => {
+          this.notifications = notifications;
+        });
+
+      this.notificationService.hasUnreadNotifications$
+        .subscribe((hasUnread) => {
+          this.hasUnreadNotifications = hasUnread;
+        });
     }
 
-    if (perfilRouteId) {
-      this.selectedPerfilId = perfilRouteId;
-      this.isEmployerView = usuario.rol === 'empleador';
-      this.isOwnProfile = usuario.rol === 'postulante' && usuario.id === perfilRouteId;
+    /*  if (perfilRouteId) {
+       this.selectedPerfilId = perfilRouteId;
+       this.isEmployerView = usuario.rol === 'empleador';
+       this.isOwnProfile = usuario.rol === 'postulante' && usuario.id === perfilRouteId;
+ 
+       if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId && !this.isAdminView) {
+         this.error = 'No estás autorizado para ver este perfil.';
+         this.cargando = false;
+         return;
+       }
+ 
+       this.loadPerfilById(perfilRouteId);
+       this.checkMobile();
+       return;
+     } */
 
-      if (usuario.rol === 'postulante' && usuario.id !== perfilRouteId && !this.isAdminView) {
-        this.error = 'No estás autorizado para ver este perfil.';
-        this.cargando = false;
-        return;
-      }
-
-      this.loadPerfilById(perfilRouteId);
-      this.checkMobile();
-      return;
-    }
+    this.checkMobile();
 
     if (usuario.rol !== 'postulante' && !this.isAdminView) {
       this.error = 'Esta sección es solo para postulantes.';
@@ -242,51 +293,112 @@ export class PerfilPostulanteComponent implements OnInit {
     });
   }
 
+  /*   onNotificationClick(notif: NotificationItem, event: Event) {
+      event.stopPropagation();
+      notif.read = true;
+      this.notificationsOpen = false;
+  
+      if (notif.applicantId) {
+        this.router.navigate(['/perfil-postulante', notif.applicantId], {
+          queryParams: { seguimiento: 'true', idAnuncio: notif.idAnuncio }
+        }).then(() => {
+          window.location.reload();
+        });
+      }
+      this.cdr.detectChanges();
+    } */
+
   onNotificationClick(notif: NotificationItem, event: Event) {
     event.stopPropagation();
-    notif.read = true;
+
     this.notificationsOpen = false;
 
-    if (notif.applicantId) {
-      this.router.navigate(['/perfil-postulante', notif.applicantId], {
-        queryParams: { seguimiento: 'true' }
-      }).then(() => {
-        window.location.reload();
-      });
-    }
+    this.notificationService.abrirNotificacion(notif);
+
     this.cdr.detectChanges();
   }
 
+  /*   toggleNotifications(event?: Event) {
+      if (event) event.stopPropagation();
+      this.notificationsOpen = !this.notificationsOpen;
+  
+      if (this.notificationsOpen && this.hasUnreadNotifications) {
+        this.hasUnreadNotifications = false;
+        this.notifications.forEach(n => n.read = true);
+  
+        this.api.marcarNotificacionesLeidas().subscribe({
+          error: (err) => console.error('Error al actualizar estado de notificaciones', err)
+        });
+      }
+      this.menuOpen = false;
+    } */
+
+
   toggleNotifications(event?: Event) {
-    if (event) event.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+    }
+
     this.notificationsOpen = !this.notificationsOpen;
 
     if (this.notificationsOpen && this.hasUnreadNotifications) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-
-      this.api.marcarNotificacionesLeidas().subscribe({
-        error: (err) => console.error('Error al actualizar estado de notificaciones', err)
-      });
+      this.notificationService.marcarTodasComoLeidas();
     }
+
     this.menuOpen = false;
   }
 
   aceptarSeguimiento() {
+
     this.mostrarBannerSeguimiento = false;
+
     const idPostulante = this.route.snapshot.paramMap.get('id');
 
-    if (idPostulante) {
-      this.api.aceptarPostulante(idPostulante).subscribe({
-        next: () => console.log('¡Postulante notificado con éxito!'),
-        error: (err) => console.error('Hubo un error al aceptar', err)
+    const idAnuncio = this.route.snapshot.queryParamMap.get('idAnuncio')
+
+    console.log(idAnuncio);
+
+    if (!idPostulante || !idAnuncio) {
+      console.error('Falta idPostulante o idAnuncio');
+      return;
+    }
+
+    if (idPostulante && idAnuncio) {
+
+      this.api.aceptarPostulante(idPostulante, idAnuncio).subscribe({
+        next: () => console.log('¡Postulante aceptado y notificado!'),
+        error: (err) =>
+          console.log('Hubo un error al aceptar', err)
       });
     }
   }
 
+
   rechazarSeguimiento() {
+
     this.mostrarBannerSeguimiento = false;
-    console.log('Postulante Rechazado');
+
+    const idPostulante = this.route.snapshot.paramMap.get('id');
+
+    const idAnuncio = this.route.snapshot.queryParamMap.get('idAnuncio')
+
+    if (!idPostulante || !idAnuncio) {
+      console.error('Falta idPostulante o idAnuncio');
+      return;
+    }
+
+    if (idPostulante && idAnuncio) {
+
+      this.api.rechazarPostulante(idPostulante, idAnuncio).subscribe({
+
+        next: () => console.log('¡Postulante rechazado y notificado!'),
+
+        error: (err) =>
+          console.error('Hubo un error al rechazar', err)
+      });
+    } else {
+      console.error('Falta idPostulante o idAnuncio');
+    }
   }
 
   get direccionCompleta(): string {
@@ -306,9 +418,9 @@ export class PerfilPostulanteComponent implements OnInit {
   }
 
   getApplicationStateClass(estado: PostulanteApplication['estado']): string {
-    if (estado === 'Nueva') return 'app-new';
+    if (estado === 'Rechazado') return 'app-discarded';
     if (estado === 'En revision' || estado === 'En revisión') return 'app-review';
-    if (estado === 'Entrevista') return 'app-interview';
+    if (estado === 'Aceptado') return 'app-interview';
     return 'app-discarded';
   }
 

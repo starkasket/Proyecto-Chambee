@@ -8,6 +8,8 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
 import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
+
 
 @Component({
   selector: 'app-crear-servicio',
@@ -25,6 +27,10 @@ export class CrearServicioComponent implements OnInit {
   private serviciosService = inject(ServiciosService);
   private api = inject(ApiService);
   private authApi = inject(AuthService);
+  private notificacionService = inject(NotificacionService);
+
+
+  notifications: NotificationItem[] = [];
 
 
   servicioForm: FormGroup;
@@ -43,7 +49,9 @@ export class CrearServicioComponent implements OnInit {
 
   // Controla la visibilidad de calle y colonia dentro del bloque de
   // dirección, dejando código postal / estado / ciudad siempre visibles.
-  mostrarDireccionOpcional = false;
+  mostrarDireccionCompleta = false;
+
+  hasUnreadNotifications = false;
 
   // Variables para la edición
   esEdicion = false;
@@ -76,7 +84,8 @@ export class CrearServicioComponent implements OnInit {
       numero_exterior: ['', [Validators.maxLength(20)]],
       latitud: [null as number | null],
       longitud: [null as number | null],
-      direccion_formateada: ['', Validators.maxLength(300)]
+      direccion_formateada: ['', Validators.maxLength(300)],
+      mostrar_direccion_completa: [false]
 
     });
   }
@@ -108,6 +117,18 @@ export class CrearServicioComponent implements OnInit {
 
     const usuario = this.api.getUsuario();
     if (usuario?.id) {
+
+      this.notificacionService.notifications$.subscribe(
+        notifications => {
+          this.notifications = notifications;
+        }
+      );
+
+      this.notificacionService.hasUnreadNotifications$.subscribe(
+        hasUnread => {
+          this.hasUnreadNotifications = hasUnread;
+        }
+      );
       // Cargar perfil
       this.api.getMiPerfil().subscribe({
         next: (perfil: any) => {
@@ -126,8 +147,8 @@ export class CrearServicioComponent implements OnInit {
             direccion_formateada: perfil?.direccion_formateada || ''
           });
 
-          console.log(this.servicioForm);
-          
+
+
         },
         error: () => {
           this.nombre_postulante = usuario?.nombre || 'Usuario';
@@ -147,8 +168,28 @@ export class CrearServicioComponent implements OnInit {
 
   // Alterna la visibilidad de calle y colonia dentro del bloque de
   // dirección, dejando código postal / estado / ciudad siempre visibles.
-  toggleDireccionOpcional() {
-    this.mostrarDireccionOpcional = !this.mostrarDireccionOpcional;
+  toggleDireccionCompleta() {
+    this.mostrarDireccionCompleta = !this.mostrarDireccionCompleta;
+
+    this.servicioForm.patchValue({
+      mostrar_direccion_completa: this.mostrarDireccionCompleta
+    });
+  }
+
+  obtenerDireccionMostrar(): string {
+    const form = this.servicioForm.value;
+
+    if (this.mostrarDireccionCompleta) {
+      return form.direccion_formateada || '';
+    }
+
+    const partes = [
+      form.colonia,
+      form.ciudad,
+      form.estado
+    ].filter(Boolean);
+
+    return partes.join(', ');
   }
 
   cargarDatosDelServicio(id: string) {
@@ -170,6 +211,22 @@ export class CrearServicioComponent implements OnInit {
               }
             }
 
+
+
+
+            if (
+              this.googleMaps.normalizar(this.servicioForm.value.estado || '') !==
+              this.googleMaps.normalizar('Guanajuato')
+            ) {
+              this.mostrarModalError(
+                'La ubicación debe estar dentro del estado de Guanajuato.'
+              );
+              return;
+            }
+
+            this.mostrarDireccionCompleta =
+              servicioAModificar.mostrar_direccion_completa ?? false;
+
             this.servicioForm.patchValue({
               title: servicioAModificar.title,
               categoria: servicioAModificar.categoria || 'Plomería',
@@ -182,16 +239,19 @@ export class CrearServicioComponent implements OnInit {
               ciudad: servicioAModificar.ciudad || '',
               colonia: servicioAModificar.colonia || '',
               calle: servicioAModificar.calle || '',
+              numero_exterior: servicioAModificar.numero_exterior || '',
               latitud: servicioAModificar.latitud ?? null,
               longitud: servicioAModificar.longitud ?? null,
-              direccion_formateada: servicioAModificar.direccion_formateada || ''
+              direccion_formateada: servicioAModificar.direccion_formateada || '',
+              mostrar_direccion_completa: this.mostrarDireccionCompleta
             });
+
 
             // Si el servicio ya trae calle o colonia guardadas, las
             // mostramos abiertas desde el inicio para que el usuario
             // las vea al editar.
             if (servicioAModificar.calle || servicioAModificar.colonia) {
-              this.mostrarDireccionOpcional = true;
+              this.mostrarDireccionCompleta = true;
             }
 
             if (servicioAModificar.img) {
@@ -223,6 +283,18 @@ export class CrearServicioComponent implements OnInit {
     if (latitud === null || longitud === null) {
       this.mostrarModalError(
         'Debes seleccionar una ubicación en el mapa.'
+      );
+      return;
+    }
+
+    const estado = this.servicioForm.value.estado;
+
+    if (
+      this.googleMaps.normalizar(estado || '') !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModalError(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
       );
       return;
     }
@@ -444,6 +516,16 @@ export class CrearServicioComponent implements OnInit {
 
   ubicacionSeleccionada(direccion: DireccionCompleta) {
 
+    if (
+      this.googleMaps.normalizar(direccion.estado || '') !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModalError(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+      return;
+    }
+
     this.servicioForm.patchValue({
       estado: direccion.estado,
       ciudad: direccion.ciudad,
@@ -459,4 +541,24 @@ export class CrearServicioComponent implements OnInit {
 
   }
 
+  toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
+  }
 }

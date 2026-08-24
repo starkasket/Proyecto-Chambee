@@ -57,7 +57,7 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/empleadores/${idEmpleador}/perfil`, datos, this.getHeaders());
   }
 
-  eliminarEmpleador(){
+  eliminarEmpleador() {
     return this.http.delete(`${this.apiUrl}/empleadores/eliminar-cuenta`, this.getHeaders());
   }
 
@@ -149,7 +149,7 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/postulantes/${idPostulante}/postulaciones`, this.getHeaders());
   }
 
-  eliminarPostulante(){
+  eliminarPostulante() {
     return this.http.delete(`${this.apiUrl}/postulantes/eliminar-cuenta`, this.getHeaders());
   }
 
@@ -205,7 +205,7 @@ export class ApiService {
       this.getHeaders()
     );
   }
-  
+
   obtenerComentariosAnuncio(idAnuncio: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/comentarios/${idAnuncio}`);
   }
@@ -232,18 +232,22 @@ export class ApiService {
     };
     return this.http.delete<any>(`${this.apiUrl}/comentarios/${idComentario}`, options);
   }
-  
-  aceptarPostulante(idPostulante: string) {
-    return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/aceptar`, {}, this.getHeaders());
+
+  aceptarPostulante(idPostulante: string, idAnuncio: string) {
+    return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/anuncio/${idAnuncio}/aceptar`, { }, this.getHeaders());
+  }
+
+  rechazarPostulante(idPostulante: string, idAnuncio: string) {
+    return this.http.patch(`${this.apiUrl}/empleadores/postulantes/${idPostulante}/anuncio/${idAnuncio}/rechazar`, { }, this.getHeaders());
   }
 
   // ================= REPORTES GENERALES =================
-  crearReporte(reporte: any){
-      return this.http.post(`${this.apiUrl}/reportes`, reporte, this.getHeaders());
+  crearReporte(reporte: any) {
+    return this.http.post(`${this.apiUrl}/reportes`, reporte, this.getHeaders());
   }
 
   crearReporteEmpleador(reporte: any) {
-    return this.http.post(`${this.apiUrl}/reportes/empleador`,reporte, this.getHeaders());
+    return this.http.post(`${this.apiUrl}/reportes/empleador`, reporte, this.getHeaders());
   }
 
   // ================= REPORTES PERFILES =================
@@ -252,7 +256,7 @@ export class ApiService {
   }
 
   // ================= REPORTES Y ACCIONES DE ANUNCIOS =================
-  
+
   reportarAnuncio(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/reportes/anuncios`, datos, this.getHeaders());
   }
@@ -274,23 +278,23 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/notificaciones/marcar-leidas`, {}, this.getHeaders());
   }
 
-  buscar(q: string, filtros: any){
-    let params=new HttpParams();
+  buscar(q: string, filtros: any) {
+    let params = new HttpParams();
 
-    if(q) params=params.set("q",q);
-    if(filtros.tipo) params=params.set("tipo",filtros.tipo);
-    if(filtros.modalidad) params=params.set("modalidad",filtros.modalidad);
-    if(filtros.cobertura) params=params.set("cobertura",filtros.cobertura);
-    if(filtros.ciudad) params=params.set("ciudad",filtros.ciudad);
-    if(filtros.categoriaEmpleo) params=params.set("categoriaEmpleo",filtros.categoriaEmpleo);
-    if(filtros.categoriaServicio) params=params.set("categoriaServicio",filtros.categoriaServicio);
-    if(filtros.ordenar) params=params.set("ordenar",filtros.ordenar);
+    if (q) params = params.set("q", q);
+    if (filtros.tipo) params = params.set("tipo", filtros.tipo);
+    if (filtros.modalidad) params = params.set("modalidad", filtros.modalidad);
+    if (filtros.cobertura) params = params.set("cobertura", filtros.cobertura);
+    if (filtros.ciudad) params = params.set("ciudad", filtros.ciudad);
+    if (filtros.categoriaEmpleo) params = params.set("categoriaEmpleo", filtros.categoriaEmpleo);
+    if (filtros.categoriaServicio) params = params.set("categoriaServicio", filtros.categoriaServicio);
+    if (filtros.ordenar) params = params.set("ordenar", filtros.ordenar);
 
-    return this.http.get<any[]>(`${this.apiUrl}/busqueda`,{params});
+    return this.http.get<any[]>(`${this.apiUrl}/busqueda`, { params });
   }
 
   // ================= ACCIONES DE ADMINISTRADOR =================
-  
+
   // Función para suspender cuenta
   suspenderUsuario(id: string, dias: number) {
     return this.http.put(`${this.apiUrl}/usuarios/${id}/suspender`, { dias_suspension: dias }, this.getHeaders());
@@ -305,7 +309,7 @@ export class ApiService {
     return this.http.delete(`${this.apiUrl}/reportes/${idReporte}`, this.getHeaders());
   }
 
-eliminarUsuario(idUsuario: string): Observable<any> {
+  eliminarUsuario(idUsuario: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/admin/usuarios/${idUsuario}`, this.getHeaders());
   }
 }

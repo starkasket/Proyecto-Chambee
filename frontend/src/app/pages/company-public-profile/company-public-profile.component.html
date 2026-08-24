@@ -29,7 +29,8 @@
                     <option value="oferta_engañosa">Oferta de empleo engañosa</option>
                     <option value="otro">Otro</option>
                   </select>
-                  <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es obligatorio.</small>
+                  <small *ngIf="motivo.invalid && motivo.touched" class="support-error">Este campo es
+                    obligatorio.</small>
                 </label>
                 <label class="support-field support-field-full">
                   <span>Descripción del reporte.</span>
@@ -68,33 +69,52 @@
     </div> -->
 
     <div class="nav-buttons d-flex align-items-center gap-3">
-      <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
-        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button" (click)="toggleNotifications($event)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: var(--text-color);">
-            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+      <div class="notification-wrapper" style="position: relative;">
+
+        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
+          (click)="toggleNotifications($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
+            viewBox="0 0 16 16" style="color: var(--text-color);">
+            <path
+              d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
           </svg>
-          <span *ngIf="hasUnreadNotifications" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
-            <span class="visually-hidden">Nuevas notificaciones</span>
+          <span *ngIf="hasUnreadNotifications"
+            class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+            style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+            <span class="visually-hidden">Nuevas alertas</span>
           </span>
         </div>
 
-        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()" style="position: absolute; top: 40px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
-          <div style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+          style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+
+          <div
+            style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
             <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
           </div>
+
           <div style="max-height: 350px; overflow-y: auto;">
-            <ng-container *ngIf="notifications.length > 0; else sinNotificaciones">
-              <div *ngFor="let notification of notifications" class="notification-item" [class.unread]="!notification.read" style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px;" [ngStyle]="{'background-color': notification.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}">
-                <span class="notif-header" style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notification.title }}</span>
-                <span class="notif-message" style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notification.message }}</span>
-                <span class="notif-time" style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notification.time }}</span>
-              </div>
-            </ng-container>
-            <ng-template #sinNotificaciones>
-              <div class="p-3 text-center text-muted" style="font-size: 0.9rem;">
-                <small>No tienes notificaciones nuevas.</small>
-              </div>
-            </ng-template>
+            <div *ngFor="let notif of notifications"
+              style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+              [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+              (click)="onNotificationClick(notif, $event)">
+              <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title
+                }}</span>
+              <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+              <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+            </div>
+
+            <div *ngIf="notifications.length === 0"
+              style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+              No tienes notificaciones nuevas
+            </div>
+          </div>
+
+          <div
+            style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+            <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas
+              las
+              notificaciones</a>
           </div>
         </div>
       </div>
@@ -122,7 +142,8 @@
       <!-- Toggle de modo oscuro -->
       <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
         <span class="theme-toggle-track">
-          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+              class="bi bi-moon-fill"></i></span>
         </span>
       </button>
 
@@ -133,12 +154,14 @@
         <ng-container *ngIf="isAdminView">
           <a routerLink="/admin" class="desktop-menu-link">Panel de Admin</a>
           <hr />
-          <a (click)="abrirModalSuspenderAdmin()" class="desktop-menu-link text-warning" style="cursor: pointer;">Suspender Empresa</a>
-          <a (click)="abrirModalEliminarAdmin()" class="desktop-menu-link text-danger" style="cursor: pointer;">Eliminar Empresa</a>
+          <a (click)="abrirModalSuspenderAdmin()" class="desktop-menu-link text-warning"
+            style="cursor: pointer;">Suspender Empresa</a>
+          <a (click)="abrirModalEliminarAdmin()" class="desktop-menu-link text-danger" style="cursor: pointer;">Eliminar
+            Empresa</a>
           <hr />
           <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
         </ng-container>
-        
+
         <ng-container *ngIf="!isAdminView">
           <a routerLink="/home-user" class="desktop-menu-link">Inicio</a>
           <a (click)="irAlPerfil()" class="desktop-menu-link" style="cursor: pointer;">Mi perfil</a>
@@ -156,11 +179,13 @@
         <nav class="mobile-nav">
           <ng-container *ngIf="isAdminView">
             <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel de Admin</a>
-            <a class="mobile-nav-link text-warning" (click)="abrirModalSuspenderAdmin(); toggleMenu()" style="cursor: pointer;">Suspender Empresa</a>
-            <a class="mobile-nav-link text-danger" (click)="abrirModalEliminarAdmin(); toggleMenu()" style="cursor: pointer;">Eliminar Empresa</a>
+            <a class="mobile-nav-link text-warning" (click)="abrirModalSuspenderAdmin(); toggleMenu()"
+              style="cursor: pointer;">Suspender Empresa</a>
+            <a class="mobile-nav-link text-danger" (click)="abrirModalEliminarAdmin(); toggleMenu()"
+              style="cursor: pointer;">Eliminar Empresa</a>
             <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
           </ng-container>
-          
+
           <ng-container *ngIf="!isAdminView">
             <a class="mobile-nav-link" routerLink="/home-user" (click)="toggleMenu()">Inicio</a>
             <a class="mobile-nav-link" (click)="irAlPerfil(); toggleMenu()" style="cursor: pointer;">Mi perfil</a>
@@ -197,7 +222,8 @@
               </p>
             </div>
           </div>
-          <button *ngIf="usuarioActual?.rol === 'postulante'" class="report-btn" type="button" (click)="abrirModal()">Reportar cuenta</button>
+          <button *ngIf="usuarioActual?.rol === 'postulante'" class="report-btn" type="button"
+            (click)="abrirModal()">Reportar cuenta</button>
 
           <div class="company-stat">
             <strong>{{ perfil.vacantes_activas || anuncios.length }}</strong>
@@ -239,14 +265,18 @@
         </div>
 
         <div class="announcements-row" *ngIf="anuncios.length; else noCompanyJobs">
-          <article class="announcement-card" *ngFor="let anuncio of anuncios" (click)="verVacante(anuncio.id_anuncio)" role="button" tabindex="0">
-            <app-carousel [images]="anuncio.images ? anuncio.images : [anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60']" [jobId]="anuncio.id_anuncio"></app-carousel>
+          <article class="announcement-card" *ngFor="let anuncio of anuncios" (click)="verVacante(anuncio.id_anuncio)"
+            role="button" tabindex="0">
+            <app-carousel
+              [images]="anuncio.images ? anuncio.images : [anuncio.img || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&auto=format&fit=crop&q=60']"
+              [jobId]="anuncio.id_anuncio"></app-carousel>
             <div class="announcement-copy">
               <div class="card-top">
                 <strong>{{ anuncio.titulo }}</strong>
                 <span class="state-pill">{{ anuncio.urgencia || 'Normal' }}</span>
               </div>
-              <p class="vacancy-meta">{{ anuncio.calle || anuncio.ciudad }}, {{ anuncio.ciudad }}, {{ anuncio.estado }} | {{ formatearFecha(anuncio.fecha_publicacion) }}</p>
+              <p class="vacancy-meta">{{ anuncio.calle || anuncio.ciudad }}, {{ anuncio.ciudad }}, {{ anuncio.estado }}
+                | {{ formatearFecha(anuncio.fecha_publicacion) }}</p>
               <p class="vacancy-description">{{ anuncio.descripcion }}</p>
               <p class="salary">
                 {{ formatearSalario(anuncio.salario, anuncio.tipo_moneda || $any(anuncio).moneda || $any(anuncio).tipoMoneda, anuncio.periodo_pago || $any(anuncio).periodoPago) }}
@@ -254,7 +284,8 @@
               <div class="job-tags" *ngIf="anuncio.categorias?.length">
                 <span class="job-tag" *ngFor="let tag of anuncio.categorias | slice:0:3">{{ tag }}</span>
               </div>
-              <button class="see-job-btn" type="button" (click)="verVacante(anuncio.id_anuncio); $event.stopPropagation()">Ver vacante</button>
+              <button class="see-job-btn" type="button"
+                (click)="verVacante(anuncio.id_anuncio); $event.stopPropagation()">Ver vacante</button>
             </div>
           </article>
         </div>
@@ -313,7 +344,8 @@
               <p class="mt-2" style="color: var(--text-secondary); opacity: 0.8;">Esta empresa aún no ha recibido calificaciones de postulantes.</p>
             </div>
 
-            <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0" class="reviews-container d-flex flex-column gap-3">
+            <div *ngIf="valoraciones_recibidas && valoraciones_recibidas.length > 0"
+              class="reviews-container d-flex flex-column gap-3">
               <div *ngFor="let rev of valoraciones_recibidas" class="review-item-premium p-3">
                 <div class="review-header d-flex justify-content-between align-items-start">
                   <div class="reviewer-info d-flex align-items-center gap-2">
@@ -322,15 +354,18 @@
                     </div>
                     <div>
                       <h4 class="reviewer-name mb-0">{{ rev.nombre_postulante }}</h4>
-                      <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX' }}</span>
+                      <span class="review-date text-muted">{{ rev.fecha_valoracion | date:'shortDate':'':'es-MX'
+                        }}</span>
                     </div>
                   </div>
                   <div class="review-menu-wrapper" *ngIf="usuarioActual && ('' + usuarioActual.id === '' + rev.autor_id)">
                     <button class="review-menu-btn" type="button" (click)="toggleMenuValoracion(rev.id_valoracion, $event)">
                       <i class="bi bi-three-dots-vertical"></i>
                     </button>
-                    <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown" (click)="$event.stopPropagation()">
-                      <button type="button" class="review-dropdown-item text-danger" (click)="eliminarValoracion(rev.id_valoracion)">
+                    <div *ngIf="menuAbiertoId === rev.id_valoracion" class="review-dropdown"
+                      (click)="$event.stopPropagation()">
+                      <button type="button" class="review-dropdown-item text-danger"
+                        (click)="eliminarValoracion(rev.id_valoracion)">
                         <i class="bi bi-trash3"></i> Eliminar
                       </button>
                     </div>
@@ -360,11 +395,13 @@
       <div class="modal-body pt-4">
         <img src="/assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
         <h5 class="text-danger fw-bold">Borrar Perfil Definitivamente</h5>
-        <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento de normas. Esta acción no se puede deshacer.</p>
+        <p class="mb-0">Como administrador, estás a punto de eliminar este perfil de forma permanente por incumplimiento
+          de normas. Esta acción no se puede deshacer.</p>
       </div>
       <div class="modal-footer border-0 justify-content-center pb-4">
         <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminarAdmin()">Cancelar</button>
-        <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar Perfil</button>
+        <button type="button" class="btn confirm-btn px-4 btn-danger" (click)="ejecutarEliminarAdmin()">Borrar
+          Perfil</button>
       </div>
     </div>
   </div>
@@ -387,7 +424,8 @@
       </div>
       <div class="modal-footer border-0 justify-content-center pb-4">
         <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalSuspenderAdmin()">Cancelar</button>
-        <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;" (click)="ejecutarSuspensionAdmin()">Suspender</button>
+        <button type="button" class="btn confirm-btn px-4" style="background-color: #6c757d;"
+          (click)="ejecutarSuspensionAdmin()">Suspender</button>
       </div>
     </div>
   </div>
@@ -421,14 +459,17 @@
 </div>
 
 <!-- Banner Inferior Fijo de Administrador -->
-<div *ngIf="isAdminView" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; z-index: 1050; border-top: 3px solid #dc3545; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); padding: 15px 0;">
+<div *ngIf="isAdminView"
+  style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; z-index: 1050; border-top: 3px solid #dc3545; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); padding: 15px 0;">
   <div class="container d-flex justify-content-between align-items-center">
     <span class="fw-bold text-dark" style="font-size: 1.1rem;">
       <i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador
     </span>
     <div class="d-flex gap-2">
-      <button class="btn btn-secondary text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
-      <button class="btn btn-danger text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalEliminarAdmin()">Borrar Perfil</button>
+      <button class="btn btn-secondary text-white fw-semibold" style="border: none; padding: 8px 20px;"
+        (click)="abrirModalSuspenderAdmin()">Suspender</button>
+      <button class="btn btn-danger text-white fw-semibold" style="border: none; padding: 8px 20px;"
+        (click)="abrirModalEliminarAdmin()">Borrar Perfil</button>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core'; 
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -10,6 +10,7 @@ interface Applicant {
   applicationId?: string;
   name: string;
   appliedFor: string;
+  idAnuncio?: string;
   description: string;
   skills?: string;
   profilePic: string;
@@ -18,6 +19,7 @@ interface Applicant {
   email?: string;
   phone?: string;
   location?: string;
+  estado_postulacion?: string;
 }
 
 interface RecentApplicant extends Applicant {
@@ -43,7 +45,9 @@ interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
-  applicantId?: string; 
+  applicantId?: string;
+  idAnuncio?: string;
+  tipo?: string;
 }
 
 @Component({
@@ -60,8 +64,8 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   toolsOpen = false;
   menuOpen = false;
   notificationsOpen = false;
-  hasUnreadNotifications = false; 
-  isDarkMode = false; 
+  hasUnreadNotifications = false;
+  isDarkMode = false;
 
   currentSlide = 0;
   visibleCount = 8;
@@ -86,16 +90,16 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     private readonly api: ApiService,
     private readonly authApi: AuthService,
     private readonly socketService: SocketService,
-    private readonly cdr: ChangeDetectorRef 
+    private readonly cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.cargarNotificaciones(); // <-- Cargar notificaciones al iniciar el componente
+    this.cargarNotificaciones();
 
     const usuario = this.api.getUsuario();
 
     if (usuario?.id) {
-      this.socketService.conectarEmpleador(usuario.id);
+      this.socketService.conectarUsuario(usuario.id);
 
       this.socketService.escucharNuevasPostulaciones().subscribe((datosAlerta) => {
         this.agregarNotificacion(datosAlerta);
@@ -121,6 +125,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }, 9000);
 
     this.checkMobile();
+
   }
 
   ngOnDestroy() {
@@ -133,45 +138,62 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
   cargarNotificaciones() {
     this.api.obtenerNotificaciones().subscribe({
       next: (notifs) => {
+        console.log('Notificaciones recibidas:', notifs);
         this.notifications = notifs.map(n => ({
           id: n.id,
           title: n.title,
           message: n.message,
           time: new Date(n.time).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
           read: n.read,
-          applicantId: n.applicantId // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
+          applicantId: n.applicantId,
+          idAnuncio: n.idAnuncio,
+          tipo: n.tipo
         }));
+        console.log('Notificaciones mapeadas:', this.notifications);
+
         this.hasUnreadNotifications = this.notifications.some(n => !n.read);
       },
       error: (err) => console.error('Error al obtener notificaciones', err)
     });
+
   }
   agregarNotificacion(datos: any) {
     const nuevaNotificacion: NotificationItem = {
-      id: Date.now(), 
+      id: Date.now(),
       title: datos.titulo,
       message: datos.mensaje,
       time: 'Hace un momento',
       read: false,
-      applicantId: datos.id_postulante
+      applicantId: datos.id_postulante || datos.applicantId,
+      idAnuncio: datos.idAnuncio,
+      tipo: datos.tipo
     };
 
     this.notifications.unshift(nuevaNotificacion);
     this.hasUnreadNotifications = true;
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   onNotificationClick(notif: NotificationItem, event: Event) {
     event.stopPropagation();
+
+
+    console.log('Notificación seleccionada:', notif);
+
     notif.read = true;
     this.notificationsOpen = false;
 
+
+
     if (notif.applicantId) {
-      this.router.navigate(['/perfil-postulante', notif.applicantId], { 
-        queryParams: { seguimiento: 'true' } 
+      this.router.navigate(['/perfil-postulante', notif.applicantId], {
+        queryParams: { seguimiento: 'true', idAnuncio: notif.idAnuncio }
       });
     }
-    this.cdr.detectChanges(); 
+
+
+
+    this.cdr.detectChanges();
   }
 
   // MÉTODO ACTUALIZADO: MARCAR COMO LEIDAS EN LA BASE DE DATOS
@@ -218,12 +240,31 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /*  viewProfile(applicant: Applicant) {
+     if (!applicant?.id) {
+       alert('El perfil del postulante no está disponible.');
+       return;
+     }
+     this.router.navigate(['/perfil-postulante', applicant.id], { queryParams: { seguimiento: 'true', idAnuncio: applicant.idAnuncio } });
+   } */
+
   viewProfile(applicant: Applicant) {
     if (!applicant?.id) {
       alert('El perfil del postulante no está disponible.');
       return;
     }
-    this.router.navigate(['/perfil-postulante', applicant.id]);
+
+    const queryParams: any = {};
+
+    if (applicant.estado_postulacion === 'En revisión') {
+      queryParams.seguimiento = 'true';
+      queryParams.idAnuncio = applicant.idAnuncio;
+    }
+
+    this.router.navigate(
+      ['/perfil-postulante', applicant.id],
+      { queryParams }
+    );
   }
 
   viewCV(applicant: Applicant) {
@@ -293,7 +334,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
           modalidad: anuncio.modalidad
         }));
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -335,6 +376,7 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
         this.allApplicants = postulaciones.map((item, index) => ({
           id: item.id_postulante || item.id_postulacion || `p-${index}`,
           applicationId: item.id_postulacion,
+          idAnuncio: item.id_anuncio,
           name: `${item.nombre_postulante || ''} ${item.apellido_paterno_postulante || ''}`.trim(),
           appliedFor: item.vacante || 'Vacante desconocida',
           description: item.perfil_postulante || 'Candidato interesado.',
@@ -343,9 +385,10 @@ export class HomeEmployerComponent implements OnInit, OnDestroy {
           dateApplied: item.fecha_postulacion ? new Date(item.fecha_postulacion).toLocaleDateString('es-MX') : 'Reciente',
           cvUrl: item.archivo_cv ?? null,
           email: item.correo_electronico || 'No disponible',
-          phone: item.telefono || 'No disponible'
+          phone: item.telefono || 'No disponible',
+          estado_postulacion: item.estado_postulacion
         }));
-        
+
         if (this.allApplicants.length > 0) {
           this.recentApplicants = this.allApplicants.slice(0, 3).map((item) => ({
             ...item,

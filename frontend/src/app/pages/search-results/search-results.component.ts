@@ -1,25 +1,28 @@
-import { Component, OnInit, HostListener } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router'; 
+import { Component, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs'; 
+import { forkJoin } from 'rxjs';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
 @Component({
   selector: 'app-search-results',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './search-results.component.html',
-  styleUrl: './search-results.component.css' 
+  styleUrl: './search-results.component.css'
 })
 export class SearchResultsComponent implements OnInit {
+
+  notifications: NotificationItem[] = [];
   query: string = '';
   destacados: any[] = [];
   todosLosResultados: any[] = [];
   cargando: boolean = true;
-  
+
   // Variables del Navbar
   nombre_postulante = 'Usuario';
   foto_perfil = '';
@@ -27,7 +30,7 @@ export class SearchResultsComponent implements OnInit {
   menuOpen = false;
   isMobile = false;
   hasUnreadNotifications = false;
-  notifications: any[] = [];
+
 
   // Si no hay sesión, mostramos el navbar público (login/registrar)
   // en vez del navbar de usuario logueado.
@@ -52,7 +55,11 @@ export class SearchResultsComponent implements OnInit {
     categoriaEmpleo: '',
     modalidad: '',
     categoriaServicio: '',
-    cobertura: ''
+    cobertura: '',
+    distancia: '',
+    moneda: '',
+    salarioMin: null as number | null,
+    salarioMax: null as number | null
   };
 
   constructor(
@@ -60,8 +67,10 @@ export class SearchResultsComponent implements OnInit {
     private api: ApiService,
     private router: Router,
     private themeService: ThemeService,
-    private authApi: AuthService
-  ) {}
+    private authApi: AuthService,
+    private notificacionService: NotificacionService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit() {
     this.checkMobile();
@@ -76,7 +85,7 @@ export class SearchResultsComponent implements OnInit {
     this.api.obtenerCategorias().subscribe({
       next: (cats) => {
         this.categorias = cats;
-      }, 
+      },
       error: (err) => {
         console.error(err);
       }
@@ -88,7 +97,20 @@ export class SearchResultsComponent implements OnInit {
     // Las notificaciones y el perfil SOLO se cargan si hay sesión activa,
     // de lo contrario el backend responde 401 y el interceptor te manda a /login.
     if (this.estaLogueado) {
-      this.cargarNotificaciones();
+//      this.cargarNotificaciones();
+
+      this.notificacionService.notifications$.subscribe(
+        notifications => {
+          this.notifications = notifications;
+        }
+      );
+
+      this.notificacionService.hasUnreadNotifications$.subscribe(
+        hasUnread => {
+          this.hasUnreadNotifications = hasUnread;
+        }
+      );
+
 
       if (usuario) {
         this.nombre_postulante = usuario.nombre || 'Usuario';
@@ -97,7 +119,7 @@ export class SearchResultsComponent implements OnInit {
             this.nombre_postulante = perfil?.nombre_postulante || this.nombre_postulante;
             this.foto_perfil = perfil?.foto_perfil || '';
           },
-          error: () => {}
+          error: () => { }
         });
       }
     }
@@ -116,16 +138,12 @@ export class SearchResultsComponent implements OnInit {
     this.cargando = true;
     this.api.buscar(q, this.filtros).subscribe({
       next: (datos) => {
-        
-        // --- AQUÍ APLICAMOS LA LÓGICA DE ORDENAMIENTO EN EL FRONTEND ---
+
         if (this.filtros.ordenar === 'vistas') {
-          // Ordena por vistas de mayor a menor
           datos.sort((a: any, b: any) => (b.vistas || 0) - (a.vistas || 0));
         } else if (this.filtros.ordenar === 'salario') {
-          // Ordena por salario de mayor a menor
           datos.sort((a: any, b: any) => (parseFloat(b.salario) || 0) - (parseFloat(a.salario) || 0));
         } else if (this.filtros.ordenar === 'fecha') {
-          // Ordena por fecha de publicación (más reciente a más antiguo)
           datos.sort((a: any, b: any) => {
             const fechaB = new Date(b.fecha_publicacion || b.fecha_creacion).getTime();
             const fechaA = new Date(a.fecha_publicacion || a.fecha_creacion).getTime();
@@ -248,11 +266,11 @@ export class SearchResultsComponent implements OnInit {
     this.notificationsOpen = false;
   }
 
-  toggleFiltros(){
+  toggleFiltros() {
     this.mostrarFiltros = !this.mostrarFiltros;
   }
 
-  limpiarFiltros(){
+  limpiarFiltros() {
     this.filtros = {
       tipo: '',
       ciudad: '',
@@ -260,7 +278,11 @@ export class SearchResultsComponent implements OnInit {
       categoriaEmpleo: '',
       categoriaServicio: '',
       modalidad: '',
-      cobertura: ''
+      cobertura: '',
+      distancia: '',
+       moneda: '',
+      salarioMin: null,
+      salarioMax: null
     };
     this.cargarYFiltrar(this.query);
   }
@@ -270,7 +292,7 @@ export class SearchResultsComponent implements OnInit {
     this.menuOpen = false;
   }
 
-  aplicarFiltros(){
+  aplicarFiltros() {
     this.cargarYFiltrar(this.query);
   }
 
@@ -283,23 +305,44 @@ export class SearchResultsComponent implements OnInit {
         }));
         this.hasUnreadNotifications = this.notifications.some(n => !n.read);
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
-  toggleNotifications(event: Event) {
-    event.stopPropagation();
-    this.notificationsOpen = !this.notificationsOpen;
-    this.menuOpen = false;
-    
-    if (this.notificationsOpen && this.hasUnreadNotifications) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach(n => n.read = true);
-      this.api.marcarNotificacionesLeidas().subscribe();
+  /*  toggleNotifications(event: Event) {
+     event.stopPropagation();
+     this.notificationsOpen = !this.notificationsOpen;
+     this.menuOpen = false;
+ 
+     if (this.notificationsOpen && this.hasUnreadNotifications) {
+       this.hasUnreadNotifications = false;
+       this.notifications.forEach(n => n.read = true);
+       this.api.marcarNotificacionesLeidas().subscribe();
+     }
+   } */
+
+  toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
     }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
   }
 
- @HostListener('document:click', ['$event'])
+  onNotificationClick( notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
+  }
+
+  @HostListener('document:click', ['$event'])
   onDocumentClick(_event: Event) {
     if (this.notificationsOpen) this.notificationsOpen = false;
     if (this.menuOpen && !this.isMobile) this.menuOpen = false;

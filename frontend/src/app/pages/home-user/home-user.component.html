@@ -3,19 +3,14 @@
     <img src="assets/LogoChambee.png" alt="Chambee" height="48">
     <span class="fs-5 fw-semibold d-none d-md-block">Bienvenido, {{ nombre_postulante }}</span>
   </div>
-  
+
   <div class="search-container flex-grow-1 mx-4" style="position: relative;">
-    <input type="text" 
-           class="form-control" 
-           placeholder="Buscar categoría, puesto, ciudad y más..." 
-           [(ngModel)]="searchTerm"
-           (ngModelChange)="onSearchInput($event)"
-           (keydown.enter)="verTodosResultados()"
-           (blur)="cerrarBuscador()"
-           (focus)="showSearchDropdown = true" />
-    
+    <input type="text" class="form-control" placeholder="Buscar categoría, puesto, ciudad y más..."
+      [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" (keydown.enter)="verTodosResultados()"
+      (blur)="cerrarBuscador()" (focus)="showSearchDropdown = true" />
+
     <div *ngIf="showSearchDropdown" class="search-dropdown">
-      
+
       <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
         <div class="search-dropdown-header">Búsquedas recientes</div>
 
@@ -30,20 +25,22 @@
       </div>
 
       <div *ngIf="searchTerm.length > 0">
-        
+
         <div *ngIf="searchResults.length === 0" class="search-empty">
           No se encontraron resultados para "{{ searchTerm }}"
         </div>
 
-        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()" (click)="irAResultado(result)">
+        <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()"
+          (click)="irAResultado(result)">
           <div class="search-item-icon">
             <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
           </div>
           <div class="search-item-content">
             <div class="search-item-title" [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
             <div class="search-item-subtitle">
-              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> • 
-              <span [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
+              <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> •
+              <span
+                [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
             </div>
           </div>
         </div>
@@ -55,7 +52,7 @@
       </div>
     </div>
   </div>
- 
+
   <div class="nav-buttons d-flex align-items-center gap-3">
 
     <div class="notification-wrapper" style="position: relative;">
@@ -118,7 +115,8 @@
     <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
       [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
       <span class="theme-toggle-track">
-        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+        <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+            class="bi bi-moon-fill"></i></span>
       </span>
     </button>
 
@@ -189,7 +187,7 @@
 
 <div *ngIf="servicioDetalleOpen" class="service-detail-backdrop" (click)="cerrarDetalleServicio()">
   <div class="service-detail-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-    
+
     <button class="service-detail-close" (click)="cerrarDetalleServicio()" aria-label="Cerrar">
       <i class="bi bi-x-lg"></i>
     </button>
@@ -200,7 +198,7 @@
     </div>
 
     <div *ngIf="!servicioDetalleCargando && servicioDetalle" class="service-detail-content">
-      
+
       <div class="service-detail-hero">
         <img [src]="servicioDetalle.img || 'assets/LogoChambee.png'" [alt]="servicioDetalle.title" />
         <div class="service-detail-hero-overlay">
@@ -211,7 +209,7 @@
       </div>
 
       <div class="service-detail-body">
-        
+
         <h2 class="service-detail-title">{{ servicioDetalle.title }}</h2>
 
         <div class="service-detail-badges">
@@ -231,14 +229,20 @@
           <p>{{ servicioDetalle.description || 'Sin descripción disponible.' }}</p>
         </div>
 
-        <div class="service-detail-section" *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
+        <div class="service-detail-section"
+          *ngIf="servicioDetalle.ubicacion || servicioDetalle.estado || servicioDetalle.ciudad">
           <h4><i class="bi bi-geo-alt-fill"></i> Ubicación</h4>
           <div class="service-detail-location-grid">
-            <div *ngIf="servicioDetalle.calle" class="location-item">
+            <div *ngIf="servicioDetalle.mostrar_direccion_completa && servicioDetalle.calle" class="location-item">
               <span class="location-label">Calle</span>
               <span class="location-value">{{ servicioDetalle.calle }}</span>
             </div>
-            <div *ngIf="servicioDetalle.colonia" class="location-item">
+            <div *ngIf="servicioDetalle.mostrar_direccion_completa && servicioDetalle.numero_exterior"
+              class="location-item">
+              <span class="location-label">Número exterior</span>
+              <span class="location-value">{{ servicioDetalle.numero_exterior }}</span>
+            </div>
+            <div *ngIf="servicioDetalle.mostrar_direccion_completa && servicioDetalle.colonia" class="location-item">
               <span class="location-label">Colonia</span>
               <span class="location-value">{{ servicioDetalle.colonia }}</span>
             </div>
@@ -254,24 +258,33 @@
               <span class="location-label">Código Postal</span>
               <span class="location-value">{{ servicioDetalle.codigo_postal }}</span>
             </div>
-            <div *ngIf="servicioDetalle.ubicacion" class="location-item">
+            <div *ngIf="servicioDetalle.mostrar_direccion_completa && servicioDetalle.ubicacion" class="location-item">
               <span class="location-label">Ubicación</span>
-              <span class="location-value">{{ servicioDetalle.ubicacion }}</span>
+              <span class="location-value">{{ servicioDetalle.direccion_formateada }}</span>
             </div>
           </div>
+
+          <app-mapa-ubicacion *ngIf="servicioDetalle.mostrar_direccion_completa"
+            [latitudInicial]="servicioDetalle.latitud ?? null" [longitudInicial]="servicioDetalle.longitud ?? null"
+            [soloLectura]="true">
+          </app-mapa-ubicacion>
         </div>
 
         <div class="service-detail-author" *ngIf="servicioDetalle.nombre_postulante || servicioDetalle.autor_id">
           <div class="service-detail-author-card">
-            <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor" class="author-avatar" />
+            <img [src]="servicioDetalle.foto_autor || 'assets/LogoChambee.png'" alt="Foto del autor"
+              class="author-avatar" />
             <div class="author-info">
               <span class="author-label">Publicado por</span>
               <span class="author-name">
                 {{ servicioDetalle.nombre_postulante || 'Usuario' }}
-                {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : '' }}
+                {{ servicioDetalle.apellido_paterno_postulante ? ' ' + servicioDetalle.apellido_paterno_postulante : ''
+                }}
               </span>
             </div>
           </div>
+
+
         </div>
 
         <div class="service-detail-section" *ngIf="servicioDetalle.correo_electronico || servicioDetalle.telefono">
@@ -332,8 +345,10 @@
 
             <div class="featured-content">
               <div class="featured-meta">
-                <span class="featured-chip urgency-chip" [ngClass]="{ 'job-urgency-badge-normal': slide.urgency === 'Normal',
-          'job-urgency-badge-urgent': slide.urgency === 'Urgente', 'job-urgency-badge-very-urgent': slide.urgency === 'Muy urgente'}" *ngIf="slide.urgency">{{ slide.urgency }}</span>
+                <span class="featured-chip urgency-chip"
+                  [ngClass]="{ 'job-urgency-badge-normal': slide.urgency === 'Normal',
+          'job-urgency-badge-urgent': slide.urgency === 'Urgente', 'job-urgency-badge-very-urgent': slide.urgency === 'Muy urgente'}" *ngIf="slide.urgency">{{
+                  slide.urgency }}</span>
                 <span class="featured-chip">{{ slide.company }}</span>
                 <span class="featured-chip">{{ slide.mode }}</span>
                 <span class="featured-chip">{{ slide.location }}</span>
@@ -361,154 +376,159 @@
         Aún no hay ofertas publicadas.
       </div>
     </ng-template>
-<div class="filter-section mt-5">
-  <div class="d-flex flex-wrap gap-3 align-items-center">
-    <button class="chambee-filter-btn" type="button" (click)="toggleFiltros()">
-      <i class="bi bi-sliders me-2"></i> Filtrar y ordenar
-    </button>
-  </div>
-
-  <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="filtros.categoriaEmpleo || filtros.modalidad || filtros.ciudad || filtros.moneda">
-    <span class="featured-chip" *ngIf="filtros.categoriaEmpleo">Categoría: {{ filtros.categoriaEmpleo }}</span>
-    <span class="featured-chip" *ngIf="filtros.modalidad">Modalidad: {{ filtros.modalidad }}</span>
-    <span class="featured-chip" *ngIf="filtros.ciudad">Ciudad: {{ filtros.ciudad }}</span>
-    <span class="featured-chip" *ngIf="filtros.moneda">Moneda: {{ filtros.moneda }}</span>
-  </div>
-
-  <div class="filter-panel mt-3" *ngIf="mostrarFiltros">
-    <div class="row">
-
-      <div class="col-md-4">
-        <label for="select-modalidad" class="form-label">Modalidad</label>
-        <select id="select-modalidad" class="form-select" [(ngModel)]="filtros.modalidad">
-          <option value="">Todas</option>
-          <option value="Presencial">Presencial</option>
-          <option value="Remoto">Remoto</option>
-          <option value="Hibrido">Híbrido</option>
-        </select>
-      </div>
-
-      <div class="col-md-4">
-        <label for="select-cobertura" class="form-label">Cobertura</label>
-        <select id="select-cobertura" class="form-select" [(ngModel)]="filtros.cobertura">
-          <option value="">Todas</option>
-          <option value="Colonia">Solo mi colonia</option>
-          <option value="Ciudad">Toda la ciudad</option>
-          <option value="Municipios cercanos">Municipios cercanos</option>
-        </select>
-      </div>
-
-      <div class="col-md-4">
-        <label for="select-estado" class="form-label">Estado</label>
-        <select id="select-estado" class="form-select" disabled>
-          <option value="">Guanajuato</option>
-        </select>
-      </div>
-
-      <div class="col-md-4 mt-3">
-        <label for="select-ciudad" class="form-label">Ciudad</label>
-        <select id="select-ciudad" class="form-select" [(ngModel)]="filtros.ciudad">
-          <option value="">Todas</option>
-          <option *ngFor="let ciudad of ciudades" [value]="ciudad">
-            {{ ciudad }}
-          </option>
-        </select>
-      </div>
-
-      <div class="col-md-4 mt-3">
-        <label for="select-cat-empleo" class="form-label">Categoría</label>
-        <select id="select-cat-empleo" class="form-select" [(ngModel)]="filtros.categoriaEmpleo">
-          <option value="">Todas</option>
-          <option *ngFor="let categoria of categoriasDisponibles" [value]="categoria">
-            {{ categoria }}
-          </option>
-        </select>
-      </div>
-
-      <div class="col-md-4 mt-3">
-        <label for="select-ordenar" class="form-label">Ordenar por</label>
-        <select id="select-ordenar" class="form-select" [(ngModel)]="filtros.ordenar">
-          <option value="fecha">Más recientes</option>
-          <option value="salario">Mayor salario</option>
-        </select>
-      </div>
-
-      <!-- Moneda y Rango de Salario -->
-      <div class="col-md-4 mt-3">
-        <label for="select-moneda-filtro" class="form-label">Moneda</label>
-        <select id="select-moneda-filtro" class="form-select" [(ngModel)]="filtros.moneda">
-          <option value="">Todas (Convierte a MXN)</option>
-          <option value="MXN">Pesos Mexicanos (MXN)</option>
-          <option value="USD">Dólares (USD)</option>
-          <option value="EUR">Euros (EUR)</option>
-        </select>
-      </div>
-
-      <div class="col-md-4 mt-3">
-        <label for="input-salario-min" class="form-label">
-          Salario Mínimo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
-        </label>
-        <input
-          id="input-salario-min"
-          type="number"
-          class="form-control"
-          placeholder="Ej. 5000"
-          [(ngModel)]="filtros.salarioMin"
-          min="0"
-        />
-      </div>
-
-      <div class="col-md-4 mt-3">
-        <label for="input-salario-max" class="form-label">
-          Salario Máximo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
-        </label>
-        <input
-          id="input-salario-max"
-          type="number"
-          class="form-control"
-          placeholder="Ej. 25000"
-          [(ngModel)]="filtros.salarioMax"
-          min="0"
-        />
-      </div>
-
-      <div class="col-12 mt-4 d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">
-          Limpiar
-        </button>
-        <button type="button" class="btn btn-warning" (click)="aplicarFiltros()">
-          Aplicar filtros
+    <div class="filter-section mt-5">
+      <div class="d-flex flex-wrap gap-3 align-items-center">
+        <button class="chambee-filter-btn" type="button" (click)="toggleFiltros()">
+          <i class="bi bi-sliders me-2"></i> Filtrar y ordenar
         </button>
       </div>
 
+      <div class="mt-3 d-flex flex-wrap gap-2"
+        *ngIf="filtros.categoriaEmpleo || filtros.modalidad || filtros.ciudad || filtros.moneda">
+        <span class="featured-chip" *ngIf="filtros.categoriaEmpleo">Categoría: {{ filtros.categoriaEmpleo }}</span>
+        <span class="featured-chip" *ngIf="filtros.modalidad">Modalidad: {{ filtros.modalidad }}</span>
+        <span class="featured-chip" *ngIf="filtros.ciudad">Ciudad: {{ filtros.ciudad }}</span>
+        <span class="featured-chip" *ngIf="filtros.moneda">Moneda: {{ filtros.moneda }}</span>
+      </div>
+
+      <div class="filter-panel mt-3" *ngIf="mostrarFiltros">
+        <div class="row">
+
+          <div class="col-md-4">
+            <label for="select-modalidad" class="form-label">Modalidad</label>
+            <select id="select-modalidad" class="form-select" [(ngModel)]="filtros.modalidad">
+              <option value="">Todas</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Hibrido">Híbrido</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label for="select-cobertura" class="form-label">Cobertura</label>
+            <select id="select-cobertura" class="form-select" [(ngModel)]="filtros.cobertura">
+              <option value="">Todas</option>
+              <option value="Colonia">Solo mi colonia</option>
+              <option value="Ciudad">Toda la ciudad</option>
+              <option value="Municipios cercanos">Municipios cercanos</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label for="select-estado" class="form-label">Estado</label>
+            <select id="select-estado" class="form-select" disabled>
+              <option value="">Guanajuato</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="select-ciudad" class="form-label">Ciudad</label>
+            <select id="select-ciudad" class="form-select" [(ngModel)]="filtros.ciudad">
+              <option value="">Todas</option>
+              <option *ngFor="let ciudad of ciudades" [value]="ciudad">
+                {{ ciudad }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="select-cat-empleo" class="form-label">Categoría</label>
+            <select id="select-cat-empleo" class="form-select" [(ngModel)]="filtros.categoriaEmpleo">
+              <option value="">Todas</option>
+              <option *ngFor="let categoria of categoriasDisponibles" [value]="categoria">
+                {{ categoria }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="select-cat-empleo" class="form-label">Distancia</label>
+            <select id="select-cat-empleo" class="form-select" [(ngModel)]="filtros.distancia">
+              <option value="">Cualquier distancia</option>
+              <option value="10">Menos de 10 km</option>
+              <option value="25">10 - 25 km</option>
+              <option value="50">25 - 50 km</option>
+              <option value="100">50 - 100 km</option>
+              <option value="100+">Más de 100 km</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="select-ordenar" class="form-label">Ordenar por</label>
+            <select id="select-ordenar" class="form-select" [(ngModel)]="filtros.ordenar">
+              <option value="fecha">Más recientes</option>
+              <option value="salario">Mayor salario</option>
+              <option value="distancia">Más cercanos</option>
+               <option value="vistas">Más vistas</option>
+            </select>
+          </div>
+
+          <!-- Moneda y Rango de Salario -->
+          <div class="col-md-4 mt-3">
+            <label for="select-moneda-filtro" class="form-label">Moneda</label>
+            <select id="select-moneda-filtro" class="form-select" [(ngModel)]="filtros.moneda">
+              <option value="">Todas (Convierte a MXN)</option>
+              <option value="MXN">Pesos Mexicanos (MXN)</option>
+              <option value="USD">Dólares (USD)</option>
+              <option value="EUR">Euros (EUR)</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="input-salario-min" class="form-label">
+              Salario Mínimo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
+            </label>
+            <input id="input-salario-min" type="number" class="form-control" placeholder="Ej. 5000"
+              [(ngModel)]="filtros.salarioMin" min="0" />
+          </div>
+
+          <div class="col-md-4 mt-3">
+            <label for="input-salario-max" class="form-label">
+              Salario Máximo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
+            </label>
+            <input id="input-salario-max" type="number" class="form-control" placeholder="Ej. 25000"
+              [(ngModel)]="filtros.salarioMax" min="0" />
+          </div>
+
+          <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">
+              Limpiar
+            </button>
+            <button type="button" class="btn btn-warning" (click)="aplicarFiltros()">
+              Aplicar filtros
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <div class="jobs-grid mt-4" *ngIf="filteredJobs.length; else noJobsGrid">
-      <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button"
-        tabindex="0">
-        <button
-          class="job-favorite-btn"
-          type="button"
-          [class.active]="isFavorite(job.id)"
-          [disabled]="isSavingFavorite(job.id)"
-          (click)="toggleFavorite(job, $event)"
+      <div class="job-card" *ngFor="let job of jobsToShow" (click)="openJob(job.id)" role="button" tabindex="0">
+        <button class="job-favorite-btn" type="button" [class.active]="isFavorite(job.id)"
+          [disabled]="isSavingFavorite(job.id)" (click)="toggleFavorite(job, $event)"
           [attr.title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
           [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
           <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
         </button>
         <app-carousel [images]="job.images ? job.images : [job.img]" [jobId]="job.id"></app-carousel>
         <div class="job-content">
-          <span class="job-urgency-badge" [ngClass]="{ 'job-urgency-badge-normal': job.urgency === 'Normal',
-          'job-urgency-badge-urgent': job.urgency === 'Urgente', 'job-urgency-badge-very-urgent': job.urgency === 'Muy urgente'}" *ngIf="job.urgency">{{ job.urgency }}</span>
+          <span class="job-urgency-badge"
+            [ngClass]="{ 'job-urgency-badge-normal': job.urgency === 'Normal',
+          'job-urgency-badge-urgent': job.urgency === 'Urgente', 'job-urgency-badge-very-urgent': job.urgency === 'Muy urgente'}"
+            *ngIf="job.urgency">{{ job.urgency }}</span>
           <h4 class="job-title">{{ job.title }}</h4>
           <p class="job-company-sub">{{ job.company }}</p>
           <p class="salary">{{ job.salary }}</p>
           <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
             <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
           </div>
-          <div class="job-footer" style="justify-content: flex-start; gap: 8px;"><span>★ {{ job.rating }}</span> <span style="color: #aaa;">&bull;</span> <span>{{ job.applicants }} postulados</span></div>
+          <span *ngIf="job.distanciaKm != null">
+            📍 {{ job.distanciaKm < 1 ? (job.distanciaKm * 1000 | number:'1.0-0') + ' m' : (job.distanciaKm |
+              number:'1.1-1') + ' km' }} </span>
+              <div class="job-footer" style="justify-content: flex-start; gap: 8px;"><span>★ {{ job.rating }}</span>
+                <span style="color: #aaa;">&bull;</span> <span>{{ job.applicants }} postulados</span>
+              </div>
         </div>
       </div>
     </div>
@@ -522,13 +542,10 @@
     <div class="recently-viewed-section mt-5" *ngIf="vistosRecientemente.length > 0">
       <h3 class="mb-4" style="font-weight: 700; color: var(--text-color);">Vistos recientemente</h3>
       <div class="jobs-horizontal-scroll">
-        <div class="job-card" *ngFor="let job of vistosRecientemente" (click)="openJob(job.id)" role="button" tabindex="0">
-          <button
-            class="job-favorite-btn"
-            type="button"
-            [class.active]="isFavorite(job.id)"
-            [disabled]="isSavingFavorite(job.id)"
-            (click)="toggleFavorite(job, $event)"
+        <div class="job-card" *ngFor="let job of vistosRecientemente" (click)="openJob(job.id)" role="button"
+          tabindex="0">
+          <button class="job-favorite-btn" type="button" [class.active]="isFavorite(job.id)"
+            [disabled]="isSavingFavorite(job.id)" (click)="toggleFavorite(job, $event)"
             [attr.title]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'"
             [attr.aria-label]="isFavorite(job.id) ? 'Quitar de favoritos' : 'Guardar vacante'">
             <i class="bi" [class.bi-bookmark-fill]="isFavorite(job.id)" [class.bi-bookmark]="!isFavorite(job.id)"></i>
@@ -542,7 +559,8 @@
             <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
               <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
             </div>
-            <div class="job-footer" style="justify-content: flex-start; gap: 8px;"><span>★ {{ job.rating }}</span> <span style="color: #aaa;">&bull;</span> <span>{{ job.applicants }} postulados</span></div>
+            <div class="job-footer" style="justify-content: flex-start; gap: 8px;"><span>★ {{ job.rating }}</span> <span
+                style="color: #aaa;">&bull;</span> <span>{{ job.applicants }} postulados</span></div>
           </div>
         </div>
       </div>
@@ -562,44 +580,36 @@
       </button>
     </div>
 
-    <div class="service-card" *ngFor="let service of visibleServices; let idx = index"
-      (click)="openService(idx)" role="button" tabindex="0"
-      style="position: relative;">
+    <div class="service-card" *ngFor="let service of visibleServices; let idx = index" (click)="openService(idx)"
+      role="button" tabindex="0" style="position: relative;">
 
       <img [src]="service.img || 'assets/LogoChambee.png'" [alt]="service.title" />
 
       <div style="flex: 1;">
-        <span *ngIf="service.es_borrador"
-          style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e;
+        <span *ngIf="service.es_borrador" style="font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e;
                   padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">
           Borrador
         </span>
         <h5 class="service-title">{{ service.title }}</h5>
         <p class="service-desc">{{ service.description }}</p>
         <span *ngIf="service.autor_id && service.autor_id === usuarioActualId"
-          style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi servicio</span>
+          style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi
+          servicio</span>
       </div>
 
-      <button
-        *ngIf="service.autor_id && service.autor_id === usuarioActualId"
-        (click)="toggleMenuServicio(idx, $event)"
+      <button *ngIf="service.autor_id && service.autor_id === usuarioActualId" (click)="toggleMenuServicio(idx, $event)"
         style="position: absolute; top: 8px; right: 8px; background: none; border: none;
                cursor: pointer; font-size: 1.2rem; color: var(--text-color); padding: 4px 8px;
-               border-radius: 6px; line-height: 1;"
-        title="Opciones"
-        aria-label="Opciones del servicio">
+               border-radius: 6px; line-height: 1;" title="Opciones" aria-label="Opciones del servicio">
         &#8942;
       </button>
 
       <div *ngIf="menuServicioAbierto === idx && service.autor_id === usuarioActualId"
-        (click)="$event.stopPropagation()"
-        style="position: absolute; top: 36px; right: 8px; background: var(--bg-color, #fff);
+        (click)="$event.stopPropagation()" style="position: absolute; top: 36px; right: 8px; background: var(--bg-color, #fff);
                border: 1px solid var(--border-soft, #e0e0e0); border-radius: 10px;
                box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 140px; overflow: hidden;">
 
-        <button
-          (click)="editarServicio(idx); menuServicioAbierto = null"
-          style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
+        <button (click)="editarServicio(idx); menuServicioAbierto = null" style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
                   cursor: pointer; font-size: 0.9rem; color: var(--text-color, #333);
                   display: flex; align-items: center; gap: 8px;">
           <i class="bi bi-pencil"></i> Editar
@@ -607,9 +617,7 @@
 
         <hr style="margin: 0; border-color: var(--border-soft, #eee);">
 
-        <button
-          (click)="eliminarServicio(idx); menuServicioAbierto = null"
-          style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
+        <button (click)="eliminarServicio(idx); menuServicioAbierto = null" style="width: 100%; text-align: left; background: none; border: none; padding: 10px 16px;
                   cursor: pointer; font-size: 0.9rem; color: #e53e3e;
                   display: flex; align-items: center; gap: 8px;">
           <i class="bi bi-trash"></i> Eliminar
@@ -644,18 +652,21 @@
           <h5 class="service-title">{{ service.title }}</h5>
           <p class="service-desc">{{ service.description }}</p>
           <span *ngIf="service.autor_id && service.autor_id === usuarioActualId"
-            style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi servicio</span>
+            style="font-size: 0.7rem; font-weight: 600; color: var(--primary-color, #f39c12); margin-top: 4px; display: inline-block;">Mi
+            servicio</span>
         </div>
       </div>
     </div>
   </div>
 
-  <button class="create-service-bubble" (click)="irACrearServicio()" aria-label="Crear servicio" title="Crear un nuevo servicio">
+  <button class="create-service-bubble" (click)="irACrearServicio()" aria-label="Crear servicio"
+    title="Crear un nuevo servicio">
     <span class="create-service-bubble-icon">+</span>
     <span class="create-service-bubble-text">Crear servicio</span>
   </button>
 
-  <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen" aria-label="Abrir servicios">
+  <button class="services-bubble" (click)="toggleServices()" [attr.aria-expanded]="servicesOpen"
+    aria-label="Abrir servicios">
     <span class="services-bubble-icon">✦</span>
     <span class="services-bubble-text">Servicios</span>
   </button>
@@ -674,8 +685,8 @@
         <div class="support-grid">
           <label class="support-field">
             <span>Nombre completo</span>
-            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel"
-              placeholder="Ingresa tu nombre" required />
+            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel" placeholder="Ingresa tu nombre"
+              required />
             <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es
               obligatorio.</small>
           </label>
@@ -695,8 +706,7 @@
 
           <label class="support-field">
             <span>Correo electrónico</span>
-            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required
-              email />
+            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required email />
             <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo
               válido.</small>
           </label>

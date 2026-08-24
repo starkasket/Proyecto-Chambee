@@ -75,12 +75,30 @@
   position: relative;
 }
 
+.notification-wrapper {
+  position: relative;
+  color: #000000;
+}
+
+.notification-bell {
+  cursor: pointer;
+  color: #000000;
+}
+
 .notification-btn{
   position:relative;
   color:white;
   font-size:18px;
   cursor:pointer;
 }
+
+.notif-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 
 .notification-btn::after{
   content:'';

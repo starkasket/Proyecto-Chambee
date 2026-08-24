@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { CarouselComponent } from '../../components/carousel/carousel.component';
 import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
 import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
 
 interface EmployerJobFormValue {
   titulo: string;
@@ -36,13 +37,7 @@ interface EmployerJobFormValue {
   estatus?: string;
 }
 
-interface NotificationItem {
-  id: number;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-}
+
 
 @Component({
   selector: 'app-employer-job-create',
@@ -188,6 +183,7 @@ export class EmployerJobCreateComponent implements OnInit {
     private readonly router: Router,
     private readonly themeService: ThemeService,
     private readonly authApi: AuthService,
+    private notificacionService: NotificacionService,
     private googleMaps: GoogleMapsService
   ) { }
 
@@ -229,6 +225,9 @@ export class EmployerJobCreateComponent implements OnInit {
       this.employerId = usuario.id;
       this.empresaNombre = usuario.nombre || this.empresaNombre;
 
+
+      this.notificacionService.inicializar(usuario.id, usuario.rol);
+
       if (perfilLocalRaw) {
         const perfil = JSON.parse(perfilLocalRaw);
         this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
@@ -254,7 +253,42 @@ export class EmployerJobCreateComponent implements OnInit {
       }
     });
 
+    this.notificacionService.notifications$.subscribe(
+      notifications => {
+        this.notifications = notifications;
+      }
+    );
+
+    this.notificacionService.hasUnreadNotifications$.subscribe(
+      hasUnread => {
+        this.hasUnreadNotifications = hasUnread;
+      }
+    );
+
     this.checkMobile();
+  }
+
+
+
+  toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
   }
 
   get salarioMinimoActual(): number {
@@ -314,6 +348,17 @@ export class EmployerJobCreateComponent implements OnInit {
       return;
     }
 
+    if (
+      this.googleMaps.normalizar(this.ofertaForm.value.estado || '') !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+      return;
+    }
+
+
     const latitud = this.ofertaForm.value.latitud;
     const longitud = this.ofertaForm.value.longitud;
 
@@ -323,6 +368,9 @@ export class EmployerJobCreateComponent implements OnInit {
       );
       return;
     }
+
+
+
 
     this.guardando = true;
     this.publicarConImagen('ACTIVO', 'Publicado', false);
@@ -445,20 +493,6 @@ export class EmployerJobCreateComponent implements OnInit {
     return this.themeService.isDarkMode();
   }
 
-  toggleNotifications(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-
-    this.notificationsOpen = !this.notificationsOpen;
-    if (this.notificationsOpen) {
-      this.hasUnreadNotifications = false;
-      this.notifications.forEach((notification) => {
-        notification.read = true;
-      });
-    }
-    this.menuOpen = false;
-  }
 
   toggleMenu(event?: Event) {
     if (event) {
@@ -567,6 +601,7 @@ export class EmployerJobCreateComponent implements OnInit {
       });
     };
 
+
     if (this.archivosSeleccionados.length > 0) {
       this.subirImagen()
         .then(() => ejecutarGuardado(this.urlsImagenesSubidas))
@@ -648,6 +683,18 @@ export class EmployerJobCreateComponent implements OnInit {
   }
 
   ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    if (
+      this.googleMaps.normalizar(direccion.estado) !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+
+      return;
+    }
+
     this.ofertaForm.patchValue({
       estado: direccion.estado,
       ciudad: direccion.ciudad,
@@ -659,6 +706,8 @@ export class EmployerJobCreateComponent implements OnInit {
       longitud: direccion.longitud,
       direccion_formateada: direccion.direccionFormateada
     });
+
+
   }
 
   private buscarColoniasPorCP(cp: string) {

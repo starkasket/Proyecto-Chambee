@@ -60,8 +60,10 @@
             <input type="date" class="form-control-custom" [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento"
               required #fecha_n="ngModel" [max]="hoy" />
             <div *ngIf="fecha_n.invalid && fecha_n.touched" class="support-error">Fecha inválida</div>
-            <div *ngIf="fecha_n.touched && !esMayorDeEdad(form.fecha_nacimiento)" class="support-error"
+            <div *ngIf="fecha_n.touched && esEdadValida(form.fecha_nacimiento) && !esMayorDeEdad(form.fecha_nacimiento)" class="support-error"
               style="margin-bottom: 8px;">Debes ser mayor de 18 años para crear una cuenta</div>
+            <div *ngIf="fecha_n.touched && !esEdadValida(form.fecha_nacimiento)" class="support-error"
+              style="margin-bottom: 8px;">Ingresa una edad válida</div>
 
 
             <input type="email" class="form-control-custom" placeholder="Correo Electrónico"
@@ -133,7 +135,7 @@
             </app-mapa-ubicacion>
 
             <div *ngIf="ubicacionSeleccionadaFlag" class="direccion-detectada">
-              <strong>✓ Dirección detectada</strong>
+              <strong>✓ Dirección detectada:</strong>
 
               <p>
                 {{ form.direccion_formateada }}
@@ -143,9 +145,10 @@
                 <i>Si la dirección aparece incompleta, no te preocupes: tu ubicación se registrará mediante las
                   coordenadas del mapa. Si necesitas corregir algún dato, comunícate con soporte.</i>
               </small>
+             
             </div>
 
-            <div *ngIf="ubicacionSeleccionadaFlag">
+            <div *ngIf="ubicacionSeleccionadaFlag" style="margin-top: 10px;">
               <input type="text" class="form-control-custom" placeholder="Calle" [(ngModel)]="form.calle" name="calle"
                 readonly />
 

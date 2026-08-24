@@ -65,6 +65,31 @@
   text-decoration: none;
 }
 
+.btn-postular:disabled {
+  cursor: not-allowed;
+}
+
+.btn-postular.postulacion-aceptada {
+  background-color: #198754 !important;
+  color: white !important;
+  border-color: #198754 !important;
+  opacity: 0.9;
+  cursor: not-allowed;
+}
+
+.btn-postular.postulacion-rechazada {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border-color: #dc3545 !important;
+  opacity: 0.9;
+  cursor: not-allowed;
+}
+
+.btn-postular.postulacion-revision {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .login {
   background: #ffffff !important;
   color: #000000 !important;
@@ -166,13 +191,24 @@
 }
 
 @media (max-width: 992px) {
-  .search-container { display: none; }
-  .logo-wrapper span { display: none; }
+  .search-container {
+    display: none;
+  }
+
+  .logo-wrapper span {
+    display: none;
+  }
 }
 
 @media (max-width: 576px) {
-  .btn-profile span { display: none; }
-  .btn-profile { border-radius: 50%; padding: 8px; }
+  .btn-profile span {
+    display: none;
+  }
+
+  .btn-profile {
+    border-radius: 50%;
+    padding: 8px;
+  }
 }
 
 /* ===== DISEÑO DE PÁGINA ===== */
@@ -207,7 +243,9 @@
 }
 
 @media (min-width: 768px) {
-  .chambee-card { flex-direction: row; }
+  .chambee-card {
+    flex-direction: row;
+  }
 }
 
 .company-col {
@@ -223,14 +261,17 @@
 }
 
 .job-title {
-  display: -webkit-box; 
-  -webkit-line-clamp: 3; 
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  overflow: hidden; 
+  overflow: hidden;
   width: 85%;
 }
 
-.company-logo { max-width: 150px; margin-bottom: 20px; }
+.company-logo {
+  max-width: 150px;
+  margin-bottom: 20px;
+}
 
 .company-name {
   font-size: 1.2rem;
@@ -277,7 +318,11 @@
 }
 
 @media (min-width: 768px) {
-  .divider { width: 6px; height: auto; margin: 0 30px; }
+  .divider {
+    width: 6px;
+    height: auto;
+    margin: 0 30px;
+  }
 }
 
 /* Columna de Detalles del Puesto */
@@ -319,12 +364,14 @@
   color: #35a313;
 
 }
+
 .job-urgency-badge-urgent {
 
   background: rgba(220, 153, 38, 0.12);
   color: #cd9300;
 
 }
+
 .job-urgency-badge-very-urgent {
   background: rgba(220, 38, 38, 0.12);
   color: #b91c1c;
@@ -443,13 +490,15 @@
   gap: 15px;
 }
 
-.btn-ver-mas, .btn-postular {
+.btn-ver-mas,
+.btn-postular {
   padding: 10px 30px;
   border-radius: 50px;
   font-weight: bold;
   border: none;
   cursor: pointer;
   transition: all 0.3s;
+  margin-left: 10px;
 }
 
 .btn-ver-mas {
@@ -463,7 +512,8 @@
   color: var(--button-primary-text);
 }
 
-.btn-ver-mas:hover, .btn-postular:hover {
+.btn-ver-mas:hover,
+.btn-postular:hover {
   transform: scale(1.05);
   box-shadow: var(--shadow-hover);
 }
@@ -578,6 +628,10 @@
   margin-top: auto;
 }
 
+.stats{
+  margin-bottom: 17px;
+} 
+
 .applicants-info {
   display: flex;
   align-items: center;
@@ -603,8 +657,15 @@
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .theme-toggle-icon {
@@ -709,7 +770,7 @@
   background: var(--surface-primary, #ffffff);
   border: 1px solid var(--border-soft, #e0e0e0);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 2500;
   max-height: 350px;
   overflow-y: auto;
@@ -733,7 +794,7 @@
 }
 
 .search-item:hover {
-  background-color: var(--surface-secondary, rgba(0,0,0,0.05));
+  background-color: var(--surface-secondary, rgba(0, 0, 0, 0.05));
 }
 
 .search-item-icon {
@@ -741,7 +802,8 @@
   height: 36px;
   min-width: 36px;
   border-radius: 10px;
-  background: rgba(243, 156, 18, 0.15); /* Naranja Chambee tenue */
+  background: rgba(243, 156, 18, 0.15);
+  /* Naranja Chambee tenue */
   color: #d68910;
   display: flex;
   align-items: center;
@@ -795,14 +857,16 @@
   font-size: 14px;
   font-weight: 500;
 }
+
 /* ===== Mejoras Pro del Buscador ===== */
 .text-highlight {
   font-weight: 800;
-  color: #d68910; /* Naranja Chambee */
+  color: #d68910;
+  /* Naranja Chambee */
 }
 
 :host-context(body.dark-theme) .text-highlight {
-  color: #f39c12; 
+  color: #f39c12;
 }
 
 .search-dropdown-header {
@@ -822,7 +886,7 @@
   color: #d68910;
   border-top: 1px solid var(--border-soft, #f0f0f0);
   cursor: pointer;
-  background: var(--surface-secondary, rgba(0,0,0,0.02));
+  background: var(--surface-secondary, rgba(0, 0, 0, 0.02));
   transition: background-color 0.2s;
   display: flex;
   align-items: center;
@@ -836,7 +900,7 @@
 
 :host-context(body.dark-theme) .search-see-all {
   color: #f39c12;
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 :host-context(body.dark-theme) .search-see-all:hover {
@@ -860,8 +924,13 @@
 }
 
 @keyframes sdBackdropIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .service-detail-modal {
@@ -882,6 +951,7 @@
     opacity: 0;
     transform: translateY(30px) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -949,7 +1019,9 @@
 }
 
 @keyframes sdSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Hero imagen */
@@ -980,7 +1052,7 @@
   left: 0;
   right: 0;
   padding: 16px 20px;
-  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
@@ -1237,6 +1309,7 @@
       opacity: 0;
       transform: translateY(100%);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -1264,7 +1337,8 @@
 
 .eliminate-btn {
   border: none;
-  background: rgb(230, 28, 28);;
+  background: rgb(230, 28, 28);
+  ;
   color: white;
   border-radius: 999px;
   padding: 8px 20px;
@@ -1278,23 +1352,24 @@
   opacity: 0.96;
 }
 
-.confirm-btn{
-  padding:10px 24px; 
-  border-radius:50px; 
-  border:1px solid #ccc;  
+.confirm-btn {
+  padding: 10px 24px;
+  border-radius: 50px;
+  border: 1px solid #ccc;
   background: #22c55e;
-  color: var(--button-primary-text);            
-  cursor:pointer; 
-  font-weight:600;
+  color: var(--button-primary-text);
+  cursor: pointer;
+  font-weight: 600;
 }
-.cancel-btn{
-  padding:10px 24px; 
-  border-radius:50px; 
-  border:1px solid #ccc;  
-  background: rgb(230, 28, 28); 
-  color: var(--button-primary-text);         
-  cursor:pointer; 
-  font-weight:600;
+
+.cancel-btn {
+  padding: 10px 24px;
+  border-radius: 50px;
+  border: 1px solid #ccc;
+  background: rgb(230, 28, 28);
+  color: var(--button-primary-text);
+  cursor: pointer;
+  font-weight: 600;
 }
 
 
@@ -1360,8 +1435,13 @@
 }
 
 @keyframes galleryFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .gallery-modal-content {
@@ -1380,8 +1460,15 @@
 }
 
 @keyframes galleryZoomIn {
-  from { transform: scale(0.94); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .gallery-modal-header {
@@ -1550,4 +1637,3 @@
   box-shadow: 0 0 10px rgba(244, 191, 0, 0.6);
   transform: scale(1.08);
 }
-
