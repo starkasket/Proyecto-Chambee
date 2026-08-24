@@ -67,7 +67,7 @@
     <div *ngIf="menuOpen && !isMobile && false" class="desktop-menu" (click)="$event.stopPropagation()">
       <a routerLink="/jobs" class="desktop-menu-link">Trabajos</a>
       <a (click)="verTodosLosServicios()" class="desktop-menu-link" style="cursor: pointer;">Servicios</a>
-      <a routerLink="/contact" class="desktop-menu-link">Contacto</a>
+      <a (click)="scrollToSupport()" class="desktop-menu-link" style="cursor: pointer;">Contacto</a>
     </div>
   </div>
 
@@ -76,16 +76,15 @@
       <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
       <nav class="mobile-nav">
         <a class="mobile-nav-link" routerLink="/jobs" (click)="toggleMenu()">Trabajos</a>
-        <a class="mobile-nav-link" routerLink="/services" (click)="toggleMenu()">Servicios</a>
+        <a class="mobile-nav-link" (click)="verTodosLosServicios(); toggleMenu()" style="cursor: pointer;">Servicios</a>
         <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Publicar empleo</a>
-        <a class="mobile-nav-link" routerLink="/contact" (click)="toggleMenu()">Contacto</a>
+        <a class="mobile-nav-link" (click)="scrollToSupport(); toggleMenu()" style="cursor: pointer;">Contacto</a>
         <hr />
         <a class="mobile-nav-link" routerLink="/login" (click)="toggleMenu()">Iniciar Sesión</a>
         <a class="mobile-nav-link" routerLink="/register" (click)="toggleMenu()">Registrarse</a>
       </nav>
     </aside>
   </div>
-
 </nav>
 
 <div class="container main-layout">
@@ -216,7 +215,6 @@
             </select>
           </div>
 
-          <!-- Moneda y Rango de Salario -->
           <div class="col-md-4 mt-3">
             <label for="select-moneda-filtro" class="form-label">Moneda</label>
             <select id="select-moneda-filtro" class="form-select" [(ngModel)]="filtros.moneda">
@@ -231,37 +229,19 @@
             <label for="input-salario-min" class="form-label">
               Salario Mínimo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
             </label>
-            <input
-              id="input-salario-min"
-              type="number"
-              class="form-control"
-              placeholder="Ej. 5000"
-              [(ngModel)]="filtros.salarioMin"
-              min="0"
-            />
+            <input id="input-salario-min" type="number" class="form-control" placeholder="Ej. 5000" [(ngModel)]="filtros.salarioMin" min="0" />
           </div>
 
           <div class="col-md-4 mt-3">
             <label for="input-salario-max" class="form-label">
               Salario Máximo {{ filtros.moneda ? '(' + filtros.moneda + ')' : '($ MXN)' }}
             </label>
-            <input
-              id="input-salario-max"
-              type="number"
-              class="form-control"
-              placeholder="Ej. 25000"
-              [(ngModel)]="filtros.salarioMax"
-              min="0"
-            />
+            <input id="input-salario-max" type="number" class="form-control" placeholder="Ej. 25000" [(ngModel)]="filtros.salarioMax" min="0" />
           </div>
 
           <div class="col-12 mt-4 d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">
-              Limpiar
-            </button>
-            <button type="button" class="btn btn-warning" (click)="aplicarFiltros()">
-              Aplicar filtros
-            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">Limpiar</button>
+            <button type="button" class="btn btn-warning" (click)="aplicarFiltros()">Aplicar filtros</button>
           </div>
         </div>
       </div>
@@ -279,7 +259,11 @@
           <div class="d-flex flex-wrap gap-2 mb-2" *ngIf="job.tags.length">
             <span class="featured-chip" *ngFor="let tag of job.tags | slice:0:2">{{ tag }}</span>
           </div>
-          <div class="job-footer" style="justify-content: flex-start; gap: 8px;"><span>★ {{ job.rating }}</span> <span style="color: #aaa;">&bull;</span> <span>{{ job.applicants }} postulados</span></div>
+          <div class="job-footer">
+            <span><i class="bi bi-star-fill me-1"></i>{{ job.modalidad || 'Presencial' }}</span>
+            <span style="color: #aaa;">&bull;</span>
+            <span>{{ job.applicants || 0 }} postulados</span>
+          </div>
         </div>
       </div>
     </div>
@@ -309,9 +293,139 @@
     </div>
 
     <div class="services-footer">
-      <button class="services-see-more" (click)="verTodosLosServicios()">
-        Ver más
-      </button>
+      <button class="services-see-more" (click)="verTodosLosServicios()">Ver más</button>
     </div>
   </aside>
 </div>
+
+<!-- ===== Sección de Soporte Formulario ===== -->
+<section id="support-section" class="support-section">
+  <div class="container">
+    <div class="support-card">
+      <div class="support-card-header">
+        <p class="support-eyebrow">Soporte Chambee</p>
+        <h3>¿Necesitas ayuda?</h3>
+        <p>Cuéntanos qué ocurre y te contactaremos lo antes posible.</p>
+      </div>
+
+      <form class="support-form" (ngSubmit)="enviarSoporte(form)" #form="ngForm">
+        <div class="support-grid">
+          <label class="support-field">
+            <span>Nombre completo</span>
+            <input type="text" name="nombreCompleto" ngModel #nombreCompleto="ngModel" placeholder="Ingresa tu nombre" required />
+            <small *ngIf="nombreCompleto.invalid && nombreCompleto.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+
+          <label class="support-field">
+            <span>Nombre de la empresa</span>
+            <input type="text" name="empresa" ngModel placeholder="Empresa o negocio" />
+          </label>
+
+          <label class="support-field">
+            <span>Teléfono</span>
+            <input type="tel" name="telefono" ngModel #telefono="ngModel" placeholder="10 dígitos" required pattern="^[0-9]{10}$" maxlength="10" />
+            <small *ngIf="telefono.invalid && telefono.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+
+          <label class="support-field">
+            <span>Correo electrónico</span>
+            <input type="email" name="correo" ngModel #correo="ngModel" placeholder="tu@email.com" required email />
+            <small *ngIf="correo.invalid && correo.touched" class="support-error">Ingresa un correo válido.</small>
+          </label>
+
+          <label class="support-field support-field-span-2">
+            <span>Asunto</span>
+            <select name="asunto" ngModel #asunto="ngModel" required>
+              <option value="">Selecciona una opción</option>
+              <option value="error-cuenta">Problema con mi cuenta</option>
+              <option value="publicación">Problema con una publicación</option>
+              <option value="pagos">Pagos o suscripciones</option>
+              <option value="otro">Otro</option>
+            </select>
+            <small *ngIf="asunto.invalid && asunto.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+
+          <label class="support-field support-field-full">
+            <span>Detalles del problema</span>
+            <textarea name="detalles" ngModel #detalles="ngModel" rows="5" placeholder="Describe lo que ocurre, cuándo sucede y cualquier dato útil para revisarlo." required></textarea>
+            <small *ngIf="detalles.invalid && detalles.touched" class="support-error">Este campo es obligatorio.</small>
+          </label>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="support-submit" [disabled]="form.invalid">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Sección Preguntas Frecuentes ===== -->
+<section class="faq-section">
+  <div class="container">
+    <div class="faq-header">
+      <p class="faq-eyebrow">Ayuda Chambee</p>
+      <h3>Preguntas Frecuentes</h3>
+      <p>Resolvemos las dudas más comunes de nuestros usuarios.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item" (click)="toggleFaq(0)">
+        <div class="faq-question">
+          <h4>¿Cómo puedo postularme a un empleo?</h4>
+          <span>{{ faqOpen === 0 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 0" class="faq-answer">Solo debes seleccionar el empleo que te interesa y hacer clic en "Postularme".</p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(1)">
+        <div class="faq-question">
+          <h4>¿Necesito crear una cuenta?</h4>
+          <span>{{ faqOpen === 1 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 1" class="faq-answer">Sí, necesitas registrarte para poder aplicar a empleos o publicar servicios.</p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(2)">
+        <div class="faq-question">
+          <h4>¿Publicar un empleo tiene costo?</h4>
+          <span>{{ faqOpen === 2 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 2" class="faq-answer">Depende del tipo de publicación. Ofrecemos opciones gratuitas y premium.</p>
+      </div>
+
+      <div class="faq-item" (click)="toggleFaq(3)">
+        <div class="faq-question">
+          <h4>¿Cómo contacto a soporte?</h4>
+          <span>{{ faqOpen === 3 ? '-' : '+' }}</span>
+        </div>
+        <p *ngIf="faqOpen === 3" class="faq-answer">Puedes usar el formulario de soporte que se encuentra arriba en esta página.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer General ===== -->
+<footer class="home-footer">
+  <div class="container footer-content">
+    <div class="footer-brand">
+      <img src="assets/LogoChambee.png" alt="Chambee" />
+      <div>
+        <h4>Chambee</h4>
+        <p>Plataforma líder para encontrar empleo y servicios en un solo lugar.</p>
+      </div>
+    </div>
+
+    <nav class="footer-links" aria-label="Enlaces del footer">
+      <a routerLink="/jobs">Trabajos</a>
+      <a (click)="verTodosLosServicios()" style="cursor: pointer;">Servicios</a>
+      <a (click)="scrollToSupport()" style="cursor: pointer;">Contacto</a>
+    </nav>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container">
+      <p>© 2026 Chambee. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>

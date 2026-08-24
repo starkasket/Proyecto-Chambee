@@ -478,13 +478,13 @@ body {
   background: var(--surface-primary);
   color: var(--text-primary);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 420px; 
 }
 
 .job-card img {
@@ -534,12 +534,24 @@ body {
   font-weight: bold;
 }
 
+/* ===== Pie de tarjeta alineado ===== */
 .job-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
   margin-top: auto;
   padding-top: 10px;
+  font-size: 0.85rem;
+}
+
+.job-footer span,
+.job-footer i {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
 }
 
 .job-card:hover {
@@ -1415,4 +1427,17 @@ width: 90%;
   border-radius: 12px;
   padding: 20px;
   box-shadow: var(--shadow-card);
+}
+/* ===== Corrección de tamaño para el Logo en el Footer ===== */
+.footer-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.footer-brand img {
+  width: auto !important;
+  height: 90px !important; /* Mantiene la escala grande del diseño original */
+  max-width: 200px !important;
+  object-fit: contain !important;
 }

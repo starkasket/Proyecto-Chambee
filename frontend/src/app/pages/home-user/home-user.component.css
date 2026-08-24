@@ -6,6 +6,11 @@ body {
   color: var(--text-primary);
 }
 
+html, body, :host {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
 .container {
   width: 95%;
   max-width: 1200px;
@@ -87,7 +92,6 @@ body {
   font-weight: 600;
 }
 
-/* El navbar siempre es amarillo: el botón Registrarse siempre es negro para contrastar */
 :host-context(body.dark-theme) .register {
   background: #000000;
   color: #f5ebe2;
@@ -252,7 +256,6 @@ body {
 .featured-company-copy {
   padding: 18px 20px 22px;
   color: var(--accent-text);
-
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -269,7 +272,7 @@ body {
 .featured-company-copy h3 {
   margin-top: 12px;
   font-size: 22px;
-    display: -webkit-box;
+  display: -webkit-box;
   -webkit-line-clamp: 3;   
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -277,17 +280,15 @@ body {
 }
 
 .featured-company-copy p {
-   margin-top: 8px;
+  margin-top: 8px;
   line-height: 1.5;
-
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
 }
 
-.featured-job p, .featured-job h3{
-   display: -webkit-box;
+.featured-job p, .featured-job h3 {
+  display: -webkit-box;
   -webkit-line-clamp: 3; 
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -351,14 +352,13 @@ body {
 .job-urgency-badge-normal {
   background: rgba(81, 220, 38, 0.12);
   color: #35a313;
-
 }
-.job-urgency-badge-urgent {
 
+.job-urgency-badge-urgent {
   background: rgba(220, 153, 38, 0.12);
   color: #cd9300;
-
 }
+
 .job-urgency-badge-very-urgent {
   background: rgba(220, 38, 38, 0.12);
   color: #b91c1c;
@@ -370,7 +370,7 @@ body {
   margin-top: 16px;
 }
 
-/* Flechas del carrusel con presencia visual minima para no tapar contenido. */
+/* Flechas del carrusel */
 .prev,
 .next {
   position: absolute;
@@ -436,7 +436,7 @@ body {
   transform: rotate(45deg);
 }
 
-/* Dots indicadores del slide activo. */
+/* Dots indicadores */
 .dots {
   display: flex;
   align-items: center;
@@ -460,27 +460,26 @@ body {
   background: var(--dot-active);
 }
 
-/* ===== Grid de empleos ===== */
+/* ===== Grid de empleos arreglado ===== */
 .jobs-grid {
   margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 1fr;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 18px !important;
   align-items: stretch;
-  gap: 15px;
 }
 
 .job-card {
   background: var(--surface-primary);
   color: var(--text-primary);
-  border-radius: 10px;
-  overflow: hidden;
+  border-radius: 12px;
+  overflow: visible !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   box-shadow: var(--shadow-card);
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
   height: 100%;
 }
 
@@ -532,14 +531,14 @@ body {
 }
 
 .job-content {
-  padding: 10px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.job-content p{
-   display: -webkit-box;
+.job-content p {
+  display: -webkit-box;
   -webkit-line-clamp: 3;   
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -554,7 +553,6 @@ body {
   width: 90%;
 }
 
-/* NUEVAS CLASES PARA EL ORDEN INVERTIDO */
 .job-title {
   font-weight: 700;
   font-size: 1rem;
@@ -572,12 +570,25 @@ body {
   font-weight: bold;
 }
 
+/* ===== Pie de tarjeta alineado horizontalmente ===== */
 .job-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 12px;
+  font-size: 0.85rem;
+}
+
+.job-footer span,
+.job-footer i {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
 }
 
 .job-card:hover {
@@ -624,7 +635,6 @@ body {
   border-radius: 4px;
 }
 
-/* Boton centrado para mostrar mas empleos. */
 .jobs-more {
   display: flex;
   justify-content: center;
@@ -652,13 +662,13 @@ body {
   background: var(--surface-primary);
   color: var(--text-primary);
   padding: 10px;
-  padding-right: 40px; /* espacio para el botón de 3 puntos */
+  padding-right: 40px;
   margin-top: 10px;
   border-radius: 10px;
   transition: 0.2s;
   cursor: pointer;
   position: relative;
-  overflow: visible; /* necesario para que el botón absoluto no se corte */
+  overflow: visible;
 }
 
 .service-card img {
@@ -693,13 +703,12 @@ body {
   display: block;
 }
 
-/* Por defecto, la version movil/flotante esta oculta en desktop. */
 .services-mobile,
 .services-overlay {
   display: none;
 }
 
-/* ===== Servicios flotantes en tablet/movil ===== */
+/* ===== Servicios flotantes ===== */
 .services-overlay {
   position: fixed;
   inset: 0;
@@ -722,7 +731,7 @@ body {
   color: var(--text-primary);
   border-radius: 22px;
   box-shadow: var(--shadow-float);
-  overflow: visible; /* permite que el dropdown de 3 puntos no quede cortado */
+  overflow: visible;
 }
 
 .services-panel-header {
@@ -731,8 +740,8 @@ body {
   justify-content: space-between;
   padding: 18px 18px 14px;
   border-bottom: 1px solid var(--border-soft);
-  border-radius: 22px 22px 0 0; /* mantiene esquinas redondeadas del panel */
-  background: var(--surface-primary); /* asegura el fondo */
+  border-radius: 22px 22px 0 0;
+  background: var(--surface-primary);
 }
 
 .services-panel-header h3 {
@@ -797,7 +806,6 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Botón flotante independiente para crear servicio */
 .create-service-bubble {
   display: inline-flex;
   align-items: center;
@@ -838,7 +846,6 @@ body {
   letter-spacing: 0.01em;
   font-size: 14px;
 }
-
 
 /* ===== Menu lateral movil ===== */
 .mobile-menu-backdrop {
@@ -1068,7 +1075,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* ===== Footer ===== */
+/* ===== Footer Arreglado ===== */
 .home-footer {
   margin-top: 56px;
   background: var(--footer-bg);
@@ -1084,17 +1091,17 @@ body {
 }
 
 .footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
   max-width: 460px;
 }
 
 .footer-brand img {
-  width: auto;          /* Permite que el ancho se ajuste proporcionalmente */
-  height: 90px;         /* Aumentamos la altura (antes 60px) */
-  max-width: 200px;     /* Límite por si la pantalla es muy pequeña */
-  object-fit: contain;
+  width: auto !important;
+  height: 90px !important;
+  max-width: 200px !important;
+  object-fit: contain !important;
 }
 
 .footer-brand h4,
@@ -1138,16 +1145,14 @@ body {
 
 /* ===== Tablet y pantallas medianas ===== */
 @media (max-width: 1024px) {
-  /* El layout se simplifica a una sola columna. */
   .main-layout {
     display: block;
   }
 
   .jobs-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  /* En este punto se oculta la columna fija y entra la burbuja flotante. */
   .services-desktop {
     display: none;
   }
@@ -1204,7 +1209,6 @@ body {
     overflow: hidden;
   }
 
-  /* En movil solo queda visible la hamburguesa. */
   .nav-buttons .btn {
     display: none !important;
   }
@@ -1232,7 +1236,7 @@ body {
   }
 
   .jobs-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .jobs-more {
@@ -1309,7 +1313,7 @@ body {
   }
 }
 
-/* ===== Menú de 3 puntos para Servicios ===== */
+/* ===== Opciones de Servicios y Buscador ===== */
 .menu-opciones-btn {
   position: absolute;
   top: 10px;
@@ -1380,23 +1384,23 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.service-desc{
-display: -webkit-box; 
--webkit-line-clamp: 4; 
--webkit-box-orient: vertical;
-overflow: hidden; 
-width: 100%;
+.service-desc {
+  display: -webkit-box; 
+  -webkit-line-clamp: 4; 
+  -webkit-box-orient: vertical;
+  overflow: hidden; 
+  width: 100%;
 }
 
-.service-title{
+.service-title {
   display: -webkit-box; 
   -webkit-line-clamp: 3; 
   -webkit-box-orient: vertical;
   overflow: hidden; 
-  width: calc(100% - 4px); /* ancho completo, el padding-right de .service-card ya da el espacio al botón */
+  width: calc(100% - 4px);
   word-break: break-word;
 }
-/* ===== Buscador Autocompletado (Estilo Coursera) ===== */
+
 .search-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -1437,7 +1441,7 @@ width: 100%;
   height: 36px;
   min-width: 36px;
   border-radius: 10px;
-  background: rgba(243, 156, 18, 0.15); /* Naranja Chambee tenue */
+  background: rgba(243, 156, 18, 0.15);
   color: #d68910;
   display: flex;
   align-items: center;
@@ -1491,10 +1495,10 @@ width: 100%;
   font-size: 14px;
   font-weight: 500;
 }
-/* ===== Mejoras Pro del Buscador ===== */
+
 .text-highlight {
   font-weight: 800;
-  color: #d68910; /* Naranja Chambee */
+  color: #d68910;
 }
 
 :host-context(body.dark-theme) .text-highlight {
@@ -1539,7 +1543,7 @@ width: 100%;
   background: rgba(243, 156, 18, 0.15);
 }
 
-/* ===== Modal Detalle de Servicio ===== */
+/* Modal Detalle */
 .service-detail-backdrop {
   position: fixed;
   inset: 0;
@@ -1601,7 +1605,6 @@ width: 100%;
   border-radius: 3px;
 }
 
-/* Botón de cerrar */
 .service-detail-close {
   position: absolute;
   top: 14px;
@@ -1627,7 +1630,6 @@ width: 100%;
   transform: scale(1.08);
 }
 
-/* Loading state */
 .service-detail-loading {
   display: flex;
   flex-direction: column;
@@ -1656,7 +1658,6 @@ width: 100%;
   to { transform: rotate(360deg); }
 }
 
-/* Hero imagen */
 .service-detail-hero {
   position: relative;
   width: 100%;
@@ -1705,7 +1706,6 @@ width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Body */
 .service-detail-body {
   padding: 24px 24px 28px;
   display: flex;
@@ -1723,7 +1723,6 @@ width: 100%;
   color: var(--text-primary, #111);
 }
 
-/* Badges */
 .service-detail-badges {
   display: flex;
   flex-wrap: wrap;
@@ -1778,7 +1777,6 @@ width: 100%;
   color: #fbbf24;
 }
 
-/* Secciones */
 .service-detail-section {
   display: flex;
   flex-direction: column;
@@ -1809,7 +1807,6 @@ width: 100%;
   word-break: break-word;
 }
 
-/* Grid de ubicación */
 .service-detail-location-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1845,7 +1842,6 @@ width: 100%;
   color: var(--text-primary, #333);
 }
 
-/* Tarjeta del autor */
 .service-detail-author {
   margin-top: 4px;
 }
@@ -1908,14 +1904,12 @@ width: 100%;
   color: #f39c12;
 }
 
-/* Fecha */
 .service-detail-date {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   color: var(--text-secondary, #999);
-  padding-top: 4px;
   border-top: 1px solid var(--border-soft, #eee);
   padding-top: 16px;
 }
@@ -1924,51 +1918,7 @@ width: 100%;
   color: #f39c12;
 }
 
-/* Responsive mobile */
-@media (max-width: 768px) {
-  .service-detail-backdrop {
-    padding: 0;
-    align-items: flex-end;
-  }
-
-  .service-detail-modal {
-    max-width: 100%;
-    max-height: 92vh;
-    border-radius: 20px 20px 0 0;
-    animation: sdModalInMobile 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  @keyframes sdModalInMobile {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .service-detail-hero {
-    height: 200px;
-  }
-
-  .service-detail-body {
-    padding: 20px 18px 24px;
-  }
-
-  .service-detail-title {
-    font-size: 20px;
-  }
-
-  .service-detail-location-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== BOTÓN FILTRAR Y ORDENAR ===== */
-
-/* Modo Claro: Fondo negro, texto e ícono blanco */
+/* BOTÓN FILTRAR Y ORDENAR */
 .chambee-filter-btn {
   background-color: #111111 !important;
   color: #ffffff !important;
@@ -1988,14 +1938,12 @@ width: 100%;
   color: #ffffff !important;
 }
 
-/* Hover Modo Claro: Mantiene color y aplica elevación sutil */
 .chambee-filter-btn:hover {
   background-color: #111111 !important;
   color: #ffffff !important;
   transform: translateY(-2px) !important;
 }
 
-/* Modo Oscuro: Fondo amarillo vibrante, texto e ícono negro */
 :host-context(body.dark-theme) .chambee-filter-btn {
   background-color: #fcce34 !important;
   color: #111111 !important;
@@ -2005,14 +1953,13 @@ width: 100%;
   color: #111111 !important;
 }
 
-/* Hover Modo Oscuro: Mantiene color y aplica elevación sutil */
 :host-context(body.dark-theme) .chambee-filter-btn:hover {
   background-color: #fcce34 !important;
   color: #111111 !important;
   transform: translateY(-2px) !important;
 }
 
-/* ===== PANEL DESPLEGABLE DE FILTROS ===== */
+/* PANEL FILTROS */
 .filter-panel {
   background: var(--surface-primary, #ffffff);
   border: 1px solid var(--border-soft, #e0e0e0);

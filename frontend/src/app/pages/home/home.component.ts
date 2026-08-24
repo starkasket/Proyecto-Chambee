@@ -164,6 +164,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  scrollToSupport(): void {
+    const supportElement = document.getElementById('support-section');
+    if (supportElement) {
+      supportElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
   private cargarOfertasPublicas() {
     this.api.obtenerAnunciosPublicos().subscribe({
       next: (anuncios) => {
