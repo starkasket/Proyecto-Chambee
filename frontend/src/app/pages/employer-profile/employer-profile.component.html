@@ -7,13 +7,9 @@
       </span>
     </div>
 
-<<<<<<< Updated upstream
-    <div class="search-container flex-grow-1 mx-4" style="visibility: hidden;"></div>
-=======
     <div class="search-container flex-grow-1 mx-4">
       <input type="text" class="form-control" placeholder="Buscar talento, habilidades, profesiones..." />
     </div>
->>>>>>> Stashed changes
 
     <div class="nav-buttons d-flex align-items-center gap-3">
       <div *ngIf="!isAdminView" class="notification-wrapper" style="position: relative;">
@@ -309,40 +305,6 @@
   </button>
 </div>
 
-<<<<<<< Updated upstream
-<!-- Modales -->
-<div id="modalSaludo" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">¡Atención!</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalEliminar()">Cancelar</button>
-        <button type="button" class="btn confirm-btn px-4" (click)="eliminarCuenta()">Confirmar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="modalAceptar" class="modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-      <div class="modal-body pt-4">
-        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
-        <h5 class="text-danger fw-bold">Adiós</h5>
-        <p class="mb-0">{{ modalMensaje }}</p>
-      </div>
-      <div class="modal-footer border-0 justify-content-center pb-4">
-        <button type="button" class="btn cancel-btn px-4" (click)="cerrarModalAceptar()">Aceptar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-=======
 <!-- Banner Inferior Fijo de Administrador -->
 <div *ngIf="isAdminView" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; z-index: 1050; border-top: 3px solid #dc3545; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); padding: 15px 0;">
   <div class="container d-flex justify-content-between align-items-center">
@@ -357,7 +319,6 @@
 </div>
 
 <!-- Modales -->
->>>>>>> Stashed changes
 <div id="modalEliminarAdmin" class="modal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
@@ -407,19 +368,4 @@
       </div>
     </div>
   </div>
-<<<<<<< Updated upstream
-</div>
-
-<div *ngIf="isAdminView" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; z-index: 1050; border-top: 3px solid #dc3545; box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); padding: 15px 0;">
-  <div class="container d-flex justify-content-between align-items-center">
-    <span class="fw-bold text-dark" style="font-size: 1.1rem;">
-      <i class="bi bi-shield-lock-fill text-danger me-2"></i> Gestión de Administrador
-    </span>
-    <div class="d-flex gap-2">
-      <button class="btn btn-secondary text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalSuspenderAdmin()">Suspender</button>
-      <button class="btn btn-danger text-white fw-semibold" style="border: none; padding: 8px 20px;" (click)="abrirModalEliminarAdmin()">Borrar Empresa</button>
-    </div>
-  </div>
-=======
->>>>>>> Stashed changes
 </div>
