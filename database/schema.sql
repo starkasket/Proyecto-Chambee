@@ -531,24 +531,4 @@ CHECK (
 );
 
 
-select * from reporte where id_reporte=' 896b26eb-2920-406b-aaac-c3c1a5b07f58'
-
-
-select * from reporte; 
-
-select * from reporte_a_anuncio; 
-
-select * from reporte_a_empleador; 
-
-select * from reporte_a_postulante; 
-
-
-
-select * from reporte where id_reporte='896b26eb-2920-406b-aaac-c3c1a5b07f58'; 
-
-select * from empleador where id_empleador='d25b9069-000f-4bb1-88d6-427abe10afcb';
-
-select * from postulante where id_postulante='4b1d448f-ee21-4596-b929-b433554a4a3f';
-
-select * from anuncios where id_anuncio='d25b9069-000f-4bb1-88d6-427abe10afcb';
 
