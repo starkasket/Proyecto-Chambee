@@ -500,7 +500,7 @@
 
                 <div class="job-footer">
                     <div *ngIf="!isAdminView" class="stats">
-                      
+                        <span class="stars text-warning fs-4">★★★★★</span>
                         <span class="views ms-3 fw-bold">
                             <i class="bi bi-eye"></i> {{ jobData.vistas }} vistas
                         </span>
@@ -618,13 +618,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div *ngIf="!isAdminView" class="container mt-4">
-        <div class="ad-banner">
-            <h2>*Publicidad*</h2>
-            <button class="btn-close-ad">×</button>
         </div>
     </div>
 
