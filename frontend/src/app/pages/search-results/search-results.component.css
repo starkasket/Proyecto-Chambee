@@ -68,24 +68,33 @@ body {
 /* Botones base */
 .btn {
   border: 1px solid transparent;
-  padding: 4px 10px;
-  border-radius: 14px;
+  padding: 10px 22px;
+  border-radius: 999px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .login {
-  background: var(--surface-primary);
-  color: var(--text-primary);
-  border-color: var(--border-soft);
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: transparent !important;
 }
 
 .register {
   background: #000000 !important;
   color: #f5ebe2 !important;
-  padding: 5px 12px;
-  font-weight: 600;
+}
+
+:host-context(body.dark-theme) .login {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
 }
 
 :host-context(body.dark-theme) .register {

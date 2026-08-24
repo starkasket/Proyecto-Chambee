@@ -447,6 +447,12 @@ export class JobDetailComponent implements OnInit {
   postular(): void {
     if (!this.jobId || this.yaPostulado) return;
 
+    // Si no hay sesión activa como postulante, redirigir al login
+    if (!this.estaLogueado || this.usuarioActual?.rol !== 'postulante') {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.api.postularAAnuncio(this.jobId).subscribe({
       next: () => {
         this.yaPostulado = true;
@@ -454,6 +460,11 @@ export class JobDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al postular:', err);
+        // Si no tiene permiso o no hay sesión, redirigir a login
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+          return;
+        }
         this.mostrarModal(err.error?.error || 'No fue posible completar la postulación.');
       }
     });
@@ -461,6 +472,12 @@ export class JobDetailComponent implements OnInit {
 
   toggleFavorito(): void {
     if (!this.jobId || this.guardandoFavorito) return;
+
+    // Si no hay sesión activa como postulante, redirigir al login
+    if (!this.estaLogueado || this.usuarioActual?.rol !== 'postulante') {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     this.guardandoFavorito = true;
     const accion$ = this.esFavorito
@@ -583,6 +600,11 @@ export class JobDetailComponent implements OnInit {
 
   verPerfilEmpresa(): void {
     if (!this.jobData?.employerId) {
+      return;
+    }
+    // Si no hay sesión activa como postulante (o admin), redirigir al login
+    if (!this.estaLogueado || (this.usuarioActual?.rol !== 'postulante' && !this.isAdminView)) {
+      this.router.navigate(['/login']);
       return;
     }
     this.router.navigate(['/empresa', this.jobData.employerId]);

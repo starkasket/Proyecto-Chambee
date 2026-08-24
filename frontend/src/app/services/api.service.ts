@@ -29,6 +29,10 @@ export class ApiService {
   }
 
   getUsuario(): any {
+    // Si no hay token válido, no hay sesión activa
+    const token = this.authService.getToken();
+    if (!token) return null;
+
     const user = sessionStorage.getItem('usuario') || localStorage.getItem('usuario');
     return user ? JSON.parse(user) : null;
   }

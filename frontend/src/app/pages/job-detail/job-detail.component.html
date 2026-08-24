@@ -231,7 +231,8 @@
 </div>
 
 <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
-    <div *ngIf="!isAdminView" class="d-flex align-items-center gap-3" routerLink="/home-user"
+    <div *ngIf="!isAdminView" class="d-flex align-items-center gap-3"
+        [routerLink]="estaLogueado ? '/home-user' : '/home'"
         style="cursor: pointer; text-decoration: none;">
         <img src="assets/LogoChambee.png" alt="Chambee" height="48" />
         <span class="fs-5 fw-semibold d-none d-md-block">Chambee</span>
@@ -347,13 +348,6 @@
             <span>Mi perfil</span>
         </button>
 
-        <button *ngIf="!estaLogueado && !isMobile && !isAdminView" class="btn login" routerLink="/login">
-            Iniciar Sesión
-        </button>
-        <button *ngIf="!estaLogueado && !isMobile && !isAdminView" class="btn register" routerLink="/register">
-            Registrarse
-        </button>
-
         <!-- Toggle de tema: SIEMPRE VISIBLE -->
         <button class="theme-toggle" type="button" (click)="toggleTheme()"
             [attr.aria-pressed]="isDarkMode"
@@ -361,6 +355,13 @@
             <span class="theme-toggle-track">
                 <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
             </span>
+        </button>
+
+        <button *ngIf="!estaLogueado && !isMobile && !isAdminView" class="btn login" routerLink="/login">
+            Iniciar Sesión
+        </button>
+        <button *ngIf="!estaLogueado && !isMobile && !isAdminView" class="btn register" routerLink="/register">
+            Registrarse
         </button>
 
         <!-- Menú Hamburguesa: SE OCULTA AL ADMIN -->
