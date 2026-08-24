@@ -1,0 +1,731 @@
+import { CommonModule } from '@angular/common';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { ApiService } from '../../services/api.service';
+import { ThemeService } from '../../services/theme.service';
+import { AuthService } from '../../services/auth.service';
+import { CarouselComponent } from '../../components/carousel/carousel.component';
+import { GoogleMapsService, DireccionCompleta } from '../../services/google-maps.service';
+import { MapaUbicacionComponent } from '../../components/mapa-ubicacion/mapa-ubicacion.component';
+import { NotificacionService, NotificationItem } from '../../services/notificacion.service';
+
+interface EmployerJobFormValue {
+  titulo: string;
+  descripcion: string;
+  tipo_anuncio: string;
+  urgencia: string;
+  edad: string;
+  educacion: string;
+  experiencia: string;
+  img?: string | null;
+  estado: string;
+  ciudad: string;
+  colonia: string;
+  calle: string;
+  codigo_postal: string;
+  numero_exterior: string;
+  latitud: number | null;
+  longitud: number | null;
+  direccion_formateada: string;
+  salario: number;
+  moneda: string;
+  periodo_pago: string;
+  modalidad: string;
+  etiquetas: string[];
+  estado_anuncio?: string;
+  estatus?: string;
+}
+
+
+
+@Component({
+  selector: 'app-employer-job-create',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, CarouselComponent, MapaUbicacionComponent],
+  templateUrl: './employer-job-create.component.html',
+  styleUrl: './employer-job-create.component.css'
+})
+export class EmployerJobCreateComponent implements OnInit {
+  form = {
+    nombre_postulante: '',
+    apellido_paterno_postulante: '',
+    apellido_materno_postulante: '',
+    correo_electronico: '',
+    contrasena: '',
+    contrasena_verificar: '',
+    fecha_nacimiento: '',
+    sexo: '',
+    pais: 'México',
+    estado: '',
+    ciudad: '',
+    colonia: '',
+    calle: '',
+    codigo_postal: '',
+    direccion_formateada: '',
+    telefono: '',
+    rfc: '',
+    curp: ''
+  };
+  employerId = '';
+  empresaNombre = 'Empresa';
+  guardando = false;
+  guardandoBorrador = false;
+  cargandoPerfil = false;
+  error = '';
+  exito = '';
+  previewUrls: string[] = [];
+  archivosSeleccionados: File[] = [];
+  fileNames: string[] = [];
+  urlsImagenesSubidas: string[] = [];
+  readonly MAX_IMAGENES = 5;
+  readonly MAX_TAMAÑO_MB = 2;
+  readonly TIPOS_IMAGEN_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  mostrarEliminar = false;
+  menuOpen = false;
+  notificationsOpen = false;
+  hasUnreadNotifications = true;
+  isMobile = false;
+  categoriasDisponibles: string[] = [];
+  foto_perfil = '';
+
+  irAlPerfil() {
+    this.router.navigate(['/perfil']);
+  }
+
+  notifications: NotificationItem[] = [
+    { id: 1, title: 'Consejo rápido', message: 'Agrega salario, modalidad y etiquetas para mejorar la conversión.', time: 'Hace 2 min', read: false },
+    { id: 2, title: 'Perfil actualizado', message: 'Tu empresa ya puede publicar nuevas ofertas.', time: 'Hace 1 hora', read: true }
+  ];
+
+  readonly opcionesMoneda = ['MXN', 'USD', 'EUR'];
+  readonly opcionesPeriodoPago = ['Diario', 'Semanal', 'Quincenal', 'Mensual'];
+
+  readonly minimosPorPeriodo: { [key: string]: number } = {
+    'Diario': 278,
+    'Semanal': 1950,
+    'Quincenal': 4182,
+    'Mensual': 8364
+  };
+
+  readonly tasasCambio: { [key: string]: number } = {
+    'MXN': 1,
+    'USD': 20.0,
+    'EUR': 21.5
+  };
+
+  readonly opcionesEdad = [
+    'Sin especificar',
+    '18+',
+    '18-25 años',
+    '26-35 años',
+    '36-45 años',
+    '46+'
+  ];
+
+  readonly opcionesEducacion = [
+    'Sin especificar',
+    'Secundaria',
+    'Preparatoria',
+    'Técnico',
+    'Universidad trunca',
+    'Licenciatura',
+    'Ingenieria',
+    'Maestria'
+  ];
+
+  readonly opcionesExperiencia = [
+    'Sin experiencia',
+    'Menos de 1 año',
+    '1 a 2 años',
+    '3 a 5 años',
+    'Más de 5 años'
+  ];
+
+  readonly opcionesUrgencia = [
+    'Normal',
+    'Urgente',
+    'Muy urgente'
+  ];
+
+  readonly ofertaForm = this.fb.group({
+    titulo: ['', [Validators.required, Validators.maxLength(160)]],
+    descripcion: ['', [Validators.required, Validators.maxLength(400)]],
+    tipo_anuncio: ['Empleo', [Validators.required]],
+    urgencia: ['Normal', [Validators.required, Validators.maxLength(30)]],
+    edad: ['Sin especificar', [Validators.maxLength(60)]],
+    educacion: ['Sin especificar', [Validators.maxLength(80)]],
+    experiencia: ['Sin experiencia', [Validators.required, Validators.maxLength(50)]],
+    estado: ['', [Validators.required, Validators.maxLength(100)]],
+    ciudad: ['', [Validators.required, Validators.maxLength(100)]],
+    colonia: ['', [Validators.maxLength(100)]],
+    calle: ['', [Validators.maxLength(150)]],
+    codigo_postal: ['', [Validators.maxLength(10)]],
+    numero_exterior: ['', [Validators.maxLength(20)]],
+    latitud: [null as number | null],
+    longitud: [null as number | null],
+    direccion_formateada: ['', Validators.maxLength(300)],
+    salario: [null as number | null, [Validators.required, Validators.min(8364)]],
+    moneda: ['MXN', [Validators.required]],
+    periodo_pago: ['Mensual', [Validators.required]],
+    modalidad: ['Presencial', [Validators.required]],
+    etiquetas: this.fb.nonNullable.control<string[]>([], [Validators.required])
+  });
+
+  modalMensaje = '';
+  sepomex: any[] = [];
+  colonias: string[] = [];
+  hoy = new Date().toISOString().split('T')[0];
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly api: ApiService,
+    private readonly router: Router,
+    private readonly themeService: ThemeService,
+    private readonly authApi: AuthService,
+    private notificacionService: NotificacionService,
+    private googleMaps: GoogleMapsService
+  ) { }
+
+  ngOnInit(): void {
+    this.api.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        this.categoriasDisponibles = categorias.map((categoria) => categoria.nombre);
+      },
+      error: () => {
+        this.categoriasDisponibles = [];
+      }
+    });
+
+    this.ofertaForm.get('periodo_pago')?.valueChanges.subscribe(() => {
+      this.actualizarValidacionSalario();
+    });
+
+    this.ofertaForm.get('moneda')?.valueChanges.subscribe(() => {
+      this.actualizarValidacionSalario();
+    });
+
+    this.api.getSepomex().subscribe(data => {
+      this.sepomex = data;
+
+      const usuarioRaw = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+      const perfilLocalRaw = localStorage.getItem('perfilEmpleador') || sessionStorage.getItem('perfilEmpleador');
+
+      if (!usuarioRaw) {
+        this.error = 'No hay sesión activa para crear una oferta laboral.';
+        return;
+      }
+
+      const usuario = JSON.parse(usuarioRaw);
+      if (usuario.rol !== 'empleador' || !usuario.id) {
+        this.error = 'Solo un empleador con sesión activa puede crear ofertas laborales.';
+        return;
+      }
+
+      this.employerId = usuario.id;
+      this.empresaNombre = usuario.nombre || this.empresaNombre;
+
+
+      this.notificacionService.inicializar(usuario.id, usuario.rol);
+
+      if (perfilLocalRaw) {
+        const perfil = JSON.parse(perfilLocalRaw);
+        this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
+        this.foto_perfil = perfil.foto_perfil || '';
+        this.ofertaForm.patchValue({
+          estado: perfil.estado || '',
+          ciudad: perfil.ciudad || '',
+          colonia: perfil.colonia || '',
+          calle: perfil.calle || '',
+          numero_exterior: perfil.numero_exterior || '',
+          codigo_postal: perfil.codigo_postal || '',
+          latitud: perfil.latitud ?? null,
+          longitud: perfil.longitud ?? null,
+          direccion_formateada: perfil.direccion_formateada || ''
+        });
+
+        if (perfil.codigo_postal) {
+          this.buscarCP();
+          this.ofertaForm.patchValue({ colonia: perfil.colonia });
+        }
+      } else {
+        this.cargarPerfilBase();
+      }
+    });
+
+    this.notificacionService.notifications$.subscribe(
+      notifications => {
+        this.notifications = notifications;
+      }
+    );
+
+    this.notificacionService.hasUnreadNotifications$.subscribe(
+      hasUnread => {
+        this.hasUnreadNotifications = hasUnread;
+      }
+    );
+
+    this.checkMobile();
+  }
+
+
+
+  toggleNotifications(event?: Event) {
+
+    if (event) {
+      event.stopPropagation();
+    }
+    this.notificationsOpen = !this.notificationsOpen;
+    if (
+      this.notificationsOpen &&
+      this.hasUnreadNotifications
+    ) {
+      this.notificacionService.marcarTodasComoLeidas();
+    }
+    this.menuOpen = false;
+  }
+
+  onNotificationClick(notif: NotificationItem, event: Event) {
+    event.stopPropagation();
+    this.notificationsOpen = false;
+    this.notificacionService.abrirNotificacion(notif);
+  }
+
+  get salarioMinimoActual(): number {
+    const periodo = this.ofertaForm.get('periodo_pago')?.value || 'Mensual';
+    const moneda = this.ofertaForm.get('moneda')?.value || 'MXN';
+    const minMxn = this.minimosPorPeriodo[periodo] || 8364;
+    const tasa = this.tasasCambio[moneda] || 1;
+
+    return Math.ceil(minMxn / tasa);
+  }
+
+  actualizarValidacionSalario(): void {
+    const minEnMoneda = this.salarioMinimoActual;
+    const salarioControl = this.ofertaForm.get('salario');
+    salarioControl?.setValidators([Validators.required, Validators.min(minEnMoneda)]);
+    salarioControl?.updateValueAndValidity();
+  }
+
+  cargarPerfilBase() {
+    this.cargandoPerfil = true;
+    this.api.obtenerPerfilEmpleador(this.employerId).subscribe({
+      next: (perfil) => {
+        this.empresaNombre = perfil.nombre_empresa || this.empresaNombre;
+        this.foto_perfil = perfil.foto_perfil || '';
+        this.ofertaForm.patchValue({
+          estado: perfil.estado || '',
+          ciudad: perfil.ciudad || '',
+          colonia: perfil.colonia || '',
+          calle: perfil.calle || '',
+          numero_exterior: perfil.numero_exterior || '',
+          codigo_postal: perfil.codigo_postal || '',
+          latitud: perfil.latitud,
+          longitud: perfil.longitud,
+          direccion_formateada: perfil.direccion_formateada
+        });
+        this.cargandoPerfil = false;
+      },
+      error: () => {
+        this.cargandoPerfil = false;
+      }
+    });
+  }
+
+  publicarOferta() {
+    this.error = '';
+    this.exito = '';
+
+    if (this.ofertaForm.invalid) {
+      this.ofertaForm.markAllAsTouched();
+      this.error = 'Completa los campos requeridos para publicar la oferta.';
+      return;
+    }
+
+    const totalImagenes = this.archivosSeleccionados.length + this.urlsImagenesSubidas.length;
+    if (totalImagenes === 0) {
+      this.mostrarModal('Debes agregar al menos una imagen antes de publicar la oferta.');
+      return;
+    }
+
+    if (
+      this.googleMaps.normalizar(this.ofertaForm.value.estado || '') !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+      return;
+    }
+
+
+    const latitud = this.ofertaForm.value.latitud;
+    const longitud = this.ofertaForm.value.longitud;
+
+    if (latitud === null || longitud === null) {
+      this.mostrarModal(
+        'Debes seleccionar una ubicación en el mapa.'
+      );
+      return;
+    }
+
+
+
+
+    this.guardando = true;
+    this.publicarConImagen('ACTIVO', 'Publicado', false);
+  }
+
+  guardarBorrador() {
+    this.error = '';
+    this.exito = '';
+
+    if (this.ofertaForm.invalid) {
+      this.ofertaForm.markAllAsTouched();
+      this.error = 'Completa los campos requeridos antes de guardar el borrador.';
+      return;
+    }
+
+    this.guardandoBorrador = true;
+    this.publicarConImagen('BORRADOR', 'Borrador', true);
+  }
+
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const nuevosArchivos = Array.from(input.files);
+    const archivosValidos = nuevosArchivos.filter((archivo) => {
+      if (!this.esImagenValida(archivo)) {
+        this.mostrarModal(`${archivo.name} no es una imagen valida. Usa JPG, PNG, WEBP o GIF.`);
+        return false;
+      }
+
+      if (archivo.size > this.MAX_TAMAÑO_MB * 1024 * 1024) {
+        this.mostrarModal(`${archivo.name} supera los ${this.MAX_TAMAÑO_MB} MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    const espacioDisponible = this.MAX_IMAGENES - this.archivosSeleccionados.length - this.urlsImagenesSubidas.length;
+    const archivosAgregar = archivosValidos.slice(0, espacioDisponible);
+
+    if (archivosAgregar.length < archivosValidos.length) {
+      this.mostrarModal(`Solo puedes agregar ${archivosAgregar.length} imagen(es) más. Máximo: ${this.MAX_IMAGENES}`);
+    }
+
+    archivosAgregar.forEach((archivo) => {
+      this.archivosSeleccionados.push(archivo);
+      const displayName = archivo.name.length > 30 ? archivo.name.substring(0, 27) + '...' : archivo.name;
+      this.fileNames.push(displayName);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.previewUrls.push(e.target?.result as string);
+      };
+      reader.readAsDataURL(archivo);
+    });
+
+    input.value = '';
+  }
+
+  async subirImagen(): Promise<void> {
+    if (this.archivosSeleccionados.length === 0) {
+      return;
+    }
+
+    try {
+      for (let i = 0; i < this.archivosSeleccionados.length; i++) {
+        const archivo = this.archivosSeleccionados[i];
+        const formData = new FormData();
+        formData.append('file', archivo);
+        formData.append('upload_preset', 'chambee_upload');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dqq9oeo4e/image/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          throw new Error(`No se pudo subir la imagen ${i + 1}.`);
+        }
+
+        const data = await res.json();
+        if (!data?.secure_url) {
+          throw new Error(`No se pudo obtener la URL de la imagen ${i + 1}.`);
+        }
+
+        this.urlsImagenesSubidas.push(data.secure_url);
+      }
+
+      this.archivosSeleccionados = [];
+      this.fileNames = [];
+      this.previewUrls = [];
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+  eliminarImagenPorIndice(indice: number): void {
+    this.previewUrls.splice(indice, 1);
+    this.archivosSeleccionados.splice(indice, 1);
+    this.fileNames.splice(indice, 1);
+  }
+
+  eliminarImagenSubida(indice: number): void {
+    this.urlsImagenesSubidas.splice(indice, 1);
+  }
+
+  get imagenesCarruselPreview(): string[] {
+    return [...this.urlsImagenesSubidas, ...this.previewUrls].filter(Boolean);
+  }
+
+  volverPanel() {
+    this.router.navigate(['/home-employer']);
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
+
+
+  toggleMenu(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    this.menuOpen = !this.menuOpen;
+    this.notificationsOpen = false;
+  }
+
+  logout() {
+    this.authApi.logout();
+  }
+
+  campoInvalido(nombre: keyof EmployerJobFormValue): boolean {
+    const control = this.ofertaForm.get(nombre);
+    return Boolean(control && control.invalid && (control.touched || control.dirty));
+  }
+
+  get etiquetasSeleccionadas(): string[] {
+    return this.ofertaForm.controls.etiquetas.value;
+  }
+
+  toggleEtiqueta(etiqueta: string) {
+    const actuales = this.etiquetasSeleccionadas;
+    const nuevasEtiquetas = actuales.includes(etiqueta)
+      ? actuales.filter((item) => item !== etiqueta)
+      : [...actuales, etiqueta];
+
+    this.ofertaForm.controls.etiquetas.setValue(nuevasEtiquetas);
+    this.ofertaForm.controls.etiquetas.markAsTouched();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.notificationsOpen) {
+      this.notificationsOpen = false;
+    }
+    if (this.menuOpen) {
+      this.menuOpen = false;
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkMobile();
+  }
+
+  private checkMobile() {
+    try {
+      this.isMobile = window.innerWidth <= 768;
+    } catch {
+      this.isMobile = false;
+    }
+  }
+
+  private publicarConImagen(estadoAnuncio: 'ACTIVO' | 'BORRADOR', estatus: string, esBorrador: boolean) {
+    const payloadBase = this.ofertaForm.getRawValue() as EmployerJobFormValue;
+
+    const ejecutarGuardado = (imgs: string[]) => {
+      const payload = {
+        ...payloadBase,
+        img: imgs.length > 0 ? imgs[0] : null,
+        imgs: imgs,
+        estado_anuncio: estadoAnuncio,
+        estatus
+      };
+
+      this.api.crearAnuncioEmpleador(this.employerId, payload).subscribe({
+        next: () => {
+          this.guardando = false;
+          this.guardandoBorrador = false;
+
+          this.ofertaForm.reset({
+            titulo: '',
+            descripcion: '',
+            tipo_anuncio: 'Empleo',
+            urgencia: 'Normal',
+            edad: 'Sin especificar',
+            educacion: 'Sin especificar',
+            experiencia: 'Sin experiencia',
+            estado: payloadBase.estado,
+            ciudad: payloadBase.ciudad,
+            colonia: payloadBase.colonia,
+            calle: payloadBase.calle,
+            codigo_postal: payloadBase.codigo_postal,
+            salario: null,
+            moneda: 'MXN',
+            periodo_pago: 'Mensual',
+            modalidad: 'Presencial',
+            etiquetas: []
+          });
+
+          this.previewUrls = [];
+          this.archivosSeleccionados = [];
+          this.fileNames = [];
+          this.urlsImagenesSubidas = [];
+
+          this.mostrarModalExito(esBorrador ? 'El borrador de tu vacante se ha guardado de forma segura.' : 'Tu oferta laboral fue publicada exitosamente.');
+        },
+        error: (err) => {
+          this.guardando = false;
+          this.guardandoBorrador = false;
+          this.mostrarModal(err?.error?.detail || err?.error?.error || 'No fue posible crear la oferta laboral.');
+        }
+      });
+    };
+
+
+    if (this.archivosSeleccionados.length > 0) {
+      this.subirImagen()
+        .then(() => ejecutarGuardado(this.urlsImagenesSubidas))
+        .catch((err) => {
+          this.guardando = false;
+          this.guardandoBorrador = false;
+          this.mostrarModal(err?.message || 'Error al subir las imágenes.');
+        });
+      return;
+    }
+
+    ejecutarGuardado(this.urlsImagenesSubidas);
+  }
+
+  private esImagenValida(archivo: File): boolean {
+    if (this.TIPOS_IMAGEN_PERMITIDOS.includes(archivo.type)) {
+      return true;
+    }
+
+    return /\.(jpe?g|png|webp|gif)$/i.test(archivo.name);
+  }
+
+  buscarCP() {
+    const cp = this.ofertaForm.get('codigo_postal')?.value;
+
+    if (!cp) {
+      this.mostrarModal('Ingresa un código postal');
+      return;
+    }
+
+    const resultados = this.sepomex.filter(r => String(r.cp) === String(cp).trim());
+
+    if (resultados.length > 0) {
+      this.ofertaForm.patchValue({
+        estado: resultados[0].estado,
+        ciudad: resultados[0].ciudad
+      });
+      this.colonias = resultados.map(r => r.colonia);
+    } else {
+      this.mostrarModal('Código postal no encontrado');
+      this.colonias = [];
+      this.ofertaForm.patchValue({ estado: '', ciudad: '', colonia: '' });
+    }
+  }
+
+  mostrarModal(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModal() {
+    const modal = document.getElementById('modalAlerta');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  mostrarModalExito(mensaje: string) {
+    this.modalMensaje = mensaje;
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+  }
+
+  cerrarModalExito() {
+    const modal = document.getElementById('modalSaludo');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+    this.router.navigate(['/home-employer']);
+  }
+
+  ubicacionSeleccionada(direccion: DireccionCompleta) {
+
+    if (
+      this.googleMaps.normalizar(direccion.estado) !==
+      this.googleMaps.normalizar('Guanajuato')
+    ) {
+      this.mostrarModal(
+        'La ubicación debe estar dentro del estado de Guanajuato.'
+      );
+
+      return;
+    }
+
+    this.ofertaForm.patchValue({
+      estado: direccion.estado,
+      ciudad: direccion.ciudad,
+      colonia: direccion.colonia || '',
+      calle: direccion.calle || '',
+      numero_exterior: direccion.numero || '',
+      codigo_postal: direccion.codigoPostal || '',
+      latitud: direccion.latitud,
+      longitud: direccion.longitud,
+      direccion_formateada: direccion.direccionFormateada
+    });
+
+
+  }
+
+  private buscarColoniasPorCP(cp: string) {
+    if (!cp) {
+      this.colonias = [];
+      return;
+    }
+
+    const resultados = this.sepomex.filter(
+      r => r.cp === cp
+    );
+
+    this.colonias = [
+      ...new Set(
+        resultados.map(r => r.colonia)
+      )
+    ];
+
+    console.log('Colonias encontradas en SEPOMEX:', this.colonias);
+  }
+}

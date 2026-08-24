@@ -1,0 +1,199 @@
+/* FORZAR SCROLLBAR PARA EVITAR SALTOS HORIZONTALES */
+html {
+  overflow-y: scroll;
+}
+
+/* NAVBAR */
+.navbar-chambee {
+  background-color: var(--navbar-bg) !important;
+  width: 100% !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+}
+
+/* FONDO GENERAL */
+.page-bg {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/assets/FondoFormularios.png'); 
+  background-size: cover;
+  background-position: center;
+}
+
+/* DECORACIÓN DE LA CARD */
+.fondo-registro-card {
+  padding: 40px;
+  border-radius: 25px;
+  background-color: color-mix(in srgb, var(--accent-surface) 28%, var(--surface-primary));
+  
+  /* --- TAMAÑO ORIGINAL RESTAURADO --- */
+  width: 90%;            
+  max-width: 730px;      /* 650px de la tarjeta interna + 80px de padding total */
+  display: flex;         
+  justify-content: center;
+}
+
+.registro-card {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 35px;
+  
+  /* --- TAMAÑO ORIGINAL RESTAURADO --- */
+  width: 100%;           
+  max-width: 650px;      /* El límite que tenías desde un principio */
+  
+  position: relative;
+  box-shadow: var(--shadow-card);
+}
+
+/* TABS (BOTONES SUPERIORES) */
+.tipo-tabs {
+  display: flex;
+  border: 2px solid var(--button-primary-bg);
+  border-radius: 30px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.tab-postulante {
+  background: var(--surface-primary) !important;
+  color: var(--text-primary) !important;
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+}
+
+.tab-empleador {
+  background: var(--button-primary-bg) !important;
+  color: var(--button-primary-text) !important;
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+}
+
+/* CONTENEDORES PARA INPUTS Y MENSAJES FLOTANTES */
+.campo-wrapper, 
+.input-with-icon {
+  position: relative;
+  margin-bottom: 12px; 
+}
+
+/* INPUTS PERSONALIZADOS */
+.form-control-custom {
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  padding: 10px 18px;
+  width: 100%;
+  margin-bottom: 12px; 
+  font-size: 14px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+/* Eliminamos el margen inferior si están dentro del wrapper */
+.campo-wrapper .form-control-custom,
+.input-with-icon .form-control-custom {
+  margin-bottom: 0; 
+}
+
+.section-label, .dir-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* BOTÓN CREAR CUENTA */
+.btn-crear {
+  background-color: var(--accent-surface) !important;
+  color: var(--accent-text) !important;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 60px;
+  font-weight: 700;
+  display: block;
+  margin: 30px auto 0;
+  cursor: pointer;
+}
+
+.btn-close-custom {
+  position: absolute;
+  top: 11px;
+  right: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+}
+
+.btn-crear:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.modal { 
+  display:none;
+  background:rgba(0,0,0,0.5);
+  position:fixed; inset:0; 
+  z-index:9998; 
+  align-items:center; 
+  justify-content:center;
+}
+
+.modalSaludo {
+  display:none;
+  background:rgba(0,0,0,0.5);
+  position:fixed; inset:0; 
+  z-index:9998; 
+  align-items:center; 
+  justify-content:center;
+}
+
+/* CLASES PARA EL MANEJO DE ERRORES (TEXTO LIMPIO) */
+/* CLASES PARA EL MANEJO DE ERRORES (FLUJO NORMAL) */
+::ng-deep .support-error {
+  color: #d93025;
+  font-size: 11.5px; /* Un poquitito más pequeño para que encaje mejor */
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 4px;
+  margin-left: 10px;
+  display: block;
+  /* Eliminamos el position: absolute para que empuje limpiamente sin chocar */
+}
+  
+ 
+
+.input-error-duplicate {
+  border: 1.5px solid #d93025 !important;
+  box-shadow: 0 0 0 0.2rem rgba(217, 48, 37, 0.2) !important;
+}
+
+/* --- ADAPTACIONES PARA EL MODO OSCURO --- */
+:host-context(body.dark-theme) .page-bg {
+  background-image: url('/assets/login_fondo_Negro.png');
+}
+
+:host-context(body.dark-theme) .fondo-registro-card {
+  background-color: transparent;
+  padding: 0; 
+}

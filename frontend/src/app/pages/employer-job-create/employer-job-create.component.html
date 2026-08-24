@@ -1,0 +1,394 @@
+<div class="offer-page">
+  <nav class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee Empresas" height="48" class="logo" role="button"
+        (click)="volverPanel()" />
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel de Empresa, {{ empresaNombre }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4" style="visibility: hidden;">
+      <!-- Contenedor vacío para mantener el mismo ancho y acomodo que home-user -->
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3">
+      <div class="notification-wrapper" style="position: relative;">
+
+        <div class="notification-bell" style="cursor: pointer;" aria-label="Notificaciones" role="button"
+          (click)="toggleNotifications($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell-fill"
+            viewBox="0 0 16 16" style="color: var(--text-color);">
+            <path
+              d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+          </svg>
+          <span *ngIf="hasUnreadNotifications"
+            class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+            style="width: 10px; height: 10px; border-color: var(--bg-color) !important;">
+            <span class="visually-hidden">Nuevas alertas</span>
+          </span>
+        </div>
+
+        <div *ngIf="notificationsOpen" class="notifications-dropdown" (click)="$event.stopPropagation()"
+          style="position: absolute; top: 45px; right: -10px; width: 320px; background-color: var(--bg-color, #ffffff); border: 1px solid var(--border-color, #e0e0e0); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 1050; overflow: hidden; display: flex; flex-direction: column;">
+
+          <div
+            style="padding: 16px; border-bottom: 1px solid var(--border-color, #e0e0e0); display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 700; color: var(--text-color, #333); font-size: 1rem;">Notificaciones</span>
+          </div>
+
+          <div style="max-height: 350px; overflow-y: auto;">
+            <div *ngFor="let notif of notifications"
+              style="padding: 16px; border-bottom: 1px solid var(--border-color, #f0f0f0); display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background-color 0.2s;"
+              [ngStyle]="{'background-color': notif.read ? 'transparent' : 'rgba(255, 193, 7, 0.1)'}"
+              (click)="onNotificationClick(notif, $event)">
+              <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-color, #222);">{{ notif.title
+                }}</span>
+              <span style="font-size: 0.85rem; color: var(--text-color, #555); opacity: 0.8;">{{ notif.message }}</span>
+              <span style="font-size: 0.75rem; color: #888; margin-top: 4px;">{{ notif.time }}</span>
+            </div>
+
+            <div *ngIf="notifications.length === 0"
+              style="padding: 32px 16px; text-align: center; color: #888; font-size: 0.9rem;">
+              No tienes notificaciones nuevas
+            </div>
+          </div>
+
+          <div
+            style="padding: 12px; text-align: center; border-top: 1px solid var(--border-color, #e0e0e0); background-color: var(--bg-color, #fff);">
+            <a href="#" style="font-size: 0.85rem; font-weight: 600; color: #f39c12; text-decoration: none;">Ver todas
+              las
+              notificaciones</a>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" (click)="irAlPerfil()"
+        title="Ir a mi perfil">
+        <i class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">Mi perfil</span>
+      </button>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode"
+        [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode"
+              class="bi bi-moon-fill"></i></span>
+        </span>
+      </button>
+
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i
+          class="bi bi-list"></i></div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/home-employer" class="desktop-menu-link">Panel principal</a>
+        <a routerLink="/perfil" class="desktop-menu-link">Mi perfil</a>
+        <a routerLink="/mis-vacantes" class="desktop-menu-link">Mis vacantes</a>
+        <a routerLink="/post-job" class="desktop-menu-link" style="color: var(--primary-color) !important;">+ Crear
+          vacante</a>
+        <hr />
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesion</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" (click)="toggleMenu()">✕</button>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-link" routerLink="/home-employer" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link" routerLink="/perfil" (click)="toggleMenu()">Mi perfil</a>
+          <a class="mobile-nav-link" routerLink="/post-job" (click)="toggleMenu()">Crear oferta</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesion</a>
+        </nav>
+      </aside>
+    </div>
+  </nav>
+
+  <div id="modalSaludo" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaSaludando.png" alt="saludo" height="200" class="mb-3" />
+          <h4 class="text-success fw-bold">¡Éxito!</h4>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModalExito()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalAlerta" class="modal" tabindex="-1"
+    style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content text-center">
+        <div class="modal-body pt-4">
+          <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3" />
+          <h5 class="text-danger fw-bold">¡Atención!</h5>
+          <p class="mb-0">{{ modalMensaje }}</p>
+        </div>
+        <div class="modal-footer border-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-warning px-4" (click)="cerrarModal()">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="offer-shell">
+    <header class="offer-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Panel de empleador</p>
+        <h1>Crear oferta laboral</h1>
+        <p>Publica una vacante nueva para <strong>{{ empresaNombre }}</strong>.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <button type="button" class="ghost-btn" (click)="volverPanel()">Volver al panel</button>
+      </div>
+    </header>
+
+    <section class="status-card" *ngIf="cargandoPerfil">
+      Cargando datos base del empleador...
+    </section>
+
+    <section class="status-card error" *ngIf="error">
+      {{ error }}
+    </section>
+
+    <section class="status-card success" *ngIf="exito">
+      {{ exito }}
+    </section>
+
+    <form class="offer-layout" [formGroup]="ofertaForm" (ngSubmit)="publicarOferta()">
+      <article class="offer-card offer-main">
+        <div class="card-head">
+          <p class="eyebrow">Vacante</p>
+          <h2>Información principal</h2>
+        </div>
+
+        <label class="field">
+          <span>Título del anuncio</span>
+          <input type="text" formControlName="titulo" placeholder="Ej. Ejecutivo(a) de ventas" />
+          <small *ngIf="campoInvalido('titulo')">Escribe un título para la vacante.</small>
+        </label>
+
+        <label class="field">
+          <span>Descripción del anuncio</span>
+          <textarea rows="8" formControlName="descripcion"
+            placeholder="Explica responsabilidades, beneficios y perfil buscado."></textarea>
+          <small *ngIf="campoInvalido('descripcion')">Describe la oferta laboral.</small>
+        </label>
+
+        <div class="field">
+          <span>Etiquetas de la vacante</span>
+          <p class="helper-copy">Selecciona las etiquetas que mejor describen el puesto para recomendarlo a candidatos
+            con los mismos intereses.</p>
+          <div class="tags-grid">
+            <button *ngFor="let categoria of categoriasDisponibles" type="button" class="tag-chip"
+              [class.active]="etiquetasSeleccionadas.includes(categoria)" (click)="toggleEtiqueta(categoria)">
+              {{ categoria }}
+            </button>
+          </div>
+          <small *ngIf="campoInvalido('etiquetas')">Selecciona al menos una etiqueta.</small>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Tipo de anuncio</span>
+            <select formControlName="tipo_anuncio">
+              <option value="Empleo">Empleo</option>
+              <option value="Práctica">Práctica</option>
+              <option value="Estadía">Estadía</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Modalidad</span>
+            <select formControlName="modalidad">
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Hibrido">Híbrido</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Estatus de urgencia</span>
+            <select formControlName="urgencia">
+              <option *ngFor="let opcion of opcionesUrgencia" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
+
+          <div class="field">
+            <span>Salario y esquema de pago</span>
+            <div class="d-flex gap-2 flex-wrap">
+              <select formControlName="moneda" style="width: 90px;" class="form-select">
+                <option *ngFor="let m of opcionesMoneda" [value]="m">{{ m }}</option>
+              </select>
+
+              <input type="number" formControlName="salario" placeholder="Ej. 2500" class="form-control flex-grow-1" />
+
+              <select formControlName="periodo_pago" style="width: 130px;" class="form-select notranslate"
+                translate="no">
+                <option *ngFor="let p of opcionesPeriodoPago" [value]="p" class="notranslate" translate="no">{{ p }}
+                </option>
+              </select>
+            </div>
+            <small *ngIf="campoInvalido('salario')">
+              El salario mínimo para pago {{ ofertaForm.value.periodo_pago | lowercase }} es de {{ salarioMinimoActual |
+              number:'1.0-0' }} {{ ofertaForm.value.moneda }}.
+            </small>
+          </div>
+
+          <label class="field">
+            <span>Rango de edad</span>
+            <select formControlName="edad">
+              <option *ngFor="let opcion of opcionesEdad" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Educación solicitada</span>
+            <select formControlName="educacion">
+              <option *ngFor="let opcion of opcionesEducacion" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Experiencia requerida</span>
+            <select formControlName="experiencia">
+              <option *ngFor="let opcion of opcionesExperiencia" [value]="opcion">{{ opcion }}</option>
+            </select>
+          </label>
+        </div>
+      </article>
+
+      <article class="offer-card offer-side">
+        <div class="card-head">
+          <p class="eyebrow">Ubicacion</p>
+          <h2>Dirección de la oferta</h2>
+        </div>
+
+        <div class="form-grid single-col">
+          <div class="field">
+
+            <app-mapa-ubicacion [latitudInicial]="ofertaForm.value.latitud ?? null"
+              [longitudInicial]="ofertaForm.value.longitud ?? null"
+              (ubicacionSeleccionada)="ubicacionSeleccionada($event)">
+            </app-mapa-ubicacion>
+
+            <strong> Dirección completa: </strong>
+            <small style="color: #a6a6a6;">
+              <i>Esta es la dirección que se mostrará en tu anuncio.</i>
+            </small>
+            <p>
+              {{ ofertaForm.get('direccion_formateada')?.value }}
+            </p>
+
+
+
+
+
+            <input type="text" class="form-control-custom" placeholder="C.P." formControlName="codigo_postal"
+              readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Estado" formControlName="estado" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Ciudad" formControlName="ciudad" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Colonia" formControlName="colonia" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Calle" formControlName="calle" readonly />
+
+            <input type="text" class="form-control-custom" placeholder="Número exterior"
+              formControlName="numero_exterior" readonly />
+
+            <div *ngIf="campoInvalido('calle')" class="support-error">Calle inválida</div>
+          </div>
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-copy">
+            <p class="eyebrow">Imágenes de la vacante</p>
+            <h3>Agrega hasta 5 fotos para destacar tu oferta</h3>
+            <p>Las imágenes aparecerán en los listados públicos y ayudarán a identificar mejor la vacante.</p>
+
+            <input #imagenInput type="file" accept="image/*" multiple style="display:none"
+              (change)="onArchivoSeleccionado($event)" />
+
+            <div class="d-flex gap-2 mb-2">
+              <span class="badge bg-info">{{ urlsImagenesSubidas.length + archivosSeleccionados.length }}/{{
+                MAX_IMAGENES }} imágenes</span>
+            </div>
+
+            <div class="btn-group upload-actions">
+              <button type="button" class="btn-secondary" (click)="imagenInput.click()"
+                [disabled]="urlsImagenesSubidas.length + archivosSeleccionados.length >= MAX_IMAGENES">
+                Agregar imágenes
+              </button>
+            </div>
+          </div>
+
+          <div class="upload-preview">
+            <div *ngIf="previewUrls.length === 0 && urlsImagenesSubidas.length === 0" class="upload-placeholder">
+              <i class="bi bi-image"></i>
+              <span>Las vistas previas aparecerán aquí</span>
+            </div>
+
+            <div *ngIf="previewUrls.length > 0 || urlsImagenesSubidas.length > 0" class="gallery-grid">
+              <div class="gallery-carousel" style="--carousel-height: 220px;">
+                <app-carousel [images]="imagenesCarruselPreview" [autoplay]="true" [interval]="3000"></app-carousel>
+              </div>
+
+              <!-- Imágenes subidas -->
+              <div *ngFor="let img of urlsImagenesSubidas; let i = index" class="gallery-item">
+                <img [src]="img" [alt]="'Imagen ' + (i + 1)" />
+                <button type="button" class="btn-remove" (click)="eliminarImagenSubida(i)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <span class="badge bg-success position-absolute top-0 start-0 m-2">Subida</span>
+              </div>
+
+              <!-- Imágenes seleccionadas pero no subidas -->
+              <div *ngFor="let preview of previewUrls; let i = index" class="gallery-item">
+                <img [src]="preview" [alt]="'Vista previa ' + (i + 1)" />
+                <button type="button" class="btn-remove" (click)="eliminarImagenPorIndice(i)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+                <span class="badge bg-warning position-absolute top-0 start-0 m-2">Pendiente</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <p class="preview-label">Resumen rapido</p>
+          <strong>{{ ofertaForm.value.titulo || 'Tu nueva vacante' }}</strong>
+          <p>{{ ofertaForm.value.modalidad || 'Modalidad' }} • {{ ofertaForm.value.estado || 'Estado' }}</p>
+          <p>Urgencia: {{ ofertaForm.value.urgencia || 'Normal' }}</p>
+          <p>Edad: {{ ofertaForm.value.edad || 'Sin especificar' }}</p>
+          <p>Educación: {{ ofertaForm.value.educacion || 'Sin especificar' }}</p>
+          <p>Experiencia: {{ ofertaForm.value.experiencia || 'Sin experiencia' }}</p>
+          <div class="preview-tags" *ngIf="etiquetasSeleccionadas.length">
+            <span class="preview-tag" *ngFor="let etiqueta of etiquetasSeleccionadas">{{ etiqueta }}</span>
+          </div>
+          <p class="salary-preview" *ngIf="ofertaForm.value.salario">
+            {{ ofertaForm.value.moneda }} {{ ofertaForm.value.salario | number:'1.0-0' }} / {{
+            ofertaForm.value.periodo_pago | lowercase }}
+          </p>
+        </div>
+
+        <div class="action-buttons">
+          <button type="submit" class="primary-btn" [disabled]="guardando || guardandoBorrador">
+            {{ guardando ? 'Publicando...' : 'Publicar oferta' }}
+          </button>
+
+          <button type="button" class="draft-btn" [disabled]="guardando || guardandoBorrador"
+            (click)="guardarBorrador()">
+            {{ guardandoBorrador ? 'Guardando...' : 'Guardar como borrador' }}
+          </button>
+        </div>
+      </article>
+    </form>
+  </div>
+</div>

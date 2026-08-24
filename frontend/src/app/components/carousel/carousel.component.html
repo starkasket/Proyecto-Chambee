@@ -1,0 +1,24 @@
+<div class="carousel-wrapper"
+  (click)="abrirDetalle()"
+  (keydown.enter)="abrirDetalle()"
+  (mouseenter)="pauseAutoplay()"
+  (mouseleave)="resumeAutoplay()"
+  role="button"
+  tabindex="0">
+  <div class="carousel-image">
+    <img *ngIf="images && images.length" [src]="images[current]" [attr.alt]="'Imagen ' + (current + 1)" />
+    <div *ngIf="!images || images.length === 0" class="carousel-placeholder">No image</div>
+  </div>
+
+  <!-- Prev/Next controls removed for autoplay-only behavior -->
+
+  <div class="carousel-dots">
+    <span *ngFor="let img of (images || []); let i = index"
+          (click)="goTo(i, $event)"
+          (keydown.enter)="goTo(i,$event)"
+          tabindex="0"
+          [class.active]="i === current"
+          [attr.aria-label]="'Ir a imagen ' + (i + 1)">
+    </span>
+  </div>
+</div>

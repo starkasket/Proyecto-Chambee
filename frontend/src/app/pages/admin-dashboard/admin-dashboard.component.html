@@ -1,0 +1,411 @@
+<div class="modal" tabindex="-1" [class.show]="mostrarModalError" [style.display]="mostrarModalError ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-x-circle-fill text-danger mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-danger fw-bold">¡Ocurrió un error!</h5>
+        <p class="mb-0">{{ mensajeModalError }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn px-4" style="background-color: #dc3545; color: white; border-radius: 8px;" (click)="cerrarModalError()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR REPORTE -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalEliminarReporte" [style.display]="mostrarModalEliminarReporte ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-trash3-fill text-danger mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-danger fw-bold">Eliminar Reporte</h5>
+        <p class="mb-0">¿Estás seguro de que deseas descartar y eliminar este reporte permanentemente de la base de datos?</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn me-3 px-4" style="background-color: #6c757d; color: white; border-radius: 8px;" (click)="cerrarModalEliminarReporte()">Cancelar</button>
+        <button type="button" class="btn btn-danger px-4" style="border-radius: 8px;" (click)="ejecutarEliminarReporte()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR ANUNCIO -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalEliminarAnuncio" [style.display]="mostrarModalEliminarAnuncio ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="alerta" height="200" class="mb-3"/>
+        <h5 class="text-danger fw-bold">¡Atención!</h5>
+        <p class="mb-0">{{ mensajeModalEliminar }}</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn me-3 px-4" style="background-color: #6c757d; color: white; border-radius: 8px;" (click)="cerrarModalEliminarAnuncio()">Cancelar</button>
+        <button type="button" class="btn btn-danger px-4" style="border-radius: 8px;" (click)="ejecutarEliminarAnuncio()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ÉXITO AL ELIMINAR ANUNCIO -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalExitoEliminar" [style.display]="mostrarModalExitoEliminar ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <img src="assets/abejaAlerta.png" alt="éxito" height="200" class="mb-3"/>
+        <h5 class="text-success fw-bold">¡Eliminado con Éxito!</h5>
+        <p class="mb-0">El anuncio ha sido eliminado permanentemente de la base de datos.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn px-4" style="background-color: #28a745; color: white; border-radius: 8px;" (click)="cerrarModalExitoEliminar()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUSPENDER CUENTA -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalSuspender" [style.display]="mostrarModalSuspender ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-person-x-fill text-warning mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-warning fw-bold">Suspender Cuenta</h5>
+        <p>Selecciona el tiempo que deseas suspender a este usuario:</p>
+        
+        <select class="form-select mx-auto w-75 mb-3" [(ngModel)]="tiempoSuspension">
+          <option value="1">1 Día</option>
+          <option value="3">3 Días</option>
+          <option value="7">1 Semana</option>
+          <option value="30">1 Mes</option>
+          <option value="0">Permanente</option>
+        </select>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn me-3 px-4" style="background-color: #6c757d; color: white; border-radius: 8px;" (click)="cerrarModalSuspender()">Cancelar</button>
+        <button type="button" class="btn btn-warning px-4" style="border-radius: 8px; color: black; font-weight: bold;" (click)="ejecutarSuspension()">Suspender</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ÉXITO AL SUSPENDER CUENTA -->
+<div class="modal" tabindex="-1" [class.show]="mostrarModalExitoSuspension" [style.display]="mostrarModalExitoSuspension ? 'block' : 'none'" style="background: rgba(0,0,0,0.6);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body pt-4">
+        <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 4rem;"></i>
+        <h5 class="text-success fw-bold">¡Cuenta Suspendida!</h5>
+        <p class="mb-0">El usuario ha sido suspendido exitosamente por el tiempo establecido.</p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn px-4" style="background-color: #28a745; color: white; border-radius: 8px;" (click)="cerrarModalExitoSuspension()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-layout">
+  <header class="navbar-chambee d-flex align-items-center justify-content-between px-4">
+    <div class="d-flex align-items-center gap-3">
+      <img src="assets/LogoChambee.png" alt="Chambee" height="48" class="logo">
+      <span class="fs-5 fw-semibold d-none d-md-block">Panel Administrador, {{ nombreAdmin }}</span>
+    </div>
+
+    <div class="search-container flex-grow-1 mx-4" style="position: relative;">
+      <input type="text"
+             class="form-control"
+             placeholder="Buscar categoría, puesto, ciudad y más..."
+             [(ngModel)]="searchTerm"
+             (ngModelChange)="onSearchInput($event)"
+             (keydown.enter)="buscarEmpleos()"
+             (blur)="cerrarBuscador()"
+             (focus)="showSearchDropdown = true" />
+
+      <div *ngIf="showSearchDropdown" class="search-dropdown">
+
+        <div *ngIf="searchTerm.length === 0 && recentSearches.length > 0">
+          <div class="search-dropdown-header">Búsquedas recientes</div>
+          <div *ngFor="let term of recentSearches" class="search-item" (mousedown)="seleccionarBusquedaReciente(term)">
+            <div class="search-item-icon" style="background: transparent; color: var(--text-secondary);">
+              <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="search-item-content">
+              <div class="search-item-title fw-normal">{{ term }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="searchTerm.length > 0">
+          <div *ngIf="searchResults.length === 0" class="search-empty">
+            No se encontraron resultados para "{{ searchTerm }}"
+          </div>
+          <div *ngFor="let result of searchResults" class="search-item" (mousedown)="$event.preventDefault()" (click)="irAResultado(result)">
+            <div class="search-item-icon">
+              <i class="bi" [ngClass]="result.tipo === 'empleo' ? 'bi-briefcase-fill' : 'bi-tools'"></i>
+            </div>
+            <div class="search-item-content">
+              <div class="search-item-title" [innerHTML]="highlightText(result.title || result.titulo, searchTerm)"></div>
+              <div class="search-item-subtitle">
+                <span class="badge-tipo">{{ result.tipo === 'empleo' ? 'Empleo' : 'Servicio' }}</span> •
+                <span [innerHTML]="highlightText(result.tipo === 'empleo' ? (result.company || result.nombre_empresa) : (result.categoria || 'Servicio General'), searchTerm)"></span>
+              </div>
+            </div>
+          </div>
+          <div class="search-see-all" (mousedown)="buscarEmpleos()">
+            Ver todos los resultados para "{{ searchTerm }}" <i class="bi bi-arrow-right-short"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons d-flex align-items-center gap-3" style="position: relative;">
+
+      <!-- Botón de perfil del admin 
+      <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" title="Administrador">
+        <i class="bi bi-person-circle fs-5"></i>
+        <span class="d-none d-md-block">{{ nombreAdmin }}</span>
+      </button>-->
+
+      <!-- Toggle de tema -->
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="isDarkMode" [attr.aria-label]="isDarkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-icon"><i *ngIf="isDarkMode" class="bi bi-sun-fill"></i><i *ngIf="!isDarkMode" class="bi bi-moon-fill"></i></span>
+        </span>
+      </button>
+
+      <!-- Hamburguesa -->
+      <div class="menu fs-4" (click)="toggleMenu($event)" aria-label="Abrir menú" role="button"><i class="bi bi-list"></i></div>
+
+      <div *ngIf="menuOpen && !isMobile" class="desktop-menu" (click)="$event.stopPropagation()">
+        <a routerLink="/admin" class="desktop-menu-link">Panel principal</a>
+        <hr style="margin: 0.5rem 0; border-color: var(--border-soft);">
+        <a (click)="logout()" class="desktop-menu-link text-danger" style="cursor: pointer;">Cerrar Sesión</a>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen && isMobile" class="mobile-menu-backdrop" (click)="toggleMenu()">
+      <aside class="mobile-menu-panel" (click)="$event.stopPropagation()">
+        <button class="mobile-close" aria-label="Cerrar menú" (click)="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+        <nav class="mobile-nav">
+          <div class="mobile-nav-link fw-bold" style="color: var(--primary-color);">{{ nombreAdmin }}</div>
+          <hr />
+          <a class="mobile-nav-link" routerLink="/admin" (click)="toggleMenu()">Panel principal</a>
+          <a class="mobile-nav-link text-danger" (click)="logout()" style="cursor: pointer;">Cerrar Sesión</a>
+        </nav>
+      </aside>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <!-- Reemplazamos los routerLink por eventos (click) para cambiar la sección -->
+        <a href="#" (click)="cambiarSeccion('principal', $event)" class="sidebar-link" [class.active]="seccionActual === 'principal'">
+          <i class="bi bi-house-door-fill"></i> Principal
+        </a>
+        <a href="#" (click)="cambiarSeccion('usuarios', $event)" class="sidebar-link" [class.active]="seccionActual === 'usuarios'">
+          <i class="bi bi-people-fill"></i> Usuarios
+        </a>
+        <a href="#" (click)="cambiarSeccion('anuncios', $event)" class="sidebar-link" [class.active]="seccionActual === 'anuncios'">
+          <i class="bi bi-briefcase"></i> Anuncios
+        </a>
+        <a href="#" (click)="cambiarSeccion('reportes', $event)" class="sidebar-link" [class.active]="seccionActual === 'reportes'">
+          <i class="bi bi-file-earmark-text"></i> Reportes
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <!-- Cambia el título dependiendo de la sección -->
+      <h2 class="page-title mb-4">
+        <span *ngIf="seccionActual === 'principal'">Vista General</span>
+        <span *ngIf="seccionActual === 'usuarios'">Gestión de Usuarios</span>
+        <span *ngIf="seccionActual === 'anuncios'">Gestión de Anuncios</span>
+        <span *ngIf="seccionActual === 'reportes'">Gestión de Reportes</span>
+      </h2>
+
+      <!-- TABLA GENERAL: REPORTES A PERFILES -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'reportes'">
+        <h4 class="card-title">Perfiles Reportados</h4>
+        <div *ngIf="cargandoReportes" class="text-center my-3">
+          <span>Cargando reportes...</span>
+        </div>
+        <div *ngIf="errorReportes" class="alert alert-danger my-3">
+          {{ errorReportes }}
+        </div>
+        
+        <div *ngIf="!cargandoReportes && !errorReportes" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Perfil Reportado</th>
+                <th>Motivo</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let reporte of reportesDePerfiles">
+                <td>
+                  <ng-container *ngIf="reporte.id_postulante_reportado">
+                    <i class="bi bi-person me-1 text-muted"></i>
+                    {{ reporte.nombre_postulante || 'Desconocido' }} {{ reporte.apellido_paterno_postulante || '' }}
+                  </ng-container>
+                  <ng-container *ngIf="reporte.id_empleador_reportado">
+                    <i class="bi bi-building me-1 text-muted"></i>
+                    {{ reporte.nombre_empresa || 'Empresa Desconocida' }}
+                  </ng-container>
+                  <span *ngIf="!reporte.id_postulante_reportado && !reporte.id_empleador_reportado">Desconocido</span>
+                </td>
+                <td><span class="badge bg-warning text-dark">{{ reporte.motivo }}</span></td>
+                <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ reporte.descripcion }}">
+                  {{ reporte.descripcion || 'Sin detalles' }}
+                </td>
+                <td>{{ reporte.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end action-buttons">
+                  <ng-container *ngIf="!reporte.suspendido">
+                    <button class="btn btn-view" (click)="verPerfilReportado(reporte)">Revisar</button>
+                    <button class="btn btn-suspend" (click)="abrirModalSuspender(reporte)">Suspender</button>
+                  </ng-container>
+                  <ng-container *ngIf="reporte.suspendido">
+                    <span class="badge bg-danger me-2"><i class="bi bi-ban"></i> Suspendido</span>
+                    <button class="btn btn-delete" (click)="confirmarEliminarReporte(reporte.id_reporte)">Eliminar</button>
+                  </ng-container>
+                </td>
+              </tr>
+              <tr *ngIf="reportesDePerfiles.length === 0">
+                <td colspan="5" class="text-center">No hay reportes de perfiles en este momento.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA DE POSTULANTES REGISTRADOS -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'usuarios'">
+        <h4 class="card-title">Postulantes Registrados</h4>
+        <div *ngIf="cargandoPostulantes" class="text-center my-3">
+          <span>Cargando postulantes...</span>
+        </div>
+        <div *ngIf="errorPostulantes" class="alert alert-danger my-3">
+          {{ errorPostulantes }}
+        </div>
+        <div *ngIf="!cargandoPostulantes && !errorPostulantes" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Nombre completo</th>
+                <th>Correo electrónico</th>
+                <th>Teléfono</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let post of postulantes">
+                <td>{{ post.nombre_postulante }} {{ post.apellido_paterno_postulante }} {{ post.apellido_materno_postulante }}</td>
+                <td>{{ post.correo_electronico }}</td>
+                <td>{{ post.telefono }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilPostulante(post.id_postulante)">Ver perfil completo</button>
+                </td>
+              </tr>
+              <tr *ngIf="postulantes.length === 0">
+                <td colspan="4" class="text-center">No hay postulantes registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA DE EMPRESAS REGISTRADAS -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'usuarios'">
+        <h4 class="card-title">Empresas Registradas</h4>
+        <div *ngIf="cargandoEmpresas" class="text-center my-3">
+          <span>Cargando empresas...</span>
+        </div>
+        <div *ngIf="errorEmpresas" class="alert alert-danger my-3">
+          {{ errorEmpresas }}
+        </div>
+        <div *ngIf="!cargandoEmpresas && !errorEmpresas" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Nombre de la empresa</th>
+                <th>RFC</th>
+                <th>Correo electrónico</th>
+                <th>Teléfono</th>
+                <th>Ubicación</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of empresas">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img *ngIf="emp.foto_perfil" [src]="emp.foto_perfil" alt="Logo" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                    <i *ngIf="!emp.foto_perfil" class="bi bi-building fs-5 text-muted"></i>
+                    <span>{{ emp.nombre_empresa }}</span>
+                  </div>
+                </td>
+                <td>{{ emp.rfc }}</td>
+                <td>{{ emp.correo_electronico }}</td>
+                <td>{{ emp.telefono }}</td>
+                <td>{{ emp.ciudad }}, {{ emp.estado }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view" (click)="verPerfilEmpresa(emp.id_empleador)">Ver perfil completo</button>
+                </td>
+              </tr>
+              <tr *ngIf="empresas.length === 0">
+                <td colspan="6" class="text-center">No hay empresas registradas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA DE ANUNCIOS REPORTADOS -->
+      <div class="admin-card mb-4" *ngIf="seccionActual === 'principal' || seccionActual === 'anuncios' || seccionActual === 'reportes'">
+        <h4 class="card-title">Anuncios Reportados</h4>
+        <div *ngIf="cargandoReportesAnuncios" class="text-center my-3">
+          <span>Cargando reportes de anuncios...</span>
+        </div>
+        <div *ngIf="errorReportesAnuncios" class="alert alert-danger my-3">
+          {{ errorReportesAnuncios }}
+        </div>
+
+        <div *ngIf="!cargandoReportesAnuncios && !errorReportesAnuncios" class="table-responsive">
+          <table class="table admin-table">
+            <thead>
+              <tr>
+                <th>Título del anuncio</th>
+                <th>Razón principal</th>
+                <th>Detalle (opcional)</th>
+                <th>Fecha de reporte</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let anuncio of anunciosReportados">
+                <td class="fw-bold">{{ anuncio.titulo }}</td>
+                <td><span class="badge bg-danger">{{ anuncio.razon }}</span></td>
+                <td style="max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="{{ anuncio.descripcion }}">
+                  {{ anuncio.descripcion || 'Sin detalles adicionales' }}
+                </td>
+                <td>{{ anuncio.fecha_reporte | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end action-buttons">
+                  <button class="btn btn-view me-2" (click)="verAnuncio(anuncio.id_anuncio)" style="background-color: #6c757d; color: white;">Revisar</button>
+                  <button class="btn btn-delete" (click)="confirmarEliminarAnuncio(anuncio.id_anuncio)">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="anunciosReportados.length === 0">
+                <td colspan="5" class="text-center text-muted">No hay anuncios reportados actualmente.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
