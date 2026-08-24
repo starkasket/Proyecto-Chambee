@@ -137,6 +137,17 @@ export class EmployerJobsManageComponent implements OnInit {
     'Euro': 20.5
   };
 
+  // Mapeo inverso: código → nombre largo
+  readonly nombreMoneda: Record<string, string> = {
+    'MXN': 'Peso mexicano',
+    'USD': 'Dólar estadounidense',
+    'EUR': 'Euro'
+  };
+
+  codigoANombreMoneda(codigo: string): string {
+    return this.nombreMoneda[codigo] || codigo;
+  }
+
   // Getter del equivalente en la moneda seleccionada
   get salarioMinimoSugerido(): number {
     const periodo = this.form.get('periodo_pago')?.value || 'Mensual';
@@ -281,7 +292,7 @@ export class EmployerJobsManageComponent implements OnInit {
           direccion_formateada: anuncio?.direccion_formateada || '',
           codigo_postal: anuncio.codigo_postal || '',
           salario: Number(anuncio.salario) || 0,
-          tipo_moneda: anuncio.tipo_moneda || 'MXN',
+          tipo_moneda: this.codigoANombreMoneda(anuncio.moneda || anuncio.tipo_moneda || 'MXN'),
           periodo_pago: anuncio.periodo_pago || 'Mensual'
         }));
 
@@ -363,7 +374,7 @@ export class EmployerJobsManageComponent implements OnInit {
       direccion_formateada: vacante?.direccion_formateada || '',
       codigo_postal: vacante.codigo_postal || '',
       salario: vacante.salario || null,
-      tipo_moneda: vacante.tipo_moneda || 'MXN',
+      tipo_moneda: this.codigoANombreMoneda(vacante.tipo_moneda || 'MXN'),
       periodo_pago: vacante.periodo_pago || 'Mensual',
       modalidad: vacante.modalidad || 'Presencial',
       etiquetas: etiquetas

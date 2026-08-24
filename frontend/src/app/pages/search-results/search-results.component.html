@@ -68,12 +68,6 @@
       <span class="d-none d-md-block">Mi perfil</span>
     </button>
 
-    <!-- Botón de perfil del admin (Visible solo para Admins)
-    <button class="btn d-flex align-items-center gap-2 btn-profile-navbar" *ngIf="estaLogueado && isAdminView" title="Administrador">
-      <i class="bi bi-person-circle fs-5"></i>
-      <span class="d-none d-md-block">{{ nombre_postulante }}</span>
-    </button> -->
-
     <button *ngIf="!estaLogueado && !isMobile" class="btn login" routerLink="/login">Iniciar Sesión</button>
     <button *ngIf="!estaLogueado && !isMobile" class="btn register" routerLink="/register">Registrarse</button>
 
