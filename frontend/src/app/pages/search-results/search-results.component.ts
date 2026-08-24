@@ -137,15 +137,11 @@ export class SearchResultsComponent implements OnInit {
     this.api.buscar(q, this.filtros).subscribe({
       next: (datos) => {
 
-        // --- AQUÍ APLICAMOS LA LÓGICA DE ORDENAMIENTO EN EL FRONTEND ---
         if (this.filtros.ordenar === 'vistas') {
-          // Ordena por vistas de mayor a menor
           datos.sort((a: any, b: any) => (b.vistas || 0) - (a.vistas || 0));
         } else if (this.filtros.ordenar === 'salario') {
-          // Ordena por salario de mayor a menor
           datos.sort((a: any, b: any) => (parseFloat(b.salario) || 0) - (parseFloat(a.salario) || 0));
         } else if (this.filtros.ordenar === 'fecha') {
-          // Ordena por fecha de publicación (más reciente a más antiguo)
           datos.sort((a: any, b: any) => {
             const fechaB = new Date(b.fecha_publicacion || b.fecha_creacion).getTime();
             const fechaA = new Date(a.fecha_publicacion || a.fecha_creacion).getTime();

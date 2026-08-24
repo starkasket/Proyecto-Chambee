@@ -1149,9 +1149,7 @@ html, body, :host {
     display: block;
   }
 
-  .jobs-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+
 
   .services-desktop {
     display: none;
@@ -1235,10 +1233,7 @@ html, body, :host {
     align-items: flex-start;
   }
 
-  .jobs-grid {
-    grid-template-columns: 1fr !important;
-  }
-
+ 
   .jobs-more {
     margin-top: 22px;
   }

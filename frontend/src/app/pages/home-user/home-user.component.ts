@@ -79,8 +79,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   // hasUnreadNotifications = false;
 
   currentSlide = 0;
-  visibleCount = 8;
-  maxVisible = 8;
+  visibleCount = 9;
+  maxVisible = 9;
   isMobile = false;
   faqOpen: number | null = null;
   modalMensaje = '';
@@ -464,8 +464,8 @@ export class HomeUserComponent implements OnInit, OnDestroy {
 
         this.categoriasDisponibles = this.extraerCategorias(this.jobs);
         this.currentSlide = 0;
-        this.maxVisible = Math.max(8, this.jobs.length);
-        this.visibleCount = Math.min(8, this.maxVisible);
+        this.maxVisible = Math.max(9, this.jobs.length);
+        this.visibleCount = Math.min(9, this.maxVisible);
 
         this.cargarVistosRecientemente();
       },
@@ -842,6 +842,7 @@ export class HomeUserComponent implements OnInit, OnDestroy {
       distancia: '',
       ordenar: 'fecha',
       moneda: '',
+    
       salarioMin: null,
       salarioMax: null
     };
@@ -851,6 +852,14 @@ export class HomeUserComponent implements OnInit, OnDestroy {
   aplicarFiltros(): void {
     this.visibleCount = Math.min(8, this.maxJobsToShow);
   }
+
+   onTipoChange() {
+    this.filtros.categoriaEmpleo = '';
+    this.filtros.categoriaServicio = '';
+
+    this.filtros.modalidad = '';
+    this.filtros.cobertura = '';
+  } 
 
   private extraerCategorias(jobs: Job[]): string[] {
     const categorias = new Set<string>(this.categoriasPreDefinidas);
